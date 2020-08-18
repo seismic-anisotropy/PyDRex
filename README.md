@@ -16,4 +16,4 @@ The code relies on the following Python packages:
 - Ray
 - VTK
 
-In addition, matplotlib can be used to visualize the outputs and can also provide an alternative for 2-D interpolation on a single machine. To benefit from [SVML](http://numba.pydata.org/numba-doc/latest/user/performance-tips.html#intel-svml) support, the package `icc_rt` also needs to be installed and the path to `libsvml.so` added the `LD_LIBRARY_PATH` environment variable.
+In addition, `matplotlib` can be used to visualize the outputs and can also provide an alternative for 2-D interpolation on a single machine. To benefit from [SVML](http://numba.pydata.org/numba-doc/latest/user/performance-tips.html#intel-svml) support, the package `icc_rt` also needs to be installed and the path to `libsvml.so` added the `LD_LIBRARY_PATH` environment variable.
