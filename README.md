@@ -8,3 +8,12 @@ The present implementation (`PyDRex.py`) replicates the original framework and a
 The current version expects a VTK file as an input, but any file format can be implemented as long as the necessary fields can be processed by the interpolator objects. Simulation parameters are gathered in `DRexParam.py`.
 
 Parallelization on a cluster is achieved through [Ray](https://github.com/ray-project/ray) and currently implemented for a cluster running PBS Pro (`job.sh` and `startWorkerNode.sh`). An example implementation for Slurm is provided in the Ray [documentation](https://docs.ray.io/en/master/cluster/slurm.html).
+
+The code relies on the following Python packages:
+- Numpy
+- Scipy
+- Numba
+- Ray
+- VTK
+
+In addition, matplotlib can be used to visualize the outputs and can also provide an alternative for 2-D interpolation on a single machine. To benefit from [SVML](http://numba.pydata.org/numba-doc/latest/user/performance-tips.html#intel-svml) support, the package `icc_rt` also needs to be installed and the path to `libsvml.so` added the `LD_LIBRARY_PATH` environment variable.
