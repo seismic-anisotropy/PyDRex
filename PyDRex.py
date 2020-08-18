@@ -897,13 +897,16 @@ vel = np.array([vtkScalars.GetTuple3(tup)
 vtkArray = vtkOut.GetPointData().GetArray('VelocityGradient')
 velGrad = np.array([vtkArray.GetTuple9(tup)
                     for tup in range(vtkArray.GetNumberOfTuples())])
-del vtkReader, vtkData, vtkScalars, vtkArray
+del vtkReader, vtkOut, vtkData, vtkScalars, vtkArray
 for arr in gridRes, gridMin, gridMax:
     assert dim == len(arr)
 gridNodes = ((gridMax - gridMin) / gridRes + 1).astype(int)
 gridCoords = [np.linspace(x, y, z)
               for x, y, z in zip(gridMin, gridMax, gridNodes)]
 if dim == 2:
+    iDefMech = NearestNDInterpolator(coords[:, :-1], defMech)
+    '''
+    # Only use Matplotlib interpolation on a single node with multiprocessing
     triIDs = []
     for i in range(vtkOut.GetNumberOfCells()):
         assert vtkOut.GetCell(i).GetNumberOfPoints() == 3
@@ -911,9 +914,6 @@ if dim == 2:
         triIDs.append([IDsList.GetId(j)
                        for j in range(IDsList.GetNumberOfIds())])
     del vtkOut
-    iDefMech = NearestNDInterpolator(coords[:, :-1], defMech)
-    '''
-    # Only use Matplotlib interpolation on a single node with multiprocessing
     tri = Triangulation(coords[:, 0], coords[:, 1], triangles=triIDs)
     # Use kind='geom' for speed optimization on large grids
     kind = 'min_E'
@@ -931,6 +931,7 @@ if dim == 2:
     iLzx = CloughTocher2DInterpolator(tri, velGrad[:, 1])
     iLxz = CloughTocher2DInterpolator(tri, velGrad[:, 3])
     iLzz = CloughTocher2DInterpolator(tri, velGrad[:, 4])
+    del tri
 else:
     iDefMech = NearestNDInterpolator(coords, defMech)
     iVelX = NearestNDInterpolator(coords, vel[:, 0])
@@ -994,11 +995,11 @@ sys.exit()
 '''
 if __name__ == '__main__':
     # Ray with Checkpoint
-    # Cluster
+    # # Cluster
     ray.init(address='auto', redis_password=args.pw, ignore_reinit_error=True,
              driver_object_store_memory=20 * 1024 * 1024 * 1024)
-    # Single machine
-    # ray.init(num_cpus=6, ignore_reinit_error=True)
+    # # Single machine | Set local_mode to True to ensure serial execution
+    # ray.init(num_cpus=6, ignore_reinit_error=True, local_mode=False)
     futures = [DRex.remote(i) for i in zip(*np.asarray(indArr == 0).nonzero())]
     waitingIds = list(futures)
     while len(waitingIds) > 0:
