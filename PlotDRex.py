@@ -41,8 +41,9 @@ def makeFilledContourPlot(mplAxis, xCoords, yCoords, data, levels, cmap,
 
 parser = argparse.ArgumentParser(
     formatter_class=argparse.RawDescriptionHelpFormatter,
-    description='''A simple plotting script using Matplotlib to generate filled
-contour plots. Requires the input file DRexParam.py in the same directory.''')
+    description='''
+A simple plotting script using Matplotlib to generate filled contour plots.
+Requires the input file DRexParam.py in the same directory.''')
 parser.add_argument('input', help='input file (expects a Numpy NpzFile)')
 args = parser.parse_args()
 
