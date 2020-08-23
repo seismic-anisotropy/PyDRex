@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -l ncpus=192
 #PBS -l mem=600GB
-#PBS -l walltime=2:00:00
+#PBS -l walltime=48:00:00
 #PBS -l wd
 
 module load python3/3.7.4 vtk/8.2.0
@@ -17,20 +17,20 @@ echo parameters: $ip_head $redis_password
 
 /home/157/td5646/.local/bin/ray start --head --port=6379 \
 --redis-password=$redis_password \
---memory $((90 * 1024 * 1024 * 1024)) \
---object-store-memory $((40 * 1024 * 1024 * 1024)) \
---redis-max-memory $((20 * 1024 * 1024 * 1024)) \
+--memory $((120 * 1024 * 1024 * 1024)) \
+--object-store-memory $((20 * 1024 * 1024 * 1024)) \
+--redis-max-memory $((10 * 1024 * 1024 * 1024)) \
 --num-cpus 48 --num-gpus 0
 sleep 10
 
 for (( n=48; n<$PBS_NCPUS; n+=48 ))
 do
-  pbsdsh -n $n -v /scratch/xd2/td5646/Paddy/TestRay/startWorkerNode.sh \
+  pbsdsh -n $n -v /scratch/xd2/td5646/transform_test/startWorkerNode.sh \
   $ip_head $redis_password &
   sleep 10
 done
 
-cd /scratch/xd2/td5646/Paddy/TestRay || exit
-./PyDRex.py 3d_ridge_45.vtu --pw $redis_password
+cd /scratch/xd2/td5646/transform_test || exit
+./PyDRex.py Navid_3d_transform_checkpoint_24.vtu -m --pw $redis_password
 
 /home/157/td5646/.local/bin/ray stop

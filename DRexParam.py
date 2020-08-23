@@ -1,23 +1,51 @@
 #!/usr/bin/env python3
 
-# Note: To benefit from SVML support available in Numba, install icc_rt package
-# and locate libsvml.so; append the corresponding directory to the environment
-# variable LD_LIBRARY_PATH.
+from numpy import amax, amin, array, diag, hstack, linspace
 
-# Global parameters used in PyDRex.py
-from numpy import array, diag
+name = 'Test'  # A little tag to keep track
 
-gridRes = array([8e3, 2e4, 2e3])  # X, [Y], Z
-gridMin = array([0, 2e5, 0])  # X, [Y], Z
-gridMax = array([1.2e6, 3e5, 4e5]) + gridRes  # X, [Y], Z
+dim = 3  # Number of dimensions; must be 2 or 3
+assert dim in [2, 3]
 
-checkpoint = 2000
+uniformGridSpacing = False  # Must evaluate to True or False below
+# Generate a regular grid
+if uniformGridSpacing:  # As many entries as dimensions: X, [Y], Z
+    gridRes = array([1e5, 2e4])
+    gridMin = array([0, 0])
+    gridMax = array([1.2e6, 4e5]) + gridRes
+    gridNodes = ((gridMax - gridMin) / gridRes + 1).astype(int)
+    gridCoords = [linspace(x, y, z) for x, y, z
+                  in zip(gridMin, gridMax, gridNodes)]
+else:  # As many variables as dimensions: X, [Y], Z
+    xCoords = hstack((linspace(5e5, 1.3e6, 161),
+                      linspace(1.3025e6, 1.7e6, 160),
+                      linspace(1.705e6, 2.5e6, 160)))
+    yCoords = hstack((linspace(0, 3e5, 13),
+                      linspace(3.2e5, 4e5, 5),
+                      linspace(4.1e5, 4.5e5, 5),
+                      linspace(4.55e5, 4.8e5, 6),
+                      linspace(4.825e5, 5.2e5, 16),
+                      linspace(5.25e5, 5.5e5, 6),
+                      linspace(5.6e5, 6e5, 5),
+                      linspace(6.2e5, 7e5, 5),
+                      linspace(7.25e5, 1e6, 12)))
+    zCoords = hstack((linspace(0, 1e5, 51),
+                      linspace(1.04e5, 2e5, 25),
+                      linspace(2.1e5, 3e5, 10),
+                      linspace(3.2e5, 4e5, 5)))
+    gridCoords = [xCoords, yCoords, zCoords]
+    gridNodes = [arr.size for arr in gridCoords]
+    gridMin = [amin(arr) for arr in gridCoords]
+    gridMax = [amax(arr) for arr in gridCoords]
+assert dim == len(gridCoords)
+
+checkpoint = 1e3  # Number of nodes after which a checkpoint should be dumped
 
 Xol = 0.7  # Fraction of olivine in the aggregate
 tau = array([1, 2, 3, 1e6])  # Olivine
 tau_ens = 1  # Enstatite
-mob = 125  # Grain boundary mobility
-chi = 0.2  # Threshold volume fraction for GBS
+mob = 10  # Grain boundary mobility
+chi = 0.3  # Threshold volume fraction for grain boundary sliding
 lamb = 5  # Nucleation parameter set to 5 as in Kaminski and Ribe (2001)
 size = 13 ** 3  # Initial size | Number of points in the Eulerian space
 stressexp = 3.5  # Stress exponent for olivine and enstatite
