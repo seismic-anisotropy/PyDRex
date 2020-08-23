@@ -6,7 +6,7 @@
 
 module load python3/3.7.4 vtk/8.2.0
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/libsvml.so
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/libsvml.so/directory
 
 ip_prefix=`hostname -i`
 suffix=':6379'
