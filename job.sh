@@ -6,7 +6,7 @@
 
 module load python3/3.7.4 vtk/8.2.0
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/157/td5646/.local/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/libsvml.so
 
 ip_prefix=`hostname -i`
 suffix=':6379'
@@ -15,7 +15,7 @@ redis_password=$(uuidgen)
 
 echo parameters: $ip_head $redis_password
 
-/home/157/td5646/.local/bin/ray start --head --port=6379 \
+/path/to/ray start --head --port=6379 \
 --redis-password=$redis_password \
 --memory $((120 * 1024 * 1024 * 1024)) \
 --object-store-memory $((20 * 1024 * 1024 * 1024)) \
@@ -25,12 +25,12 @@ sleep 10
 
 for (( n=48; n<$PBS_NCPUS; n+=48 ))
 do
-  pbsdsh -n $n -v /scratch/xd2/td5646/transform_test/startWorkerNode.sh \
+  pbsdsh -n $n -v /path/to/startWorkerNode.sh \
   $ip_head $redis_password &
   sleep 10
 done
 
-cd /scratch/xd2/td5646/transform_test || exit
-./PyDRex.py Navid_3d_transform_checkpoint_24.vtu -m --pw $redis_password
+cd /path/to/working/directory || exit
+./PyDRex.py input -m --pw $redis_password
 
-/home/157/td5646/.local/bin/ray stop
+/path/to/ray stop
