@@ -1,13 +1,11 @@
 #!/bin/bash -l
 
-module load python3/3.7.4 vtk/8.2.0
+module load python3/3.8.5 vtk/8.2.0
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/libsvml.so/directory
+export PYTHONPATH=$PYTHONPATH:/home/157/td5646/numpy
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/157/td5646/.local/lib
 
-/path/to/ray start --block --address=$1 \
---redis-password=$2 --memory $((120 * 1024 * 1024 * 1024)) \
---object-store-memory $((20 * 1024 * 1024 * 1024)) \
---redis-max-memory $((10 * 1024 * 1024 * 1024)) \
---num-cpus 48 --num-gpus 0
+/home/157/td5646/.local/bin/ray start --block --address=$1 \
+--redis-password=$2 --num-cpus 48 --num-gpus 0
 
-/path/to/ray stop
+/home/157/td5646/.local/bin/ray stop

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
-from numpy import amax, amin, array, diag, hstack, linspace
+from numpy import amax, amin, array, diag, hstack, inf, linspace
 
-name = 'Test'  # A little tag to keep track
+name = 'Final'  # A little tag to keep track
 
-dim = 3  # Number of dimensions; must be 2 or 3
+dim = 2  # Number of dimensions; must be 2 or 3
 assert dim in [2, 3]
 
-uniformGridSpacing = False  # Must evaluate to True or False below
+uniformGridSpacing = True  # Must evaluate to True or False below
 # Generate a regular grid
 if uniformGridSpacing:  # As many entries as dimensions: X, [Y], Z
-    gridRes = array([1e5, 2e4])
+    gridRes = array([4e3, 4e3])
     gridMin = array([0, 0])
     gridMax = array([1.2e6, 4e5]) + gridRes
     gridNodes = ((gridMax - gridMin) / gridRes + 1).astype(int)
@@ -39,23 +39,23 @@ else:  # As many variables as dimensions: X, [Y], Z
     gridMax = [amax(arr) for arr in gridCoords]
 assert dim == len(gridCoords)
 
-checkpoint = 1e3  # Number of nodes after which a checkpoint should be dumped
+checkpoint = 3000  # Number of nodes after which a checkpoint should be dumped
 
 Xol = 0.7  # Fraction of olivine in the aggregate
-tau = array([1, 2, 3, 1e6])  # Olivine
+tau = array([1, 2, 3, inf])  # Olivine
 tau_ens = 1  # Enstatite
-mob = 10  # Grain boundary mobility
+mob = 125  # Grain boundary mobility
 chi = 0.3  # Threshold volume fraction for grain boundary sliding
 lamb = 5  # Nucleation parameter set to 5 as in Kaminski and Ribe (2001)
 size = 13 ** 3  # Initial size | Number of points in the Eulerian space
 stressexp = 3.5  # Stress exponent for olivine and enstatite
 # Stiffness matrix for Olivine (GPa)
 S0 = diag((320.71, 197.25, 234.32, 63.77, 77.67, 78.36))
-S0[0, 1] = 69.84
-S0[0, 2] = 71.22
-S0[1, 2] = 74.8
+S0[0, 1] = S0[1, 0] = 69.84
+S0[0, 2] = S0[2, 0] = 71.22
+S0[1, 2] = S0[2, 1] = 74.8
 # Stiffness matrix for Enstatite (GPa)
 S0_ens = diag((236.9, 180.5, 230.4, 84.3, 79.4, 80.1))
-S0_ens[0, 1] = 79.6
-S0_ens[0, 2] = 63.2
-S0_ens[1, 2] = 56.8
+S0_ens[0, 1] = S0_ens[1, 0] = 79.6
+S0_ens[0, 2] = S0_ens[2, 0] = 63.2
+S0_ens[1, 2] = S0_ens[2, 1] = 56.8

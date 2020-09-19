@@ -1,36 +1,45 @@
 #!/bin/bash
+
+#PBS -P xd2
+#PBS -q normal
 #PBS -l ncpus=192
-#PBS -l mem=600GB
-#PBS -l walltime=48:00:00
+#PBS -l mem=768GB
+#PBS -l walltime=1:00:00
 #PBS -l wd
 
-module load python3/3.7.4 vtk/8.2.0
+module load python3/3.8.5 vtk/8.2.0
+export PYTHONPATH=$PYTHONPATH:/home/157/td5646/numpy
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/libsvml.so/directory
+################################################################################
 
-ip_prefix=`hostname -i`
-suffix=':6379'
-ip_head=$ip_prefix$suffix
-redis_password=$(uuidgen)
+# Charm4Py
+module load openmpi/4.0.2
+mpirun -np $PBS_NCPUS python3 PyDRex.py ridge_31.vtu --charm
 
-echo parameters: $ip_head $redis_password
+################################################################################
 
-/path/to/ray start --head --port=6379 \
---redis-password=$redis_password \
---memory $((120 * 1024 * 1024 * 1024)) \
---object-store-memory $((20 * 1024 * 1024 * 1024)) \
---redis-max-memory $((10 * 1024 * 1024 * 1024)) \
---num-cpus 48 --num-gpus 0
-sleep 10
+# Ray
+# ip_prefix=`hostname -i`
+# port='6379'
+# ip_head=${ip_prefix}:${port}
+# redis_password=$(uuidgen)
+#
+# /home/157/td5646/.local/bin/ray start --head --port=${port} \
+# --redis-password=$redis_password
+# sleep 5
+#
+# cpusPerNode=48
+# for (( n=$cpusPerNode; n<$PBS_NCPUS; n+=$cpusPerNode ))
+# do
+#   pbsdsh -n $n -v ./startWorkerNode.sh $ip_head $redis_password &
+# done
+# sleep 5
+#
+# ./PyDRex.py INPUT --ray --redis-pass $redis_password
+#
+# /home/157/td5646/.local/bin/ray stop
 
-for (( n=48; n<$PBS_NCPUS; n+=48 ))
-do
-  pbsdsh -n $n -v /path/to/startWorkerNode.sh \
-  $ip_head $redis_password &
-  sleep 10
-done
+################################################################################
 
-cd /path/to/working/directory || exit
-./PyDRex.py input -m --pw $redis_password
-
-/path/to/ray stop
+# Multiprocessing | Only valid on a single-node system
+# ./PyDRex.py INPUT --cpus $PBS_NCPUS
