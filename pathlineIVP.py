@@ -106,7 +106,7 @@ parser = argparse.ArgumentParser(
     description='''
 A simple plotting script using Matplotlib to generate filled contour plots.
 Requires the input file DRexParam.py in the same directory.''')
-parser.add_argument('input', help='input file (expects a Numpy NpzFile)')
+parser.add_argument('input', help='input file (expects a VTK unstructured grid)')
 args = parser.parse_args()
 
 vtkReader = vtk.vtkXMLUnstructuredGridReader()
