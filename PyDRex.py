@@ -790,7 +790,7 @@ def DRex(locInd, dictGlobals=None):
     LSij = np.dot(Fij, np.transpose(Fij))
     eigval, eigvects = eigh(LSij)
     # pick up the orientation of the long axis of the FSE
-    phi_fse = np.arctan2(eigvects[-1, -1], np.sqrt(eigvects[0, -1] ** 2 + eigvects[1, -1] ** 2))
+    phi_fse = np.arctan2(eigvects[-1, -1], eigvects[0, -1])
     # natural strain = ln(a / c) where a is the long axis = max(eigval) ** 0.5
     ln_fse = np.log(eigval[-1] / eigval[0]) / 2
     # Cijkl tensor (using Voigt average)
