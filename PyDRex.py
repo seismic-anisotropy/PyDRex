@@ -894,9 +894,7 @@ def main(inputArgs):
     if inputArgs.charm:
         # Charm with Checkpoint
         charm.thisProxy.updateGlobals(
-            {'chi': chi, 'gridMin': gridMin, 'gridMax': gridMax, 'lamb': lamb,
-             'mob': mob, 'size': size, 'stressexp': stressexp, 'S0': S0,
-             'S0_ens': S0_ens, 'tau': tau, 'tau_ens': tau_ens, 'Xol': Xol,
+            {'chi': chi, 'gridMin': gridMin, 'gridMax': gridMax, 'size': size,
              'gridNodes': gridNodes, 'gridCoords': gridCoords, 'alt': alt,
              'ijkl': ijkl, 'l1': l1, 'l2': l2, 'acs0': acs0},
             awaitable=True).get()
