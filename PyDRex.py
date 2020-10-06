@@ -30,6 +30,7 @@ from DRexParam import (checkpoint, chi, gridCoords, gridMax, gridMin,
 # rotateTens    : Rotates a 4th-order tensor
 # trIsoProj     : Transverse isotropy projector
 # scca          : Forms symmetric cartesian system
+# calcAzimuth   : Calculates the azimuthal fast direction in a horizontal plane
 # decsym        : Decomposition into transverse isotropy tensor
 # interpVel     : Interpolates the velocity vector at a given point
 # interpVelGrad : Interpolates the velocity gradient tensor at a given point
@@ -212,6 +213,29 @@ def scca(CE1, EL1, XN, XEC):
     return ANIS, SCC, XEC
 
 
+# Calculates the azimuthal fast direction in a horizontal plane
+def calcAzimuth(voigtMat, azi=0, inc=-np.pi / 2):
+    # Create the cartesian vector
+    Xr = np.array([np.cos(azi) * np.cos(inc),
+                   -np.sin(azi) * np.cos(inc), np.sin(inc)])
+    Xr /= norm(Xr)
+    # Compute Eigenvector
+    gamma = np.array([[Xr[0], 0, 0, 0, Xr[2], Xr[1]],
+                      [0, Xr[1], 0, Xr[2], 0, Xr[0]],
+                      [0, 0, Xr[2], Xr[1], Xr[0], 0]])
+    T = np.dot(np.dot(gamma, voigtMat), gamma.transpose())
+    S1 = eigh(T)[1][:, 1]
+    # Calculate projection onto propagation plane
+    S1P = np.cross(Xr, np.cross(Xr, S1))
+    # Rotate into YZ plane to calculate angles
+    rot1 = np.array([[np.cos(azi), np.sin(azi), 0],
+                     [-np.sin(azi), np.cos(azi), 0], [0, 0, 1]])
+    rot2 = np.array([[np.cos(inc), 0, -np.sin(inc)],
+                     [0, 1, 0], [np.sin(inc), 0, np.cos(inc)]])
+    VR = np.dot(np.dot(S1P, rot1), rot2)
+    return np.arctan2(VR[1], VR[2])
+
+
 # Decomposition into transverse isotropy tensor
 def decsym(Sav):
     CE1 = symFromUpper(Sav)
@@ -221,6 +245,7 @@ def decsym(Sav):
     perc1 = (CE1[4, 4] - CE1[3, 3]) / 2
     perc2 = CE1[4, 3]
     EPSPERC = np.sqrt(perc1 ** 2 + perc2 ** 2)
+    AZIMUTH = calcAzimuth(CE1)
     EL1 = mat2tens(CE1)
     XEC = mat2vec(CE1)
     XN = norm(XEC, ord=2)
@@ -230,7 +255,7 @@ def decsym(Sav):
     TIAXIS = SCC[2, :]
     TIAXIS /= norm(TIAXIS, ord=2)
     INCLTI = np.arcsin(TIAXIS[2])
-    return PERC, INCLTI, EPSRAD, EPSPERC
+    return PERC, INCLTI, EPSRAD, EPSPERC, AZIMUTH
 
 
 # Interpolates the velocity vector at a given point
@@ -741,8 +766,8 @@ def DRex(locInd, dictGlobals=None):
     # Cijkl tensor (using Voigt average)
     Sav = voigt(acs, acs_ens, odf, odf_ens)
     # percentage anisotropy and orientation of hexagonal symmetry axis
-    perc_a, phi_a, radani, percani = decsym(Sav)
-    return locInd[::-1], radani, percani, GOL, ln_fse, phi_fse, phi_a, perc_a
+    perc_a, phi_a, radani, percani, azi_direct = decsym(Sav)
+    return locInd[::-1], radani, percani, GOL, ln_fse, phi_fse, phi_a, perc_a, azi_direct
 
 
 def main(inputArgs):
@@ -863,6 +888,7 @@ def main(inputArgs):
         phi_a = checkpointVar['phi_a']
         radani = checkpointVar['radani']
         percani = checkpointVar['percani']
+        azi_direct = checkpointVar['azi_direct']
         indArr = checkpointVar['indArr']
         nodesComplete = checkpointVar['nodesComplete']
     else:
@@ -874,6 +900,7 @@ def main(inputArgs):
         phi_a = np.zeros(arrDim)
         radani = np.zeros(arrDim)
         percani = np.zeros(arrDim)
+        azi_direct = np.zeros(arrDim)
         indArr = np.zeros(arrDim[::-1])
         nodesComplete = 0
 
@@ -893,7 +920,7 @@ def main(inputArgs):
                 DRex, list(zip(*[nodes[:int(6e4)] for nodes in nodes2do])),
                 multi_future=True)
             for future in charm.iwait(futures):
-                for r0, r1, r2, r3, r4, r5, r6, r7 in [future.get()]:
+                for r0, r1, r2, r3, r4, r5, r6, r7, r8 in [future.get()]:
                     radani[r0] = r1
                     percani[r0] = r2
                     GOL[r0] = r3
@@ -901,6 +928,7 @@ def main(inputArgs):
                     phi_fse[r0] = r5
                     phi_a[r0] = r6
                     perc_a[r0] = r7
+                    azi_direct[r0] = r8
                     indArr[r0[::-1]] = 1
                     nodesComplete += 1
                 if not nodesComplete % checkpoint:
@@ -908,7 +936,7 @@ def main(inputArgs):
                              f'{nodesComplete}',
                              radani=radani, percani=percani, GOL=GOL,
                              ln_fse=ln_fse, phi_fse=phi_fse, phi_a=phi_a,
-                             perc_a=perc_a, indArr=indArr,
+                             perc_a=perc_a, azi_direct=azi_direct,indArr=indArr,
                              nodesComplete=nodesComplete)
     elif inputArgs.ray:
         # Ray with Checkpoint
@@ -943,7 +971,7 @@ def main(inputArgs):
             while len(futures) > 0:
                 readyId, remainingIds = ray.wait(
                     futures, num_returns=min([checkpoint, len(futures)]))
-                for r0, r1, r2, r3, r4, r5, r6, r7 in ray.get(readyId):
+                for r0, r1, r2, r3, r4, r5, r6, r7, r8 in ray.get(readyId):
                     radani[r0] = r1
                     percani[r0] = r2
                     GOL[r0] = r3
@@ -951,13 +979,14 @@ def main(inputArgs):
                     phi_fse[r0] = r5
                     phi_a[r0] = r6
                     perc_a[r0] = r7
+                    azi_direct[r0] = r8
                     indArr[r0[::-1]] = 1
                     nodesComplete += 1
                 np.savez(f'PyDRex{dim}D_{name}_NumpyCheckpoint_'
                          f'{nodesComplete}',
                          radani=radani, percani=percani, GOL=GOL,
                          ln_fse=ln_fse, phi_fse=phi_fse, phi_a=phi_a,
-                         perc_a=perc_a, indArr=indArr,
+                         perc_a=perc_a, azi_direct=azi_direct, indArr=indArr,
                          nodesComplete=nodesComplete)
                 futures = remainingIds
 
@@ -966,7 +995,7 @@ def main(inputArgs):
         if __name__ == '__main__':
             # Multiprocessing with Checkpoint
             with Pool(processes=inputArgs.cpus) as pool:
-                for r0, r1, r2, r3, r4, r5, r6, r7 in pool.imap_unordered(
+                for r0, r1, r2, r3, r4, r5, r6, r7, r8 in pool.imap_unordered(
                         DRex, zip(*np.asarray(indArr == 0).nonzero())):
                     radani[r0] = r1
                     percani[r0] = r2
@@ -975,6 +1004,7 @@ def main(inputArgs):
                     phi_fse[r0] = r5
                     phi_a[r0] = r6
                     perc_a[r0] = r7
+                    azi_direct[r0] = r8
                     indArr[r0[::-1]] = 1
                     nodesComplete += 1
                     if not nodesComplete % checkpoint:
@@ -982,12 +1012,12 @@ def main(inputArgs):
                                  f'{nodesComplete}',
                                  radani=radani, percani=percani, GOL=GOL,
                                  ln_fse=ln_fse, phi_fse=phi_fse, phi_a=phi_a,
-                                 perc_a=perc_a, indArr=indArr,
-                                 nodesComplete=nodesComplete)
+                                 perc_a=perc_a, azi_direct=azi_direct,
+                                 indArr=indArr, nodesComplete=nodesComplete)
 
     np.savez(f'PyDRex{dim}D_{name}_Complete', radani=radani, percani=percani,
              GOL=GOL, ln_fse=ln_fse, phi_fse=phi_fse, phi_a=phi_a,
-             perc_a=perc_a)
+             perc_a=perc_a, azi_direct=azi_direct)
 
     end = perf_counter()
     hours = int((end - begin) / 3600)
