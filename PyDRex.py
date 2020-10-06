@@ -30,8 +30,7 @@ from DRexParam import (checkpoint, chi, gridCoords, gridMax, gridMin,
 # rotateTens    : Rotates a 4th-order tensor
 # trIsoProj     : Transverse isotropy projector
 # scca          : Forms symmetric cartesian system
-# cal_azimuth   : Calculates the azimuthal fast direction in a horizontal plane
-#                 (in degrees)
+# calcAzimuth   : Calculates the azimuthal fast direction in a horizontal plane
 # decsym        : Decomposition into transverse isotropy tensor
 # interpVel     : Interpolates the velocity vector at a given point
 # interpVelGrad : Interpolates the velocity gradient tensor at a given point
@@ -213,57 +212,28 @@ def scca(CE1, EL1, XN, XEC):
     XEC = mat2vec(tens2mat(rotateTens(EL1, SCC)))
     return ANIS, SCC, XEC
 
-# Forms symmetric Cartesian system
-def cal_azimuth(CE1):
-    # Define azimuth and inclination of ray path
-    azi=0
-    inc=-90*(np.pi/180)
 
+# Calculates the azimuthal fast direction in a horizontal plane
+def calcAzimuth(voigtMat, azi=0, inc=-np.pi / 2):
     # Create the cartesian vector
-    Xr = np.zeros(3)
-    Xr = (np.cos(azi)*np.cos(inc), -np.sin(azi)*np.cos(inc), np.sin(inc))
-    r = np.sqrt(Xr[0]**2+Xr[1]**2+Xr[2]**2)
-    Xr = Xr/r
-
+    Xr = np.array([np.cos(azi) * np.cos(inc),
+                   -np.sin(azi) * np.cos(inc), np.sin(inc)])
+    Xr /= norm(Xr)
     # Compute Eigenvector
-    gamma = np.zeros((3,6))
-    gamma[0,0] = gamma[1,5] = gamma[2,4] = Xr[0]
-    gamma[0,5] = gamma[1,1] = gamma[2,3] = Xr[1]
-    gamma[0,4] = gamma[1,3] = gamma[2,2] = Xr[2]
-
-    T1 = np.dot(gamma,CE1)
-    T = np.dot(T1,np.transpose(gamma))
-    eigval, eigvec = eigh(T)
-
-    S1 = eigvec[:,1]
-
-    ##calculate projection onto propagation plane
-    S1N = np.zeros(3)
-    S1P = np.zeros(3)
-    S1N = np.cross(Xr,S1)
-    S1P = np.cross(Xr,S1N)
-
-    ##rotate into y-z plane to calculate angles
-    RR = np.zeros((3,3))
-    RR[0,:] = [np.cos(azi), np.sin(azi), 0]
-    RR[1,:] = [-np.sin(azi), np.cos(azi), 0]
-    RR[2,:] = [0, 0, 1]
-    VR = np.dot(S1P,RR)
-
-    RR2 = np.zeros((3,3))
-    RR2[0,:] = [np.cos(inc), 0, -np.sin(inc)]
-    RR2[1,:] = [0, 1, 0]
-    RR2[2,:] = [np.sin(inc), 0, np.cos(inc)]
-    VR2 = np.dot(VR,RR2)
-
-    ph = np.arctan2(VR2[1],VR2[2])*180/np.pi
-
-    #transform angle between -90 and 90
-    if (ph < -90):
-        ph = ph + 180
-    elif (ph > 90):
-        ph = ph -180
-    return ph
+    gamma = np.array([[Xr[0], 0, 0, 0, Xr[2], Xr[1]],
+                      [0, Xr[1], 0, Xr[2], 0, Xr[0]],
+                      [0, 0, Xr[2], Xr[1], Xr[0], 0]])
+    T = np.dot(np.dot(gamma, voigtMat), gamma.transpose())
+    S1 = eigh(T)[1][:, 1]
+    # Calculate projection onto propagation plane
+    S1P = np.cross(Xr, np.cross(Xr, S1))
+    # Rotate into YZ plane to calculate angles
+    rot1 = np.array([[np.cos(azi), np.sin(azi), 0],
+                     [-np.sin(azi), np.cos(azi), 0], [0, 0, 1]])
+    rot2 = np.array([[np.cos(inc), 0, -np.sin(inc)],
+                     [0, 1, 0], [np.sin(inc), 0, np.cos(inc)]])
+    VR = np.dot(np.dot(S1P, rot1), rot2)
+    return np.arctan2(VR[1], VR[2])
 
 
 # Decomposition into transverse isotropy tensor
@@ -275,7 +245,7 @@ def decsym(Sav):
     perc1 = (CE1[4, 4] - CE1[3, 3]) / 2
     perc2 = CE1[4, 3]
     EPSPERC = np.sqrt(perc1 ** 2 + perc2 ** 2)
-    AZIMUTH = cal_azimuth(CE1)
+    AZIMUTH = calcAzimuth(CE1)
     EL1 = mat2tens(CE1)
     XEC = mat2vec(CE1)
     XN = norm(XEC, ord=2)
@@ -918,6 +888,7 @@ def main(inputArgs):
         phi_a = checkpointVar['phi_a']
         radani = checkpointVar['radani']
         percani = checkpointVar['percani']
+        azi_direct = checkpointVar['azi_direct']
         indArr = checkpointVar['indArr']
         nodesComplete = checkpointVar['nodesComplete']
     else:
