@@ -22,28 +22,31 @@ from DRexParam import (checkpoint, chi, gridCoords, gridMax, gridMin,
 
 ###############################################################################
 #
-# symFromUpper  : Generates a symmetric array from the upper triangle part of
-#                 another array
-# mat2tens      : Yields the 4th-order tensor equivalent of a 6x6 matrix
-# tens2mat      : Yields the 6x6 matrix equivalent of a 4th-order tensor
-# mat2vec       : Yields the 21-component vector equivalent of a 6x6 matrix
-# rotateTens    : Rotates a 4th-order tensor
-# trIsoProj     : Transverse isotropy projector
-# scca          : Forms symmetric cartesian system
+# symFromUpper    : Generates a symmetric array from the upper triangle part of
+#                   another array
+# formElasticTens : Yields the 4th-order elastic tensor equivalent to the 6x6
+#                   Voigt matrix
+# formVoigtMat    : Yields the 6x6 Voigt matrix equivalent to the 4th-order
+#                   elastic tensor
+# formVoigtVec    : Yields the 21-component Voigt vector equivalent to the 6x6
+#                   Voigt matrix
+# rotateTens      : Rotates a 4th-order tensor
+# trIsoProj       : Transverse isotropy projector
+# scca            : Forms symmetric cartesian coordinate system
 # calcAzimuth   : Calculates the azimuthal fast direction in a horizontal plane
-# decsym        : Decomposition into transverse isotropy tensor
-# interpVel     : Interpolates the velocity vector at a given point
-# interpVelGrad : Interpolates the velocity gradient tensor at a given point
-# fseDecomp     : Rotates a matrix line based on finite strain ellipsoid
-# deriv         : Calculation of the rotation vector and slip rate
-# strain        : Calculation of strain along pathlines
-# voigt         : Calculates elastic tensor cav_{ijkl} for olivine
-# pipar         : Calculates GOL parameter at grid point
-# isacalc       : Calculates ISA Orientation at grid point
-# pathline      : Determines a pathline given a position and a velocity field
-# isInside      : Checks if a point lies within the numerical domain
-# DRex          : Main function
-# main          : Init function
+# decsym          : Decomposition into transverse isotropy symmetry
+# interpVel       : Interpolates the velocity vector at a given point
+# interpVelGrad   : Interpolates the velocity gradient tensor at a given point
+# fseDecomp       : Rotates a matrix line based on finite strain ellipsoid
+# deriv           : Calculation of the rotation vector and slip rate
+# strain          : Calculation of strain along pathlines
+# voigt           : Calculates elastic tensor cav_{ijkl} for olivine
+# pipar           : Calculates GOL parameter at grid point
+# isacalc         : Calculates ISA Orientation at grid point
+# pathline        : Determines a pathline given a position and a velocity field
+# isInside        : Checks if a point lies within the numerical domain
+# DRex            : Main function
+# main            : Init function
 #
 ###############################################################################
 
@@ -53,72 +56,54 @@ def symFromUpper(arr):
     return np.triu(arr) + np.transpose(np.triu(arr)) - np.diag(np.diag(arr))
 
 
-# Yields the 4th-order tensor equivalent of a 6x6 matrix
-def mat2tens(mat):
-    tens = np.zeros((3, 3, 3, 3))
-    for ii in range(3):
-        for jj in range(3):
-            deltaIJ = 1 if ii == jj else 0
-            p = deltaIJ * (ii + 1) + (1 - deltaIJ) * (7 - ii - jj) - 1
-            for kk in range(3):
-                for ll in range(3):
-                    deltaKL = 1 if kk == ll else 0
-                    q = deltaKL * (kk + 1) + (1 - deltaKL) * (7 - kk - ll) - 1
-                    tens[ii, jj, kk, ll] = mat[p, q]
+# Yields the 4th-order elastic tensor equivalent to the 6x6 Voigt matrix
+def formElasticTens(mat):
+    # Equation 2.1 Browaeys and Chevrot (2004)
+    tens = np.empty((3, 3, 3, 3))
+    for p in range(3):
+        for q in range(3):
+            deltaPQ = 1 if p == q else 0
+            i = (p + 1) * deltaPQ + (1 - deltaPQ) * (7 - p - q) - 1
+            for r in range(3):
+                for s in range(3):
+                    deltaRS = 1 if r == s else 0
+                    j = (r + 1) * deltaRS + (1 - deltaRS) * (7 - r - s) - 1
+                    tens[p, q, r, s] = mat[i, j]
     return tens
 
 
-# Yields the 6x6 matrix equivalent of a 4th-order tensor
-def tens2mat(tens):
+# Yields the 6x6 Voigt matrix equivalent to the 4th-order elastic tensor
+def formVoigtMat(tens):
+    # Equation 2.1 Browaeys and Chevrot (2004)
+    # Components c_{ijkl} which map to C_{IJ} and C_{JI} (Table 1) are averaged
     mat = np.zeros((6, 6))
-    for ii in range(3):
-        mat[ii, ii] = tens[ii, ii, ii, ii]
-        mat[ii, 3] = (tens[ii, ii, 1, 2] + tens[2, 1, ii, ii] +
-                      tens[ii, ii, 2, 1] + tens[1, 2, ii, ii]) / 4
-        mat[ii, 4] = (tens[ii, ii, 0, 2] + tens[2, 0, ii, ii] +
-                      tens[ii, ii, 2, 0] + tens[0, 2, ii, ii]) / 4
-        mat[ii, 5] = (tens[ii, ii, 0, 1] + tens[1, 0, ii, ii] +
-                      tens[ii, ii, 1, 0] + tens[0, 1, ii, ii]) / 4
-    for ii in range(2):
-        mat[0, ii + 1] = (tens[0, 0, ii + 1, ii + 1] +
-                          tens[ii + 1, ii + 1, 0, 0]) / 2
-    mat[1, 2] = (tens[1, 1, 2, 2] + tens[2, 2, 1, 1]) / 2
-    mat[3, 3] = (tens[1, 2, 1, 2] + tens[1, 2, 2, 1] +
-                 tens[2, 1, 1, 2] + tens[2, 1, 2, 1]) / 4
-    mat[4, 4] = (tens[0, 2, 0, 2] + tens[0, 2, 2, 0] +
-                 tens[2, 0, 0, 2] + tens[2, 0, 2, 0]) / 4
-    mat[5, 5] = (tens[1, 0, 1, 0] + tens[1, 0, 0, 1] +
-                 tens[0, 1, 1, 0] + tens[0, 1, 0, 1]) / 4
-    mat[3, 4] = (tens[1, 2, 0, 2] + tens[1, 2, 2, 0] +
-                 tens[2, 1, 0, 2] + tens[2, 1, 2, 0] +
-                 tens[0, 2, 1, 2] + tens[0, 2, 2, 1] +
-                 tens[2, 0, 1, 2] + tens[2, 0, 2, 1]) / 8
-    mat[3, 5] = (tens[1, 2, 0, 1] + tens[1, 2, 1, 0] +
-                 tens[2, 1, 0, 1] + tens[2, 1, 1, 0] +
-                 tens[0, 1, 1, 2] + tens[0, 1, 2, 1] +
-                 tens[1, 0, 1, 2] + tens[1, 0, 2, 1]) / 8
-    mat[4, 5] = (tens[0, 2, 0, 1] + tens[0, 2, 1, 0] +
-                 tens[2, 0, 0, 1] + tens[2, 0, 1, 0] +
-                 tens[0, 1, 0, 2] + tens[0, 1, 2, 0] +
-                 tens[1, 0, 0, 2] + tens[1, 0, 2, 0]) / 8
-    return symFromUpper(mat)
+    matInd = np.zeros((6, 6))
+    for p in range(3):
+        for q in range(3):
+            deltaPQ = 1 if p == q else 0
+            i = (p + 1) * deltaPQ + (1 - deltaPQ) * (7 - p - q) - 1
+            for r in range(3):
+                for s in range(3):
+                    deltaRS = 1 if r == s else 0
+                    j = (r + 1) * deltaRS + (1 - deltaRS) * (7 - r - s) - 1
+                    mat[i, j] += tens[p, q, r, s]
+                    matInd[i, j] += 1
+    mat /= matInd
+    return (mat + mat.transpose()) / 2
 
 
-# Yields the 21-component vector equivalent of a 6x6 matrix
-def mat2vec(mat):
+# Yields the 21-component Voigt vector equivalent to the 6x6 Voigt matrix
+def formVoigtVec(mat):
+    # Equation 2.2 Browaeys and Chevrot (2004)
     vec = np.zeros(21)
-    for ii in range(3):
-        vec[ii] = mat[ii, ii]
-        vec[ii + 6] = 2 * mat[ii + 3, ii + 3]
-        vec[ii + 9] = 2 * mat[ii, ii + 3]
-        vec[ii + 12] = 2 * mat[(ii + 2) % 3, ii + 3]
-        vec[ii + 15] = 2 * mat[(ii + 1) % 3, ii + 3]
-    vec[3] = np.sqrt(2) * mat[1, 2]
-    vec[4] = np.sqrt(2) * mat[0, 2]
-    vec[5] = np.sqrt(2) * mat[0, 1]
-    vec[18] = 2 * np.sqrt(2) * mat[4, 5]
-    vec[19] = 2 * np.sqrt(2) * mat[3, 5]
-    vec[20] = 2 * np.sqrt(2) * mat[3, 4]
+    for i in range(3):
+        vec[i] = mat[i, i]
+        vec[i + 3] = np.sqrt(2) * mat[(i + 1) % 3, (i + 2) % 3]
+        vec[i + 6] = 2 * mat[i + 3, i + 3]
+        vec[i + 9] = 2 * mat[i, i + 3]
+        vec[i + 12] = 2 * mat[(i + 2) % 3, i + 3]
+        vec[i + 15] = 2 * mat[(i + 1) % 3, i + 3]
+        vec[i + 18] = 2 * np.sqrt(2) * mat[(i + 1) % 3 + 3, (i + 2) % 3 + 3]
     return vec
 
 
@@ -141,6 +126,9 @@ def rotateTens(tens, rot):
 
 # Transverse isotropy projector
 def trIsoProj(x):
+    # Appendix A4 Browaeys and Chevrot (2004)
+    # An elastic medium with hexagonal symmetry is equivalent to a transversely
+    # isotropic medium
     y = np.zeros(21)
     y[0] = y[1] = 3 / 8 * (x[0] + x[1]) + x[5] / 4 / np.sqrt(2) + x[8] / 4
     y[2] = x[2]
@@ -152,69 +140,68 @@ def trIsoProj(x):
     return norm(x - y, ord=2)
 
 
-# Forms symmetric Cartesian system
-def scca(CE1, EL1, XN, XEC):
-    DI = np.zeros((3, 3))
-    VO = np.zeros((3, 3))
+# Forms symmetric cartesian coordinate system
+def scca(voigtMat):
+    # Equation 3.4 Browaeys and Chevrot (2004)
+    dilatStifTens = np.empty((3, 3))
     for i in range(3):
-        DI[i, i] = CE1[i, :3].sum()
-    DI[0, 1] = CE1[5, :3].sum()
-    DI[0, 2] = CE1[4, :3].sum()
-    DI[1, 2] = CE1[3, :3].sum()
-    DI = symFromUpper(DI)
-    VO[0, 0] = CE1[0, 0] + CE1[5, 5] + CE1[4, 4]
-    VO[1, 1] = CE1[5, 5] + CE1[1, 1] + CE1[3, 3]
-    VO[2, 2] = CE1[4, 4] + CE1[3, 3] + CE1[2, 2]
-    VO[0, 1] = CE1[0, 5] + CE1[1, 5] + CE1[3, 4]
-    VO[0, 2] = CE1[0, 4] + CE1[2, 4] + CE1[3, 5]
-    VO[1, 2] = CE1[1, 3] + CE1[2, 3] + CE1[4, 5]
-    VO = symFromUpper(VO)
-    K = np.diag(DI).sum() / 9
-    G = (np.diag(VO).sum() - 3 * K) / 10
-    # Calculate Anisotropy
-    XH = np.hstack((np.repeat(K + 4 * G / 3, 3),
-                    np.repeat(np.sqrt(2) * (K - 2 * G / 3), 3),
-                    np.repeat(2 * G, 3), np.repeat(0, 12)))
-    ANIS = norm(XEC - XH, ord=2)
-    # Swap first and third column (to sort eigenvectors in descending
-    # eigenvalues order)
-    eigvecDI = eigh(DI)[1][:, ::-1]
-    eigvecVO = eigh(VO)[1][:, ::-1]
+        dilatStifTens[i, i] = voigtMat[:3, i].sum()
+    dilatStifTens[0, 1] = dilatStifTens[1, 0] = voigtMat[:3, 5].sum()
+    dilatStifTens[0, 2] = dilatStifTens[2, 0] = voigtMat[:3, 4].sum()
+    dilatStifTens[1, 2] = dilatStifTens[2, 1] = voigtMat[:3, 3].sum()
+    # Equation 3.5 Browaeys and Chevrot (2004)
+    voigtStifTens = np.empty((3, 3))
+    voigtStifTens[0, 0] = voigtMat[0, 0] + voigtMat[4, 4] + voigtMat[5, 5]
+    voigtStifTens[1, 1] = voigtMat[1, 1] + voigtMat[3, 3] + voigtMat[5, 5]
+    voigtStifTens[2, 2] = voigtMat[2, 2] + voigtMat[3, 3] + voigtMat[4, 4]
+    voigtStifTens[0, 1] = voigtMat[0, 5] + voigtMat[1, 5] + voigtMat[3, 4]
+    voigtStifTens[0, 2] = voigtMat[0, 4] + voigtMat[2, 4] + voigtMat[3, 5]
+    voigtStifTens[1, 2] = voigtMat[1, 3] + voigtMat[2, 3] + voigtMat[4, 5]
+    voigtStifTens = symFromUpper(voigtStifTens)
+    # Appendix A5 Browaeys and Chevrot (2004)
+    K = np.trace(dilatStifTens) / 9  # Incompressibility modulus
+    G = (np.trace(voigtStifTens) - 3 * K) / 10  # Shear modulus
+    isoVec = np.hstack((np.repeat(K + 4 * G / 3, 3),
+                        np.repeat(np.sqrt(2) * (K - 2 * G / 3), 3),
+                        np.repeat(2 * G, 3), np.repeat(0, 12)))
+    voigtVec = formVoigtVec(voigtMat)
+    anisotropy = norm(voigtVec - isoVec)
+    # Section 3.2 Browaeys and Chevrot (2004)
+    eigVecDST = eigh(dilatStifTens)[1][:, ::-1]
+    eigVecVST = eigh(voigtStifTens)[1][:, ::-1]
     # Search for SCCA directions
     for i in range(3):
-        NDVC = 0
+        ndvc = 0
         ADVC = 10
         for j in range(3):
-            SDV = np.clip(np.dot(np.ascontiguousarray(eigvecDI[:, i]),
-                                 np.ascontiguousarray(eigvecVO[:, j])), -1, 1)
+            SDV = np.clip(np.dot(eigVecDST[:, i], eigVecVST[:, j]), -1, 1)
             ADV = np.arccos(np.absolute(SDV))
             if ADV < ADVC:
-                NDVC = (j + 1) * np.sign(SDV) if SDV != 0 else j + 1
+                ndvc = int((j + 1) * np.sign(SDV)) if SDV != 0 else j + 1
                 ADVC = ADV
-        eigvecDI[:, i] = (eigvecDI[:, i] + NDVC
-                          * eigvecVO[:, int(abs(NDVC) - 1)]) / 2
-        eigvecDI[:, i] /= norm(eigvecDI[:, i], ord=2)
+        eigVecDST[:, i] = (eigVecDST[:, i] + ndvc
+                           * eigVecVST[:, abs(ndvc) - 1]) / 2
+        eigVecDST[:, i] /= norm(eigVecDST[:, i], ord=2)
     # Higher symmetry axis
-    SCC = np.transpose(eigvecDI)
+    elasTens = formElasticTens(voigtMat)
+    normVec = norm(voigtVec)
     for i in range(3):
-        IHS = [(i + j) % 3 for j in range(3)]
-        for j in range(3):
-            eigvecDI[j, :] = SCC[IHS[j], :]
-        DEV = trIsoProj(mat2vec(tens2mat(rotateTens(EL1, eigvecDI))))
-        if DEV < XN:
-            XN = DEV
-            NDVC = i + 1
-    eigvecDI = SCC
-    IHS = [int(abs(NDVC) - 1 + i) % 3 for i in range(3)]
-    for i in range(3):
-        SCC[i, :] = eigvecDI[IHS[i], :]
-    # Rotate in SCCA
-    XEC = mat2vec(tens2mat(rotateTens(EL1, SCC)))
-    return ANIS, SCC, XEC
+        dev = trIsoProj(formVoigtVec(formVoigtMat(rotateTens(
+            elasTens,
+            eigVecDST[:, [(i + j) % 3 for j in range(3)]].transpose()))))
+        if dev < normVec:
+            normVec = dev
+            ndvc = i + 1
+    # Rotate in sccs
+    scc = eigVecDST[:, [(abs(ndvc) - 1 + i) % 3 for i in range(3)]].transpose()
+    voigtVec = formVoigtVec(formVoigtMat(rotateTens(elasTens, scc)))
+    return anisotropy, scc, voigtVec
 
 
 # Calculates the azimuthal fast direction in a horizontal plane
 def calcAzimuth(voigtMat, azi=0, inc=-np.pi / 2):
+    # Code is adapted from the MATLAB Seismic Anisotropy Toolkit
+    # https://github.com/andreww/MSAT/blob/master/msat/MS_phasevels.m
     # Create the cartesian vector
     Xr = np.array([np.cos(azi) * np.cos(inc),
                    -np.sin(azi) * np.cos(inc), np.sin(inc)])
@@ -233,29 +220,24 @@ def calcAzimuth(voigtMat, azi=0, inc=-np.pi / 2):
     rot2 = np.array([[np.cos(inc), 0, -np.sin(inc)],
                      [0, 1, 0], [np.sin(inc), 0, np.cos(inc)]])
     VR = np.dot(np.dot(S1P, rot1), rot2)
-    return np.arctan2(VR[1], VR[2])
+    return -np.arctan2(VR[1], VR[2])
 
 
-# Decomposition into transverse isotropy tensor
+# Decomposition into transverse isotropy symmetry
 def decsym(Sav):
-    CE1 = symFromUpper(Sav)
-    toprad = (CE1[0, 0] + CE1[1, 1]) / 8 - CE1[0, 1] / 4 + CE1[5, 5] / 2
-    botrad = (CE1[3, 3] + CE1[4, 4]) / 2
-    EPSRAD = toprad / botrad
-    perc1 = (CE1[4, 4] - CE1[3, 3]) / 2
-    perc2 = CE1[4, 3]
-    EPSPERC = np.sqrt(perc1 ** 2 + perc2 ** 2)
-    AZIMUTH = calcAzimuth(CE1)
-    EL1 = mat2tens(CE1)
-    XEC = mat2vec(CE1)
-    XN = norm(XEC, ord=2)
-    ANIS, SCC, XEC = scca(CE1, EL1, XN, XEC)
-    DC5 = trIsoProj(XEC)
-    PERC = (ANIS - DC5) / XN * 100
-    TIAXIS = SCC[2, :]
-    TIAXIS /= norm(TIAXIS, ord=2)
-    INCLTI = np.arcsin(TIAXIS[2])
-    return PERC, INCLTI, EPSRAD, EPSPERC, AZIMUTH
+    voigtMat = symFromUpper(Sav)
+    anisotropy, scc, voigtVec = scca(voigtMat)
+    perc = (anisotropy - trIsoProj(voigtVec)) / norm(voigtVec) * 100
+    tiAxis = scc[2, :]
+    tiAxis /= norm(tiAxis)
+    inclti = np.arcsin(tiAxis[2])
+
+    radani = ((voigtMat[0, 0] + voigtMat[1, 1]) / 8 - voigtMat[0, 1] / 4
+              + voigtMat[5, 5] / 2) / ((voigtMat[3, 3] + voigtMat[4, 4]) / 2)
+    percani = np.sqrt(((voigtMat[4, 4] - voigtMat[3, 3]) / 2) ** 2
+                      + voigtMat[4, 3] ** 2)
+    azimuth = calcAzimuth(voigtMat)
+    return perc, inclti, radani, percani, azimuth
 
 
 # Interpolates the velocity vector at a given point
@@ -301,11 +283,11 @@ def interpVelGrad(pointCoords, dictGlobals=None, ivpIter=False):
                 (iLyx(pointCoords), iLyy(pointCoords), -iLyz(pointCoords))),
              np.hstack(
                 (-iLzx(pointCoords), -iLzy(pointCoords), iLzz(pointCoords)))])
-    assert abs(np.sum(np.diag(L))) < 1e-15
+    assert np.abs(np.trace(L)) < 1e-15
     if ivpIter:
         return L
     e = (L + np.transpose(L)) / 2  # strain rate tensor
-    epsnot = eigvalsh(e).__abs__().max()  # reference strain rate
+    epsnot = np.abs(eigvalsh(e)).max()  # reference strain rate
     return L, epsnot
 
 
@@ -758,16 +740,21 @@ def DRex(locInd, dictGlobals=None):
     Fij, acs, acs_ens, odf, odf_ens = strain(pathTime, pathDense, dictGlobals)
     # Left-stretch tensor for FSE calculation
     LSij = np.dot(Fij, np.transpose(Fij))
-    eigval, eigvects = eigh(LSij)
+    eigval, eigvect = eigh(LSij)
     # pick up the orientation of the long axis of the FSE
-    phi_fse = np.arctan2(eigvects[-1, -1], eigvects[0, -1])
+    if len(locInd) == 2:
+        phi_fse = np.arctan2(eigvect[-1, -1], eigvect[0, -1])
+    else:
+        phi_fse = (np.arctan2(eigvect[-1, -1], norm(eigvect[:-1, -1]))
+                   * np.sign(eigvect[:-1, -1].prod()))
     # natural strain = ln(a / c) where a is the long axis = max(eigval) ** 0.5
     ln_fse = np.log(eigval[-1] / eigval[0]) / 2
     # Cijkl tensor (using Voigt average)
     Sav = voigt(acs, acs_ens, odf, odf_ens)
     # percentage anisotropy and orientation of hexagonal symmetry axis
-    perc_a, phi_a, radani, percani, azi_direct = decsym(Sav)
-    return locInd[::-1], radani, percani, GOL, ln_fse, phi_fse, phi_a, perc_a, azi_direct
+    perc_a, phi_a, radani, percani, azimuth = decsym(Sav)
+    return (locInd[::-1], radani, percani, GOL, ln_fse, phi_fse, phi_a, perc_a,
+            azimuth)
 
 
 def main(inputArgs):
@@ -888,7 +875,7 @@ def main(inputArgs):
         phi_a = checkpointVar['phi_a']
         radani = checkpointVar['radani']
         percani = checkpointVar['percani']
-        azi_direct = checkpointVar['azi_direct']
+        azimuth = checkpointVar['azimuth']
         indArr = checkpointVar['indArr']
         nodesComplete = checkpointVar['nodesComplete']
     else:
@@ -900,16 +887,14 @@ def main(inputArgs):
         phi_a = np.zeros(arrDim)
         radani = np.zeros(arrDim)
         percani = np.zeros(arrDim)
-        azi_direct = np.zeros(arrDim)
+        azimuth = np.zeros(arrDim)
         indArr = np.zeros(arrDim[::-1])
         nodesComplete = 0
 
     if inputArgs.charm:
         # Charm with Checkpoint
         charm.thisProxy.updateGlobals(
-            {'chi': chi, 'gridMin': gridMin, 'gridMax': gridMax, 'lamb': lamb,
-             'mob': mob, 'size': size, 'stressexp': stressexp, 'S0': S0,
-             'S0_ens': S0_ens, 'tau': tau, 'tau_ens': tau_ens, 'Xol': Xol,
+            {'chi': chi, 'gridMin': gridMin, 'gridMax': gridMax, 'size': size,
              'gridNodes': gridNodes, 'gridCoords': gridCoords, 'alt': alt,
              'ijkl': ijkl, 'l1': l1, 'l2': l2, 'acs0': acs0},
             awaitable=True).get()
@@ -928,7 +913,7 @@ def main(inputArgs):
                     phi_fse[r0] = r5
                     phi_a[r0] = r6
                     perc_a[r0] = r7
-                    azi_direct[r0] = r8
+                    azimuth[r0] = r8
                     indArr[r0[::-1]] = 1
                     nodesComplete += 1
                 if not nodesComplete % checkpoint:
@@ -936,7 +921,7 @@ def main(inputArgs):
                              f'{nodesComplete}',
                              radani=radani, percani=percani, GOL=GOL,
                              ln_fse=ln_fse, phi_fse=phi_fse, phi_a=phi_a,
-                             perc_a=perc_a, azi_direct=azi_direct,indArr=indArr,
+                             perc_a=perc_a, azimuth=azimuth, indArr=indArr,
                              nodesComplete=nodesComplete)
     elif inputArgs.ray:
         # Ray with Checkpoint
@@ -968,10 +953,10 @@ def main(inputArgs):
             nodes2do = np.asarray(indArr == 0).nonzero()
             futures = [DRex.remote(i, dictGlobalsID)
                        for i in zip(*[nodes[:int(6e4)] for nodes in nodes2do])]
-            while len(futures) > 0:
-                readyId, remainingIds = ray.wait(
+            while len(futures):
+                readyIds, futures = ray.wait(
                     futures, num_returns=min([checkpoint, len(futures)]))
-                for r0, r1, r2, r3, r4, r5, r6, r7, r8 in ray.get(readyId):
+                for r0, r1, r2, r3, r4, r5, r6, r7, r8 in ray.get(readyIds):
                     radani[r0] = r1
                     percani[r0] = r2
                     GOL[r0] = r3
@@ -979,16 +964,16 @@ def main(inputArgs):
                     phi_fse[r0] = r5
                     phi_a[r0] = r6
                     perc_a[r0] = r7
-                    azi_direct[r0] = r8
+                    azimuth[r0] = r8
                     indArr[r0[::-1]] = 1
                     nodesComplete += 1
+                del readyIds
                 np.savez(f'PyDRex{dim}D_{name}_NumpyCheckpoint_'
                          f'{nodesComplete}',
                          radani=radani, percani=percani, GOL=GOL,
                          ln_fse=ln_fse, phi_fse=phi_fse, phi_a=phi_a,
-                         perc_a=perc_a, azi_direct=azi_direct, indArr=indArr,
+                         perc_a=perc_a, azimuth=azimuth, indArr=indArr,
                          nodesComplete=nodesComplete)
-                futures = remainingIds
 
         ray.shutdown()
     else:
@@ -1004,7 +989,7 @@ def main(inputArgs):
                     phi_fse[r0] = r5
                     phi_a[r0] = r6
                     perc_a[r0] = r7
-                    azi_direct[r0] = r8
+                    azimuth[r0] = r8
                     indArr[r0[::-1]] = 1
                     nodesComplete += 1
                     if not nodesComplete % checkpoint:
@@ -1012,12 +997,12 @@ def main(inputArgs):
                                  f'{nodesComplete}',
                                  radani=radani, percani=percani, GOL=GOL,
                                  ln_fse=ln_fse, phi_fse=phi_fse, phi_a=phi_a,
-                                 perc_a=perc_a, azi_direct=azi_direct,
-                                 indArr=indArr, nodesComplete=nodesComplete)
+                                 perc_a=perc_a, azimuth=azimuth, indArr=indArr,
+                                 nodesComplete=nodesComplete)
 
     np.savez(f'PyDRex{dim}D_{name}_Complete', radani=radani, percani=percani,
              GOL=GOL, ln_fse=ln_fse, phi_fse=phi_fse, phi_a=phi_a,
-             perc_a=perc_a, azi_direct=azi_direct)
+             perc_a=perc_a, azimuth=azimuth)
 
     end = perf_counter()
     hours = int((end - begin) / 3600)
