@@ -4,7 +4,6 @@
 # Python 3 Version of D-Rex
 ###############################################################################
 
-# Libraries and functions imported
 import argparse
 from numba import jit
 import numpy as np
@@ -33,7 +32,8 @@ from DRexParam import (checkpoint, chi, gridCoords, gridMax, gridMin,
 # rotateTens      : Rotates a 4th-order tensor
 # trIsoProj       : Transverse isotropy projector
 # scca            : Forms symmetric cartesian coordinate system
-# calcAzimuth   : Calculates the azimuthal fast direction in a horizontal plane
+# calcAzimuth     : Calculates the azimuthal fast direction in a horizontal
+#                   plane
 # decsym          : Decomposition into transverse isotropy symmetry
 # interpVel       : Interpolates the velocity vector at a given point
 # interpVelGrad   : Interpolates the velocity gradient tensor at a given point
@@ -172,13 +172,13 @@ def scca(voigtMat):
     # Search for SCCA directions
     for i in range(3):
         ndvc = 0
-        ADVC = 10
+        advc = 10
         for j in range(3):
-            SDV = np.clip(np.dot(eigVecDST[:, i], eigVecVST[:, j]), -1, 1)
-            ADV = np.arccos(np.absolute(SDV))
-            if ADV < ADVC:
-                ndvc = int((j + 1) * np.sign(SDV)) if SDV != 0 else j + 1
-                ADVC = ADV
+            sdv = np.clip(np.dot(eigVecDST[:, i], eigVecVST[:, j]), -1, 1)
+            adv = np.arccos(np.absolute(sdv))
+            if adv < advc:
+                ndvc = int((j + 1) * np.sign(sdv)) if sdv != 0 else j + 1
+                advc = adv
         eigVecDST[:, i] = (eigVecDST[:, i] + ndvc
                            * eigVecVST[:, abs(ndvc) - 1]) / 2
         eigVecDST[:, i] /= norm(eigVecDST[:, i], ord=2)
@@ -226,12 +226,13 @@ def calcAzimuth(voigtMat, azi=0, inc=-np.pi / 2):
 # Decomposition into transverse isotropy symmetry
 def decsym(Sav):
     voigtMat = symFromUpper(Sav)
+    # Original approach
     anisotropy, scc, voigtVec = scca(voigtMat)
     perc = (anisotropy - trIsoProj(voigtVec)) / norm(voigtVec) * 100
     tiAxis = scc[2, :]
     tiAxis /= norm(tiAxis)
     inclti = np.arcsin(tiAxis[2])
-
+    # New approach
     radani = ((voigtMat[0, 0] + voigtMat[1, 1]) / 8 - voigtMat[0, 1] / 4
               + voigtMat[5, 5] / 2) / ((voigtMat[3, 3] + voigtMat[4, 4]) / 2)
     percani = np.sqrt(((voigtMat[4, 4] - voigtMat[3, 3]) / 2) ** 2
@@ -241,14 +242,10 @@ def decsym(Sav):
 
 
 # Interpolates the velocity vector at a given point
-def interpVel(pointCoords, dictGlobals=None):
-    ''' Uncomment this block to use Ray
-    if dictGlobals:
-        iVelX = dictGlobals['iVelX']
-        iVelZ = dictGlobals['iVelZ']
-        if len(pointCoords) == 3:
-            iVelY = dictGlobals['iVelY']
-    '''
+def interpVel(pointCoords, dictGlobals):
+    iVelX, iVelZ = dictGlobals['iVelX'], dictGlobals['iVelZ']
+    if len(pointCoords) == 3:
+        iVelY = dictGlobals['iVelY']
     pointVel = np.array(
         [iVelX(*pointCoords),
          (iVelY(*pointCoords) if len(pointCoords) == 3 else np.nan),
@@ -257,32 +254,22 @@ def interpVel(pointCoords, dictGlobals=None):
 
 
 # Interpolates the velocity gradient tensor at a given point
-def interpVelGrad(pointCoords, dictGlobals=None, ivpIter=False):
-    ''' Uncomment this block to use Ray
-    if dictGlobals:
-        iLxx = dictGlobals['iLxx']
-        iLxz = dictGlobals['iLxz']
-        iLzx = dictGlobals['iLzx']
-        iLzz = dictGlobals['iLzz']
-        if len(pointCoords) == 3:
-            iLxy = dictGlobals['iLxy']
-            iLyx = dictGlobals['iLyx']
-            iLyy = dictGlobals['iLyy']
-            iLyz = dictGlobals['iLyz']
-            iLzy = dictGlobals['iLzy']
-    '''
+def interpVelGrad(pointCoords, dictGlobals, ivpIter=False):
+    iLxx, iLxz, iLzx, iLzz = (dictGlobals['iLxx'], dictGlobals['iLxz'],
+                              dictGlobals['iLzx'], dictGlobals['iLzz'])
+    if len(pointCoords) == 3:
+        iLxy, iLyx, iLyy, iLyz, iLzy = (
+            dictGlobals['iLxy'], dictGlobals['iLyx'], dictGlobals['iLyy'],
+            dictGlobals['iLyz'], dictGlobals['iLzy'])
     if len(pointCoords) == 2:
         L = np.array([[iLxx(*pointCoords), 0, -iLxz(*pointCoords)],
                       [0, 0, 0],
                       [-iLzx(*pointCoords), 0, iLzz(*pointCoords)]])
     else:
         L = np.array(
-            [np.hstack(
-                (iLxx(pointCoords), iLxy(pointCoords), -iLxz(pointCoords))),
-             np.hstack(
-                (iLyx(pointCoords), iLyy(pointCoords), -iLyz(pointCoords))),
-             np.hstack(
-                (-iLzx(pointCoords), -iLzy(pointCoords), iLzz(pointCoords)))])
+            [[iLxx(*pointCoords), iLxy(*pointCoords), -iLxz(*pointCoords)],
+             [iLyx(*pointCoords), iLyy(*pointCoords), -iLyz(*pointCoords)],
+             [-iLzx(*pointCoords), -iLzy(*pointCoords), iLzz(*pointCoords)]])
     assert np.abs(np.trace(L)) < 1e-15
     if ivpIter:
         return L
@@ -293,7 +280,7 @@ def interpVelGrad(pointCoords, dictGlobals=None, ivpIter=False):
 
 # Rotation of a matrix line based on finite strain ellipsoid
 @jit(nopython=True)
-def fseDecomp(fse, ex):
+def fseDecomp(fse, ex, alt):
     # Left-strech tensor for fse calculation
     LSij = np.dot(fse, np.transpose(fse))
     eigval, eigvect = eigh(LSij)
@@ -330,6 +317,10 @@ def fseDecomp(fse, ex):
 # Calculation of the rotation vector and slip rate
 @jit(nopython=True, fastmath=True)
 def deriv(lx, ex, acsi, acsi_ens, fse, odfi, odfi_ens, alpha):
+    alt = np.zeros((3, 3, 3))  # \epsilon_{ijk}
+    for ii in range(3):
+        alt[ii % 3, (ii + 1) % 3, (ii + 2) % 3] = 1
+        alt[ii % 3, (ii + 2) % 3, (ii + 1) % 3] = -1
     g = np.zeros((3, 3))
     g_ens = np.zeros((3, 3))
     rt = np.zeros(size)
@@ -337,7 +328,7 @@ def deriv(lx, ex, acsi, acsi_ens, fse, odfi, odfi_ens, alpha):
     rt_ens = np.zeros(size)
     dotacs_ens = np.zeros((size, 3, 3))
     if alpha == 0:
-        rotIni = fseDecomp(fse, ex)
+        rotIni = fseDecomp(fse, ex, alt)
     else:
         rot = np.zeros(3)
         rot_ens = np.zeros(3)
@@ -440,16 +431,13 @@ def deriv(lx, ex, acsi, acsi_ens, fse, odfi, odfi_ens, alpha):
 
 
 # Calculation of strain along pathlines
-def strain(pathTime, pathDense, dictGlobals=None):
-    ''' Uncomment this block to use Ray
-    if dictGlobals:
-        acs0 = dictGlobals['acs0']
-        chi = dictGlobals['chi']
-        gridCoords = dictGlobals['gridCoords']
-        iDefMech = dictGlobals['iDefMech']
-        size = dictGlobals['size']
-    '''
+def strain(pathTime, pathDense, dictGlobals):
+    chi, gridCoords, iDefMech, size = (
+        dictGlobals['chi'], dictGlobals['gridCoords'], dictGlobals['iDefMech'],
+        dictGlobals['size'])
     fse = np.identity(3)
+    # Direction cosine matrix with uniformly distributed rotations.
+    acs0 = R.random(size, random_state=1).as_matrix()
     acs = acs0.copy()
     acs_ens = acs0.copy()
     odf = np.ones(size) / size
@@ -562,10 +550,10 @@ def strain(pathTime, pathDense, dictGlobals=None):
 # Calculates elastic tensor cav_{ijkl} for olivine
 @jit(nopython=True)
 def voigt(acs, acs_ens, odf, odf_ens):
-    C0 = np.zeros((3, 3, 3, 3))
-    C03 = np.zeros((3, 3, 3, 3))
-    Cav = np.zeros((3, 3, 3, 3))
-    Sav = np.zeros((6, 6))
+    C0, C03 = np.zeros((3, 3, 3, 3)), np.zeros((3, 3, 3, 3))
+    Cav, Sav = np.zeros((3, 3, 3, 3)), np.zeros((6, 6))
+    # Indices to form Cijkl from Sij
+    ijkl = np.array([[0, 5, 4], [5, 1, 3], [4, 3, 2]], dtype=np.int16)
     # Elastic tensors c0_{ijkl}
     for i in range(3):
         for j in range(3):
@@ -574,8 +562,7 @@ def voigt(acs, acs_ens, odf, odf_ens):
                     C0[i, j, k, ll] = S0[ijkl[i, j], ijkl[k, ll]]
                     C03[i, j, k, ll] = S0_ens[ijkl[i, j], ijkl[k, ll]]
     for nu in range(size):
-        Cav2 = np.zeros((3, 3, 3, 3))
-        Cav3 = np.zeros((3, 3, 3, 3))
+        Cav2, Cav3 = np.zeros((3, 3, 3, 3)), np.zeros((3, 3, 3, 3))
         for i in range(3):
             for j in range(3):
                 for k in range(3):
@@ -597,6 +584,9 @@ def voigt(acs, acs_ens, odf, odf_ens):
                         Cav[i, j, k, ll] += Cav2[i, j, k, ll] * odf[nu] * Xol
                         Cav[i, j, k, ll] += (Cav3[i, j, k, ll] * odf_ens[nu]
                                              * (1 - Xol))
+    # Indices to form Sij from Cijkl
+    l1 = np.array([0, 1, 2, 1, 2, 0], dtype=np.int16)
+    l2 = np.array([0, 1, 2, 2, 0, 1], dtype=np.int16)
     # Average stiffness matrix
     for i in range(6):
         for j in range(6):
@@ -605,7 +595,7 @@ def voigt(acs, acs_ens, odf, odf_ens):
 
 
 # Calculates GOL parameter at grid point
-def pipar(currPoint, dictGlobals=None):
+def pipar(currPoint, dictGlobals):
     # Calculates ISA Orientation at grid point
     def isacalc(L, veloc):
         nonlocal GOL
@@ -618,8 +608,7 @@ def pipar(currPoint, dictGlobals=None):
         else:
             ind = np.argsort(np.absolute(evals))[-1]
             if np.isreal(evals[ind]):
-                a = (ind + 1) % 3
-                b = (ind + 2) % 3
+                a, b = (ind + 1) % 3, (ind + 2) % 3
                 Id = np.identity(3)
                 Fa = (np.dot(L - evals[a] * Id, L - evals[b] * Id)
                       / (evals[ind] - evals[a]) / (evals[ind] - evals[b]))
@@ -663,14 +652,14 @@ def pipar(currPoint, dictGlobals=None):
 
 
 # Determines a pathline given a position and a velocity field
-def pathline(currPoint, dictGlobals=None):
-    def ivpFunc(time, pointCoords, dictGlobals=None):
+def pathline(currPoint, dictGlobals):
+    def ivpFunc(time, pointCoords, dictGlobals):
         if isInside(pointCoords, dictGlobals):
             return interpVel(pointCoords, dictGlobals)
         else:
             return np.zeros(pointCoords.shape)
 
-    def ivpJac(time, pointCoords, dictGlobals=None):
+    def ivpJac(time, pointCoords, dictGlobals):
         if isInside(pointCoords, dictGlobals):
             L = interpVelGrad(pointCoords, dictGlobals, True)
             if pointCoords.size == 2:
@@ -680,7 +669,7 @@ def pathline(currPoint, dictGlobals=None):
         else:
             return np.zeros((pointCoords.size, pointCoords.size))
 
-    def maxStrain(time, pointCoords, dictGlobals=None):
+    def maxStrain(time, pointCoords, dictGlobals):
         nonlocal eventTime, eventTimePrev, eventStrain, eventStrainPrev, \
             eventFlag
         if eventFlag:
@@ -703,19 +692,15 @@ def pathline(currPoint, dictGlobals=None):
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', category=UserWarning)
         sol = solve_ivp(ivpFunc, [0, -100e6 * 365.25 * 8.64e4], currPoint,
-                        method='RK45', first_step=1e11, max_step=np.inf,
+                        method='RK45', first_step=1e10, max_step=np.inf,
                         t_eval=None, events=[maxStrain], args=(dictGlobals,),
                         dense_output=True, jac=ivpJac, atol=1e-8, rtol=1e-5)
     return sol.t, sol.sol
 
 
 # Checks if a point lies within the numerical domain
-def isInside(point, dictGlobals=None):
-    ''' Uncomment this block to use Ray
-    if dictGlobals:
-        gridMax = dictGlobals['gridMax']
-        gridMin = dictGlobals['gridMin']
-    '''
+def isInside(point, dictGlobals):
+    gridMax, gridMin = dictGlobals['gridMax'], dictGlobals['gridMin']
     inside = True
     for coord, minBound, maxBound in zip(point, gridMin, gridMax):
         if coord < minBound or coord > maxBound:
@@ -724,11 +709,8 @@ def isInside(point, dictGlobals=None):
     return inside
 
 
-def DRex(locInd, dictGlobals=None):
-    ''' Uncomment this block to use Ray
-    if dictGlobals:
-        gridCoords = dictGlobals['gridCoords']
-    '''
+def DRex(locInd, dictGlobals):
+    gridCoords = dictGlobals['gridCoords']
     # Initial location of the grid point
     currCoords = np.array([(coord[ind] + coord[ind + 1]) / 2
                            for coord, ind in zip(gridCoords, locInd)])
@@ -760,11 +742,6 @@ def DRex(locInd, dictGlobals=None):
 def main(inputArgs):
     if isinstance(inputArgs, list):
         inputArgs = args
-    elif inputArgs.ray:
-        global alt, ijkl, l1, l2
-    else:
-        global acs0, alt, iDefMech, iVelX, iVelY, iVelZ, iLxx, iLyx, iLzx, \
-            iLxy, iLyy, iLzy, iLxz, iLyz, iLzz, ijkl, l1, l2
 
     inputExt = inputArgs.input.split('.')[-1]
     if inputExt == 'vtu':
@@ -802,8 +779,12 @@ def main(inputArgs):
                         for tup in range(vtkArray.GetNumberOfTuples())])
     del vtkReader, vtkData, vtkScalars, vtkArray
 
+    dictGlobals = {
+        'chi': chi, 'gridMin': gridMin, 'gridMax': gridMax, 'size': size,
+        'gridNodes': gridNodes, 'gridCoords': gridCoords}
+
     if dim == 2:
-        iDefMech = NearestNDInterpolator(coords[:, :-1], defMech)
+        interpObj = [['iVelX', 'iVelZ'], ['iLxx', 'iLzx', 'iLxz', 'iLzz']]
         if inputArgs.mpl:
             triIDs = []
             for i in range(vtkOut.GetNumberOfCells()):
@@ -812,197 +793,102 @@ def main(inputArgs):
                 triIDs.append([IDsList.GetId(j)
                                for j in range(IDsList.GetNumberOfIds())])
             tri = Triangulation(coords[:, 0], coords[:, 1], triangles=triIDs)
-            iVelX = CubicTriInterpolator(tri, vel[:, 0], kind=inputArgs.mpl)
-            iVelZ = CubicTriInterpolator(tri, vel[:, 1], kind=inputArgs.mpl)
-            iLxx = CubicTriInterpolator(tri, velGrad[:, 0], kind=inputArgs.mpl)
-            iLzx = CubicTriInterpolator(tri, velGrad[:, 1], kind=inputArgs.mpl)
-            iLxz = CubicTriInterpolator(tri, velGrad[:, 3], kind=inputArgs.mpl)
-            iLzz = CubicTriInterpolator(tri, velGrad[:, 4], kind=inputArgs.mpl)
+            for objList, fieldVar in zip(interpObj, [vel, velGrad]):
+                for i, objName in enumerate(objList):
+                    dictGlobals[objName] = CubicTriInterpolator(
+                        tri, fieldVar[:, i % 2 + i // 2 * 3],
+                        kind=inputArgs.mpl)
         else:
             tri = Delaunay(coords[:, :-1])
-            iVelX = CloughTocher2DInterpolator(tri, vel[:, 0])
-            iVelZ = CloughTocher2DInterpolator(tri, vel[:, 1])
-            iLxx = CloughTocher2DInterpolator(tri, velGrad[:, 0])
-            iLzx = CloughTocher2DInterpolator(tri, velGrad[:, 1])
-            iLxz = CloughTocher2DInterpolator(tri, velGrad[:, 3])
-            iLzz = CloughTocher2DInterpolator(tri, velGrad[:, 4])
-        if inputArgs.charm:
-            charm.thisProxy.updateGlobals(
-                {'iDefMech': iDefMech, 'iVelX': iVelX, 'iVelZ': iVelZ,
-                 'iLxx': iLxx, 'iLzx': iLzx, 'iLxz': iLxz, 'iLzz': iLzz},
-                awaitable=True).get()
+            for objList, fieldVar in zip(interpObj, [vel, velGrad]):
+                for i, objName in enumerate(objList):
+                    dictGlobals[objName] = CloughTocher2DInterpolator(
+                        tri, fieldVar[:, i % 2 + i // 2 * 3])
+        dictGlobals['iDefMech'] = NearestNDInterpolator(coords[:, :-1],
+                                                        defMech)
+        del tri, vtkOut
     else:
-        iDefMech = NearestNDInterpolator(coords, defMech)
-        iVelX = NearestNDInterpolator(coords, vel[:, 0])
-        iVelY = NearestNDInterpolator(coords, vel[:, 1])
-        iVelZ = NearestNDInterpolator(coords, vel[:, 2])
-        iLxx = NearestNDInterpolator(coords, velGrad[:, 0])
-        iLyx = NearestNDInterpolator(coords, velGrad[:, 1])
-        iLzx = NearestNDInterpolator(coords, velGrad[:, 2])
-        iLxy = NearestNDInterpolator(coords, velGrad[:, 3])
-        iLyy = NearestNDInterpolator(coords, velGrad[:, 4])
-        iLzy = NearestNDInterpolator(coords, velGrad[:, 5])
-        iLxz = NearestNDInterpolator(coords, velGrad[:, 6])
-        iLyz = NearestNDInterpolator(coords, velGrad[:, 7])
-        iLzz = NearestNDInterpolator(coords, velGrad[:, 8])
-        if inputArgs.charm:
-            charm.thisProxy.updateGlobals(
-                {'iDefMech': iDefMech, 'iVelX': iVelX, 'iVelY': iVelY,
-                 'iVelZ': iVelZ, 'iLxx': iLxx, 'iLyx': iLyx, 'iLzx': iLzx,
-                 'iLxy': iLxy, 'iLyy': iLyy, 'iLzy': iLzy, 'iLxz': iLxz,
-                 'iLyz': iLyz, 'iLzz': iLzz},
-                awaitable=True).get()
-    del vtkOut
+        interpObj = [['iVelX', 'iVelY', 'iVelZ'],
+                     ['iLxx', 'iLyx', 'iLzx', 'iLxy', 'iLyy', 'iLzy',
+                      'iLxz', 'iLyz', 'iLzz']]
+        for objList, fieldVar in zip(interpObj, [vel, velGrad]):
+            for i, objName in enumerate(objList):
+                dictGlobals[objName] = NearestNDInterpolator(
+                    coords, fieldVar[:, i])
+        dictGlobals['iDefMech'] = NearestNDInterpolator(coords, defMech)
 
-    alt = np.zeros((3, 3, 3))  # \epsilon_{ijk}
-    for ii in range(3):
-        alt[ii % 3, (ii + 1) % 3, (ii + 2) % 3] = 1
-        alt[ii % 3, (ii + 2) % 3, (ii + 1) % 3] = -1
-    # Indices to form Cijkl from Sij
-    ijkl = np.array([[0, 5, 4], [5, 1, 3], [4, 3, 2]], dtype='int')
-    # Indices to form Sij from Cijkl
-    l1 = np.array([0, 1, 2, 1, 2, 0], dtype='int')
-    l2 = np.array([0, 1, 2, 2, 0, 1], dtype='int')
-    # Direction cosine matrix with uniformly distributed rotations.
-    acs0 = R.random(size, random_state=1).as_matrix()
-
+    outVar = ['radani', 'percani', 'GOL', 'ln_fse', 'phi_fse', 'phi_a',
+              'perc_a', 'azimuth']
+    varDict = {}
     if inputArgs.restart:
-        checkpointVar = np.load(inputArgs.restart)
-        GOL = checkpointVar['GOL']
-        phi_fse = checkpointVar['phi_fse']
-        ln_fse = checkpointVar['ln_fse']
-        perc_a = checkpointVar['perc_a']
-        phi_a = checkpointVar['phi_a']
-        radani = checkpointVar['radani']
-        percani = checkpointVar['percani']
-        azimuth = checkpointVar['azimuth']
-        indArr = checkpointVar['indArr']
-        nodesComplete = checkpointVar['nodesComplete']
+        varDict.update(np.load(inputArgs.restart))
     else:
         arrDim = [x - 1 for x in reversed(gridNodes)]
-        GOL = np.zeros(arrDim)
-        phi_fse = np.zeros(arrDim)
-        ln_fse = np.zeros(arrDim)
-        perc_a = np.zeros(arrDim)
-        phi_a = np.zeros(arrDim)
-        radani = np.zeros(arrDim)
-        percani = np.zeros(arrDim)
-        azimuth = np.zeros(arrDim)
-        indArr = np.zeros(arrDim[::-1])
-        nodesComplete = 0
+        for var in outVar:
+            varDict[var] = np.zeros(arrDim)
+        varDict['indArr'] = np.zeros(arrDim[::-1])
+        varDict['nodesComplete'] = 0
 
-    if inputArgs.charm:
-        # Charm with Checkpoint
-        charm.thisProxy.updateGlobals(
-            {'chi': chi, 'gridMin': gridMin, 'gridMax': gridMax, 'size': size,
-             'gridNodes': gridNodes, 'gridCoords': gridCoords, 'alt': alt,
-             'ijkl': ijkl, 'l1': l1, 'l2': l2, 'acs0': acs0},
-            awaitable=True).get()
-
-        for batch in range(np.ceil(np.sum(indArr == 0) / 6e4).astype(int)):
-            nodes2do = np.asarray(indArr == 0).nonzero()
+    if inputArgs.charm:  # Charm4Py
+        nBatch = np.ceil(np.sum(varDict['indArr'] == 0) / 6e4).astype(int)
+        for batch in range(nBatch):
+            nodes2do = np.asarray(varDict['indArr'] == 0).nonzero()
             futures = charm.pool.map_async(
-                DRex, list(zip(*[nodes[:int(6e4)] for nodes in nodes2do])),
+                partial(DRex, dictGlobals=dictGlobals),
+                list(zip(*[nodes[:60_000] for nodes in nodes2do])),
                 multi_future=True)
             for future in charm.iwait(futures):
-                for r0, r1, r2, r3, r4, r5, r6, r7, r8 in [future.get()]:
-                    radani[r0] = r1
-                    percani[r0] = r2
-                    GOL[r0] = r3
-                    ln_fse[r0] = r4
-                    phi_fse[r0] = r5
-                    phi_a[r0] = r6
-                    perc_a[r0] = r7
-                    azimuth[r0] = r8
-                    indArr[r0[::-1]] = 1
-                    nodesComplete += 1
-                if not nodesComplete % checkpoint:
+                output = future.get()
+                for i, var in enumerate(outVar):
+                    varDict[var][output[0]] = output[i + 1]
+                varDict['indArr'][output[0][::-1]] = 1
+                varDict['nodesComplete'] += 1
+                if varDict['nodesComplete'] % checkpoint == 0:
                     np.savez(f'PyDRex{dim}D_{name}_NumpyCheckpoint_'
-                             f'{nodesComplete}',
-                             radani=radani, percani=percani, GOL=GOL,
-                             ln_fse=ln_fse, phi_fse=phi_fse, phi_a=phi_a,
-                             perc_a=perc_a, azimuth=azimuth, indArr=indArr,
-                             nodesComplete=nodesComplete)
-    elif inputArgs.ray:
-        # Ray with Checkpoint
+                             f"{varDict['nodesComplete']}", **varDict)
+    elif inputArgs.ray:  # Ray
         if inputArgs.redis_pass:
             # Cluster execution
-            ray.init(address='auto', redis_password=inputArgs.redis_pass)
+            ray.init(address='auto')
         else:
-            # Single machine | Set local_mode to True to force serial execution
+            # Single machine | Set local_mode to True to force single process
             ray.init(num_cpus=inputArgs.cpus, local_mode=False)
 
-        if dim == 2:
-            dictGlobals = {
-                'iDefMech': iDefMech, 'iVelX': iVelX, 'iVelZ': iVelZ,
-                'iLxx': iLxx, 'iLzx': iLzx, 'iLxz': iLxz, 'iLzz': iLzz,
-                'chi': chi, 'gridMin': gridMin, 'gridMax': gridMax,
-                'size': size, 'gridNodes': gridNodes, 'gridCoords': gridCoords,
-                'acs0': acs0}
-        else:
-            dictGlobals = {
-                'iDefMech': iDefMech, 'iVelX': iVelX, 'iVelY': iVelY,
-                'iVelZ': iVelZ, 'iLxx': iLxx, 'iLyx': iLyx, 'iLzx': iLzx,
-                'iLxy': iLxy, 'iLyy': iLyy, 'iLzy': iLzy, 'iLxz': iLxz,
-                'iLyz': iLyz, 'iLzz': iLzz, 'chi': chi, 'gridMin': gridMin,
-                'gridMax': gridMax, 'size': size, 'gridNodes': gridNodes,
-                'gridCoords': gridCoords, 'acs0': acs0}
         dictGlobalsID = ray.put(dictGlobals)
 
-        for batch in range(np.ceil(np.sum(indArr == 0) / 6e4).astype(int)):
-            nodes2do = np.asarray(indArr == 0).nonzero()
+        nBatch = np.ceil(np.sum(varDict['indArr'] == 0) / 6e4).astype(int)
+        for batch in range(nBatch):
+            nodes2do = np.asarray(varDict['indArr'] == 0).nonzero()
             futures = [DRex.remote(i, dictGlobalsID)
-                       for i in zip(*[nodes[:int(6e4)] for nodes in nodes2do])]
+                       for i in zip(*[nodes[:60_000] for nodes in nodes2do])]
             while len(futures):
                 readyIds, futures = ray.wait(
                     futures, num_returns=min([checkpoint, len(futures)]))
-                for r0, r1, r2, r3, r4, r5, r6, r7, r8 in ray.get(readyIds):
-                    radani[r0] = r1
-                    percani[r0] = r2
-                    GOL[r0] = r3
-                    ln_fse[r0] = r4
-                    phi_fse[r0] = r5
-                    phi_a[r0] = r6
-                    perc_a[r0] = r7
-                    azimuth[r0] = r8
-                    indArr[r0[::-1]] = 1
-                    nodesComplete += 1
+                for output in ray.get(readyIds):
+                    for i, var in enumerate(outVar):
+                        varDict[var][output[0]] = output[i + 1]
+                    varDict['indArr'][output[0][::-1]] = 1
+                    varDict['nodesComplete'] += 1
                 del readyIds
                 np.savez(f'PyDRex{dim}D_{name}_NumpyCheckpoint_'
-                         f'{nodesComplete}',
-                         radani=radani, percani=percani, GOL=GOL,
-                         ln_fse=ln_fse, phi_fse=phi_fse, phi_a=phi_a,
-                         perc_a=perc_a, azimuth=azimuth, indArr=indArr,
-                         nodesComplete=nodesComplete)
+                         f"{varDict['nodesComplete']}", **varDict)
 
         ray.shutdown()
-    else:
+    else:  # Multiprocessing
         if __name__ == '__main__':
-            # Multiprocessing with Checkpoint
             with Pool(processes=inputArgs.cpus) as pool:
-                for r0, r1, r2, r3, r4, r5, r6, r7, r8 in pool.imap_unordered(
-                        DRex, zip(*np.asarray(indArr == 0).nonzero())):
-                    radani[r0] = r1
-                    percani[r0] = r2
-                    GOL[r0] = r3
-                    ln_fse[r0] = r4
-                    phi_fse[r0] = r5
-                    phi_a[r0] = r6
-                    perc_a[r0] = r7
-                    azimuth[r0] = r8
-                    indArr[r0[::-1]] = 1
-                    nodesComplete += 1
-                    if not nodesComplete % checkpoint:
+                for output in pool.imap_unordered(
+                        partial(DRex, dictGlobals=dictGlobals),
+                        zip(*np.asarray(varDict['indArr'] == 0).nonzero())):
+                    for i, var in enumerate(outVar):
+                        varDict[var][output[0]] = output[i + 1]
+                    varDict['indArr'][output[0][::-1]] = 1
+                    varDict['nodesComplete'] += 1
+                    if varDict['nodesComplete'] % checkpoint == 0:
                         np.savez(f'PyDRex{dim}D_{name}_NumpyCheckpoint_'
-                                 f'{nodesComplete}',
-                                 radani=radani, percani=percani, GOL=GOL,
-                                 ln_fse=ln_fse, phi_fse=phi_fse, phi_a=phi_a,
-                                 perc_a=perc_a, azimuth=azimuth, indArr=indArr,
-                                 nodesComplete=nodesComplete)
+                                 f"{varDict['nodesComplete']}", **varDict)
 
-    np.savez(f'PyDRex{dim}D_{name}_Complete', radani=radani, percani=percani,
-             GOL=GOL, ln_fse=ln_fse, phi_fse=phi_fse, phi_a=phi_a,
-             perc_a=perc_a, azimuth=azimuth)
+    np.savez(f'PyDRex{dim}D_{name}_Complete', **varDict)
 
     end = perf_counter()
     hours = int((end - begin) / 3600)
@@ -1055,16 +941,18 @@ if args.charm or args.ray:
     assert (args.charm and args.ray) is False
 
 if args.charm:
-    from charm4py import charm  # noqa: F401
+    from charm4py import charm
 elif args.ray:
     import ray
     DRex = ray.remote(DRex)
 else:
     from multiprocessing import Pool
 
+if args.ray is False:
+    from functools import partial
+
 if args.mpl:
-    from matplotlib.tri import (CubicTriInterpolator,  # noqa: F401
-                                Triangulation)
+    from matplotlib.tri import CubicTriInterpolator, Triangulation
 else:
     from scipy.interpolate import CloughTocher2DInterpolator
     from scipy.spatial import Delaunay
