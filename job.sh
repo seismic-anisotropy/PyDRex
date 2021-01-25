@@ -14,7 +14,7 @@ export PYTHONPATH=$PYTHONPATH:/home/157/td5646/numpy
 
 # Charm4Py
 module load openmpi/4.0.2
-mpirun -np $PBS_NCPUS python3 PyDRex.py ridge_31.vtu --charm
+mpirun -np $PBS_NCPUS python3 src/pydrex/PyDRex.py ridge_31.vtu --charm
 
 ################################################################################
 
