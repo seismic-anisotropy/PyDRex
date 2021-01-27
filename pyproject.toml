@@ -4,5 +4,8 @@
 # https://www.python.org/dev/peps/pep-0621/
 # https://snarky.ca/what-the-heck-is-pyproject-toml/
 [build-system]
-requires = ["setuptools >= 40.6.0", "wheel"]
+requires = ["setuptools >= 42", "wheel", "setuptools_scm[toml]>=3.4"]
 build-backend = "setuptools.build_meta"
+
+# https://github.com/pypa/setuptools_scm
+[tool.setuptools_scm]
