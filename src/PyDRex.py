@@ -12,8 +12,8 @@ from scipy.integrate import solve_ivp
 from scipy.interpolate import NearestNDInterpolator
 from scipy.spatial.transform import Rotation as R
 from time import perf_counter
-import vtk
-import warnings
+from vtk import vtkXMLUnstructuredGridReader, vtkXMLPUnstructuredGridReader
+from warnings import catch_warnings, simplefilter
 
 from DRexParam import (checkpoint, chi, gridCoords, gridMax, gridMin,
                        gridNodes, lamb, mob, name, size, stressexp, S0, S0_ens,
@@ -108,6 +108,7 @@ def formVoigtVec(mat):
 
 
 # Rotates a 4th-order tensor
+@jit(nopython=True)
 def rotateTens(tens, rot):
     rotTens = np.zeros((3, 3, 3, 3))
     for i in range(3):
@@ -159,7 +160,7 @@ def scca(voigtMat):
     voigtStifTens[1, 2] = voigtMat[1, 3] + voigtMat[2, 3] + voigtMat[4, 5]
     voigtStifTens = symFromUpper(voigtStifTens)
     # Appendix A5 Browaeys and Chevrot (2004)
-    K = np.trace(dilatStifTens) / 9  # Incompressibility modulus
+    K = np.trace(dilatStifTens) / 9  # Bulk modulus
     G = (np.trace(voigtStifTens) - 3 * K) / 10  # Shear modulus
     isoVec = np.hstack((np.repeat(K + 4 * G / 3, 3),
                         np.repeat(np.sqrt(2) * (K - 2 * G / 3), 3),
@@ -175,7 +176,7 @@ def scca(voigtMat):
         advc = 10
         for j in range(3):
             sdv = np.clip(np.dot(eigVecDST[:, i], eigVecVST[:, j]), -1, 1)
-            adv = np.arccos(np.absolute(sdv))
+            adv = np.arccos(abs(sdv))
             if adv < advc:
                 ndvc = int((j + 1) * np.sign(sdv)) if sdv != 0 else j + 1
                 advc = adv
@@ -192,7 +193,7 @@ def scca(voigtMat):
         if dev < normVec:
             normVec = dev
             ndvc = i + 1
-    # Rotate in sccs
+    # Rotate in SCCA
     scc = eigVecDST[:, [(abs(ndvc) - 1 + i) % 3 for i in range(3)]].transpose()
     voigtVec = formVoigtVec(formVoigtMat(rotateTens(elasTens, scc)))
     return anisotropy, scc, voigtVec
@@ -210,6 +211,7 @@ def calcAzimuth(voigtMat, azi=0, inc=-np.pi / 2):
     gamma = np.array([[Xr[0], 0, 0, 0, Xr[2], Xr[1]],
                       [0, Xr[1], 0, Xr[2], 0, Xr[0]],
                       [0, 0, Xr[2], Xr[1], Xr[0], 0]])
+    # Form the 3x3 Christoffel tensor
     T = np.dot(np.dot(gamma, voigtMat), gamma.transpose())
     S1 = eigh(T)[1][:, 1]
     # Calculate projection onto propagation plane
@@ -257,173 +259,147 @@ def interpVel(pointCoords, dictGlobals):
 def interpVelGrad(pointCoords, dictGlobals, ivpIter=False):
     iLxx, iLxz, iLzx, iLzz = (dictGlobals['iLxx'], dictGlobals['iLxz'],
                               dictGlobals['iLzx'], dictGlobals['iLzz'])
-    if len(pointCoords) == 3:
-        iLxy, iLyx, iLyy, iLyz, iLzy = (
-            dictGlobals['iLxy'], dictGlobals['iLyx'], dictGlobals['iLyy'],
-            dictGlobals['iLyz'], dictGlobals['iLzy'])
     if len(pointCoords) == 2:
         L = np.array([[iLxx(*pointCoords), 0, -iLxz(*pointCoords)],
                       [0, 0, 0],
                       [-iLzx(*pointCoords), 0, iLzz(*pointCoords)]])
     else:
+        iLxy, iLyx, iLyy, iLyz, iLzy = (
+            dictGlobals['iLxy'], dictGlobals['iLyx'], dictGlobals['iLyy'],
+            dictGlobals['iLyz'], dictGlobals['iLzy'])
         L = np.array(
             [[iLxx(*pointCoords), iLxy(*pointCoords), -iLxz(*pointCoords)],
              [iLyx(*pointCoords), iLyy(*pointCoords), -iLyz(*pointCoords)],
              [-iLzx(*pointCoords), -iLzy(*pointCoords), iLzz(*pointCoords)]])
-    assert np.abs(np.trace(L)) < 1e-15
+    assert abs(np.trace(L)) < 1e-15
     if ivpIter:
         return L
-    e = (L + np.transpose(L)) / 2  # strain rate tensor
-    epsnot = np.abs(eigvalsh(e)).max()  # reference strain rate
+    e = (L + np.transpose(L)) / 2
+    epsnot = abs(eigvalsh(e)).max()
     return L, epsnot
 
 
 # Rotation of a matrix line based on finite strain ellipsoid
 @jit(nopython=True)
 def fseDecomp(fse, ex, alt):
-    # Left-strech tensor for fse calculation
-    LSij = np.dot(fse, np.transpose(fse))
-    eigval, eigvect = eigh(LSij)
-    eigvect = np.transpose(eigvect)  # Each column of eigvect is an eigenvector
-    # and its transpose is the cosines matrix
-    rot = np.zeros(3)  # vector of induced spin omega_i, i=1,3
+    # Left-strech tensor for finite-strain ellipsoid calculation
+    leftStretchTens = np.dot(fse, np.transpose(fse))
+    eigval, eigvect = eigh(leftStretchTens)
+    rot = np.zeros(3)  # Induced spin
     for i, eigv in enumerate(eigval):
         otherEig = eigval[np.array([(i + 1) % 3, (i + 2) % 3])]
-        if (np.absolute((otherEig - eigv) / eigv) < 5e-2).any():
+        if (np.abs((otherEig - eigv) / eigv) < 5e-2).any():
             return rot
-    H = np.zeros(3)  # ration H_n of the eigenvalues as in Ribe, 1992
-    H[0] = (eigval[0] * (eigval[1] - eigval[2]) / (eigval[0] - eigval[1])
-            / (eigval[0] - eigval[2]))
-    H[1] = (eigval[1] * (eigval[2] - eigval[0]) / (eigval[1] - eigval[2])
-            / (eigval[1] - eigval[0]))
-    H[2] = (eigval[2] * (eigval[0] - eigval[1]) / (eigval[2] - eigval[0])
-            / (eigval[2] - eigval[1]))
-    # equation 33 of Ribe 1992 with nn=n, ii=i1, jj=i2, kk=i3, ll=i4
-    for ii in range(3):
-        for nn in range(3):
-            int2 = 0
-            for jj in range(3):
-                for kk in range(3):
-                    int1 = 0
-                    for ll in range(3):
-                        int1 += (alt[ii, ll, kk] * eigvect[(nn + 2) % 3, jj]
-                                 * eigvect[(nn + 2) % 3, ll])
-                    int2 += ((eigvect[nn, jj] * eigvect[(nn + 1) % 3, kk]
-                              * eigvect[(nn + 2) % 3, ii] + int1) * ex[jj, kk])
-            rot[ii] += H[nn] * int2
+    # Equation 34 Ribe (1992)
+    H = np.empty(3)
+    for i in range(3):
+        j, k = (i + 1) % 3, (i + 2) % 3
+        H[i] = (eigval[i] * (eigval[j] - eigval[k]) / (eigval[i] - eigval[j])
+                / (eigval[i] - eigval[k]))
+    # Equation 33 Ribe (1992) | alt -> epsilon, ex -> E, eigvect -> a.T
+    for i in range(3):
+        for n in range(3):
+            m = (n + 2) % 3
+            for j in range(3):
+                for k in range(3):
+                    rot[i] += H[n] * ex[j, k] * (
+                        eigvect[j, n] * eigvect[k, (n + 1) % 3]
+                        * eigvect[i, m] + eigvect[j, m]
+                        * np.dot(np.ascontiguousarray(alt[i, :, k]),
+                                 np.ascontiguousarray(eigvect[:, m])))
     return rot
 
 
 # Calculation of the rotation vector and slip rate
 @jit(nopython=True, fastmath=True)
 def deriv(lx, ex, acsi, acsi_ens, fse, odfi, odfi_ens, alpha):
-    alt = np.zeros((3, 3, 3))  # \epsilon_{ijk}
-    for ii in range(3):
-        alt[ii % 3, (ii + 1) % 3, (ii + 2) % 3] = 1
-        alt[ii % 3, (ii + 2) % 3, (ii + 1) % 3] = -1
-    g = np.zeros((3, 3))
-    g_ens = np.zeros((3, 3))
-    rt = np.zeros(size)
-    dotacs = np.zeros((size, 3, 3))
-    rt_ens = np.zeros(size)
-    dotacs_ens = np.zeros((size, 3, 3))
+    alt = np.zeros((3, 3, 3))  # Levi-Civita symbol
+    for i in range(3):
+        alt[i % 3, (i + 1) % 3, (i + 2) % 3] = 1
+        alt[i % 3, (i + 2) % 3, (i + 1) % 3] = -1
+    g, g_ens = np.empty((3, 3)), np.empty((3, 3))
+    rt, rt_ens = np.zeros(size), np.empty(size)
+    dotacs, dotacs_ens = np.zeros((size, 3, 3)), np.zeros((size, 3, 3))
     if alpha == 0:
         rotIni = fseDecomp(fse, ex, alt)
     else:
-        rot = np.zeros(3)
-        rot_ens = np.zeros(3)
-    gam = np.zeros(4)
+        rot, rot_ens = np.empty(3), np.empty(3)
+    gam = np.empty(4)
     # Plastic deformation & Dynamic recrystallization
     # Update olivine fabric type in the loop?
-    for ii in range(size):
+    for i in range(size):
         # Calculate invariants for the four slip systems of olivine
+        # Inline equation below Equation 5 Kaminski & Ribe (2001)
         bigi = np.zeros(4)
-        for jj in range(3):
-            for kk in range(3):
-                bigi[0] += ex[jj, kk] * acsi[ii, 0, jj] * acsi[ii, 1, kk]
-                bigi[1] += ex[jj, kk] * acsi[ii, 0, jj] * acsi[ii, 2, kk]
-                bigi[2] += ex[jj, kk] * acsi[ii, 2, jj] * acsi[ii, 1, kk]
-                bigi[3] += ex[jj, kk] * acsi[ii, 2, jj] * acsi[ii, 0, kk]
-        iinac, imin, iint, imax = np.argsort(np.absolute(bigi / tau))
-        # Calculate weighting factors gam_s relative to value gam_i for
-        # which I / tau is largest
-        gam[iinac] = 0
-        gam[imax] = 1
-        rat = tau[imax] / bigi[imax]
-        qint = rat * bigi[iint] / tau[iint]
-        qmin = rat * bigi[imin] / tau[imin]
-        sn1 = stressexp - 1
-        gam[iint] = qint * abs(qint) ** sn1
-        gam[imin] = qmin * abs(qmin) ** sn1
-        # Calculation of G tensor
-        for jj in range(3):
-            for kk in range(3):
-                g[jj, kk] = 2 * (gam[0] * acsi[ii, 0, jj] * acsi[ii, 1, kk]
-                                 + gam[1] * acsi[ii, 0, jj] * acsi[ii, 2, kk]
-                                 + gam[2] * acsi[ii, 2, jj] * acsi[ii, 1, kk]
-                                 + gam[3] * acsi[ii, 2, jj] * acsi[ii, 0, kk])
-                g_ens[jj, kk] = 2 * acsi_ens[ii, 2, jj] * acsi_ens[ii, 0, kk]
-        # Calculation of strain rate on the softest slip system
-        R1 = R2 = R1_ens = R2_ens = 0
-        for jj in range(3):
-            kk = (jj + 2) % 3
-            R1 -= (g[jj, kk] - g[kk, jj]) ** 2
-            R1_ens -= (g_ens[jj, kk] - g_ens[kk, jj]) ** 2
-            R2 -= (g[jj, kk] - g[kk, jj]) * (lx[jj, kk] - lx[kk, jj])
-            R2_ens -= ((g_ens[jj, kk] - g_ens[kk, jj])
-                       * (lx[jj, kk] - lx[kk, jj]))
-            for ll in range(3):
-                R1 += 2 * g[jj, ll] ** 2
-                R1_ens += 2 * g_ens[jj, ll] ** 2
-                R2 += 2 * lx[jj, ll] * g[jj, ll]
-                R2_ens += 2 * lx[jj, ll] * g_ens[jj, ll]
-        gam0 = R2 / R1
-        # Weight factor between olivine and enstatite
-        gam0_ens = (R2_ens / R1_ens
-                    * (1 / tau_ens) ** stressexp)
-        # Dislocation density calculation
-        rt1 = (tau[imax] ** (1.5 - stressexp)
-               * abs(gam[imax] * gam0) ** (1.5 / stressexp))
-        rt2 = (tau[iint] ** (1.5 - stressexp)
-               * abs(gam[iint] * gam0) ** (1.5 / stressexp))
-        rt3 = (tau[imin] ** (1.5 - stressexp)
-               * abs(gam[imin] * gam0) ** (1.5 / stressexp))
-        rt[ii] = (rt1 * np.exp(-lamb * rt1 ** 2)
-                  + rt2 * np.exp(-lamb * rt2 ** 2)
-                  + rt3 * np.exp(-lamb * rt3 ** 2))
+        for j in range(3):
+            for k in range(3):
+                bigi[0] += ex[j, k] * acsi[i, 0, j] * acsi[i, 1, k]
+                bigi[1] += ex[j, k] * acsi[i, 0, j] * acsi[i, 2, k]
+                bigi[2] += ex[j, k] * acsi[i, 2, j] * acsi[i, 1, k]
+                bigi[3] += ex[j, k] * acsi[i, 2, j] * acsi[i, 0, k]
+        # Equation 5 Kaminski & Ribe (2001)
+        indInac, indMin, indInt, indMax = np.argsort(np.abs(bigi / tau))
+        gam[indInac], gam[indMax] = 0, 1
+        for index in [indMin, indInt]:
+            frac = tau[indMax] / tau[index] * bigi[index] / bigi[indMax]
+            gam[index] = frac * abs(frac) ** (stressexp - 1)
+        # Equation 4 Kaminski & Ribe (2001)
+        for j in range(3):
+            for k in range(3):
+                g[j, k] = 2 * (gam[0] * acsi[i, 0, j] * acsi[i, 1, k]
+                               + gam[1] * acsi[i, 0, j] * acsi[i, 2, k]
+                               + gam[2] * acsi[i, 2, j] * acsi[i, 1, k]
+                               + gam[3] * acsi[i, 2, j] * acsi[i, 0, k])
+                g_ens[j, k] = 2 * acsi_ens[i, 2, j] * acsi_ens[i, 0, k]
+        # Equation 7 Kaminski & Ribe (2001)
+        gamNum = gamNum_ens = gamDen = gamDen_ens = 0
+        for j in range(3):
+            k = (j + 1) % 3  # Fortran implementation uses j + 2 ???
+            gamNum -= (lx[j, k] - lx[k, j]) * (g[j, k] - g[k, j])
+            gamNum_ens -= (lx[j, k] - lx[k, j]) * (g_ens[j, k] - g_ens[k, j])
+            # Mistake in the equation: kl+1 instead of kk+1 ???
+            gamDen -= (g[j, k] - g[k, j]) ** 2
+            gamDen_ens -= (g_ens[j, k] - g_ens[k, j]) ** 2
+            for L in range(3):
+                gamNum += 2 * g[j, L] * lx[j, L]
+                gamNum_ens += 2 * g_ens[j, L] * lx[j, L]
+                gamDen += 2 * g[j, L] ** 2
+                gamDen_ens += 2 * g_ens[j, L] ** 2
+        gam0 = gamNum / gamDen
+        gam0_ens = gamNum_ens / gamDen_ens / tau_ens ** stressexp
+        # Equation 22 Kaminski & Ribe (2001)
+        for index in [indMin, indInt, indMax]:
+            dislDens = (tau[index] ** (1.5 - stressexp)
+                        * abs(gam[index] * gam0) ** (1.5 / stressexp))
+            rt[i] += dislDens * np.exp(-lamb * dislDens ** 2)
         rt0_ens = (tau_ens ** (1.5 - stressexp)
                    * abs(gam0_ens) ** (1.5 / stressexp))
-        rt_ens[ii] = rt0_ens * np.exp(-lamb * rt0_ens ** 2)
-        # Calculation of the rotation rate:
+        rt_ens[i] = rt0_ens * np.exp(-lamb * rt0_ens ** 2)
         if alpha == 0:
+            # Equation 33 Ribe (1992) and Equation 8 Kaminski & Ribe (2001) ???
             rot = rotIni.copy()
-            rot[2] += (lx[1, 0] - lx[0, 1]) / 2
-            rot[1] += (lx[0, 2] - lx[2, 0]) / 2
-            rot[0] += (lx[2, 1] - lx[1, 2]) / 2
+            for j in range(3):
+                r, s = (j + 1) % 3, (j + 2) % 3
+                rot[j] += (lx[s, r] - lx[r, s]) / 2
             rot_ens = rot.copy()
         else:
-            rot[2] = (lx[1, 0] - lx[0, 1]) / 2 - (g[1, 0] - g[0, 1]) / 2 * gam0
-            rot[1] = (lx[0, 2] - lx[2, 0]) / 2 - (g[0, 2] - g[2, 0]) / 2 * gam0
-            rot[0] = (lx[2, 1] - lx[1, 2]) / 2 - (g[2, 1] - g[1, 2]) / 2 * gam0
-            rot_ens[2] = ((lx[1, 0] - lx[0, 1]) / 2
-                          - (g_ens[1, 0] - g_ens[0, 1]) / 2 * gam0_ens)
-            rot_ens[1] = ((lx[0, 2] - lx[2, 0]) / 2
-                          - (g_ens[0, 2] - g_ens[2, 0]) / 2 * gam0_ens)
-            rot_ens[0] = ((lx[2, 1] - lx[1, 2]) / 2
-                          - (g_ens[2, 1] - g_ens[1, 2]) / 2 * gam0_ens)
-        # Derivative of the matrix of direction cosine
-        for i1 in range(3):
-            for i2 in range(3):
-                for i3 in range(3):
-                    for i4 in range(3):
-                        dotacs[ii, i1, i2] += (alt[i2, i3, i4]
-                                               * acsi[ii, i1, i4] * rot[i3])
-                        dotacs_ens[ii, i1, i2] += (alt[i2, i3, i4]
-                                                   * acsi_ens[ii, i1, i4]
-                                                   * rot_ens[i3])
+            # Equation 8 Kaminski & Ribe (2001)
+            for j in range(3):
+                r, s = (j + 1) % 3, (j + 2) % 3
+                rot[j] = (lx[s, r] - lx[r, s] - (g[s, r] - g[r, s]) * gam0) / 2
+                rot_ens[j] = (lx[s, r] - lx[r, s]
+                              - (g_ens[s, r] - g_ens[r, s]) * gam0_ens) / 2
+        # Equation 9 Kaminski & Ribe (2001)
+        for p in range(3):
+            for q in range(3):
+                for r in range(3):
+                    for s in range(3):
+                        dotacs[i, p, q] += (
+                            alt[q, r, s] * acsi[i, p, s] * rot[r])
+                        dotacs_ens[i, p, q] += (
+                            alt[q, r, s] * acsi_ens[i, p, s] * rot_ens[r])
     # Volume averaged energy
-    Emean = np.sum(odfi * rt)
-    Emean_ens = np.sum(odfi_ens * rt_ens)
+    Emean, Emean_ens = np.sum(odfi * rt), np.sum(odfi_ens * rt_ens)
     # Change of volume fraction by grain boundary migration
     dotodf = Xol * mob * odfi * (Emean - rt)
     dotodf_ens = (1 - Xol) * mob * odfi_ens * (Emean_ens - rt_ens)
@@ -436,12 +412,10 @@ def strain(pathTime, pathDense, dictGlobals):
         dictGlobals['chi'], dictGlobals['gridCoords'], dictGlobals['iDefMech'],
         dictGlobals['size'])
     fse = np.identity(3)
-    # Direction cosine matrix with uniformly distributed rotations.
+    # Uniformly distributed rotations represented as rotation matrices
     acs0 = R.random(size, random_state=1).as_matrix()
-    acs = acs0.copy()
-    acs_ens = acs0.copy()
-    odf = np.ones(size) / size
-    odf_ens = np.ones(size) / size
+    acs, acs_ens = acs0.copy(), acs0.copy()
+    odf, odf_ens = np.ones(size) / size, np.ones(size) / size
     for time in reversed(pathTime):
         if isInside(pathDense(time), dictGlobals):
             currTime = time
@@ -547,50 +521,31 @@ def strain(pathTime, pathDense, dictGlobals):
     return fse, acs, acs_ens, odf, odf_ens
 
 
-# Calculates elastic tensor cav_{ijkl} for olivine
+# Calculates elastic tensor Cav_{ijkl} for olivine
 @jit(nopython=True)
 def voigt(acs, acs_ens, odf, odf_ens):
-    C0, C03 = np.zeros((3, 3, 3, 3)), np.zeros((3, 3, 3, 3))
-    Cav, Sav = np.zeros((3, 3, 3, 3)), np.zeros((6, 6))
+    C0, C0_ens = np.empty((3, 3, 3, 3)), np.empty((3, 3, 3, 3))
+    Cav, Sav = np.zeros((3, 3, 3, 3)), np.empty((6, 6))
     # Indices to form Cijkl from Sij
     ijkl = np.array([[0, 5, 4], [5, 1, 3], [4, 3, 2]], dtype=np.int16)
-    # Elastic tensors c0_{ijkl}
-    for i in range(3):
-        for j in range(3):
-            for k in range(3):
-                for ll in range(3):
-                    C0[i, j, k, ll] = S0[ijkl[i, j], ijkl[k, ll]]
-                    C03[i, j, k, ll] = S0_ens[ijkl[i, j], ijkl[k, ll]]
+    # Elastic tensors
+    for p in range(3):
+        for q in range(3):
+            i = ijkl[p, q]
+            for r in range(3):
+                for s in range(3):
+                    j = ijkl[r, s]
+                    C0[p, q, r, s], C0_ens[p, q, r, s] = S0[i, j], S0_ens[i, j]
     for nu in range(size):
-        Cav2, Cav3 = np.zeros((3, 3, 3, 3)), np.zeros((3, 3, 3, 3))
-        for i in range(3):
-            for j in range(3):
-                for k in range(3):
-                    for ll in range(3):
-                        for p in range(3):
-                            for q in range(3):
-                                for r in range(3):
-                                    for ss in range(3):
-                                        Cav2[i, j, k, ll] += (
-                                            acs[nu, p, i] * acs[nu, q, j]
-                                            * acs[nu, r, k] * acs[nu, ss, ll]
-                                            * C0[p, q, r, ss])
-                                        Cav3[i, j, k, ll] += (
-                                            acs_ens[nu, p, i]
-                                            * acs_ens[nu, q, j]
-                                            * acs_ens[nu, r, k]
-                                            * acs_ens[nu, ss, ll]
-                                            * C03[p, q, r, ss])
-                        Cav[i, j, k, ll] += Cav2[i, j, k, ll] * odf[nu] * Xol
-                        Cav[i, j, k, ll] += (Cav3[i, j, k, ll] * odf_ens[nu]
-                                             * (1 - Xol))
-    # Indices to form Sij from Cijkl
-    l1 = np.array([0, 1, 2, 1, 2, 0], dtype=np.int16)
-    l2 = np.array([0, 1, 2, 2, 0, 1], dtype=np.int16)
+        C0rot = rotateTens(C0, acs[nu, ...].transpose())
+        C0rot_ens = rotateTens(C0_ens, acs_ens[nu, ...].transpose())
+        Cav += C0rot * odf[nu] * Xol + C0rot_ens * odf_ens[nu] * (1 - Xol)
     # Average stiffness matrix
     for i in range(6):
+        p, q = (i + i // 3) % 3, (i + 2 * (i // 3)) % 3
         for j in range(6):
-            Sav[i, j] = Cav[l1[i], l2[i], l1[j], l2[j]]
+            r, s = (j + j // 3) % 3, (j + 2 * (j // 3)) % 3
+            Sav[i, j] = Cav[p, q, r, s]
     return Sav
 
 
@@ -601,12 +556,12 @@ def pipar(currPoint, dictGlobals):
         nonlocal GOL
         # Kaminski, Ribe & Browaeys (2004): Appendix B
         evals = eigvalsh(L)
-        if np.sum(np.absolute(evals) < 1e-9) >= 2 - veloc.size % 2:
+        if np.sum(abs(evals) < 1e-9) >= 2 - veloc.size % 2:
             assert abs(evals[0] * evals[1] + evals[0] * evals[2]
                        + evals[1] * evals[2]) < 1e-9
             return veloc / norm(veloc, ord=2)
         else:
-            ind = np.argsort(np.absolute(evals))[-1]
+            ind = np.argsort(abs(evals))[-1]
             if np.isreal(evals[ind]):
                 a, b = (ind + 1) % 3, (ind + 2) % 3
                 Id = np.identity(3)
@@ -689,8 +644,8 @@ def pathline(currPoint, dictGlobals):
     eventStrain = eventTime = 0
     eventStrainPrev = eventTimePrev = None
     eventFlag = False
-    with warnings.catch_warnings():
-        warnings.simplefilter('ignore', category=UserWarning)
+    with catch_warnings():
+        simplefilter('ignore', category=UserWarning)
         sol = solve_ivp(ivpFunc, [0, -100e6 * 365.25 * 8.64e4], currPoint,
                         method='RK45', first_step=1e10, max_step=np.inf,
                         t_eval=None, events=[maxStrain], args=(dictGlobals,),
@@ -745,9 +700,9 @@ def main(inputArgs):
 
     inputExt = inputArgs.input.split('.')[-1]
     if inputExt == 'vtu':
-        vtkReader = vtk.vtkXMLUnstructuredGridReader()
+        vtkReader = vtkXMLUnstructuredGridReader()
     elif inputExt == 'pvtu':
-        vtkReader = vtk.vtkXMLPUnstructuredGridReader()
+        vtkReader = vtkXMLPUnstructuredGridReader()
     else:
         raise RuntimeError(
             '''Please either provide a supported file format or implement the
@@ -849,7 +804,7 @@ def main(inputArgs):
     elif inputArgs.ray:  # Ray
         if inputArgs.redis_pass:
             # Cluster execution
-            ray.init(address='auto')
+            ray.init(address='auto', _redis_password=inputArgs.redis_pass)
         else:
             # Single machine | Set local_mode to True to force single process
             ray.init(num_cpus=inputArgs.cpus, local_mode=False)

@@ -52,12 +52,12 @@ DRexArr = load(args.input)
 fig, (ax, bx) = plt.subplots(nrows=2, ncols=1, sharex=True, sharey=True, num=0,
                              figsize=(20, 10))
 ax = makeFilledContourPlot(
-    ax, gridCoords[1][:-1] / 1e3, gridCoords[-1][:-1] / 1e3,
+    ax, gridCoords[0][:-1] / 1e3, gridCoords[-1][:-1] / 1e3,
     DRexArr['percani'] if dim == 2 else DRexArr['percani'][:, :, 0],
     linspace(0, 7, 22), 'inferno',
     linspace(0, 7, 8), 'Azimuthal Anisotropy (%)')
 bx = makeFilledContourPlot(
-    bx, gridCoords[1][:-1] / 1e3, gridCoords[-1][:-1] / 1e3,
+    bx, gridCoords[0][:-1] / 1e3, gridCoords[-1][:-1] / 1e3,
     DRexArr['radani'] if dim == 2 else DRexArr['radani'][:, :, 0],
     linspace(0.85, 1.15, 31), 'RdBu',
     linspace(0.85, 1.15, 7), 'Radial Anisotropy')

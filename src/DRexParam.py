@@ -2,13 +2,13 @@
 
 from numpy import amax, amin, array, diag, hstack, inf, linspace
 
-name = 'Final'  # A little tag to keep track
+name = 'Tag'  # A little tag to keep track
 
 dim = 2  # Number of dimensions; must be 2 or 3
 assert dim in [2, 3]
 
-uniformGridSpacing = True  # Must evaluate to True or False below
 # Generate a regular grid
+uniformGridSpacing = True
 if uniformGridSpacing:  # As many entries as dimensions: X, [Y], Z
     gridRes = array([4e3, 4e3])
     gridMin = array([0, 0])
