@@ -54,13 +54,11 @@ def parse_params(file):
             [
                 mesh,
                 output.get("simulation_name", fallback="simulation_name"),
-                output.getint(
-                    "checkpoint_interval", fallback=0
-                ),  # 0 disables checkpointing
-                ["olivine_" + s for s in olivine_output],  # Unique names for np.savez()
-                [
-                    "enstatite_" + s for s in enstatite_output
-                ],  # Unique names for np.savez()
+                # 0 disables checkpointing
+                output.getint("checkpoint_interval", fallback=0),
+                # Unique names for np.savez()
+                ["olivine_" + s for s in olivine_output],
+                ["enstatite_" + s for s in enstatite_output],
                 olivine_fraction,
                 enstatite_fraction,
                 params.getfloat("stress_exponent"),
@@ -134,8 +132,8 @@ def create_mesh(gridcoords):
                 dimension,
                 [arr.size for arr in gridcoords],
                 gridcoords,
-                [np.amin(arr) for arr in gridcoords],
-                [np.amax(arr) for arr in gridcoords],
+                [arr.min() for arr in gridcoords],
+                [arr.min() for arr in gridcoords],
             ],
         )
     )
