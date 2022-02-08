@@ -1,19 +1,15 @@
 """PyDRex: Stiffness matrices for minerals.
 
+The provided matrices encode the stiffness tensor in the compact Voigt notation.
 The stiffness matrices contain values of the elastic constants in GPa.
-Currently, stiffness matrices are provided for olivine and enstatite:
-- `OLIVINE`
-- `ENSTATITE`
+Currently, stiffness matrices are provided for olivine and enstatite.
 
 The source of the values used here is unknown, but they are copied
 from the original DRex code:
 
 <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz> [88K download]
 
-The provided matrices encode the stiffness tensor in the compact Voigt notation.
-
 """
-__all__ = ["OLIVINE", "ENSTATITE"]
 import numpy as np
 
 

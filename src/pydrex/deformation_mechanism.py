@@ -1,11 +1,4 @@
-"""PyDRex: Deformation mechanism enums.
-
-Public symbols:
-- `Regime`
-
-"""
-__all__ = ["Regime"]
-
+"""PyDRex: Deformation mechanism enums."""
 from enum import Enum, unique
 
 

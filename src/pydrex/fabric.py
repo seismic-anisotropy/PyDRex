@@ -3,24 +3,7 @@
 Acronyms:
 - RRSS = Reference Resolved Shear Stress, i.e. components of stress acting on each slip system in the grain reference frame
 
-Public symbols:
-- `RRSS_OLIVINE_A`
-- `RRSS_OLIVINE_B`
-- `RRSS_OLIVINE_C`
-- `RRSS_OLIVINE_D`
-- `RRSS_OLIVINE_E`
-- `RRSS_ENSTATITE`
-
 """
-__all__ = [
-    "RRSS_OLIVINE_A",
-    "RRSS_OLIVINE_B",
-    "RRSS_OLIVINE_C",
-    "RRSS_OLIVINE_D",
-    "RRSS_OLIVINE_E",
-    "RRSS_ENSTATITE",
-]
-
 import numpy as np
 
 

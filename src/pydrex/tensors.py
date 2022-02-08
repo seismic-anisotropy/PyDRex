@@ -1,23 +1,4 @@
-"""PyDRex: Tensor operation functions and helpers.
-
-Public symbols:
-- `PERMUTATION_SYMBOL`
-- `upper_tri_to_symmetric`
-- `Voigt_to_elastic_tensor`
-- `elastic_tensor_to_Voigt`
-- `Voigt_matrix_to_vector`
-- `rotate`
-
-"""
-__all__ = [
-    "PERMUTATION_SYMBOL",
-    "upper_tri_to_symmetric",
-    "Voigt_to_elastic_tensor",
-    "elastic_tensor_to_Voigt",
-    "Voigt_matrix_to_vector",
-    "rotate",
-]
-
+"""PyDRex: Tensor operation functions and helpers."""
 import numpy as np
 import numba as nb
 
