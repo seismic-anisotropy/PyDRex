@@ -1,5 +1,6 @@
 """PyDRex: Stiffness matrices for minerals.
 
+The stiffness matrices contain values of the elastic constants in GPa.
 Currently, stiffness matrices are provided for olivine and enstatite:
 - `OLIVINE`
 - `ENSTATITE`

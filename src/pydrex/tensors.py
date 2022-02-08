@@ -3,18 +3,18 @@
 Public symbols:
 - `PERMUTATION_SYMBOL`
 - `upper_tri_to_symmetric`
-- `voigt_to_elastic_tensor`
-- `elastic_tensor_to_voigt`
-- `voigt_matrix_to_vector`
+- `Voigt_to_elastic_tensor`
+- `elastic_tensor_to_Voigt`
+- `Voigt_matrix_to_vector`
 - `rotate`
 
 """
 __all__ = [
     "PERMUTATION_SYMBOL",
     "upper_tri_to_symmetric",
-    "voigt_to_elastic_tensor",
-    "elastic_tensor_to_voigt",
-    "voigt_matrix_to_vector",
+    "Voigt_to_elastic_tensor",
+    "elastic_tensor_to_Voigt",
+    "Voigt_matrix_to_vector",
     "rotate",
 ]
 
@@ -38,8 +38,8 @@ def upper_tri_to_symmetric(arr):
     return np.where(upper_tri, upper_tri, upper_tri.transpose())
 
 
-def voigt_to_elastic_tensor(matrix):
-    """Create 4-th order elastic tensor from an equivalent voigt matrix."""
+def Voigt_to_elastic_tensor(matrix):
+    """Create 4-th order elastic tensor from an equivalent Voigt matrix."""
     tensor = np.empty((3, 3, 3, 3))
     for p in range(3):
         for q in range(3):
@@ -53,8 +53,8 @@ def voigt_to_elastic_tensor(matrix):
     return tensor
 
 
-def elastic_tensor_to_voigt(tensor):
-    """Create a 6x6 voigt matrix from an equivalent 4-th order elastic tensor."""
+def elastic_tensor_to_Voigt(tensor):
+    """Create a 6x6 Voigt matrix from an equivalent 4-th order elastic tensor."""
     matrix = np.zeros((6, 6))
     matrix_indices = np.zeros((6, 6))
     for p in range(3):
@@ -71,7 +71,7 @@ def elastic_tensor_to_voigt(tensor):
     return (matrix + matrix.transpose()) / 2
 
 
-def voigt_matrix_to_vector(matrix):
+def Voigt_matrix_to_vector(matrix):
     """Create the 21-component Voigt vector equivalent to the 6x6 Voigt matrix."""
     vector = np.zeros(21)
     for i in range(3):
@@ -85,22 +85,23 @@ def voigt_matrix_to_vector(matrix):
     return vector
 
 
-@nb.jit(nopython=True)
+@nb.njit
 def rotate(tensor, rotation):
+    """Rotate 4-th order tensor using a 3x3 rotation matrix."""
     rotated_tensor = np.zeros((3, 3, 3, 3))
     for i in range(3):
         for j in range(3):
             for k in range(3):
-                for l in range(3):
+                for L in range(3):
                     for a in range(3):
                         for b in range(3):
                             for c in range(3):
                                 for d in range(3):
-                                    rotated_tensor[i, j, k, l] += (
+                                    rotated_tensor[i, j, k, L] += (
                                         rotation[i, a]
                                         * rotation[j, b]
                                         * rotation[k, c]
-                                        * rotation[l, d]
+                                        * rotation[L, d]
                                         * tensor[a, b, c, d]
                                     )
     return rotated_tensor

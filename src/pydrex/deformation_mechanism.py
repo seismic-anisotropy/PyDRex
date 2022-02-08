@@ -6,11 +6,11 @@ Public symbols:
 """
 __all__ = ["Regime"]
 
-import enum as e
+from enum import Enum, unique
 
 
-@e.unique
-class Regime(e.Enum):
+@unique
+class Regime(Enum):
     diffusion = 0
     dislocation = 1
     byerlee = 2
