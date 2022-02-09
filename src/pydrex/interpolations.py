@@ -155,7 +155,8 @@ def create_interpolators(interpolator, coords, data, triangles=None, **kwargs):
     Optional kwargs will be passed to the interpolation constructor.
 
     Returns a tuple of interpolator callbacks, one for each data vector component.
-    For scalar data, the tuple contains only one interpolator.
+    For "scalar" data, i.e. arrays of shape (N, 1) where N is the number of nodes,
+    the tuple contains only one interpolator.
 
     The `triangles` arg is required only for "CubicTriInterpolator".
     See the documentation of that constructor for details.
@@ -204,7 +205,7 @@ def create_interpolators(interpolator, coords, data, triangles=None, **kwargs):
 
 def _validate_choice(interpolator, dimension, data):
     """Validate interpolator choice and return constructor class if valid."""
-    is_scalar = len(data.shape) == 1 or (len(data.shape) == 2 and 1 in data.shape)
+    is_scalar = len(data.shape) == 2 and 1 in data.shape
 
     interpolator_choices = {"NearestNDInterpolator": "scipy.interpolate"}
     if not is_scalar and dimension == 2:
