@@ -70,11 +70,10 @@ def read_tuple_array(points, fieldname, skip_z=False):
     return a
 
 
-def read_coord_array(vtkgrid, components, skip_z=False, depth_conversion=True):
+def read_coord_array(vtkgrid, skip_z=False, depth_conversion=True):
     """Read coordinates from `vtkgrid` into a numpy array.
 
-    Extract coordinates with an integer number of `components` from
-    a vtk{Uns,S}tructuredGrid object.
+    Create a numpy array with coordinates extracted from a vtk{Uns,S}tructuredGrid object.
 
     If `skip_z` is True, the third dimension is assumed to be full of zeros.
     This is the standard behaviour for 2D fluidity model output.
@@ -91,6 +90,7 @@ def read_coord_array(vtkgrid, components, skip_z=False, depth_conversion=True):
         coords = _skip_column_every(a, 3)
     else:
         coords = a
-    # Convert Z coordinates from height to depth values.
-    coords[:, -1] = np.amax(coords[:, -1]) - coords[:, -1]
+    if depth_conversion:
+        # Convert Z coordinates from height to depth values.
+        coords[:, -1] = np.amax(coords[:, -1]) - coords[:, -1]
     return coords
