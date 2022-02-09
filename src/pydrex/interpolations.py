@@ -1,9 +1,12 @@
 """PyDRex: Interpolation callbacks and helpers."""
 # NOTE: Module contains delayed imports (search for 'Delayed import' comments).
-import importlib
 import itertools as it
 
 import numpy as np
+
+from scipy.interpolate import CloughTocher2DInterpolator
+from matplotlib.tri import CubicTriInterpolator
+from scipy.interpolate import NearestNDInterpolator
 
 import pydrex.exceptions as _err
 import pydrex.vtk_helpers as _vtk
@@ -46,6 +49,7 @@ def default_interpolators(config, coords, vtk_output, mpl_interp=None):
 
     velocity = _vtk.read_tuple_array(data, "Velocity", skip_z=is_2d)
     velocity_gradient = _vtk.read_tuple_array(data, "VelocityGradient", skip_z=is_2d)
+
     if is_2d:
         fields = (
             "velocity_x",
@@ -70,21 +74,21 @@ def default_interpolators(config, coords, vtk_output, mpl_interp=None):
                     fields,
                     it.chain(
                         create_interpolators(
-                            "CubicTriInterpolator",
+                            CubicTriInterpolator,
                             coords,
                             velocity,
                             triangles=tri_IDs,
                             kind=mpl_interp,
                         ),
                         create_interpolators(
-                            "CubicTriInterpolator",
+                            CubicTriInterpolator,
                             coords,
                             velocity_gradient,
                             triangles=tri_IDs,
                             kind=mpl_interp,
                         ),
                         create_interpolators(
-                            "NearestNDInterpolator",
+                            NearestNDInterpolator,
                             coords,
                             deformation_mechanism,
                         ),
@@ -100,9 +104,9 @@ def default_interpolators(config, coords, vtk_output, mpl_interp=None):
                         *map(
                             create_interpolators,
                             (
-                                "CloughTocher2DInterpolator",
-                                "CloughTocher2DInterpolator",
-                                "NearestNDInterpolator",
+                                CloughTocher2DInterpolator,
+                                CloughTocher2DInterpolator,
+                                NearestNDInterpolator,
                             ),
                             [coords] * 3,
                             (velocity, velocity_gradient, deformation_mechanism),
@@ -132,7 +136,7 @@ def default_interpolators(config, coords, vtk_output, mpl_interp=None):
                 it.chain(
                     *map(
                         create_interpolators,
-                        ["NearestNDInterpolator"] * 3,
+                        [NearestNDInterpolator] * 3,
                         [coords] * 3,
                         (velocity, velocity_gradient, deformation_mechanism),
                     )
@@ -147,83 +151,42 @@ def create_interpolators(interpolator, coords, data, triangles=None, **kwargs):
     """Create interpolator callbacks for data arrays.
 
     Args:
-        `intepolator` (string) — name of interpolator class to use, see below
+        `intepolator` (object) — interpolator class to use
         `coords` (2D or 3D NumPy array) — coordinates of the finite element mesh
         `data` (NumPy array) — data used to create the interpolators
         `triangles` (optional) — 2D triangle vertex indices, see below
 
     Optional kwargs will be passed to the interpolation constructor.
 
-    Returns a tuple of interpolator callbacks, one for each data vector component.
-    For "scalar" data, i.e. arrays of shape (N, 1) where N is the number of nodes,
-    the tuple contains only one interpolator.
+    Returns a list of interpolator callbacks, one for each data vector component.
 
-    The `triangles` arg is required only for "CubicTriInterpolator".
+    The `triangles` arg is required only for `matplotlib.tri.CubicTriInterpolator`.
     See the documentation of that constructor for details.
-
-    Supported interpolator choices (dim = `coords.shape[1]`):
-
-    |                                 |   scalar data   |   vector data   |
-    |       interpolator              |    and dim ==   |    and dim ==   |
-    |                                 |   2    |   3    |   2    |   3    |
-    |---------------------------------------------------------------------|
-    | "CloughTocher2DInterpolator" [1]|        |        |   x    |        |
-    | "CubicTriInterpolator" [2]      |        |        |   x    |        |
-    | "NearestNDInterpolator" [3]     |   x    |   x    |        |   x    |
-
-    [1]: scipy.interpolate.CloughTocher2DInterpolator
-    [2]: matplotlib.tri.CubicTriInterpolator
-    [3]: scipy.interpolate.NearestNDInterpolator
 
     """
     dimension = coords.shape[1]
     assert dimension in (2, 3)
-    # NOTE: Delayed import.
-    interpclass = _validate_choice(interpolator, dimension, data)
 
     if dimension == 2:
-        if interpolator == "CloughTocher2DInterpolator":
+        if interpolator == NearestNDInterpolator:
+            return [interpolator(coords, data, **kwargs)]
+
+        if interpolator == CloughTocher2DInterpolator:
             from scipy.spatial import Delaunay  # NOTE: Delayed import.
 
             tri = Delaunay(coords)
-        elif interpolator == "CubicTriInterpolator":
+        elif interpolator == CubicTriInterpolator:
             if triangles is None:
                 raise ValueError(
-                    "the `triangles` arg is required for {interpolator} interpolation."
+                    "the `triangles` arg is required for CubicTriInterpolator"
                 )
-            from matplotlib.tri import Triangulation  # NOTE: Delayed import.
+            from matplotlib.tri import Triangulation  # NOTE: Delayed import
 
             tri = Triangulation(coords[:, 0], coords[:, 1], triangles=triangles)
 
-        if interpolator == "NearestNDInterpolator":
-            return [interpclass(coords, data, **kwargs)]
+        return [interpolator(tri, data[:, i], **kwargs) for i in range(data.shape[1])]
 
-        return [interpclass(tri, data[:, i], **kwargs) for i in range(data.shape[1])]
-
-    return [interpclass(coords, data[:, i], **kwargs) for i in range(data.shape[1])]
-
-
-def _validate_choice(interpolator, dimension, data):
-    """Validate interpolator choice and return constructor class if valid."""
-    is_scalar = len(data.shape) == 2 and 1 in data.shape
-
-    interpolator_choices = {"NearestNDInterpolator": "scipy.interpolate"}
-    if not is_scalar and dimension == 2:
-        interpolator_choices = {
-            "CloughTocher2DInterpolator": "scipy.interpolate",
-            "CubicTriInterpolator": "matplotlib.tri",
-        }
-
-    if interpolator not in interpolator_choices:
-        raise ValueError(
-            "`interpolator` must be a valid interpolator choice (check documentation)."
-            + f" You've supplied `{interpolator}` with {dimension}D coordinates"
-            + f" and {'scalar' if is_scalar else 'vector'} data."
-        )
-    return getattr(
-        importlib.import_module(interpolator_choices[interpolator]),
-        interpolator
-    )
+    return [interpolator(coords, data[:, i], **kwargs) for i in range(data.shape[1])]
 
 
 def get_velocity(point, interpolators):
