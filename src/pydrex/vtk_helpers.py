@@ -45,7 +45,7 @@ def _skip_column_every(a, n):
     array([], shape=(10, 0), dtype=float64)
     
     """
-    return a[:, np.mod([i for i in range(a.shape[1])], n) != n - 1]
+    return a[:, np.mod(np.arange(a.shape[1]), n) != n - 1]
 
 
 def read_tuple_array(points, fieldname, skip_z=False):
