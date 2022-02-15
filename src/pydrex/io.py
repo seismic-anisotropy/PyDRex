@@ -24,12 +24,12 @@ def parse_params(file):
 
     # TODO: Allow user-given order for Euler angle output (like Fraters 2021)?
     olivine_output = tuple(
-        output.get("olivine", fallback="volume_fraction, rotation_matrix")
+        output.get("olivine", fallback="volume_distribution, orientations")
         .replace(" ", "")
         .split(",")
     )
     enstatite_output = tuple(
-        output.get("enstatite", fallback="volume_fraction, rotation_matrix")
+        output.get("enstatite", fallback="volume_distribution, orientations")
         .replace(" ", "")
         .split(",")
     )
