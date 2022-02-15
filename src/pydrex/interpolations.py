@@ -243,3 +243,8 @@ def get_velocity_gradient(point, interpolators):
             ],
         ]
     )
+
+
+def get_deformation_mechanism(point, interpolators):
+    """Return the interpolated deformation mechanism ID at the given point."""
+    return interpolators["deformation_mechanism"](*point)
