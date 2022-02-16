@@ -211,7 +211,7 @@ def get_velocity(point, interpolators):
 def get_velocity_gradient(point, interpolators):
     """Return the interpolated velocity gradient tensor at a given point."""
     if len(point) == 2:
-        return np.array(
+        velocity_gradient = np.array(
             [
                 [
                     interpolators["grad_velocity_xx"](*point),
@@ -223,26 +223,28 @@ def get_velocity_gradient(point, interpolators):
                 ],
             ]
         )
-
-    return np.array(
-        [
+    else:
+        velocity_gradient = np.array(
             [
-                interpolators["grad_velocity_xx"](*point),
-                interpolators["grad_velocity_xy"](*point),
-                -interpolators["grad_velocity_xz"](*point),
-            ],
-            [
-                interpolators["grad_velocity_yx"](*point),
-                interpolators["grad_velocity_yy"](*point),
-                -interpolators["grad_velocity_yz"](*point),
-            ],
-            [
-                -interpolators["grad_velocity_zx"](*point),
-                -interpolators["grad_velocity_zy"](*point),
-                interpolators["grad_velocity_zz"](*point),
-            ],
-        ]
-    )
+                [
+                    interpolators["grad_velocity_xx"](*point),
+                    interpolators["grad_velocity_xy"](*point),
+                    -interpolators["grad_velocity_xz"](*point),
+                ],
+                [
+                    interpolators["grad_velocity_yx"](*point),
+                    interpolators["grad_velocity_yy"](*point),
+                    -interpolators["grad_velocity_yz"](*point),
+                ],
+                [
+                    -interpolators["grad_velocity_zx"](*point),
+                    -interpolators["grad_velocity_zy"](*point),
+                    interpolators["grad_velocity_zz"](*point),
+                ],
+            ]
+        )
+    assert abs(np.trace(velocity_gradient)) < 1e-15
+    return velocity_gradient
 
 
 def get_deformation_mechanism(point, interpolators):
