@@ -31,10 +31,11 @@ def solve(config, interpolators, node):
 
     Args:
         `config` (dict) — PyDRex configuration dictionary
-        `interpolators` (dict) — interpolator callbacks for input fields
-        `node` (tuple) — coordinates of the interpolation grid node
+        `interpolators` (dict) — interpolants for the input fields
+        `node` (iterable) — indices of the interpolation grid node
 
     Returns a tuple containing:
+    - the input `node` (for easier tracking during multiprocessing)
     - the finite strain ellipsoid
     - the olivine orientation matrices
     - the enstatite orientation matrices
@@ -49,13 +50,13 @@ def solve(config, interpolators, node):
             for coord, i in zip(config["mesh"]["gridcoords"], node)
         ]
     )
-    # Calculate pathline (timestamps and a callback).
+    # Calculate pathline (timestamps and an interpolant).
     path_times, path_eval = get_pathline(
         point, interpolators, config["mesh"]["gridmin"], config["mesh"]["gridmax"]
     )
     # TODO: Handle this in pathline construction somehow?
     # Skip the first timestep if it is outside the numerical domain.
-    # Needed because `pathline` will stop _after_ checking _is_inside in _max_strain.
+    # Needed because `get_pathline` will stop after checking _is_inside in _max_strain.
     for t in reversed(path_times):
         if _is_inside(
             path_eval(t), config["mesh"]["gridmin"], config["mesh"]["gridmax"]
@@ -83,7 +84,7 @@ def solve(config, interpolators, node):
         # Imposed macroscopic strain rate tensor.
         strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
         # Strain rate scale (max. eigenvalue of strain rate).
-        strain_rate_max = np.abs(np.eigvalsh(strain_rate)).max()
+        strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
 
         grid_steps = _get_steps(config["mesh"]["gridcoords"])
         dt_pathline = min(
@@ -93,15 +94,19 @@ def solve(config, interpolators, node):
         dt = min(dt_pathline, 1e-2 / strain_rate_max)
         n_iter = int(dt_pathline / dt)
 
+        # Dimensionless strain rate and velocity gradient.
+        _strain_rate = strain_rate / strain_rate_max
+        _velocity_gradient = velocity_gradient / strain_rate_max
+
         for _ in range(n_iter):
             # TODO: Handle deformation mechanism regimes.
             finite_strain_ell = update_strain(finite_strain_ell, velocity_gradient, dt)
             olivine_orientations, olivine_vol_dist = update_orientations(
                 olivine_orientations,
                 olivine_vol_dist,
-                strain_rate,
+                _strain_rate,
                 strain_rate_max,
-                velocity_gradient,
+                _velocity_gradient,
                 _fabric.RRSS_OLIVINE_A,
                 config,
                 dt,
@@ -109,9 +114,9 @@ def solve(config, interpolators, node):
             enstatite_orientations, enstatite_vol_dist = update_orientations(
                 enstatite_orientations,
                 enstatite_vol_dist,
-                strain_rate,
+                _strain_rate,
                 strain_rate_max,
-                velocity_gradient,
+                _velocity_gradient,
                 _fabric.RRSS_ENSTATITE,
                 config,
                 dt,
@@ -119,6 +124,7 @@ def solve(config, interpolators, node):
 
         time += n_iter * dt
     return (
+        node,
         finite_strain_ell,
         olivine_orientations,
         enstatite_orientations,
@@ -165,8 +171,8 @@ def get_pathline(point, interpolators, min_coords, max_coords):
         `min_coords` (iterable) — lower bound coordinate of the interpolation grid
         `max_coords` (iterable) — upper bound coordinate of the interpolation grid
 
-    Returns a tuple containing the time points and a callback that can be used
-    to evaulate the pathline position (see `scipy.integrate.OdeSolution`).
+    Returns a tuple containing the time points and an interpolant that can be used
+    to evaluate the pathline position (see `scipy.integrate.OdeSolution`).
 
     """
 
@@ -178,11 +184,10 @@ def get_pathline(point, interpolators, min_coords, max_coords):
 
         if _is_inside(point, min_coords, max_coords):
             velocity_gradient = _interp.get_velocity_gradient(point, interpolators)
-            assert abs(np.trace(velocity_gradient)) < 1e-15
             # Imposed macroscopic strain rate tensor.
             strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
             # Strain rate scale (max. eigenvalue of strain rate).
-            strain_rate_max = np.abs(np.eigvalsh(strain_rate)).max()
+            strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
             event_strain_prev = event_strain
             event_strain += abs(time - event_time) * strain_rate_max
             if event_strain >= 10:
@@ -201,7 +206,7 @@ def get_pathline(point, interpolators, min_coords, max_coords):
     # Initial condition is the final position of the crystal.
     # Solve backwards in time until outside the domain or max. strain reached.
     # We don't want to stop at a particular time,
-    # so integrate time for 100e6 days, in seconds (forever).
+    # so integrate time for 100 Myr, in seconds (forever).
     path = si.solve_ivp(
         _ivp_func,
         [0, -100e6 * 365.25 * 8.64e4],
@@ -220,28 +225,28 @@ def get_pathline(point, interpolators, min_coords, max_coords):
 
 
 def _ivp_func(time, point, interpolators, min_coords, max_coords):
-    """Internal use only, changing function signature requires changes in `pathline`."""
+    """Internal use only, must have the same signature as `get_pathline`."""
     if _is_inside(point, min_coords, max_coords):
-        return _interp.get_velocity_gradient(point, interpolators)
-    return np.zeros(np.asarray(point).shape)
+        return _interp.get_velocity(point, interpolators)
+    return np.zeros_like(point)
 
 
 def _ivp_jac(time, point, interpolators, min_coords, max_coords):
     """Internal use only, must have the same signature as `_ivp_func`."""
     if _is_inside(point, min_coords, max_coords):
         return _interp.get_velocity_gradient(point, interpolators)
-    return np.zeros([np.asarray(point).size] * 2)
+    return np.zeros((point.size,) * 2)
 
 
 def _is_inside(point, min_coords, max_coords):
-    """Check if point lies within the numerical domain."""
-    assert len(point) == len(min_coords)
-    assert len(point) == len(max_coords)
+    """Check if the point lies within the numerical domain."""
+    assert point.size == len(min_coords) == len(max_coords)
     if np.any(point < min_coords) or np.any(point > max_coords):
         return False
     return True
 
 
+#@nb.njit(fastmath=True)
 def update_strain(finite_strain_ell, velocity_gradient, dt):
     """Update finite strain ellipsoid using the RK4 scheme."""
     fse1 = np.dot(velocity_gradient, finite_strain_ell) * dt
@@ -255,7 +260,7 @@ def update_strain(finite_strain_ell, velocity_gradient, dt):
     return finite_strain_ell
 
 
-@nb.njit(fastmath=True)
+#@nb.njit(fastmath=True)
 def update_orientations(
     orientations,
     vol_dist,
@@ -267,15 +272,11 @@ def update_orientations(
     dt,
 ):
     """Update CPO orientations and their volume distribution using the RK4 scheme."""
-    # Dimensionless strain rate and velocity gradient.
-    _strain_rate = strain_rate / strain_rate_max
-    _velocity_gradient = velocity_gradient / strain_rate_max
-
     # ========== RK step 1 ==========
-    (rotation_rates, slip_rates, slip_indices, slip_rate_softest,) = get_rotation_rates(
+    rotation_rates, slip_rates, slip_indices, slip_rate_softest = get_rotation_rates(
         orientations,
-        _strain_rate,
-        _velocity_gradient,
+        strain_rate,
+        velocity_gradient,
         rrss,
         config["stress_exponent"],
     )
@@ -288,27 +289,29 @@ def update_orientations(
         config["stress_exponent"],
         config["nucleation_efficiency"],
     )
-    if rrss == _fabric.RRSS_OLIVINE_A:
+    if np.all(rrss == _fabric.RRSS_OLIVINE_A):
         vol_dist_diff = (
             config["olivine_fraction"] * config["gbm_mobility"] * strain_residuals
         )
-    elif rrss == _fabric.RRSS_ENSTATITE:
+    elif np.all(rrss == _fabric.RRSS_ENSTATITE):
         vol_dist_diff = (
             config["enstatite_fraction"] * config["gbm_mobility"] * strain_residuals
         )
 
     orientations_1 = rotation_rates * dt * strain_rate_max
-    orientations_iter = np.clip(orientations + 0.5 * orientations_1, -1, 1)
+    orientations_iter = orientations + 0.5 * orientations_1
+    orientations_iter.clip(-1, 1)
     vol_dist_1 = vol_dist_diff * dt * strain_rate_max
-    vol_dist_iter = np.clip(vol_dist + 0.5 * vol_dist_1, 0, None)
+    vol_dist_iter = vol_dist + 0.5 * vol_dist_1
+    vol_dist_iter.clip(0, None)
     vol_dist_iter /= vol_dist_iter.sum()
 
     # ========== RK step 2 ==========
 
-    (rotation_rates, slip_rates, slip_indices, slip_rate_softest,) = get_rotation_rates(
+    rotation_rates, slip_rates, slip_indices, slip_rate_softest = get_rotation_rates(
         orientations_iter,
-        _strain_rate,
-        _velocity_gradient,
+        strain_rate,
+        velocity_gradient,
         rrss,
         config["stress_exponent"],
     )
@@ -321,27 +324,29 @@ def update_orientations(
         config["stress_exponent"],
         config["nucleation_efficiency"],
     )
-    if rrss == _fabric.RRSS_OLIVINE_A:
+    if np.all(rrss == _fabric.RRSS_OLIVINE_A):
         vol_dist_diff = (
             config["olivine_fraction"] * config["gbm_mobility"] * strain_residuals
         )
-    elif rrss == _fabric.RRSS_ENSTATITE:
+    elif np.all(rrss == _fabric.RRSS_ENSTATITE):
         vol_dist_diff = (
             config["enstatite_fraction"] * config["gbm_mobility"] * strain_residuals
         )
 
     orientations_2 = rotation_rates * dt * strain_rate_max
-    orientations_iter = np.clip(orientations_iter + 0.5 * orientations_2, -1, 1)
+    orientations_iter = orientations_iter + 0.5 * orientations_2
+    orientations_iter.clip(-1, 1)
     vol_dist_2 = vol_dist_diff * dt * strain_rate_max
-    vol_dist_iter = np.clip(vol_dist_iter + 0.5 * vol_dist_2, 0, None)
+    vol_dist_iter = vol_dist_iter + 0.5 * vol_dist_2
+    vol_dist_iter.clip(0, None)
     vol_dist_iter /= vol_dist_iter.sum()
 
-    # ========== rk step 3 ==========
+    # ========== RK step 3 ==========
 
-    (rotation_rates, slip_rates, slip_indices, slip_rate_softest,) = get_rotation_rates(
+    rotation_rates, slip_rates, slip_indices, slip_rate_softest = get_rotation_rates(
         orientations_iter,
-        _strain_rate,
-        _velocity_gradient,
+        strain_rate,
+        velocity_gradient,
         rrss,
         config["stress_exponent"],
     )
@@ -354,27 +359,29 @@ def update_orientations(
         config["stress_exponent"],
         config["nucleation_efficiency"],
     )
-    if rrss == _fabric.RRSS_OLIVINE_A:
+    if np.all(rrss == _fabric.RRSS_OLIVINE_A):
         vol_dist_diff = (
             config["olivine_fraction"] * config["gbm_mobility"] * strain_residuals
         )
-    elif rrss == _fabric.RRSS_ENSTATITE:
+    elif np.all(rrss == _fabric.RRSS_ENSTATITE):
         vol_dist_diff = (
             config["enstatite_fraction"] * config["gbm_mobility"] * strain_residuals
         )
 
     orientations_3 = rotation_rates * dt * strain_rate_max
-    orientations_iter = np.clip(orientations_iter + orientations_3, -1, 1)
+    orientations_iter = orientations_iter + orientations_3
+    orientations_iter.clip(-1, 1)
     vol_dist_3 = vol_dist_diff * dt * strain_rate_max
-    vol_dist_iter = np.clip(vol_dist_iter + vol_dist_3, 0, None)
+    vol_dist_iter = vol_dist_iter + vol_dist_3
+    vol_dist_iter.clip(0, None)
     vol_dist_iter /= vol_dist_iter.sum()
 
-    # ========== rk step 4 ==========
+    # ========== RK step 4 ==========
 
-    (rotation_rates, slip_rates, slip_indices, slip_rate_softest,) = get_rotation_rates(
+    rotation_rates, slip_rates, slip_indices, slip_rate_softest = get_rotation_rates(
         orientations_iter,
-        _strain_rate,
-        _velocity_gradient,
+        strain_rate,
+        velocity_gradient,
         rrss,
         config["stress_exponent"],
     )
@@ -387,23 +394,18 @@ def update_orientations(
         config["stress_exponent"],
         config["nucleation_efficiency"],
     )
-    if rrss == _fabric.RRSS_OLIVINE_A:
+    if np.all(rrss == _fabric.RRSS_OLIVINE_A):
         vol_dist_diff = (
             config["olivine_fraction"] * config["gbm_mobility"] * strain_residuals
         )
-    elif rrss == _fabric.RRSS_ENSTATITE:
+    elif np.all(rrss == _fabric.RRSS_ENSTATITE):
         vol_dist_diff = (
             config["enstatite_fraction"] * config["gbm_mobility"] * strain_residuals
         )
 
     orientations_4 = rotation_rates * dt * strain_rate_max
-    orientations_new = np.clip(
-        orientations
-        + (orientations_1 / 2 + orientations_2 + orientations_3 + orientations_4 / 2)
-        / 3,
-        -1,
-        1,
-    )
+    orientations_new = orientations + (orientations_1 / 2 + orientations_2 + orientations_3 + orientations_4 / 2) / 3
+    orientations_new.clip(-1, 1)
     vol_dist_4 = vol_dist_diff * dt * strain_rate_max
     vol_dist_new = (vol_dist_1 / 2 + vol_dist_2 + vol_dist_3 + vol_dist_4 / 2) / 3
     vol_dist_new /= vol_dist_new.sum()
@@ -411,13 +413,13 @@ def update_orientations(
     # Grain boundary sliding for small grains.
     mask = vol_dist_new < config["gbs_threshold"] / config["number_of_grains"]
     orientations_new[mask, :, :] = orientations[mask, :, :]
-    vol_dist_new[mask, :, :] = config["gbs_threshold"] / config["number_of_grains"]
+    vol_dist_new[mask] = config["gbs_threshold"] / config["number_of_grains"]
     vol_dist_new /= vol_dist_new.sum()
 
     return orientations_new, vol_dist_new
 
 
-@nb.njit(fastmath=True)
+#@nb.njit(fastmath=True)
 def _get_deformation_rate(orientation, slip_rates, rrss, velocity_gradient):
     """Calculate deformation rate tensor and dimensionless slip rate.
 
@@ -428,14 +430,14 @@ def _get_deformation_rate(orientation, slip_rates, rrss, velocity_gradient):
     deformation_rate = np.empty((3, 3))
     for j in range(3):
         for k in range(3):
-            if rrss == _fabric.RRSS_OLIVINE_A:
+            if np.all(rrss == _fabric.RRSS_OLIVINE_A):
                 deformation_rate[j, k] = 2 * (
                     slip_rates[0] * orientation[0, j] * orientation[1, k]
                     + slip_rates[1] * orientation[0, j] * orientation[2, k]
                     + slip_rates[2] * orientation[2, j] * orientation[1, k]
                     + slip_rates[3] * orientation[2, j] * orientation[0, k]
                 )
-            elif rrss == _fabric.RRSS_ENSTATITE:
+            elif np.all(rrss == _fabric.RRSS_ENSTATITE):
                 deformation_rate[j, k] = 2 * orientation[2, j] * orientation[0, k]
 
     # Dimensionless strain rate on the softest slip system, see eq. 4 in Fraters 2021.
@@ -443,8 +445,8 @@ def _get_deformation_rate(orientation, slip_rates, rrss, velocity_gradient):
     denominator = 0
 
     for j in range(3):
-        # NOTE: Mistake in Kaminski 2001 eq. 7: j + 1, see Fraters & Billen 2021 S1.
-        k = (j + 2) % 3
+        # NOTE: Mistake in original DRex code (j + 2), see Fraters & Billen 2021 S1.
+        k = (j + 1) % 3
         enumerator -= (velocity_gradient[j, k] - velocity_gradient[k, j]) * (
             deformation_rate[j, k] - deformation_rate[k, j]
         )
@@ -461,7 +463,7 @@ def _get_deformation_rate(orientation, slip_rates, rrss, velocity_gradient):
     return deformation_rate, slip_rate_softest
 
 
-@nb.jit(fastmath=True)
+#@nb.njit(fastmath=True)
 def _get_slip_rates(orientation, strain_rate, rrss, stress_exponent):
     """Calculate relative slip rates of the active slip systems.
 
@@ -470,7 +472,7 @@ def _get_slip_rates(orientation, strain_rate, rrss, stress_exponent):
 
     """
     # TODO: 2d?
-    if rrss == _fabric.RRSS_OLIVINE_A:
+    if np.all(rrss == _fabric.RRSS_OLIVINE_A):
         # Strain rate invariants for the four slip systems.
         invariants = np.zeros(4)
         for j in range(3):
@@ -501,13 +503,13 @@ def _get_slip_rates(orientation, strain_rate, rrss, stress_exponent):
         slip_rates[i_int] = ratio_int * np.abs(ratio_int) ** (stress_exponent - 1)
         slip_rates[i_max] = 1
         slip_indices = (i_inac, i_min, i_int, i_max)
-    elif rrss == _fabric.RRSS_ENSTATITE:
+    elif np.all(rrss == _fabric.RRSS_ENSTATITE):
         slip_rates = np.repeat(np.nan, 4)
-        slip_indices = np.argsort(rrss)
+        slip_indices = np.argsort(1 / rrss)
     return slip_rates, slip_indices
 
 
-@nb.njit(fastmath=True)
+#@nb.njit(fastmath=True)
 def get_rotation_rates(
     orientations, strain_rate, velocity_gradient, rrss, stress_exponent
 ):
@@ -517,7 +519,7 @@ def get_rotation_rates(
         `orientations` (NxDxD array) — present orientation matrices (direction cosines)
         `strain_rate` (DxD array) — dimensionless macroscopic strain rate tensor
         `velocity_gradient` (DxD array) — dimensionless velocity gradient tensor
-        `rrss` (array) — reference resolved shear stress for each slip system
+        `rrss` (array) — dimensionless reference resolved shear stress for each slip system
         `stress_exponent` (float) — exponent for the stress dependence of dislocation density
 
     N is the number of volume elements. D is the number of dimensions.
@@ -526,6 +528,8 @@ def get_rotation_rates(
     Returns a tuple containing:
     - the rotation rates (3D array)
     - the slip rates along each slip system
+    - the indices that sort the RRSS by increasing slip system activity
+    - the dimensionless rate of slip on the softest slip system
 
     See also equations 8, 9 & 14 in Kaminski 2001 [1] and equations 12 & 13 in Kaminski 2004 [2].
 
@@ -575,7 +579,7 @@ def get_rotation_rates(
     return rotation_rates, slip_rates, slip_indices, slip_rate_softest
 
 
-@nb.njit(fastmath=True)
+#@nb.njit(fastmath=True)
 def get_strain_energy_residuals(
     vol_dist,
     slip_rates,
@@ -592,6 +596,7 @@ def get_strain_energy_residuals(
         `slip_rates` (array) — slip rates relative to slip rate on softest slip system
         `slip_indices` (array) — indices that sort the RRSS by increasing slip rate activity
         `slip_rate_softest` (float) — slip rate on the softest (most active) slip system
+        `rrss` (array) — dimensionless reference resolved shear stress for each slip system
         `stress_exponent` (float) — exponent for the stress dependence of dislocation density
         `nucleation_efficiency` (float) — parameter controlling grain nucleation
 
@@ -602,7 +607,7 @@ def get_strain_energy_residuals(
         # Dimensionless dislocation density for each slip system.
         # See eq. 16 Fraters 2021.
         # NOTE: Mistake in eq. 11, Kaminski 2004: spurrious division by strain rate scale.
-        if rrss == _fabric.RRSS_OLIVINE_A:
+        if np.all(rrss == _fabric.RRSS_OLIVINE_A):
             for i in slip_indices[1:]:
                 # TODO: Verify rrss[i] == τ_0 / τ^sv
                 dislocation_density = rrss[i] ** (1.5 - stress_exponent) * np.abs(
@@ -612,15 +617,14 @@ def get_strain_energy_residuals(
                 strain_energies[element_index] += dislocation_density * np.exp(
                     -nucleation_efficiency * dislocation_density ** 2
                 )
-        elif rrss == _fabric.RRSS_ENSTATITE:
-            # NOTE: Mistake in old PyDRex: x / y ** a != (x / y) ** a
-            # See original DRex code, line 1437.
+        elif np.all(rrss == _fabric.RRSS_ENSTATITE):
             # TODO: What is this? Why is it required?
             weight_factor = slip_rate_softest * rrss[slip_indices[0]] ** (
                 -stress_exponent
             )
             # TODO: Verify rrss[i] == τ_0 / τ^sv
-            dislocation_density = rrss[i] ** (1.5 - stress_exponent) * np.abs(
+            assert rrss[slip_indices[-1]] == 1
+            dislocation_density = rrss[[slip_indices[-1]]] ** (1.5 - stress_exponent) * np.abs(
                 weight_factor
             ) ** (1.5 / stress_exponent)
             # Dimensionless strain energy for this element, see eq. 14, Fraters 2021.
