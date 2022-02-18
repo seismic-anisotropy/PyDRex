@@ -11,6 +11,8 @@ performed at the centre point. For computational efficiency, the DRex model trea
 any interactions with other elements as interactions with an averaged effective medium.
 
 """
+import logging
+
 import numpy as np
 import numba as nb
 import numpy.linalg as la
@@ -77,15 +79,24 @@ def solve(config, interpolators, node):
 
     while time < path_times[0]:
         point = path_eval(time)
+        logging.debug("Calculating CPO for point %s, integration time %s", point, time)
         # Get interpolated field values.
         velocity = _interp.get_velocity(point, interpolators)
         velocity_gradient = _interp.get_velocity_gradient(point, interpolators)
         # deformation_mechanism = _interp.get_deformation_mechanism(point, interpolators)
 
+        logging.debug("max. velocity: %s", velocity.max())
+        logging.debug("min. velocity: %s", velocity.min())
+        logging.debug("l2 norm of velocity: %s", la.norm(velocity, ord=2))
+        logging.debug("max. velocity gradient: %s", velocity_gradient.max())
+        logging.debug("min. velocity gradient: %s", velocity_gradient.min())
+
         # Imposed macroscopic strain rate tensor.
         strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
         # Strain rate scale (max. eigenvalue of strain rate).
         strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
+
+        logging.debug("max. strain rate: %s", strain_rate_max)
 
         grid_steps = np.array(
             [config["mesh"]["gridsteps"][i, n] for i, n in enumerate(node)]
@@ -96,6 +107,10 @@ def solve(config, interpolators, node):
         )
         dt = min(dt_pathline, 1e-2 / strain_rate_max)
         n_iter = int(dt_pathline / dt)
+
+        logging.debug("time step: %s", dt)
+        if n_iter > 1:
+            logging.debug("repeating advection evaluation %s times", n_iter)
 
         # Dimensionless strain rate and velocity gradient.
         _strain_rate = strain_rate / strain_rate_max
@@ -126,6 +141,34 @@ def solve(config, interpolators, node):
             )
 
         time += n_iter * dt
+
+    logging.debug("finite strain ellipsoid:\n%s", finite_strain_ell)
+    logging.debug(
+        "largest values in olivine orientations:\n%s", olivine_orientations.max(axis=0)
+    )
+    logging.debug(
+        "smallest values in olivine orientations:\n%s", olivine_orientations.min(axis=0)
+    )
+    logging.debug(
+        "largest values in enstatite orientations:\n%s",
+        enstatite_orientations.max(axis=0),
+    )
+    logging.debug(
+        "smallest values in enstatite orientations:\n%s",
+        enstatite_orientations.min(axis=0),
+    )
+    logging.debug(
+        "largest value in olivine volume distribution:\n%s", olivine_vol_dist.max()
+    )
+    logging.debug(
+        "smallest value in olivine volume distribution:\n%s", olivine_vol_dist.min()
+    )
+    logging.debug(
+        "largest value in enstatite volume distribution:\n%s", enstatite_vol_dist.max()
+    )
+    logging.debug(
+        "smallest value in enstatite volume distribution:\n%s", enstatite_vol_dist.min()
+    )
     return (
         node,
         finite_strain_ell,
@@ -248,13 +291,13 @@ def update_orientations(
     dt,
 ):
     """Update CPO orientations and their volume distribution using the RK4 scheme.
-    
+
     Args:
         `orientations` (NxDxD array) — present orientation matrices (direction cosines)
         `vol_dist` (array) — present volume distribution
         `strain_rate` (DxD array) — dimensionless macroscopic strain rate tensor
         `strain_rate_max` (float) — strain rate scale (max. eigenvalue of strain rate)
-        `velocity_gradient` (DxD array) — dimensionless velocity gradient tensor 
+        `velocity_gradient` (DxD array) — dimensionless velocity gradient tensor
         `rrss` (array) — dimensionless reference resolved shear stress for each slip system
         `config` (dict) — PyDRex configuration dictionary
         `dt` (float) — advection time step
@@ -262,7 +305,7 @@ def update_orientations(
     N is the number of volume elements. D is the number of dimensions.
     Currently only supports 3D calculations.
     Requires pre-computed `strain_rate_max` for improved performance.
-        
+
     """
     is_olivine = np.all(rrss == _fabric.RRSS_OLIVINE_A)
     n_elements = orientations.shape[0]
