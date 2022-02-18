@@ -125,6 +125,7 @@ def create_mesh(gridcoords):
                 "dimension",
                 "gridnodes",
                 "gridcoords",
+                "gridsteps",
                 "gridmin",
                 "gridmax",
             ],
@@ -132,8 +133,35 @@ def create_mesh(gridcoords):
                 dimension,
                 [arr.size for arr in gridcoords],
                 gridcoords,
+                _get_steps(gridcoords),
                 [arr.min() for arr in gridcoords],
                 [arr.min() for arr in gridcoords],
             ],
         )
+    )
+
+
+def _get_steps(a):
+    """Get forward difference of 2D array `a`, with repeated last elements.
+
+    The repeated last elements ensure that output and input arrays have equal shape.
+
+    Examples:
+
+    >>> _get_steps(np.array([1, 2, 3, 4, 5]))
+    array([[1, 1, 1, 1, 1]])
+
+    >>> _get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10]]))
+    array([[1, 1, 1, 1, 1],
+           [2, 3, 3, 1, 1]])
+
+    >>> _get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10], [1, 0, 0, 0, np.inf]]))
+    array([[ 1.,  1.,  1.,  1.,  1.],
+           [ 2.,  3.,  3.,  1.,  1.],
+           [-1.,  0.,  0., inf, nan]])
+
+    """
+    a2 = np.atleast_2d(a)
+    return np.diff(
+        a2, append=np.reshape(a2[:, -1] + (a2[:, -1] - a2[:, -2]), (a2.shape[0], 1))
     )
