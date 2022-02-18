@@ -548,7 +548,7 @@ def _get_rotation_rate(
 ):
     """Calculate the rotation rate for a volume element undergoing dislocation creep."""
     # TODO: 2d?
-    rotation_rate = np.empty((3, 3))
+    rotation_rate = np.zeros((3, 3))
     # Spin vector for the volume element, see eq. 3 in Fraters 2021.
     spin_vector = np.empty(3)
     for j in range(3):
