@@ -87,7 +87,9 @@ def solve(config, interpolators, node):
         # Strain rate scale (max. eigenvalue of strain rate).
         strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
 
-        grid_steps = _get_steps(config["mesh"]["gridcoords"])
+        grid_steps = np.array(
+            [config["mesh"]["gridsteps"][i, n] for i, n in enumerate(node)]
+        )
         dt_pathline = min(
             np.min(grid_steps) / 4 / la.norm(velocity, ord=2),
             path_times[0] - time,
@@ -131,32 +133,6 @@ def solve(config, interpolators, node):
         enstatite_orientations,
         olivine_vol_dist,
         enstatite_vol_dist,
-    )
-
-
-def _get_steps(a):
-    """Get forward difference of 2D array `a`, with repeated last elements.
-
-    The repeated last elements ensure that output and input arrays have equal shape.
-
-    Examples:
-
-    >>> _get_steps(np.array([1, 2, 3, 4, 5]))
-    array([[1, 1, 1, 1, 1]])
-
-    >>> _get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10]]))
-    array([[1, 1, 1, 1, 1],
-           [2, 3, 3, 1, 1]])
-
-    >>> _get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10], [1, 0, 0, 0, np.inf]]))
-    array([[ 1.,  1.,  1.,  1.,  1.],
-           [ 2.,  3.,  3.,  1.,  1.],
-           [-1.,  0.,  0., inf, nan]])
-
-    """
-    a2 = np.atleast_2d(a)
-    return np.diff(
-        a2, append=np.reshape(a2[:, -1] + (a2[:, -1] - a2[:, -2]), (a2.shape[0], 1))
     )
 
 
