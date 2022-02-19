@@ -135,7 +135,7 @@ def create_mesh(gridcoords):
                 gridcoords,
                 _get_steps(gridcoords),
                 [arr.min() for arr in gridcoords],
-                [arr.min() for arr in gridcoords],
+                [arr.max() for arr in gridcoords],
             ],
         )
     )
