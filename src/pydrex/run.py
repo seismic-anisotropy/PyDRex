@@ -67,6 +67,8 @@ def main():
         handlers=[PIDFileHandler("pydrex.log")],
         format="%(asctime)s [%(levelname)s] %(message)s",
     )
+    numba_logger = logging.getLogger("numba")
+    numba_logger.setLevel(logging.WARNING)
     logging.captureWarnings(True)
 
     if args.charm and args.ncpus:
