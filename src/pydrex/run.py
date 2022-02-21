@@ -257,13 +257,13 @@ def _update_diagnostics(
     olivine_vol_dist,
     enstatite_vol_dist,
 ):
-    n_completed_nodes = np.sum(diagnostics["grid_mask_completed"] == 1)
     diagnostics["finite_strain_ell"][node] = finite_strain_ell
     diagnostics["olivine_orientations"][node, :, :, :] = olivine_orientations
     diagnostics["enstatite_orientations"][node, :, :, :] = enstatite_orientations
     diagnostics["olivine_volume_distribution"][node, :] = olivine_vol_dist
     diagnostics["enstatite_volume_distribution"][node, :] = enstatite_vol_dist
     diagnostics["grid_mask_completed"][node] = 1
+    n_completed_nodes = np.sum(diagnostics["grid_mask_completed"] == 1)
 
     begin = diagnostics["_begin"]
     now = time.perf_counter()
