@@ -108,6 +108,7 @@ def solve(config, interpolators, node):
         dt = min(dt_pathline, 1e-2 / strain_rate_max)
         n_iter = int(dt_pathline / dt)
 
+        logging.debug("grid steps: %s", grid_steps)
         logging.debug("time step: %s", dt)
         if n_iter > 1:
             logging.debug("repeating advection evaluation %s times", n_iter)
