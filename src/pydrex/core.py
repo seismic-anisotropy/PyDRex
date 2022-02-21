@@ -523,9 +523,7 @@ def _get_slip_rate_softest(deformation_rate, velocity_gradient):
             enumerator += 2 * deformation_rate[j, L] * velocity_gradient[j, L]
             denominator += 2 * deformation_rate[j, L] ** 2
 
-        slip_rate_softest = enumerator / denominator
-
-    return slip_rate_softest
+    return enumerator / denominator
 
 
 @nb.njit(fastmath=True)
@@ -628,10 +626,7 @@ def _get_strain_energy(
                 -nucleation_efficiency * dislocation_density ** 2
             )
     elif np.all(rrss == _fabric.RRSS_ENSTATITE):
-        # TODO: What is this? Why is it required?
-        weight_factor = slip_rate_softest * rrss[slip_indices[0]] ** (-stress_exponent)
-        # TODO: Verify rrss[i] == τ_0 / τ^sv
-        assert rrss[slip_indices[-1]] == 1
+        weight_factor = slip_rate_softest / rrss[slip_indices[-1]] ** stress_exponent
         dislocation_density = rrss[slip_indices[-1]] ** (
             1.5 - stress_exponent
         ) * np.abs(weight_factor) ** (1.5 / stress_exponent)
@@ -639,5 +634,7 @@ def _get_strain_energy(
         strain_energy = dislocation_density * np.exp(
             -nucleation_efficiency * dislocation_density ** 2
         )
+    else:
+        return np.nan
 
     return strain_energy
