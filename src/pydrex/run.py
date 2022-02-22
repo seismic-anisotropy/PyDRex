@@ -88,31 +88,12 @@ def main():
         else:
             raise ImportError("no module named 'charm4py'")
     elif args.ncpus:
-        # TODO: Run using Python's multiprocessing module.
-        assert False, "shared-memory multiprocessing not implemented yet..."
-
-    #        config, interpolators, diagnostics = _setup(args)
-    #        solve = ft.partial(_core.solve, config, interpolators)
-    #        nodes2do = np.asarray(diagnostics["grid_mask_completed"] == 0).nonzero()
-    #        with Pool(processes=args.ncpus) as pool:
-    #            for (
-    #                node,
-    #                finite_strain_ell,
-    #                olivine_orientations,
-    #                enstatite_orientations,
-    #                olivine_vol_dist,
-    #                enstatite_vol_dist,
-    #            ) in pool.imap_unordered(solve, zip(*nodes2do)):
-    #                _update_diagnostics(
-    #                    diagnostics,
-    #                    config,
-    #                    node,
-    #                    finite_strain_ell,
-    #                    olivine_orientations,
-    #                    enstatite_orientations,
-    #                    olivine_vol_dist,
-    #                    enstatite_vol_dist,
-    #                )
+        config, interpolators, diagnostics = _setup(args)
+        solve = ft.partial(_core.solve, config, interpolators)
+        nodes2do = np.asarray(diagnostics["grid_mask_completed"] == 0).nonzero()
+        with Pool(processes=args.ncpus) as pool:
+            for results in pool.imap_unordered(solve, zip(*nodes2do)):
+                _update_diagnostics(diagnostics, config, *results)
     else:
         warnings.warn("PyDRex was started without multiprocessing")
         config, interpolators, diagnostics = _setup(args)
@@ -273,7 +254,7 @@ def _update_diagnostics(
 
     n_total_nodes = np.prod(diagnostics["grid_mask_completed"].shape)
     logging.info(
-        "Completed node %s/%s in %s:%s:%s",
+        "Completed node %s/%s at %s:%s:%s",
         n_completed_nodes,
         n_total_nodes,
         hours,
