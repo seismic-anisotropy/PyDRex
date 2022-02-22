@@ -272,13 +272,13 @@ def _is_inside(point, min_coords, max_coords):
 @nb.njit(fastmath=True)
 def update_strain(finite_strain_ell, velocity_gradient, dt):
     """Update finite strain ellipsoid using the RK4 scheme."""
-    fse1 = np.dot(velocity_gradient, finite_strain_ell) * dt
+    fse1 = velocity_gradient @ finite_strain_ell * dt
     fsei = finite_strain_ell + 0.5 * fse1
-    fse2 = np.dot(velocity_gradient, fsei) * dt
+    fse2 = velocity_gradient @ fsei * dt
     fsei = finite_strain_ell + 0.5 * fse2
-    fse3 = np.dot(velocity_gradient, fsei) * dt
+    fse3 = velocity_gradient @ fsei * dt
     fsei = finite_strain_ell + fse3
-    fse4 = np.dot(velocity_gradient, fsei) * dt
+    fse4 = velocity_gradient @ fsei * dt
     finite_strain_ell += (fse1 / 2 + fse2 + fse3 + fse4 / 2) / 3
     return finite_strain_ell
 
