@@ -87,9 +87,14 @@ def solve(config, interpolators, node):
 
         logging.debug("max. velocity: %s", velocity.max())
         logging.debug("min. velocity: %s", velocity.min())
-        logging.debug("l2 norm of velocity: %s", la.norm(velocity, ord=2))
         logging.debug("max. velocity gradient: %s", velocity_gradient.max())
         logging.debug("min. velocity gradient: %s", velocity_gradient.min())
+
+        velocity_norm = la.norm(velocity, ord=2)
+        logging.debug("l2 norm of velocity: %s", velocity_norm)
+        if velocity_norm < 1e-15:
+            logging.info("stopping integration prematurely, velocity magnitude is too small")
+            break
 
         # Imposed macroscopic strain rate tensor.
         strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
@@ -101,10 +106,7 @@ def solve(config, interpolators, node):
         grid_steps = np.array(
             [config["mesh"]["gridsteps"][i, n] for i, n in enumerate(node)]
         )
-        dt_pathline = min(
-            np.min(grid_steps) / 4 / la.norm(velocity, ord=2),
-            path_times[0] - time,
-        )
+        dt_pathline = min(np.min(grid_steps) / 4 / velocity_norm, path_times[0] - time)
         dt = min(dt_pathline, 1e-2 / strain_rate_max)
         n_iter = int(dt_pathline / dt)
 
