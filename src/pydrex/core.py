@@ -11,6 +11,7 @@ performed at the centre point. For computational efficiency, the DRex model trea
 any interactions with other elements as interactions with an averaged effective medium.
 
 """
+import warnings
 import logging
 
 import numpy as np
@@ -52,21 +53,7 @@ def solve(config, interpolators, node):
             for coord, i in zip(config["mesh"]["gridcoords"], node)
         ]
     )
-    # Calculate pathline (timestamps and an interpolant).
-    path_times, path_eval = get_pathline(
-        point, interpolators, config["mesh"]["gridmin"], config["mesh"]["gridmax"]
-    )
-    # TODO: Handle this in pathline construction somehow?
-    # Skip the first timestep if it is outside the numerical domain.
-    # Needed because `get_pathline` will stop after checking _is_inside in _max_strain.
-    for t in reversed(path_times):
-        if _is_inside(
-            path_eval(t), config["mesh"]["gridmin"], config["mesh"]["gridmax"]
-        ):
-            time = t
-            break
-
-    # TODO: 2d?
+    # Initialise storage, TODO: 2d?
     finite_strain_ell = np.identity(3)  # Finite strain ellipsoid.
     init_orientations = Rotation.random(  # Rotation matrices.
         config["number_of_grains"], random_state=1
@@ -77,43 +64,76 @@ def solve(config, interpolators, node):
     olivine_vol_dist = np.ones(config["number_of_grains"]) / config["number_of_grains"]
     enstatite_vol_dist = olivine_vol_dist.copy()
 
-    while time < path_times[0]:
-        point = path_eval(time)
-        logging.debug("Calculating CPO for point %s, integration time %s", point, time)
-        # Get interpolated field values.
-        velocity = _interp.get_velocity(point, interpolators)
+    # If the velocity is zero, we don't need a pathline.
+    velocity = _interp.get_velocity(point, interpolators)
+    has_pathline = True
+    if la.norm(velocity, ord=2) < 1e-15:
+        logging.debug("skipping pathline calculation, velocity magnitude is too small")
         velocity_gradient = _interp.get_velocity_gradient(point, interpolators)
         # deformation_mechanism = _interp.get_deformation_mechanism(point, interpolators)
-
-        logging.debug("max. velocity: %s", velocity.max())
-        logging.debug("min. velocity: %s", velocity.min())
-        logging.debug("max. velocity gradient: %s", velocity_gradient.max())
-        logging.debug("min. velocity gradient: %s", velocity_gradient.min())
-
-        velocity_norm = la.norm(velocity, ord=2)
-        logging.debug("l2 norm of velocity: %s", velocity_norm)
-        if velocity_norm < 1e-15:
-            logging.info("stopping integration prematurely, velocity magnitude is too small")
-            break
-
         # Imposed macroscopic strain rate tensor.
         strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
         # Strain rate scale (max. eigenvalue of strain rate).
         strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
+        # Use the max. strain rate as the time scale.
+        time = -strain_rate_max  # Causes n_iter to be 1 unless strain_rate_max > 1e-2.
+        time_end = 0
+        has_pathline = False
+    else:
+        # Calculate pathline (timestamps and an interpolant).
+        path_times, path_eval = get_pathline(
+            point, interpolators, config["mesh"]["gridmin"], config["mesh"]["gridmax"]
+        )
+        time_end = path_times[0]
+        # TODO: Handle this in pathline construction somehow?
+        # Skip the first timestep if it is outside the numerical domain.
+        # Needed because `get_pathline` will stop after checking _is_inside in _max_strain.
+        for t in reversed(path_times):
+            if _is_inside(
+                path_eval(t), config["mesh"]["gridmin"], config["mesh"]["gridmax"]
+            ):
+                time = t
+                break
 
+    while time < time_end:
+        # Don't calculate new field values unless we are moving on a pathline.
+        if has_pathline:
+            point = path_eval(time)
+            velocity = _interp.get_velocity(point, interpolators)
+            velocity_norm = la.norm(velocity, ord=2)
+            logging.debug("l2 norm of velocity: %s", velocity_norm)
+            if velocity_norm < 1e-15:
+                logging.info("stopping integration prematurely, velocity magnitude is too small")
+                break
+            velocity_gradient = _interp.get_velocity_gradient(point, interpolators)
+            # deformation_mechanism = _interp.get_deformation_mechanism(point, interpolators)
+            # Imposed macroscopic strain rate tensor.
+            strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
+            # Strain rate scale (max. eigenvalue of strain rate).
+            strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
+
+        logging.debug("Calculating CPO for point %s, integration time %s", point, time)
+        logging.debug("max. velocity: %s", velocity.max())
+        logging.debug("min. velocity: %s", velocity.min())
+        logging.debug("max. velocity gradient: %s", velocity_gradient.max())
+        logging.debug("min. velocity gradient: %s", velocity_gradient.min())
         logging.debug("max. strain rate: %s", strain_rate_max)
 
         grid_steps = np.array(
             [config["mesh"]["gridsteps"][i, n] for i, n in enumerate(node)]
         )
-        dt_pathline = min(np.min(grid_steps) / 4 / velocity_norm, path_times[0] - time)
-        dt = min(dt_pathline, 1e-2 / strain_rate_max)
-        n_iter = int(dt_pathline / dt)
+        if strain_rate_max < 1e-2:  # So we can't end up with n_iter = 0.
+            dt_pathline = min(np.min(grid_steps) / 4 / velocity_norm, time_end - time)
+            dt = min(dt_pathline, 1e-2 / strain_rate_max)
+            n_iter = int(dt_pathline / dt)
+        else:
+            warnings.warn("max. strain rate is above recommended threshold of 1e-2")
+            dt = time_end - time
+            n_iter = 1
 
         logging.debug("grid steps: %s", grid_steps)
         logging.debug("time step: %s", dt)
-        if n_iter > 1:
-            logging.debug("repeating advection evaluation %s times", n_iter)
+        logging.debug("number of advection evaluations: %s", n_iter)
 
         # Dimensionless strain rate and velocity gradient.
         _strain_rate = strain_rate / strain_rate_max
@@ -145,33 +165,30 @@ def solve(config, interpolators, node):
 
         time += n_iter * dt
 
-    logging.debug("finite strain ellipsoid:\n%s", finite_strain_ell)
-    logging.debug(
-        "largest values in olivine orientations:\n%s", olivine_orientations.max(axis=0)
-    )
-    logging.debug(
-        "smallest values in olivine orientations:\n%s", olivine_orientations.min(axis=0)
-    )
-    logging.debug(
+    debug_messages = (
+        "finite strain ellipsoid:\n%s",
+        "largest values in olivine orientations:\n%s",
+        "smallest values in olivine orientations:\n%s",
         "largest values in enstatite orientations:\n%s",
-        enstatite_orientations.max(axis=0),
-    )
-    logging.debug(
         "smallest values in enstatite orientations:\n%s",
+        "largest value in olivine volume distribution:\n%s",
+        "smallest value in olivine volume distribution:\n%s",
+        "largest value in enstatite volume distribution:\n%s",
+        "smallest value in enstatite volume distribution:\n%s",
+    )
+    debug_vars = (
+        finite_strain_ell,
+        olivine_orientations.max(axis=0),
+        olivine_orientations.min(axis=0),
+        enstatite_orientations.max(axis=0),
         enstatite_orientations.min(axis=0),
+        olivine_vol_dist.max(),
+        olivine_vol_dist.min(),
+        enstatite_vol_dist.max(),
+        enstatite_vol_dist.min(),
     )
-    logging.debug(
-        "largest value in olivine volume distribution:\n%s", olivine_vol_dist.max()
-    )
-    logging.debug(
-        "smallest value in olivine volume distribution:\n%s", olivine_vol_dist.min()
-    )
-    logging.debug(
-        "largest value in enstatite volume distribution:\n%s", enstatite_vol_dist.max()
-    )
-    logging.debug(
-        "smallest value in enstatite volume distribution:\n%s", enstatite_vol_dist.min()
-    )
+    for msg, var in zip(debug_messages, debug_vars):
+        logging.debug(msg, var)
     return (
         node,
         finite_strain_ell,
