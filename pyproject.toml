@@ -1,0 +1,12 @@
+# Boilerplate for modern (PEP517, PEP518) build systems.
+# The setup.cfg metadata may eventually migrate over here, see:
+# https://github.com/pypa/setuptools/issues/1688
+# https://www.python.org/dev/peps/pep-0621/
+# https://snarky.ca/what-the-heck-is-pyproject-toml/
+[build-system]
+requires = ["setuptools >= 42", "wheel", "setuptools_scm[toml]>=3.4"]
+build-backend = "setuptools.build_meta"
+
+# Automatically use the version number from vcs (e.g. git) tags,
+# <https://github.com/pypa/setuptools_scm>.
+[tool.setuptools_scm]
