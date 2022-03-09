@@ -1,9 +1,9 @@
 """PyDRex: Deformation mechanism enums."""
-from enum import Enum, unique
+from enum import IntEnum, unique
 
 
 @unique
-class Regime(Enum):
+class Regime(IntEnum):
     """Deformation mechanism regimes.
 
     - diffusion creep (0)
