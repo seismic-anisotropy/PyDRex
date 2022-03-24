@@ -13,6 +13,12 @@ For computational efficiency,
 the DRex model treats any interactions with other grains
 as interactions with an averaged effective medium.
 
+NOTE: The DRex model is not recommended if static recrystallization is significant.
+
+WARNING: It is recommended to use the `Mineral` class from `pydrex.minerals`
+instead of using these routines directly, which do not circumvent all edge cases.
+For example, the pathological case with a flow field with zero vorticity will crash.
+
 """
 import warnings
 import logging
@@ -30,7 +36,7 @@ import pydrex.minerals as _minerals
 def solve(minerals, config, velocity_gradient, time_steps):
     """Solve the DRex equations for a single particle.
 
-    Update crystalline preferred orientations and grain volume distribution
+    Update crystalline orientations and grain volume distribution
     for minerals undergoing plastic deformation.
     Only 3D simulations are currently supported.
 
@@ -74,10 +80,11 @@ def solve(minerals, config, velocity_gradient, time_steps):
 def solve_interpolated(minerals, config, interpolators, node):
     """Solve the DRex equations for steady state flow.
 
-    Update crystalline preferred orientations and grain volume distribution
+    Update crystalline orientations and grain volume distribution
     for minerals undergoing plastic deformation.
     Pathlines are calculated using the interpolated fields,
     i.e. velocity and velocity gradient values.
+    Only 3D simulations are currently supported.
 
     Args:
     - `minerals` (sequence) — sequence of `pydrex.minerals.Mineral`s
@@ -198,7 +205,12 @@ def solve_interpolated(minerals, config, interpolators, node):
 
 @nb.njit(fastmath=True)
 def update_strain(finite_strain_ell, velocity_gradient, dt):
-    """Return updated finite strain ellipsoid using the RK4 scheme."""
+    """Return updated finite strain ellipsoid using the RK4 scheme.
+
+    The FSE (finite strain ellipsoid) describes the orientation
+    of the principal strain axes with respect to the global reference frame.
+
+    """
     fse1 = velocity_gradient @ finite_strain_ell * dt
     fsei = finite_strain_ell + 0.5 * fse1
     fse2 = velocity_gradient @ fsei * dt
@@ -243,6 +255,8 @@ def derivatives(
     - `gmb_mobility` (float) — grain boundary mobility parameter
     - `volume_fraction` (float) — volume fraction of the mineral phase relative to other phases
 
+    WARNING: Raises zero-division errors if the vorticity is zero.
+
     Returns a tuple with the rotation rates and grain volume fraction changes.
 
     """
@@ -281,7 +295,7 @@ def _get_rotation_and_strain(
     dislocation_exponent,
     nucleation_efficiency,
 ):
-    """Get the rotation rate and strain energy of an individual grain.
+    """Get the crystal axes rotation rate and strain energy of individual grain.
 
     Args:
     - `phase` (int) — ordinal number of the mineral phase, see `pydrex.minerals.MineralPhase`
@@ -293,7 +307,10 @@ def _get_rotation_and_strain(
 
     Note that "new" grains are assumed to rotate with their parent.
 
-    Returns a tuple with the rotation rate and strain energy.
+    WARNING: Raises zero-division errors if the vorticity is zero.
+
+    Returns a tuple with the rotation rate of the crystalline axes
+    with respect to the principal strain axes and strain energy of the grain.
 
     """
     rrss = _minerals.get_rrss(phase, fabric)
@@ -348,6 +365,9 @@ def _get_rotation_and_strain(
 def _get_deformation_rate(phase, orientation, slip_rates):
     """Calculate deformation rate tensor for olivine or enstatite.
 
+    Calculate the deformation rate with respect to the local coordinate frame,
+    defined by the principal strain axes (finite strain ellipsoid).
+
     Args:
     - `phase` (int) — ordinal number of the mineral phase, see `pydrex.minerals.MineralPhase`
     - `orientation` (array) — 3x3 orientation matrix (direction cosines)
@@ -355,17 +375,17 @@ def _get_deformation_rate(phase, orientation, slip_rates):
 
     """
     deformation_rate = np.empty((3, 3))
-    for j in range(3):
-        for k in range(3):
+    for i in range(3):
+        for j in range(3):
             if phase == _minerals.MineralPhase.olivine:
-                deformation_rate[j, k] = 2 * (
-                    slip_rates[0] * orientation[0, j] * orientation[1, k]
-                    + slip_rates[1] * orientation[0, j] * orientation[2, k]
-                    + slip_rates[2] * orientation[2, j] * orientation[1, k]
-                    + slip_rates[3] * orientation[2, j] * orientation[0, k]
+                deformation_rate[i, j] = 2 * (
+                     slip_rates[0] * orientation[0, i] * orientation[1, j]
+                     + slip_rates[1] * orientation[0, i] * orientation[2, j]
+                     + slip_rates[2] * orientation[2, i] * orientation[1, j]
+                     + slip_rates[3] * orientation[2, i] * orientation[0, j]
                 )
             elif phase == _minerals.MineralPhase.enstatite:
-                deformation_rate[j, k] = 2 * orientation[2, j] * orientation[0, k]
+                deformation_rate[i, j] = 2 * orientation[2, i] * orientation[0, j]
             else:
                 assert False  # Should never happen.
     return deformation_rate
@@ -424,7 +444,6 @@ def _get_slip_rates_olivine(invariants, slip_indices, rrss, stress_exponent):
     slip_rates[i_min] = ratio_min * np.abs(ratio_min) ** (stress_exponent - 1)
     slip_rates[i_int] = ratio_int * np.abs(ratio_int) ** (stress_exponent - 1)
     slip_rates[i_max] = 1
-    slip_indices = (i_inac, i_min, i_int, i_max)
     return slip_rates
 
 
@@ -432,18 +451,20 @@ def _get_slip_rates_olivine(invariants, slip_indices, rrss, stress_exponent):
 def _get_slip_invariants_olivine(strain_rate, orientation):
     """Calculate strain rate invariants for the four slip systems of olivine.
 
+    Calculates $I_{ij} = ∑_{ij} l_{i} n_{j} \dot{ε}_{ij}$ for each slip sytem.
+
     Args:
     - `strain_rate` (array) — 3x3 dimensionless strain rate matrix
     - `orientation` (array) — 3x3 orientation matrix (direction cosines)
 
     """
     invariants = np.zeros(4)
-    for j in range(3):
-        for k in range(3):
-            invariants[0] += strain_rate[j, k] * orientation[0, j] * orientation[1, k]
-            invariants[1] += strain_rate[j, k] * orientation[0, j] * orientation[2, k]
-            invariants[2] += strain_rate[j, k] * orientation[2, j] * orientation[1, k]
-            invariants[3] += strain_rate[j, k] * orientation[2, j] * orientation[0, k]
+    for i in range(3):
+        for j in range(3):
+            invariants[0] += strain_rate[i, j] * orientation[0, i] * orientation[1, j]
+            invariants[1] += strain_rate[i, j] * orientation[0, i] * orientation[2, j]
+            invariants[2] += strain_rate[i, j] * orientation[2, i] * orientation[1, j]
+            invariants[3] += strain_rate[i, j] * orientation[2, i] * orientation[0, j]
     return invariants
 
 
@@ -467,8 +488,7 @@ def _get_rotation_rate(
         r = (j + 1) % 3
         s = (j + 2) % 3
         spin_vector[j] = (
-            velocity_gradient[s, r]
-            - velocity_gradient[r, s]
+            (velocity_gradient[s, r] - velocity_gradient[r, s])
             - (deformation_rate[s, r] - deformation_rate[r, s]) * slip_rate_softest
         ) / 2
 
@@ -497,7 +517,7 @@ def _get_strain_energy_olivine(
     dislocation_exponent,
     nucleation_efficiency,
 ):
-    """Calculate strain energy for an olivine grain.
+    """Calculate strain energy due to dislocations for an olivine grain.
 
     Args:
     - `rrss` (array) — reference resolved shear stresses (RRSS), see `pydrex.fabric`
@@ -536,7 +556,7 @@ def _get_strain_energy_enstatite(
     dislocation_exponent,
     nucleation_efficiency,
 ):
-    """Calculate strain energy for an enstatite grain.
+    """Calculate strain energy due to dislocations for an enstatite grain.
 
     Args:
     - `rrss` (array) — reference resolved shear stresses (RRSS), see `pydrex.fabric`
