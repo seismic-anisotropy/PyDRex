@@ -44,10 +44,10 @@ def solve(minerals, config, velocity_gradient, time_steps):
     - `minerals` (sequence) — sequence of `pydrex.minerals.Mineral`s
     - `config` (dict) — PyDRex configuration dictionary
     - `velocity_gradient` (array) — 3x3 velocity gradient matrix
-    - `time_steps` (array) ̒— time steps for the iteration loop
+    - `time_steps` (array) — time steps for the iteration loop
 
     Orientations and grain volume fractions are stored on the `Mineral`s.
-    Returns the finite strain ellipsoid after accumulated rotation.
+    Returns the finite strain ellipsoid after accumulated rotations.
 
     Array values must provide a NumPy-compatible interface:
     <https://numpy.org/doc/stable/user/whatisnumpy.html>
@@ -61,7 +61,6 @@ def solve(minerals, config, velocity_gradient, time_steps):
     # Dimensionless strain rate and velocity gradient.
     nondim_strain_rate = strain_rate / strain_rate_max
     nondim_velocity_gradient = velocity_gradient / strain_rate_max
-    # Reference resolved shear stress (relative slip system "softness")
 
     for dt in time_steps:
         finite_strain_ell = update_strain(finite_strain_ell, velocity_gradient, dt)
