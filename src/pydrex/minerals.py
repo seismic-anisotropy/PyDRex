@@ -147,7 +147,7 @@ class Mineral:
             assert False  # Should never happen.
 
         # ========== RK step  1 ==========
-        rotation_rates, fractions_diff = _core.derivatives(
+        orientations_diff, fractions_diff = _core.derivatives(
             phase=self.phase,
             fabric=self.fabric,
             n_grains=self.n_grains,
@@ -161,7 +161,7 @@ class Mineral:
             gbm_mobility=gbm_mobility,
             volume_fraction=volume_fraction,
         )
-        orientations_1 = rotation_rates * dt * strain_rate_max
+        orientations_1 = orientations_diff * dt * strain_rate_max
         orientations_iter = self.orientations + 0.5 * orientations_1
         orientations_iter.clip(-1, 1)
         fractions_1 = fractions_diff * dt * strain_rate_max
@@ -170,7 +170,7 @@ class Mineral:
         fractions_iter /= fractions_iter.sum()
 
         # ========== RK step  2 ==========
-        rotation_rates, fractions_diff = _core.derivatives(
+        orientations_diff, fractions_diff = _core.derivatives(
             phase=self.phase,
             fabric=self.fabric,
             n_grains=self.n_grains,
@@ -184,7 +184,7 @@ class Mineral:
             gbm_mobility=gbm_mobility,
             volume_fraction=volume_fraction,
         )
-        orientations_2 = rotation_rates * dt * strain_rate_max
+        orientations_2 = orientations_diff * dt * strain_rate_max
         orientations_iter = self.orientations + 0.5 * orientations_2
         orientations_iter.clip(-1, 1)
         fractions_2 = fractions_diff * dt * strain_rate_max
@@ -193,7 +193,7 @@ class Mineral:
         fractions_iter /= fractions_iter.sum()
 
         # ========== RK step 3 ==========
-        rotation_rates, fractions_diff = _core.derivatives(
+        orientations_diff, fractions_diff = _core.derivatives(
             phase=self.phase,
             fabric=self.fabric,
             n_grains=self.n_grains,
@@ -207,7 +207,7 @@ class Mineral:
             gbm_mobility=gbm_mobility,
             volume_fraction=volume_fraction,
         )
-        orientations_3 = rotation_rates * dt * strain_rate_max
+        orientations_3 = orientations_diff * dt * strain_rate_max
         orientations_iter = self.orientations + orientations_3
         orientations_iter.clip(-1, 1)
         fractions_3 = fractions_diff * dt * strain_rate_max
@@ -216,7 +216,7 @@ class Mineral:
         fractions_iter /= fractions_iter.sum()
 
         # ========== RK step 4 ==========
-        rotation_rates, fractions_diff = _core.derivatives(
+        orientations_diff, fractions_diff = _core.derivatives(
             phase=self.phase,
             fabric=self.fabric,
             n_grains=self.n_grains,
@@ -230,7 +230,7 @@ class Mineral:
             gbm_mobility=gbm_mobility,
             volume_fraction=volume_fraction,
         )
-        orientations_4 = rotation_rates * dt * strain_rate_max
+        orientations_4 = orientations_diff * dt * strain_rate_max
         self.orientations = (
             self.orientations
             + (

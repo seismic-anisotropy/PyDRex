@@ -37,7 +37,7 @@ class TestDerivatives:
         # Grain initialised with rotation around Z (active rotation convention).
         θ = np.deg2rad(10)
         initial_orientations = Rotation.from_rotvec([[0, 0, θ]])
-        rotation_rate, fractions_diff = _core.derivatives(
+        orientations_diff, fractions_diff = _core.derivatives(
             phase=_minerals.MineralPhase.olivine,
             fabric=_minerals.OlivineFabric.A,
             n_grains=1,
@@ -54,14 +54,14 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", rotation_rate)
-        target_rotation_rate = np.array([
+        print("calculated rotation rate:\n", orientations_diff)
+        target_orientations_diff = np.array([
             [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
             [cosθ * (- 1 - cos2θ), sinθ * (1 + cos2θ), 0],
             [0, 0, 0],
         ])
-        print("target rotation rate:\n", target_rotation_rate)
-        assert np.allclose(rotation_rate, target_rotation_rate)
+        print("target rotation rate:\n", target_orientations_diff)
+        assert np.allclose(orientations_diff, target_orientations_diff)
 
     def test_simple_shear_init10Z_anti(self):
         # Single grain of olivine A-type, simple shear with:
@@ -73,7 +73,7 @@ class TestDerivatives:
         # Grain initialised with rotation around Z (active rotation convention).
         θ = np.deg2rad(-10)
         initial_orientations = Rotation.from_rotvec([[0, 0, θ]])
-        rotation_rate, fractions_diff = _core.derivatives(
+        orientations_diff, fractions_diff = _core.derivatives(
             phase=_minerals.MineralPhase.olivine,
             fabric=_minerals.OlivineFabric.A,
             n_grains=1,
@@ -90,14 +90,14 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", rotation_rate)
-        target_rotation_rate = np.array([
+        print("calculated rotation rate:\n", orientations_diff)
+        target_orientations_diff = np.array([
             [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
             [cosθ * (- 1 - cos2θ), sinθ * (1 + cos2θ), 0],
             [0, 0, 0],
         ])
-        print("target rotation rate:\n", target_rotation_rate)
-        assert np.allclose(rotation_rate, target_rotation_rate)
+        print("target rotation rate:\n", target_orientations_diff)
+        assert np.allclose(orientations_diff, target_orientations_diff)
 
     def test_simple_shear_init45Z(self):
         # Single grain of olivine A-type, simple shear with:
@@ -109,7 +109,7 @@ class TestDerivatives:
         # Grain initialised with rotation around Z (active rotation convention).
         θ = np.deg2rad(45)
         initial_orientations = Rotation.from_rotvec([[0, 0, θ]])
-        rotation_rate, fractions_diff = _core.derivatives(
+        orientations_diff, fractions_diff = _core.derivatives(
             phase=_minerals.MineralPhase.olivine,
             fabric=_minerals.OlivineFabric.A,
             n_grains=1,
@@ -126,14 +126,14 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", rotation_rate)
-        target_rotation_rate = np.array([
+        print("calculated rotation rate:\n", orientations_diff)
+        target_orientations_diff = np.array([
             [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
             [cosθ * (- 1 - cos2θ), sinθ * (1 + cos2θ), 0],
             [0, 0, 0],
         ])
-        print("target rotation rate:\n", target_rotation_rate)
-        assert np.allclose(rotation_rate, target_rotation_rate)
+        print("target rotation rate:\n", target_orientations_diff)
+        assert np.allclose(orientations_diff, target_orientations_diff)
 
     def test_simple_shear_init90Z(self):
         # Single grain of olivine A-type, simple shear with:
@@ -145,7 +145,7 @@ class TestDerivatives:
         # Grain initialised with rotation around Z (active rotation convention).
         θ = np.deg2rad(90)
         initial_orientations = Rotation.from_rotvec([[0, 0, θ]])
-        rotation_rate, fractions_diff = _core.derivatives(
+        orientations_diff, fractions_diff = _core.derivatives(
             phase=_minerals.MineralPhase.olivine,
             fabric=_minerals.OlivineFabric.A,
             n_grains=1,
@@ -162,14 +162,14 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", rotation_rate)
-        target_rotation_rate = np.array([
+        print("calculated rotation rate:\n", orientations_diff)
+        target_orientations_diff = np.array([
             [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
             [cosθ * (- 1 - cos2θ), sinθ * (1 + cos2θ), 0],
             [0, 0, 0],
         ])
-        print("target rotation rate:\n", target_rotation_rate)
-        assert np.allclose(rotation_rate, target_rotation_rate)
+        print("target rotation rate:\n", target_orientations_diff)
+        assert np.allclose(orientations_diff, target_orientations_diff)
 
     def test_simple_shear_init10Y(self):
         # Single grain of olivine A-type, simple shear with:
@@ -181,7 +181,7 @@ class TestDerivatives:
         # Grain initialised with rotation around Y (active rotation convention).
         θ = np.deg2rad(10)
         initial_orientations = Rotation.from_rotvec([[0, θ, 0]])
-        rotation_rate, fractions_diff = _core.derivatives(
+        orientations_diff, fractions_diff = _core.derivatives(
             phase=_minerals.MineralPhase.olivine,
             fabric=_minerals.OlivineFabric.A,
             n_grains=1,
@@ -198,14 +198,14 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", rotation_rate)
-        target_rotation_rate = np.array([
+        print("calculated rotation rate:\n", orientations_diff)
+        target_orientations_diff = np.array([
             [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
             [0, 0, 0],
             [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
         ])
-        print("target rotation rate:\n", target_rotation_rate)
-        assert np.allclose(rotation_rate, target_rotation_rate)
+        print("target rotation rate:\n", target_orientations_diff)
+        assert np.allclose(orientations_diff, target_orientations_diff)
 
     def test_simple_shear_init10Y_anti(self):
         # Single grain of olivine A-type, simple shear with:
@@ -217,7 +217,7 @@ class TestDerivatives:
         # Grain initialised with rotation around Y (active rotation convention).
         θ = np.deg2rad(-10)
         initial_orientations = Rotation.from_rotvec([[0, θ, 0]])
-        rotation_rate, fractions_diff = _core.derivatives(
+        orientations_diff, fractions_diff = _core.derivatives(
             phase=_minerals.MineralPhase.olivine,
             fabric=_minerals.OlivineFabric.A,
             n_grains=1,
@@ -234,14 +234,14 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", rotation_rate)
-        target_rotation_rate = np.array([
+        print("calculated rotation rate:\n", orientations_diff)
+        target_orientations_diff = np.array([
             [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
             [0, 0, 0],
             [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
         ])
-        print("target rotation rate:\n", target_rotation_rate)
-        assert np.allclose(rotation_rate, target_rotation_rate)
+        print("target rotation rate:\n", target_orientations_diff)
+        assert np.allclose(orientations_diff, target_orientations_diff)
 
     def test_simple_shear_init45Y(self):
         # Single grain of olivine A-type, simple shear with:
@@ -253,7 +253,7 @@ class TestDerivatives:
         # Grain initialised with rotation around Y (active rotation convention).
         θ = np.deg2rad(45)
         initial_orientations = Rotation.from_rotvec([[0, θ, 0]])
-        rotation_rate, fractions_diff = _core.derivatives(
+        orientations_diff, fractions_diff = _core.derivatives(
             phase=_minerals.MineralPhase.olivine,
             fabric=_minerals.OlivineFabric.A,
             n_grains=1,
@@ -270,14 +270,14 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", rotation_rate)
-        target_rotation_rate = np.array([
+        print("calculated rotation rate:\n", orientations_diff)
+        target_orientations_diff = np.array([
             [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
             [0, 0, 0],
             [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
         ])
-        print("target rotation rate:\n", target_rotation_rate)
-        assert np.allclose(rotation_rate, target_rotation_rate)
+        print("target rotation rate:\n", target_orientations_diff)
+        assert np.allclose(orientations_diff, target_orientations_diff)
 
     def test_simple_shear_init90Y(self):
         # Single grain of olivine A-type, simple shear with:
@@ -289,7 +289,7 @@ class TestDerivatives:
         # Grain initialised with rotation around Y (active rotation convention).
         θ = np.deg2rad(90)
         initial_orientations = Rotation.from_rotvec([[0, θ, 0]])
-        rotation_rate, fractions_diff = _core.derivatives(
+        orientations_diff, fractions_diff = _core.derivatives(
             phase=_minerals.MineralPhase.olivine,
             fabric=_minerals.OlivineFabric.A,
             n_grains=1,
@@ -306,11 +306,11 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", rotation_rate)
-        target_rotation_rate = np.array([
+        print("calculated rotation rate:\n", orientations_diff)
+        target_orientations_diff = np.array([
             [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
             [0, 0, 0],
             [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
         ])
-        print("target rotation rate:\n", target_rotation_rate)
-        assert np.allclose(rotation_rate, target_rotation_rate)
+        print("target rotation rate:\n", target_orientations_diff)
+        assert np.allclose(orientations_diff, target_orientations_diff)
