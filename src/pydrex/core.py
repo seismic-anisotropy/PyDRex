@@ -260,10 +260,10 @@ def derivatives(
 
     """
     strain_energies = np.empty(n_grains)
-    rotation_rates = np.empty((n_grains, 3, 3))
+    orientations_diff = np.empty((n_grains, 3, 3))
     # TODO: Make sure that orientations[grain_index] is only a pointer, not a copy.
     for grain_index in range(n_grains):
-        rotation_rate, strain_energy = _get_rotation_and_strain(
+        orientation_change, strain_energy = _get_rotation_and_strain(
             phase,
             fabric,
             orientations[grain_index],
@@ -273,14 +273,14 @@ def derivatives(
             dislocation_exponent,
             nucleation_efficiency,
         )
-        rotation_rates[grain_index] = rotation_rate
+        orientations_diff[grain_index] = orientation_change
         strain_energies[grain_index] = strain_energy
     # Volume average mean strain energy.
     mean_energy = np.sum(fractions * strain_energies)
     # Strain energy residual.
     strain_residuals = mean_energy - strain_energies
     fractions_diff = volume_fraction * gbm_mobility * strain_residuals
-    return rotation_rates, fractions_diff
+    return orientations_diff, fractions_diff
 
 
 @nb.njit(fastmath=True)
@@ -330,7 +330,7 @@ def _get_rotation_and_strain(
 
     deformation_rate = _get_deformation_rate(phase, orientation, slip_rates)
     slip_rate_softest = _get_slip_rate_softest(deformation_rate, velocity_gradient)
-    rotation_rate = _get_rotation_rate(
+    orientation_change = _get_orientation_change(
         orientation,
         velocity_gradient,
         deformation_rate,
@@ -357,7 +357,7 @@ def _get_rotation_and_strain(
         )
     else:
         assert False  # Should never happen.
-    return rotation_rate, strain_energy
+    return orientation_change, strain_energy
 
 
 @nb.njit(fastmath=True)
@@ -468,7 +468,7 @@ def _get_slip_invariants_olivine(strain_rate, orientation):
 
 
 @nb.njit(fastmath=True)
-def _get_rotation_rate(
+def _get_orientation_change(
     orientation, velocity_gradient, deformation_rate, slip_rate_softest
 ):
     """Calculate the rotation rate for a grain undergoing dislocation creep.
@@ -480,7 +480,7 @@ def _get_rotation_rate(
     - `slip_rate_softest` (float) — slip rate on the softest (most active) slip system
 
     """
-    rotation_rate = np.zeros((3, 3))
+    orientation_change = np.zeros((3, 3))
     # Spin vector for the grain, see eq. 3 in Fraters 2021.
     spin_vector = np.empty(3)
     for j in range(3):
@@ -496,13 +496,13 @@ def _get_rotation_rate(
         for q in range(3):
             for r in range(3):
                 for s in range(3):
-                    rotation_rate[p, q] += (
+                    orientation_change[p, q] += (
                         _tensors.PERMUTATION_SYMBOL[q, r, s]
                         * orientation[p, s]
                         * spin_vector[r]
                     )
 
-    return rotation_rate
+    return orientation_change
 
 
 # TODO: Why is enstatite different and can the logic be merged better?
