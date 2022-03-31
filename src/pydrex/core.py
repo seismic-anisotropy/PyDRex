@@ -279,7 +279,7 @@ def derivatives(
     mean_energy = np.sum(fractions * strain_energies)
     # Strain energy residual.
     strain_residuals = mean_energy - strain_energies
-    fractions_diff = volume_fraction * gbm_mobility * strain_residuals
+    fractions_diff = volume_fraction * gbm_mobility * fractions * strain_residuals
     return orientations_diff, fractions_diff
 
 
