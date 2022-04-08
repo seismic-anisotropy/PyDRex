@@ -12,7 +12,7 @@ import pydrex.deformation_mechanism as _defmech
 
 
 class TestDerivatives:
-    """Single-grain analytical rotation rate tests."""
+    """Single-grain analytical re-orientation rate tests."""
 
     # Kaminski used passive rotations (see Kaminski 2001 eq. 1) and ZXZ convention.
     # Scipy gives us active rotations by default,
@@ -27,7 +27,7 @@ class TestDerivatives:
     # where ci = cos(angle of i'th elementary rotation), si = sin(...),
     # which is the same as the passive version but transposed.
 
-    def test_simple_shear_init10Z(self):
+    def test_simple_shear_initP10Z(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 0  .   0 1 0      0 -1 0
         # L = 2 0 0  ε = 1 0 0  Ω = 1  0 0
@@ -54,16 +54,16 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", orientations_diff)
+        print("calculated re-orientation rate:\n", orientations_diff)
         target_orientations_diff = np.array([
             [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
             [cosθ * (- 1 - cos2θ), sinθ * (1 + cos2θ), 0],
             [0, 0, 0],
         ])
-        print("target rotation rate:\n", target_orientations_diff)
+        print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
 
-    def test_simple_shear_init10Z_anti(self):
+    def test_simple_shear_initN10Z(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 0  .   0 1 0      0 -1 0
         # L = 2 0 0  ε = 1 0 0  Ω = 1  0 0
@@ -90,16 +90,16 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", orientations_diff)
+        print("calculated re-orientation rate:\n", orientations_diff)
         target_orientations_diff = np.array([
             [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
             [cosθ * (- 1 - cos2θ), sinθ * (1 + cos2θ), 0],
             [0, 0, 0],
         ])
-        print("target rotation rate:\n", target_orientations_diff)
+        print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
 
-    def test_simple_shear_init45Z(self):
+    def test_simple_shear_initP45Z(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 0  .   0 1 0      0 -1 0
         # L = 2 0 0  ε = 1 0 0  Ω = 1  0 0
@@ -126,16 +126,16 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", orientations_diff)
+        print("calculated re-orientation rate:\n", orientations_diff)
         target_orientations_diff = np.array([
             [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
             [cosθ * (- 1 - cos2θ), sinθ * (1 + cos2θ), 0],
             [0, 0, 0],
         ])
-        print("target rotation rate:\n", target_orientations_diff)
+        print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
 
-    def test_simple_shear_init90Z(self):
+    def test_simple_shear_initP90Z(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 0  .   0 1 0      0 -1 0
         # L = 2 0 0  ε = 1 0 0  Ω = 1  0 0
@@ -162,16 +162,16 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", orientations_diff)
+        print("calculated re-orientation rate:\n", orientations_diff)
         target_orientations_diff = np.array([
             [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
             [cosθ * (- 1 - cos2θ), sinθ * (1 + cos2θ), 0],
             [0, 0, 0],
         ])
-        print("target rotation rate:\n", target_orientations_diff)
+        print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
 
-    def test_simple_shear_init10Y(self):
+    def test_simple_shear_initP10Y(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 2  .   0 0 1       0 0 1
         # L = 0 0 0  ε = 0 0 0  Ω =  0 0 0
@@ -198,16 +198,16 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", orientations_diff)
+        print("calculated re-orientation rate:\n", orientations_diff)
         target_orientations_diff = np.array([
             [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
             [0, 0, 0],
             [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
         ])
-        print("target rotation rate:\n", target_orientations_diff)
+        print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
 
-    def test_simple_shear_init10Y_anti(self):
+    def test_simple_shear_initN10Y(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 2  .   0 0 1       0 0 1
         # L = 0 0 0  ε = 0 0 0  Ω =  0 0 0
@@ -234,16 +234,16 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", orientations_diff)
+        print("calculated re-orientation rate:\n", orientations_diff)
         target_orientations_diff = np.array([
             [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
             [0, 0, 0],
             [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
         ])
-        print("target rotation rate:\n", target_orientations_diff)
+        print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
 
-    def test_simple_shear_init45Y(self):
+    def test_simple_shear_initP45Y(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 2  .   0 0 1       0 0 1
         # L = 0 0 0  ε = 0 0 0  Ω =  0 0 0
@@ -270,16 +270,16 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", orientations_diff)
+        print("calculated re-orientation rate:\n", orientations_diff)
         target_orientations_diff = np.array([
             [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
             [0, 0, 0],
             [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
         ])
-        print("target rotation rate:\n", target_orientations_diff)
+        print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
 
-    def test_simple_shear_init90Y(self):
+    def test_simple_shear_initP90Y(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 2  .   0 0 1       0 0 1
         # L = 0 0 0  ε = 0 0 0  Ω =  0 0 0
@@ -306,11 +306,11 @@ class TestDerivatives:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2*θ)
         sinθ = np.sin(θ)
-        print("calculated rotation rate:\n", orientations_diff)
+        print("calculated re-orientation rate:\n", orientations_diff)
         target_orientations_diff = np.array([
             [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
             [0, 0, 0],
             [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
         ])
-        print("target rotation rate:\n", target_orientations_diff)
+        print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
