@@ -1,70 +1,6 @@
 import pytest
-
-import numpy as np
-
-import pydrex.minerals as _minerals
-import pydrex.deformation_mechanism as _defmech
-
-
-@pytest.fixture
-def enstatite_disl_random_5000():
-    return _minerals.Mineral(
-        _minerals.MineralPhase.enstatite,
-        _minerals.EnstatiteFabric.A,
-        _defmech.Regime.dislocation,
-        5000,
-    )
-
-
-@pytest.fixture
-def olivine_A_disl_random_5000():
-    return _minerals.Mineral(
-        _minerals.MineralPhase.olivine,
-        _minerals.OlivineFabric.A,
-        _defmech.Regime.dislocation,
-        5000,
-    )
-
-
-@pytest.fixture
-def enstatite_disl_random_2000():
-    return _minerals.Mineral(
-        _minerals.MineralPhase.enstatite,
-        _minerals.EnstatiteFabric.A,
-        _defmech.Regime.dislocation,
-        2000,
-    )
-
-
-@pytest.fixture
-def olivine_A_disl_random_2000():
-    return _minerals.Mineral(
-        _minerals.MineralPhase.olivine,
-        _minerals.OlivineFabric.A,
-        _defmech.Regime.dislocation,
-        2000,
-    )
-
-
-@pytest.fixture
-def enstatite_disl_random_500():
-    return _minerals.Mineral(
-        _minerals.MineralPhase.enstatite,
-        _minerals.EnstatiteFabric.A,
-        _defmech.Regime.dislocation,
-        500,
-    )
-
-
-@pytest.fixture
-def olivine_A_disl_random_500():
-    return _minerals.Mineral(
-        _minerals.MineralPhase.olivine,
-        _minerals.OlivineFabric.A,
-        _defmech.Regime.dislocation,
-        500,
-    )
-
+from pydrex import minerals as _minerals
+from pydrex import deformation_mechanism as _defmech
 
 @pytest.fixture
 def olivine_disl_random_500():
@@ -93,7 +29,7 @@ def enstatite_disl_random_500():
 
 
 @pytest.fixture
-def mock_params_Fraters2021():
+def params_Fraters2021():
     return {
         "stress_exponent": 3.5,
         "dislocation_exponent": 1.5,
@@ -107,7 +43,46 @@ def mock_params_Fraters2021():
 
 
 @pytest.fixture
-def mock_params_Kaminski2004_fig4_triangles():
+def params_Kaminski2001_fig5_solid():
+    return {
+        "stress_exponent": 3.5,
+        "dislocation_exponent": 1.5,
+        "gbm_mobility": 0,
+        "gbs_threshold": 0,
+        "nucleation_efficiency": 5,
+        "minerals": ("olivine"),
+        "olivine_fraction": 1,
+    }
+
+
+@pytest.fixture
+def params_Kaminski2001_fig5_shortdash():
+    return {
+        "stress_exponent": 3.5,
+        "dislocation_exponent": 1.5,
+        "gbm_mobility": 50,
+        "gbs_threshold": 0,
+        "nucleation_efficiency": 5,
+        "minerals": ("olivine"),
+        "olivine_fraction": 1,
+    }
+
+
+@pytest.fixture
+def params_Kaminski2001_fig5_longdash():
+    return {
+        "stress_exponent": 3.5,
+        "dislocation_exponent": 1.5,
+        "gbm_mobility": 200,
+        "gbs_threshold": 0,
+        "nucleation_efficiency": 5,
+        "minerals": ("olivine"),
+        "olivine_fraction": 1,
+    }
+
+
+@pytest.fixture
+def params_Kaminski2004_fig4_triangles():
     return {
         "stress_exponent": 3.5,
         "dislocation_exponent": 1.5,
@@ -120,7 +95,7 @@ def mock_params_Kaminski2004_fig4_triangles():
 
 
 @pytest.fixture
-def mock_params_Kaminski2004_fig4_squares():
+def params_Kaminski2004_fig4_squares():
     return {
         "stress_exponent": 3.5,
         "dislocation_exponent": 1.5,
@@ -133,7 +108,7 @@ def mock_params_Kaminski2004_fig4_squares():
 
 
 @pytest.fixture
-def mock_params_Kaminski2004_fig4_circles():
+def params_Kaminski2004_fig4_circles():
     return {
         "stress_exponent": 3.5,
         "dislocation_exponent": 1.5,
@@ -146,7 +121,7 @@ def mock_params_Kaminski2004_fig4_circles():
 
 
 @pytest.fixture
-def mock_params_Navid2017():
+def params_Hedjazian2017():
     return {
         "stress_exponent": 3.5,
         "dislocation_exponent": 1.5,
