@@ -24,10 +24,10 @@ jobs:
 
       - name: Install package
         run: |
-        sudo apt update
-        sudo apt install -y python3-pip
-        python3 -m pip install --upgrade pip numpy scipy pytest
-        python3 -m pip install -e .[test]
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          python3 -m pip install --upgrade pip numpy scipy pytest
+          python3 -m pip install -e .[test]
 
   test:
     name: Run tests
