@@ -1,6 +1,12 @@
 import pytest
+import numpy as np
+
 from pydrex import minerals as _minerals
 from pydrex import deformation_mechanism as _defmech
+
+
+np.set_printoptions(precision=1000)  # Fix silly NumPy print defaults.
+
 
 @pytest.fixture
 def olivine_disl_random_500():
