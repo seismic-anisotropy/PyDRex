@@ -28,7 +28,7 @@ class TestSimpleShearSingleGrains:
     # where ci = cos(angle of i'th elementary rotation), si = sin(...),
     # which is the same as the passive version but transposed.
 
-    def test_simple_shear_initP10Z(self):
+    def test_initP10Z(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 0  .   0 1 0      0 -1 0
         # L = 2 0 0  ε = 1 0 0  Ω = 1  0 0
@@ -66,7 +66,7 @@ class TestSimpleShearSingleGrains:
         print("calculated grain volume change:\n", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
-    def test_simple_shear_initN10Z(self):
+    def test_initN10Z(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 0  .   0 1 0      0 -1 0
         # L = 2 0 0  ε = 1 0 0  Ω = 1  0 0
@@ -104,7 +104,7 @@ class TestSimpleShearSingleGrains:
         print("calculated grain volume changes:\n", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
-    def test_simple_shear_initP45Z(self):
+    def test_initP45Z(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 0  .   0 1 0      0 -1 0
         # L = 2 0 0  ε = 1 0 0  Ω = 1  0 0
@@ -142,7 +142,7 @@ class TestSimpleShearSingleGrains:
         print("calculated grain volume changes:\n", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
-    def test_simple_shear_initP90Z(self):
+    def test_initP90Z(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 0  .   0 1 0      0 -1 0
         # L = 2 0 0  ε = 1 0 0  Ω = 1  0 0
@@ -180,7 +180,7 @@ class TestSimpleShearSingleGrains:
         print("calculated grain volume changes:\n", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
-    def test_simple_shear_initP10Y(self):
+    def test_initP10Y(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 2  .   0 0 1       0 0 1
         # L = 0 0 0  ε = 0 0 0  Ω =  0 0 0
@@ -218,7 +218,7 @@ class TestSimpleShearSingleGrains:
         print("calculated grain volume changes:\n", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
-    def test_simple_shear_initN10Y(self):
+    def test_initN10Y(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 2  .   0 0 1       0 0 1
         # L = 0 0 0  ε = 0 0 0  Ω =  0 0 0
@@ -256,7 +256,7 @@ class TestSimpleShearSingleGrains:
         print("calculated grain volume changes:\n", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
-    def test_simple_shear_initP45Y(self):
+    def test_initP45Y(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 2  .   0 0 1       0 0 1
         # L = 0 0 0  ε = 0 0 0  Ω =  0 0 0
@@ -294,7 +294,7 @@ class TestSimpleShearSingleGrains:
         print("calculated grain volume changes:\n", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
-    def test_simple_shear_initP90Y(self):
+    def test_initP90Y(self):
         # Single grain of olivine A-type, simple shear with:
         #     0 0 2  .   0 0 1       0 0 1
         # L = 0 0 0  ε = 0 0 0  Ω =  0 0 0
@@ -332,7 +332,7 @@ class TestSimpleShearSingleGrains:
         print("calculated grain volume changes:\n", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
-    def test_simple_shear_random(self):
+    def test_random(self):
         # Single grain of olivine A-type with random initial orientation:
         #     0 0 0  .   0 1 0      0 -1 0
         # L = 2 0 0  ε = 1 0 0  Ω = 1  0 0
