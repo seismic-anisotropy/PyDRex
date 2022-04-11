@@ -79,10 +79,10 @@ class TestSimpleShearOlivineA:
         print("final grain sizes:\n", fractions_final)
         assert np.isclose(np.sum(fractions_final), 1.0)
 
-    def test_random_1000_oblique(self, params_Kaminski2001_fig5_longdash):
+    def test_random_1000_obliqueXY(self, params_Kaminski2001_fig5_longdash):
         # 1000 grains of olivine A-type with random initial orientations.
-        #     0 0 0  .   0 1 0      0 -1 0
-        # L = 2 2 0  ε = 1 1 0  Ω = 1  1 0
+        #     0 2 0  .   0 1 0      0 -1 0
+        # L = 2 0 0  ε = 1 0 0  Ω = 1  0 0
         #     0 0 0      0 0 0      0  0 0
         n_grains = 1000
         max_strain_rate = 1e-5
@@ -93,7 +93,7 @@ class TestSimpleShearOlivineA:
             n_grains=n_grains,
         )
         velocity_gradient = np.array([
-            [0, 0, 0], [2.0 * max_strain_rate, 2.0 * max_strain_rate, 0], [0, 0, 0]
+            [0, 2.0 * max_strain_rate, 0], [2.0 * max_strain_rate, 0, 0], [0, 0, 0]
         ])
         deformation_gradient = np.eye(3)  # Start with undeformed mineral.
         for dt in np.linspace(0, 1.0 / max_strain_rate, 6):
