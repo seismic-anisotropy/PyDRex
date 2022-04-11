@@ -10,7 +10,7 @@ import pydrex.deformation_mechanism as _defmech
 class TestSimpleShearOlivineA:
     """Tests for A-type Olivine in simple shear."""
 
-    def test_random_single(self, params_Kaminski2001_fig5_shortdash):
+    def test_random_singleY(self, params_Kaminski2001_fig5_shortdash):
         # Single grain of olivine A-type with random initial orientation.
         #     0 0 0  .   0 1 0      0 -1 0
         # L = 2 0 0  ε = 1 0 0  Ω = 1  0 0
@@ -39,11 +39,12 @@ class TestSimpleShearOlivineA:
         fractions_final = mineral._fractions[-1]
         λ = np.sort(np.abs(la.eigvals(orientations_final)))
         print("eigenvalues of final orientation matrix:\n", λ)
+        assert not np.isclose(λ[2], λ[1])
         assert λ[2] > λ[1] and np.isclose(λ[1], λ[0])
         print("final grain sizes:\n", fractions_final)
         assert np.isclose(np.sum(fractions_final), 1.0)
 
-    def test_random_1000(self, params_Kaminski2001_fig5_longdash):
+    def test_random_1000X(self, params_Kaminski2001_fig5_longdash):
         # 1000 grains of olivine A-type with random initial orientations.
         #     0 0 2  .   0 0 1       0 0 1
         # L = 0 0 0  ε = 0 0 0  Ω =  0 0 0
@@ -73,8 +74,8 @@ class TestSimpleShearOlivineA:
             Rotation.from_matrix(mineral._orientations[-1]).mean(fractions_final).as_matrix()
         )
         λ = np.sort(np.abs(la.eigvals(orientations_final)))
-        print(mineral.orientations_init)
         print("eigenvalues of final orientation matrix:\n", λ)
+        assert not np.isclose(λ[2], λ[1])
         assert λ[2] > λ[1] and np.isclose(λ[1], λ[0])
         print("final grain sizes:\n", fractions_final)
         assert np.isclose(np.sum(fractions_final), 1.0)
@@ -112,6 +113,7 @@ class TestSimpleShearOlivineA:
         )
         λ = np.sort(np.abs(la.eigvals(orientations_final)))
         print("eigenvalues of final orientation matrix:\n", λ)
+        assert not np.isclose(λ[2], λ[1])
         assert λ[2] > λ[1] and np.isclose(λ[1], λ[0])
         print("final grain sizes:\n", fractions_final)
         assert np.isclose(np.sum(fractions_final), 1.0)
