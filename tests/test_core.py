@@ -355,10 +355,10 @@ class TestSimpleShearSingleGrains:
             gbm_mobility=125,
             volume_fraction=1.0,
         )
-        # Check that we are moving towards a 'point' symmetry (λ[0] is largest).
-        # See Vollmer 1990:
+        # Check that we are moving towards a 'point' symmetry
+        # (one eigenvalue is largest). See Vollmer 1990:
         # <https://doi.org/10.1130/0016-7606(1990)102%3C0786:aaoemt%3E2.3.co;2>.
         orientations_new = initial_orientations.as_matrix()[0] + orientations_diff[0]
-        λ = np.abs(la.eigvals(orientations_new))
-        assert λ[0] > λ[1] and np.isclose(λ[1], λ[2])
+        λ = np.sort(np.abs(la.eigvals(orientations_new)))
+        assert λ[2] > λ[1] and np.isclose(λ[1], λ[0])
         assert np.isclose(np.sum(fractions_diff), 0.0)
