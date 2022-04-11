@@ -62,6 +62,8 @@ class TestDerivatives:
         ])
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
+        print("calculated grain volume change:\n", fractions_diff)
+        assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_simple_shear_initN10Z(self):
         # Single grain of olivine A-type, simple shear with:
@@ -98,6 +100,8 @@ class TestDerivatives:
         ])
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
+        print("calculated grain volume changes:\n", fractions_diff)
+        assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_simple_shear_initP45Z(self):
         # Single grain of olivine A-type, simple shear with:
@@ -134,6 +138,8 @@ class TestDerivatives:
         ])
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
+        print("calculated grain volume changes:\n", fractions_diff)
+        assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_simple_shear_initP90Z(self):
         # Single grain of olivine A-type, simple shear with:
@@ -170,6 +176,8 @@ class TestDerivatives:
         ])
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
+        print("calculated grain volume changes:\n", fractions_diff)
+        assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_simple_shear_initP10Y(self):
         # Single grain of olivine A-type, simple shear with:
@@ -206,6 +214,8 @@ class TestDerivatives:
         ])
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
+        print("calculated grain volume changes:\n", fractions_diff)
+        assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_simple_shear_initN10Y(self):
         # Single grain of olivine A-type, simple shear with:
@@ -242,6 +252,8 @@ class TestDerivatives:
         ])
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
+        print("calculated grain volume changes:\n", fractions_diff)
+        assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_simple_shear_initP45Y(self):
         # Single grain of olivine A-type, simple shear with:
@@ -278,6 +290,8 @@ class TestDerivatives:
         ])
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
+        print("calculated grain volume changes:\n", fractions_diff)
+        assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_simple_shear_initP90Y(self):
         # Single grain of olivine A-type, simple shear with:
