@@ -219,6 +219,117 @@ class Mineral:
         self._fractions.append(fractions)
         return finite_strain_ell
 
+    def _update_orientations_drex2004(
+            self,
+            config,
+            deformation_gradient,
+            velocity_gradient,
+            n_iter,
+    ):
+        orientations = self._orientations[-1]
+        fractions = self._fractions[-1]
+        # Imposed macroscopic strain rate tensor.
+        strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
+        # Strain rate scale (max. eigenvalue of strain rate).
+        strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
+        # Dimensionless strain rate and velocity gradient.
+        nondim_strain_rate = strain_rate / strain_rate_max
+        nondim_velocity_gradient = velocity_gradient / strain_rate_max
+        # Volume fraction of the mineral phase.
+        if self.phase == MineralPhase.olivine:
+            volume_fraction = config["olivine_fraction"]
+        elif self.phase == MineralPhase.enstatite:
+            volume_fraction = config["enstatite_fraction"]
+        else:
+            assert False  # Should never happen.
+
+        # TODO: Improve this hack for choosing dt?
+        dt = 1.0 / n_iter / strain_rate_max
+        for _ in range(n_iter):
+            # RK step 1.
+            orientations_diff, fractions_diff = _core.derivatives(
+                self.phase,
+                self.fabric,
+                self.n_grains,
+                orientations,
+                fractions,
+                nondim_strain_rate,
+                nondim_velocity_gradient,
+                stress_exponent=config["stress_exponent"],
+                dislocation_exponent=config["dislocation_exponent"],
+                nucleation_efficiency=config["nucleation_efficiency"],
+                gbm_mobility=config["gbm_mobility"],
+                volume_fraction=volume_fraction,
+            )
+            kodf1 = fractions_diff * dt * strain_rate_max
+            kac1 = orientations_diff * dt * strain_rate_max
+            acsi = np.clip(orientations + 0.5 * kac1, -1, 1)
+            odfi = np.clip(fractions + 0.5 * kodf1, 0, None)
+            # RK step 2.
+            orientations_diff, fractions_diff = _core.derivatives(
+                self.phase,
+                self.fabric,
+                self.n_grains,
+                acsi,
+                odfi,
+                nondim_strain_rate,
+                nondim_velocity_gradient,
+                stress_exponent=config["stress_exponent"],
+                dislocation_exponent=config["dislocation_exponent"],
+                nucleation_efficiency=config["nucleation_efficiency"],
+                gbm_mobility=config["gbm_mobility"],
+                volume_fraction=volume_fraction,
+            )
+            kodf2 = fractions_diff * dt * strain_rate_max
+            kac2 = orientations_diff * dt * strain_rate_max
+            acsi = np.clip(orientations + 0.5 * kac2, -1, 1)
+            odfi = np.clip(fractions + 0.5 * kodf2, 0, None)
+            # RK step 3.
+            orientations_diff, fractions_diff = _core.derivatives(
+                self.phase,
+                self.fabric,
+                self.n_grains,
+                acsi,
+                odfi,
+                nondim_strain_rate,
+                nondim_velocity_gradient,
+                stress_exponent=config["stress_exponent"],
+                dislocation_exponent=config["dislocation_exponent"],
+                nucleation_efficiency=config["nucleation_efficiency"],
+                gbm_mobility=config["gbm_mobility"],
+                volume_fraction=volume_fraction,
+            )
+            kodf3 = fractions_diff * dt * strain_rate_max
+            kac3 = orientations_diff * dt * strain_rate_max
+            acsi = np.clip(orientations + kac3, -1, 1)
+            odfi = np.clip(fractions + kodf3, 0, None)
+            # RK step 4.
+            orientations_diff, fractions_diff = _core.derivatives(
+                self.phase,
+                self.fabric,
+                self.n_grains,
+                acsi,
+                odfi,
+                nondim_strain_rate,
+                nondim_velocity_gradient,
+                stress_exponent=config["stress_exponent"],
+                dislocation_exponent=config["dislocation_exponent"],
+                nucleation_efficiency=config["nucleation_efficiency"],
+                gbm_mobility=config["gbm_mobility"],
+                volume_fraction=volume_fraction,
+            )
+            kodf4 = fractions_diff * dt * strain_rate_max
+            kac4 = orientations_diff * dt * strain_rate_max
+            orientations = np.clip(
+                orientations + (kac1 / 2 + kac2 + kac3 + kac4 / 2),
+                -1, 1
+            )
+            fractions += (kodf1 / 2 + kodf2 + kodf3 + kodf4 / 2)
+
+        self._orientations.append(orientations)
+        self._fractions.append(fractions)
+        return _core.update_strain(deformation_gradient, velocity_gradient, dt)
+
     def save(self, filename):
         """Save CPO data for all stored timesteps to a `numpy` NPZ file.
 
