@@ -361,7 +361,7 @@ class TestSimpleShearSingleGrains:
         orientations_new = initial_orientations.as_matrix()[0] + orientations_diff[0]
         λ = np.sort(np.abs(la.eigvals(orientations_new)))
         print("eigenvales of updated orientation matrix:\n", λ)
-        assert not np.isclose(λ[2], λ[1])
+        assert not np.isclose(λ[2], λ[1], atol=0.1)
         assert λ[2] > λ[1] and np.isclose(λ[1], λ[0])
         print("grain size change:\n", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
