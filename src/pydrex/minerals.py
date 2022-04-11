@@ -156,7 +156,7 @@ class Mineral:
 
         def rhs(t, y):
             finite_strain_ell, orientations, fractions = extract_vars(y)
-            rotation_rates, fractions_diff = _core.derivatives(
+            orientations_diff, fractions_diff = _core.derivatives(
                 phase=self.phase,
                 fabric=self.fabric,
                 n_grains=self.n_grains,
@@ -172,7 +172,7 @@ class Mineral:
             )
             return np.hstack((
                 np.dot(velocity_gradient, finite_strain_ell).flatten(),
-                rotation_rates.flatten() * strain_rate_max,
+                orientations_diff.flatten() * strain_rate_max,
                 fractions_diff * strain_rate_max
             ))
 
