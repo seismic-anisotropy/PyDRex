@@ -37,10 +37,10 @@ class TestSimpleShearOlivineA:
         # <https://doi.org/10.1130/0016-7606(1990)102%3C0786:aaoemt%3E2.3.co;2>.
         orientations_final = mineral._orientations[-1][0]
         fractions_final = mineral._fractions[-1]
-        print(orientations_final)
         λ = np.sort(np.abs(la.eigvals(orientations_final)))
+        print("eigenvalues of final orientation matrix:\n", λ)
         assert λ[2] > λ[1] and np.isclose(λ[1], λ[0])
-        print(fractions_final)
+        print("final grain sizes:\n", fractions_final)
         assert np.isclose(np.sum(fractions_final), 1.0)
 
     def test_random_1000(self, params_Kaminski2001_fig5_longdash):
@@ -74,9 +74,9 @@ class TestSimpleShearOlivineA:
         )
         λ = np.sort(np.abs(la.eigvals(orientations_final)))
         print(mineral.orientations_init)
-        print(orientations_final)
+        print("eigenvalues of final orientation matrix:\n", λ)
         assert λ[2] > λ[1] and np.isclose(λ[1], λ[0])
-        print(fractions_final)
+        print("final grain sizes:\n", fractions_final)
         assert np.isclose(np.sum(fractions_final), 1.0)
 
     def test_random_1000_oblique(self, params_Kaminski2001_fig5_longdash):
@@ -111,8 +111,7 @@ class TestSimpleShearOlivineA:
             Rotation.from_matrix(mineral._orientations[-1]).mean(fractions_final).as_matrix()
         )
         λ = np.sort(np.abs(la.eigvals(orientations_final)))
-        print(mineral.orientations_init)
-        print(orientations_final)
+        print("eigenvalues of final orientation matrix:\n", λ)
         assert λ[2] > λ[1] and np.isclose(λ[1], λ[0])
-        print(fractions_final)
+        print("final grain sizes:\n", fractions_final)
         assert np.isclose(np.sum(fractions_final), 1.0)
