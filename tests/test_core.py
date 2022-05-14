@@ -331,37 +331,3 @@ class TestSimpleShearSingleGrains:
         assert np.allclose(orientations_diff, target_orientations_diff)
         print("calculated grain volume changes:\n", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
-
-    def test_random(self):
-        # Single grain of olivine A-type with random initial orientation:
-        #     0 0 0  .   0 1 0      0 -1 0
-        # L = 2 0 0  ε = 1 0 0  Ω = 1  0 0
-        #     0 0 0      0 0 0      0  0 0
-        nondim_velocity_gradient = np.array([[0, 0, 0], [2.0, 0, 0], [0, 0, 0]])
-        nondim_strain_rate = np.array([[0, 1.0, 0], [1.0, 0, 0], [0, 0, 0]])
-        # Grain initialised with random rotation.
-        initial_orientations = Rotation.random(1, random_state=1)
-        orientations_diff, fractions_diff = _core.derivatives(
-            phase=_minerals.MineralPhase.olivine,
-            fabric=_minerals.OlivineFabric.A,
-            n_grains=1,
-            orientations=initial_orientations.as_matrix(),
-            fractions=np.array([1.0]),
-            strain_rate=nondim_strain_rate,
-            velocity_gradient=nondim_velocity_gradient,
-            stress_exponent=3.5,
-            dislocation_exponent=1.5,
-            nucleation_efficiency=5,
-            gbm_mobility=125,
-            volume_fraction=1.0,
-        )
-        # Check that we are moving towards a 'point' symmetry
-        # (one eigenvalue is largest). See Vollmer 1990:
-        # <https://doi.org/10.1130/0016-7606(1990)102%3C0786:aaoemt%3E2.3.co;2>.
-        orientations_new = initial_orientations.as_matrix()[0] + orientations_diff[0]
-        λ = np.sort(np.abs(la.eigvals(orientations_new)))
-        print("eigenvales of updated orientation matrix:\n", λ)
-        assert not np.isclose(λ[2], λ[1], atol=0.1)
-        assert λ[2] > λ[1] and np.isclose(λ[1], λ[0])
-        print("grain size change:\n", fractions_diff)
-        assert np.isclose(np.sum(fractions_diff), 0.0)
