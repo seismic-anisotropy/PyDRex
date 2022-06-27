@@ -7,55 +7,45 @@ import scipy.linalg as la
 import pydrex.tensors as _tensors
 
 
-def bingham_average(orientations):
-    """Compute bingham averages from olivine orientation matrices.
+def Bingham_average(orientations, axis="a"):
+    """Compute Bingham averages from olivine orientation matrices.
 
-    Returns a tuple of vectors which are the averaged
-    a-, b- and c-axes orientations, respectively.
+    Returns the antipodally symmetric average orientation
+    of the given crystallographic `axis`, or the a-axis by default.
+    Valid axis specifiers are "a" for [100], "b" for [010] and "c" for [001].
+
+    See e.g. [Watson 1966].
+
+    [Watson 1966]: https://doi.org/10.1086%2F627211
 
     """
+    if axis == "a":
+        row = 0
+    elif axis == "b":
+        row = 1
+    elif axis == "c":
+        row = 2
+    else:
+        raise ValueError(f"axis must be 'a', 'b', or 'c', not {axis}")
+
+    # Scatter (inertia) matrix, see eq. 2.4 in Watson 1966.
+    scatter = np.zeros((3, 3))
+    scatter[0, 0] = np.sum(orientations[:, row, 0] ** 2)
+    scatter[1, 1] = np.sum(orientations[:, row, 1] ** 2)
+    scatter[2, 2] = np.sum(orientations[:, row, 2] ** 2)
+    scatter[1, 0] = np.sum(orientations[:, row, 0] * orientations[:, row, 1])
+    scatter[2, 0] = np.sum(orientations[:, row, 0] * orientations[:, row, 2])
+    scatter[2, 1] = np.sum(orientations[:, row, 1] * orientations[:, row, 2])
+
     # https://courses.eas.ualberta.ca/eas421/lecturepages/orientation.html
     # Eigenvector corresponding to largest eigenvalue is the mean direction.
     # SciPy returns eigenvalues in ascending order (same order for vectors).
-    a_mean = np.zeros((3, 3))
-    a_mean[0, 0] = np.sum(orientations[:, 0, 0] ** 2)
-    a_mean[1, 1] = np.sum(orientations[:, 0, 1] ** 2)
-    a_mean[2, 2] = np.sum(orientations[:, 0, 2] ** 2)
-    a_mean[0, 1] = np.sum(orientations[:, 0, 0] * orientations[:, 0, 1])
-    a_mean[0, 2] = np.sum(orientations[:, 0, 0] * orientations[:, 0, 2])
-    a_mean[1, 2] = np.sum(orientations[:, 0, 1] * orientations[:, 0, 2])
-    _, a_eigenvectors = la.eigh(_tensors.upper_tri_to_symmetric(a_mean))
-    a_vector = a_eigenvectors[:, -1]
-
-    b_mean = np.zeros((3, 3))
-    b_mean[0, 0] = np.sum(orientations[:, 1, 0] ** 2)
-    b_mean[1, 1] = np.sum(orientations[:, 1, 1] ** 2)
-    b_mean[1, 2] = np.sum(orientations[:, 1, 2] ** 2)
-    b_mean[0, 1] = np.sum(orientations[:, 1, 0] * orientations[:, 1, 1])
-    b_mean[0, 2] = np.sum(orientations[:, 1, 0] * orientations[:, 1, 2])
-    b_mean[1, 2] = np.sum(orientations[:, 1, 1] * orientations[:, 1, 2])
-    _, b_eigenvectors = la.eigh(_tensors.upper_tri_to_symmetric(b_mean))
-    b_vector = b_eigenvectors[:, -1]
-
-    c_mean = np.zeros((3, 3))
-    c_mean[0, 0] = np.sum(orientations[:, 2, 0] ** 2)
-    c_mean[1, 1] = np.sum(orientations[:, 2, 1] ** 2)
-    c_mean[2, 2] = np.sum(orientations[:, 2, 2] ** 2)
-    c_mean[0, 1] = np.sum(orientations[:, 2, 0] * orientations[:, 2, 1])
-    c_mean[0, 2] = np.sum(orientations[:, 2, 0] * orientations[:, 2, 2])
-    c_mean[1, 2] = np.sum(orientations[:, 2, 1] * orientations[:, 2, 2])
-    _, c_eigenvectors = la.eigh(_tensors.upper_tri_to_symmetric(c_mean))
-    c_vector = c_eigenvectors[:, -1]
-
-    return (
-        a_vector / la.norm(a_vector),
-        b_vector / la.norm(b_vector),
-        c_vector / la.norm(c_vector),
-    )
+    mean_vector = la.eigh(scatter)[1][:, -1]
+    return mean_vector / la.norm(mean_vector)
 
 
 def resample_orientations(orientations, fractions, n_samples=None):
-    """Generate samples from `orientations` based on volume distribution.
+    """Generate new samples from `orientations` based on volume distribution.
 
     If the optional number of samples is not specified,
     it will be set to the number of original "grains" (length of `fractions`).
@@ -63,13 +53,14 @@ def resample_orientations(orientations, fractions, n_samples=None):
     """
     if n_samples is None:
         n_samples = len(fractions)
-    sort_ascending = np.argsort(fractions)[::-1]
-    frac_ascending = np.take(fractions, sort_ascending)
+    # sort_ascending = np.argsort(fractions)[::-1]
+    # frac_ascending = np.take(fractions, sort_ascending)
     # Cumulative volume fractions.
-    cumfrac = np.cumsum(frac_ascending)
+    cumfrac = fractions.sort().cumsum()
     # Number of new samples with volume less than each cumulative fraction.
-    count_less = [np.searchsorted(cumfrac, r) for r in rn.random_sample(n_samples)]
-    return np.stack([orientations[i] for i in count_less])
+    rng = rn.default_rng()
+    count_less = np.searchsorted(cumfrac, rng.random(n_samples))
+    return orientations[count_less]
 
 
 def M_index(orientations):
@@ -80,19 +71,23 @@ def M_index(orientations):
     [Skemer et al. 2005]: https://doi.org/10.1016/j.tecto.2005.08.023
 
     """
-    misorientations = np.fromiter(
-        (misorientation_angle(A, B) for A, B in it.combinations(orientations, 2)),
-        dtype=float,
-    )
+    misorientations = [
+        misorientation_angle(A, B) for A, B in it.combinations(orientations, 2)
+    ]
     # Number of misorientations within 1° bins.
-    count_misorientations, _ = np.histogram(misorientations, list(range(121)))
-    return (1 / 2 / len(misorientations)) * np.sum(
-        np.abs(
-            [
-                misorientations_random(i, i + 1) * len(misorientations)
-                for i in range(120)
-            ]
-            - count_misorientations
+    count_misorientations, _ = np.histogram(misorientations, bins=120, range=(0, 120))
+    return (
+        1
+        / 2
+        / len(misorientations)
+        * np.sum(
+            np.abs(
+                [
+                    misorientations_random(i, i + 1) * len(misorientations)
+                    - count_misorientations[i]
+                    for i in range(120)
+                ]
+            )
         )
     )
 
@@ -130,15 +125,17 @@ def misorientations_random(low, high, symmetry=(2, 4)):
     [Grimmer 1979]: https://doi.org/10.1016/0036-9748(79)90058-9
 
     """
+    match symmetry:
+        case (2, 4) | (3, 6):
+            maxval = 120
+        case (4, 8) | (6, 12):
+            maxval = 90
+        case (1, 1) | (2, 2):
+            maxval = 180
+        case _:
+            raise ValueError(f"incorrect symmetry values (M,N) = {symmetry}")
     M, N = symmetry
-    assert low >= 0
-    if (M == 2 and N == 4) or (M == 3 and N == 6):
-        maxval = 120
-    elif (M == 4 and N == 8) or (M == 6 and N == 12):
-        maxval = 90
-    else:
-        maxval = 180
-    assert high <= maxval
+    assert 0 <= low <= high <= maxval
 
     counts_low = 0  # Number of counts at the lower bin edge.
     counts_high = 0  # ... at the higher bin edge.

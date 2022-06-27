@@ -10,38 +10,43 @@ class TestBinghamStats:
     """Tests for antipodally symmetric (Bingham) statistics."""
 
     def test_average_0(self):
-        """Test bingham average of vectors aligned to the reference frame."""
+        """Test Bingham average of vectors aligned to the reference frame."""
         orientations = Rotation.from_rotvec([[0, 0, 0]] * 10).as_matrix()
-        a_mean, b_mean, c_mean = _diagnostics.bingham_average(orientations)
+        a_mean = _diagnostics.Bingham_average(orientations, axis="a")
+        b_mean = _diagnostics.Bingham_average(orientations, axis="b")
+        c_mean = _diagnostics.Bingham_average(orientations, axis="c")
         assert np.array_equal(a_mean, [1, 0, 0])
         assert np.array_equal(b_mean, [0, 1, 0])
         assert np.array_equal(c_mean, [0, 0, 1])
 
     def test_average_twopoles90Z(self):
-        """Test bingham average of vectors rotated by ±90° around Z."""
+        """Test Bingham average of vectors rotated by ±90° around Z."""
         orientations = Rotation.from_rotvec(
             [
                 [0, 0, -np.pi / 2],
                 [0, 0, np.pi / 2],
             ]
         ).as_matrix()
-        a_mean, b_mean, c_mean = _diagnostics.bingham_average(orientations)
+        a_mean = _diagnostics.Bingham_average(orientations, axis="a")
+        b_mean = _diagnostics.Bingham_average(orientations, axis="b")
+        c_mean = _diagnostics.Bingham_average(orientations, axis="c")
         assert np.array_equal(a_mean, [0, 1, 0])
         assert np.array_equal(b_mean, [1, 0, 0])
         assert np.array_equal(c_mean, [0, 0, 1])
 
     def test_average_spread10X(self):
-        """Test bingham average of vectors spread within 10° of the ±X-axis."""
+        """Test Bingham average of vectors spread within 10° of the ±X-axis."""
         orientations = Rotation.from_rotvec(
             np.stack(
                 [
                     [0, x * np.pi / 18 - np.pi / 36, x * np.pi / 18 - np.pi / 36]
-                    for x in rn.random_sample(100)
+                    for x in rn.default_rng().random(100)
                 ]
             )
         ).as_matrix()
-        a_mean, b_mean, c_mean = _diagnostics.bingham_average(orientations)
-        print(a_mean, b_mean, c_mean)
+        a_mean = _diagnostics.Bingham_average(orientations, axis="a")
+        b_mean = _diagnostics.Bingham_average(orientations, axis="b")
+        c_mean = _diagnostics.Bingham_average(orientations, axis="c")
         assert np.allclose(np.abs(a_mean), [1.0, 0, 0], atol=np.sin(np.pi / 18))
         assert np.allclose(np.abs(b_mean), [0, 1.0, 0], atol=np.sin(np.pi / 18))
         assert np.allclose(np.abs(c_mean), [0, 0, 1.0], atol=np.sin(np.pi / 18))
