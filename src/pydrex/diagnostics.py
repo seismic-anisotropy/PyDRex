@@ -19,16 +19,67 @@ def Bingham_average(orientations, axis="a"):
     [Watson 1966]: https://doi.org/10.1086%2F627211
 
     """
-    if axis == "a":
-        row = 0
-    elif axis == "b":
-        row = 1
-    elif axis == "c":
-        row = 2
-    else:
-        raise ValueError(f"axis must be 'a', 'b', or 'c', not {axis}")
+    match axis:
+        case "a":
+            row = 0
+        case "b":
+            row = 1
+        case "c":
+            row = 2
+        case _:
+            raise ValueError(f"axis must be 'a', 'b', or 'c', not {axis}")
 
-    # Scatter (inertia) matrix, see eq. 2.4 in Watson 1966.
+    # https://courses.eas.ualberta.ca/eas421/lecturepages/orientation.html
+    # Eigenvector corresponding to largest eigenvalue is the mean direction.
+    # SciPy returns eigenvalues in ascending order (same order for vectors).
+    mean_vector = la.eigh(_scatter_matrix(orientations, row))[1][:, -1]
+    return mean_vector / la.norm(mean_vector)
+
+
+def symmetry(orientations, axis="a"):
+    """Compute texture symmetry eigenvalue diagnostics.
+
+    Compute Point, Girdle and Random symmetry diagnostics
+    for ternary texture classification.
+    Returns the tuple (P, G, R) where
+
+    $$
+    P = (λ_{1} - λ_{2}) / N
+    G = 2 (λ_{2} - λ_{3}) / N
+    R = 3 λ_{3} / N
+    $$
+
+    for N the sum of the eigenvalues descending eigenvalues $λ_{i}$
+    of the scatter (inertia) matrix.
+
+    See e.g. [Vollmer 1990].
+
+    [Vollmer 1990]: https://doi.org/10.1130%2F0016-7606%281990%29102%3C0786%3Aaaoemt%3E2.3.co%3B2
+
+    """
+    match axis:
+        case "a":
+            row = 0
+        case "b":
+            row = 1
+        case "c":
+            row = 2
+        case _:
+            raise ValueError(f"axis must be 'a', 'b', or 'c', not {axis}")
+
+    scatter = _scatter_matrix(orientations, row)
+    eigvals_descending = la.eigvalsh(scatter)[::-1]
+    sum_eigvals = np.sum(eigvals_descending)
+    return (
+        (eigvals_descending[0] - eigvals_descending[1]) / sum_eigvals,
+        2 * (eigvals_descending[1] - eigvals_descending[2]) / sum_eigvals,
+        3 * eigvals_descending[2] / sum_eigvals,
+    )
+
+
+def _scatter_matrix(orientations, row):
+    # Lower triangular part of the symmetric scatter (inertia) matrix,
+    # see eq. 2.4 in Watson 1966.
     scatter = np.zeros((3, 3))
     scatter[0, 0] = np.sum(orientations[:, row, 0] ** 2)
     scatter[1, 1] = np.sum(orientations[:, row, 1] ** 2)
@@ -36,12 +87,7 @@ def Bingham_average(orientations, axis="a"):
     scatter[1, 0] = np.sum(orientations[:, row, 0] * orientations[:, row, 1])
     scatter[2, 0] = np.sum(orientations[:, row, 0] * orientations[:, row, 2])
     scatter[2, 1] = np.sum(orientations[:, row, 1] * orientations[:, row, 2])
-
-    # https://courses.eas.ualberta.ca/eas421/lecturepages/orientation.html
-    # Eigenvector corresponding to largest eigenvalue is the mean direction.
-    # SciPy returns eigenvalues in ascending order (same order for vectors).
-    mean_vector = la.eigh(scatter)[1][:, -1]
-    return mean_vector / la.norm(mean_vector)
+    return scatter
 
 
 def resample_orientations(orientations, fractions, n_samples=None):
@@ -53,14 +99,14 @@ def resample_orientations(orientations, fractions, n_samples=None):
     """
     if n_samples is None:
         n_samples = len(fractions)
-    # sort_ascending = np.argsort(fractions)[::-1]
-    # frac_ascending = np.take(fractions, sort_ascending)
-    # Cumulative volume fractions.
-    cumfrac = fractions.sort().cumsum()
+    sort_ascending = np.argsort(fractions)
+    # Cumulative volume fractions
+    fractions_ascending = fractions[sort_ascending]
+    cumfrac = fractions_ascending.cumsum()
     # Number of new samples with volume less than each cumulative fraction.
     rng = rn.default_rng()
     count_less = np.searchsorted(cumfrac, rng.random(n_samples))
-    return orientations[count_less]
+    return orientations[sort_ascending][count_less], fractions_ascending[count_less]
 
 
 def M_index(orientations):
@@ -76,18 +122,13 @@ def M_index(orientations):
     ]
     # Number of misorientations within 1° bins.
     count_misorientations, _ = np.histogram(misorientations, bins=120, range=(0, 120))
-    return (
-        1
-        / 2
-        / len(misorientations)
-        * np.sum(
-            np.abs(
-                [
-                    misorientations_random(i, i + 1) * len(misorientations)
-                    - count_misorientations[i]
-                    for i in range(120)
-                ]
-            )
+    return (1 / 2 / len(misorientations)) * np.sum(
+        np.abs(
+            [
+                misorientations_random(i, i + 1) * len(misorientations)
+                - count_misorientations[i]
+                for i in range(120)
+            ]
         )
     )
 

@@ -6,6 +6,65 @@ from scipy.spatial.transform import Rotation
 from pydrex import diagnostics as _diagnostics
 
 
+class TestSymmetryPGR:
+    """Test Point-Girdle-Random (eigenvalue) symmetry diagnostics."""
+
+    def test_pointX(self):
+        """Test diagnostics of point symmetry aligned to the X axis."""
+        # Initial orientations within 10°.
+        orientations = Rotation.from_rotvec(
+            np.stack(
+                [
+                    [0, x * np.pi / 18 - np.pi / 36, x * np.pi / 18 - np.pi / 36]
+                    for x in rn.default_rng().random(100)
+                ]
+            )
+        ).as_matrix()
+        assert np.allclose(
+            _diagnostics.symmetry(orientations, axis="a"), (1, 0, 0), atol=0.4e-1
+        )
+
+    # TODO: More symmetry tests.
+
+
+class TestVolumeWeighting:
+    """Tests for volumetric resampling of orientation data."""
+
+    def test_upsample(self):
+        """Test upsampling of the raw orientation data."""
+        orientations = Rotation.from_rotvec(
+            [
+                [0, 0, 0],
+                [0, 0, np.pi / 6],
+                [np.pi / 6, 0, 0],
+            ]
+        ).as_matrix()
+        fractions = np.array([0.25, 0.6, 0.15])
+        new_orientations = _diagnostics.resample_orientations(
+            orientations,
+            fractions,
+            25,
+        )
+        assert np.all(a in orientations for a in new_orientations)
+
+    def test_downsample(self):
+        """Test downsampling of orientation data."""
+        orientations = Rotation.from_rotvec(
+            [
+                [0, 0, 0],
+                [0, 0, np.pi / 6],
+                [np.pi / 6, 0, 0],
+            ]
+        ).as_matrix()
+        fractions = np.array([0.25, 0.6, 0.15])
+        new_orientations = _diagnostics.resample_orientations(
+            orientations,
+            fractions,
+            2,
+        )
+        assert np.all(a in orientations for a in new_orientations)
+
+
 class TestBinghamStats:
     """Tests for antipodally symmetric (Bingham) statistics."""
 
