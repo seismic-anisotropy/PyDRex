@@ -28,7 +28,7 @@ class TestSymmetryPGR:
         """Test diagnostics of random grain orientations."""
         orientations = Rotation.random(1000).as_matrix()
         np.testing.assert_allclose(
-            _diagnostics.symmetry(orientations, axis="a"), (0, 0, 1), atol=0.4e-1
+            _diagnostics.symmetry(orientations, axis="a"), (0, 0, 1), atol=0.1
         )
 
     # TODO: More symmetry tests.
@@ -153,7 +153,7 @@ class TestMIndex:
             )
         ).as_matrix()
         assert np.isclose(
-            _diagnostics.misorientation_index(orientations), 0.84, atol=0.4e-1
+            _diagnostics.misorientation_index(orientations), 0.8, atol=0.1
         )
 
     def test_textures_increasing(self):
