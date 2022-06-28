@@ -4,10 +4,8 @@ import numpy as np
 from numpy import random as rn
 import scipy.linalg as la
 
-import pydrex.tensors as _tensors
 
-
-def Bingham_average(orientations, axis="a"):
+def bingham_average(orientations, axis="a"):
     """Compute Bingham averages from olivine orientation matrices.
 
     Returns the antipodally symmetric average orientation
@@ -49,7 +47,7 @@ def symmetry(orientations, axis="a"):
     R = 3 λ_{3} / N
     $$
 
-    for N the sum of the eigenvalues descending eigenvalues $λ_{i}$
+    with N the sum of the eigenvalues $λ_{1} ≥ λ_{2} ≥ λ_{3}$
     of the scatter (inertia) matrix.
 
     See e.g. [Vollmer 1990].
@@ -109,7 +107,7 @@ def resample_orientations(orientations, fractions, n_samples=None):
     return orientations[sort_ascending][count_less], fractions_ascending[count_less]
 
 
-def M_index(orientations):
+def misorientation_index(orientations):
     """Calculate M-index for olivine polycrystal orientations.
 
     See [Skemer et al. 2005].
@@ -150,7 +148,8 @@ def misorientations_random(low, high, symmetry=(2, 4)):
 
     Estimate the expected number of misorientation angles between grains
     that would fall within (`low`, `high`) in degrees for an aggregate
-    with randomly oriented grains.
+    with randomly oriented grains, where `low` ∈ [0, `high`),
+    and `high` is bounded by the maximum theoretical misorientation angle θmax.
 
     The optional argument `symmetry` accepts a tuple of integers (a, b)
     that specify the crystal symmetry system:
@@ -159,6 +158,7 @@ def misorientations_random(low, high, symmetry=(2, 4)):
     ------------------------------------------------------------------------------
     M       1          2           2             3            4          6
     N       1          2           4             6            8          12
+    θmax    180°       180°        120°          120°         90°        90°
 
     This is identically Table 1 in [Grimmer 1979].
     The orthorhombic system (olivine) is selected by default.
@@ -174,9 +174,13 @@ def misorientations_random(low, high, symmetry=(2, 4)):
         case (1, 1) | (2, 2):
             maxval = 180
         case _:
-            raise ValueError(f"incorrect symmetry values (M,N) = {symmetry}")
+            raise ValueError(f"incorrect symmetry values (M, N) = {symmetry}")
     M, N = symmetry
-    assert 0 <= low <= high <= maxval
+    if not 0 <= low <= high <= maxval:
+        raise ValueError(
+            f"bounds must obey `low` ∈ [0, `high`) and `high` < {maxval}.\n"
+            + f"You've supplied (`low`, `high`) = ({low}, {high})."
+        )
 
     counts_low = 0  # Number of counts at the lower bin edge.
     counts_high = 0  # ... at the higher bin edge.

@@ -20,8 +20,15 @@ class TestSymmetryPGR:
                 ]
             )
         ).as_matrix()
-        assert np.allclose(
+        np.testing.assert_allclose(
             _diagnostics.symmetry(orientations, axis="a"), (1, 0, 0), atol=0.4e-1
+        )
+
+    def test_random(self):
+        """Test diagnostics of random grain orientations."""
+        orientations = Rotation.random(1000).as_matrix()
+        np.testing.assert_allclose(
+            _diagnostics.symmetry(orientations, axis="a"), (0, 0, 1), atol=0.4e-1
         )
 
     # TODO: More symmetry tests.
@@ -65,36 +72,36 @@ class TestVolumeWeighting:
         assert np.all(a in orientations for a in new_orientations)
 
 
-class TestBinghamStats:
-    """Tests for antipodally symmetric (Bingham) statistics."""
+class TestbinghamStats:
+    """Tests for antipodally symmetric (bingham) statistics."""
 
     def test_average_0(self):
-        """Test Bingham average of vectors aligned to the reference frame."""
+        """Test bingham average of vectors aligned to the reference frame."""
         orientations = Rotation.from_rotvec([[0, 0, 0]] * 10).as_matrix()
-        a_mean = _diagnostics.Bingham_average(orientations, axis="a")
-        b_mean = _diagnostics.Bingham_average(orientations, axis="b")
-        c_mean = _diagnostics.Bingham_average(orientations, axis="c")
-        assert np.array_equal(a_mean, [1, 0, 0])
-        assert np.array_equal(b_mean, [0, 1, 0])
-        assert np.array_equal(c_mean, [0, 0, 1])
+        a_mean = _diagnostics.bingham_average(orientations, axis="a")
+        b_mean = _diagnostics.bingham_average(orientations, axis="b")
+        c_mean = _diagnostics.bingham_average(orientations, axis="c")
+        np.testing.assert_array_equal(a_mean, [1, 0, 0])
+        np.testing.assert_array_equal(b_mean, [0, 1, 0])
+        np.testing.assert_array_equal(c_mean, [0, 0, 1])
 
     def test_average_twopoles90Z(self):
-        """Test Bingham average of vectors rotated by ±90° around Z."""
+        """Test bingham average of vectors rotated by ±90° around Z."""
         orientations = Rotation.from_rotvec(
             [
                 [0, 0, -np.pi / 2],
                 [0, 0, np.pi / 2],
             ]
         ).as_matrix()
-        a_mean = _diagnostics.Bingham_average(orientations, axis="a")
-        b_mean = _diagnostics.Bingham_average(orientations, axis="b")
-        c_mean = _diagnostics.Bingham_average(orientations, axis="c")
-        assert np.array_equal(a_mean, [0, 1, 0])
-        assert np.array_equal(b_mean, [1, 0, 0])
-        assert np.array_equal(c_mean, [0, 0, 1])
+        a_mean = _diagnostics.bingham_average(orientations, axis="a")
+        b_mean = _diagnostics.bingham_average(orientations, axis="b")
+        c_mean = _diagnostics.bingham_average(orientations, axis="c")
+        np.testing.assert_array_equal(a_mean, [0, 1, 0])
+        np.testing.assert_array_equal(b_mean, [1, 0, 0])
+        np.testing.assert_array_equal(c_mean, [0, 0, 1])
 
     def test_average_spread10X(self):
-        """Test Bingham average of vectors spread within 10° of the ±X-axis."""
+        """Test bingham average of vectors spread within 10° of the ±X-axis."""
         orientations = Rotation.from_rotvec(
             np.stack(
                 [
@@ -103,12 +110,12 @@ class TestBinghamStats:
                 ]
             )
         ).as_matrix()
-        a_mean = _diagnostics.Bingham_average(orientations, axis="a")
-        b_mean = _diagnostics.Bingham_average(orientations, axis="b")
-        c_mean = _diagnostics.Bingham_average(orientations, axis="c")
-        assert np.allclose(np.abs(a_mean), [1.0, 0, 0], atol=np.sin(np.pi / 18))
-        assert np.allclose(np.abs(b_mean), [0, 1.0, 0], atol=np.sin(np.pi / 18))
-        assert np.allclose(np.abs(c_mean), [0, 0, 1.0], atol=np.sin(np.pi / 18))
+        a_mean = _diagnostics.bingham_average(orientations, axis="a")
+        b_mean = _diagnostics.bingham_average(orientations, axis="b")
+        c_mean = _diagnostics.bingham_average(orientations, axis="c")
+        np.testing.assert_allclose(np.abs(a_mean), [1.0, 0, 0], atol=np.sin(np.pi / 18))
+        np.testing.assert_allclose(np.abs(b_mean), [0, 1.0, 0], atol=np.sin(np.pi / 18))
+        np.testing.assert_allclose(np.abs(c_mean), [0, 0, 1.0], atol=np.sin(np.pi / 18))
 
 
 class TestMIndex:
@@ -117,7 +124,9 @@ class TestMIndex:
     def test_texture_uniform(self):
         """Test M-index for random (uniform distribution) grain orientations."""
         orientations = Rotation.random(1000).as_matrix()
-        assert np.isclose(_diagnostics.M_index(orientations), 0.44, atol=1e-2)
+        assert np.isclose(
+            _diagnostics.misorientation_index(orientations), 0.44, atol=1e-2
+        )
 
     def test_texture_spread10X(self):
         """Test M-index for grains spread within 10° of the ±X axis."""
@@ -125,11 +134,13 @@ class TestMIndex:
             np.stack(
                 [
                     [0, x * np.pi / 18 - np.pi / 36, x * np.pi / 18 - np.pi / 36]
-                    for x in rn.random_sample(100)
+                    for x in rn.default_rng().random(100)
                 ]
             )
         ).as_matrix()
-        assert np.isclose(_diagnostics.M_index(orientations), 0.99, atol=1e-2)
+        assert np.isclose(
+            _diagnostics.misorientation_index(orientations), 0.99, atol=1e-2
+        )
 
     def test_texture_spread30X(self):
         """Test M-index for grains spread within 45° of the ±X axis."""
@@ -137,11 +148,13 @@ class TestMIndex:
             np.stack(
                 [
                     [0, x * np.pi / 4 - np.pi / 8, x * np.pi / 4 - np.pi / 8]
-                    for x in rn.random_sample(100)
+                    for x in rn.default_rng().random(100)
                 ]
             )
         ).as_matrix()
-        assert np.isclose(_diagnostics.M_index(orientations), 0.84, atol=0.4e-1)
+        assert np.isclose(
+            _diagnostics.misorientation_index(orientations), 0.84, atol=0.4e-1
+        )
 
     def test_textures_increasing(self):
         """Test M-index for textures of increasing strength."""
@@ -156,11 +169,11 @@ class TestMIndex:
                             x * np.pi / factor - np.pi / factor / 2,
                             x * np.pi / factor - np.pi / factor / 2,
                         ]
-                        for x in rn.random_sample(500)
+                        for x in rn.default_rng().random(500)
                     ]
                 )
             ).as_matrix()
-            M_vals[i] = _diagnostics.M_index(orientations)
+            M_vals[i] = _diagnostics.misorientation_index(orientations)
         assert np.all(
             np.diff(M_vals) >= 0
         ), f"M-index values {M_vals} are not increasing"
