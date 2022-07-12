@@ -1,6 +1,7 @@
 import pytest
-from pydrex import minerals as _minerals
 from pydrex import deformation_mechanism as _defmech
+from pydrex import minerals as _minerals
+
 
 @pytest.fixture
 def olivine_disl_random_500():

@@ -13,14 +13,13 @@ CloughTocher2DInterpolator is supported by `--mpl-interp`. Only applies to
 2D simulations for which a mesh triangulation already exists.
 
 """
-import os
 import argparse
-import warnings
-import itertools as it
 import functools as ft
-import time
+import itertools as it
 import logging
-
+import os
+import time
+import warnings
 from logging.handlers import WatchedFileHandler
 from multiprocessing import Pool
 
@@ -53,7 +52,8 @@ import pydrex.interpolations as _interp
 import pydrex.exceptions as _err
 import pydrex.core as _core
 import pydrex.deformation_mechanism as _defmech
-#import pydrex.pole_figures as _fig
+
+# import pydrex.pole_figures as _fig
 
 
 def main():

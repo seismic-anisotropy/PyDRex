@@ -1,14 +1,13 @@
-import pytest
 import numpy as np
-from scipy.spatial.transform import Rotation
-from scipy import linalg as la
-
 import pydrex.core as _core
-import pydrex.minerals as _minerals
 import pydrex.deformation_mechanism as _defmech
+import pydrex.minerals as _minerals
+import pytest
+from scipy import linalg as la
+from scipy.spatial.transform import Rotation
 
 
-#def test_update_strain():
+# def test_update_strain():
 #    ...
 
 
@@ -53,14 +52,16 @@ class TestSimpleShearSingleGrains:
             volume_fraction=1.0,
         )
         cosθ = np.cos(θ)
-        cos2θ = np.cos(2*θ)
+        cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
         print("calculated re-orientation rate:\n", orientations_diff)
-        target_orientations_diff = np.array([
-            [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
-            [cosθ * (- 1 - cos2θ), sinθ * (1 + cos2θ), 0],
-            [0, 0, 0],
-        ])
+        target_orientations_diff = np.array(
+            [
+                [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
+                [cosθ * (-1 - cos2θ), sinθ * (1 + cos2θ), 0],
+                [0, 0, 0],
+            ]
+        )
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
         print("calculated grain volume change:\n", fractions_diff)
@@ -91,14 +92,16 @@ class TestSimpleShearSingleGrains:
             volume_fraction=1.0,
         )
         cosθ = np.cos(θ)
-        cos2θ = np.cos(2*θ)
+        cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
         print("calculated re-orientation rate:\n", orientations_diff)
-        target_orientations_diff = np.array([
-            [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
-            [cosθ * (- 1 - cos2θ), sinθ * (1 + cos2θ), 0],
-            [0, 0, 0],
-        ])
+        target_orientations_diff = np.array(
+            [
+                [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
+                [cosθ * (-1 - cos2θ), sinθ * (1 + cos2θ), 0],
+                [0, 0, 0],
+            ]
+        )
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
         print("calculated grain volume changes:\n", fractions_diff)
@@ -129,14 +132,16 @@ class TestSimpleShearSingleGrains:
             volume_fraction=1.0,
         )
         cosθ = np.cos(θ)
-        cos2θ = np.cos(2*θ)
+        cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
         print("calculated re-orientation rate:\n", orientations_diff)
-        target_orientations_diff = np.array([
-            [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
-            [cosθ * (- 1 - cos2θ), sinθ * (1 + cos2θ), 0],
-            [0, 0, 0],
-        ])
+        target_orientations_diff = np.array(
+            [
+                [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
+                [cosθ * (-1 - cos2θ), sinθ * (1 + cos2θ), 0],
+                [0, 0, 0],
+            ]
+        )
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
         print("calculated grain volume changes:\n", fractions_diff)
@@ -167,14 +172,16 @@ class TestSimpleShearSingleGrains:
             volume_fraction=1.0,
         )
         cosθ = np.cos(θ)
-        cos2θ = np.cos(2*θ)
+        cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
         print("calculated re-orientation rate:\n", orientations_diff)
-        target_orientations_diff = np.array([
-            [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
-            [cosθ * (- 1 - cos2θ), sinθ * (1 + cos2θ), 0],
-            [0, 0, 0],
-        ])
+        target_orientations_diff = np.array(
+            [
+                [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
+                [cosθ * (-1 - cos2θ), sinθ * (1 + cos2θ), 0],
+                [0, 0, 0],
+            ]
+        )
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
         print("calculated grain volume changes:\n", fractions_diff)
@@ -205,14 +212,16 @@ class TestSimpleShearSingleGrains:
             volume_fraction=1.0,
         )
         cosθ = np.cos(θ)
-        cos2θ = np.cos(2*θ)
+        cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
         print("calculated re-orientation rate:\n", orientations_diff)
-        target_orientations_diff = np.array([
-            [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
-            [0, 0, 0],
-            [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
-        ])
+        target_orientations_diff = np.array(
+            [
+                [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
+                [0, 0, 0],
+                [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
+            ]
+        )
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
         print("calculated grain volume changes:\n", fractions_diff)
@@ -243,14 +252,16 @@ class TestSimpleShearSingleGrains:
             volume_fraction=1.0,
         )
         cosθ = np.cos(θ)
-        cos2θ = np.cos(2*θ)
+        cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
         print("calculated re-orientation rate:\n", orientations_diff)
-        target_orientations_diff = np.array([
-            [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
-            [0, 0, 0],
-            [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
-        ])
+        target_orientations_diff = np.array(
+            [
+                [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
+                [0, 0, 0],
+                [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
+            ]
+        )
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
         print("calculated grain volume changes:\n", fractions_diff)
@@ -281,14 +292,16 @@ class TestSimpleShearSingleGrains:
             volume_fraction=1.0,
         )
         cosθ = np.cos(θ)
-        cos2θ = np.cos(2*θ)
+        cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
         print("calculated re-orientation rate:\n", orientations_diff)
-        target_orientations_diff = np.array([
-            [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
-            [0, 0, 0],
-            [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
-        ])
+        target_orientations_diff = np.array(
+            [
+                [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
+                [0, 0, 0],
+                [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
+            ]
+        )
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
         print("calculated grain volume changes:\n", fractions_diff)
@@ -319,14 +332,16 @@ class TestSimpleShearSingleGrains:
             volume_fraction=1.0,
         )
         cosθ = np.cos(θ)
-        cos2θ = np.cos(2*θ)
+        cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
         print("calculated re-orientation rate:\n", orientations_diff)
-        target_orientations_diff = np.array([
-            [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
-            [0, 0, 0],
-            [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
-        ])
+        target_orientations_diff = np.array(
+            [
+                [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
+                [0, 0, 0],
+                [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
+            ]
+        )
         print("target re-orientation rate:\n", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
         print("calculated grain volume changes:\n", fractions_diff)

@@ -3,14 +3,12 @@
 import itertools as it
 
 import numpy as np
-
-from scipy.interpolate import CloughTocher2DInterpolator
-from matplotlib.tri import CubicTriInterpolator
-from scipy.interpolate import NearestNDInterpolator
-
+import pydrex.deformation_mechanism as _defmech
 import pydrex.exceptions as _err
 import pydrex.vtk_helpers as _vtk
-import pydrex.deformation_mechanism as _defmech
+from matplotlib.tri import CubicTriInterpolator
+from scipy.interpolate import CloughTocher2DInterpolator
+from scipy.interpolate import NearestNDInterpolator
 
 
 def default_interpolators(config, coords, vtk_output, mpl_interp=None):

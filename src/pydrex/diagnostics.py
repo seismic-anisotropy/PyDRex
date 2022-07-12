@@ -1,8 +1,8 @@
 import itertools as it
 
 import numpy as np
-from numpy import random as rn
 import scipy.linalg as la
+from numpy import random as rn
 
 
 def bingham_average(orientations, axis="a"):

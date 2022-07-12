@@ -1,5 +1,6 @@
 """PyDRex: Deformation mechanism enums."""
-from enum import IntEnum, unique
+from enum import IntEnum
+from enum import unique
 
 
 @unique
@@ -12,6 +13,7 @@ class Regime(IntEnum):
     - maximum viscosity region (3)
 
     """
+
     diffusion = 0
     dislocation = 1
     byerlee = 2

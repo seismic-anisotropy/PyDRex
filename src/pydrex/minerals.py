@@ -5,16 +5,17 @@ Acronyms:
     i.e. components of stress acting on each slip system in the grain reference frame
 
 """
-from dataclasses import dataclass, field
-from enum import IntEnum, unique
+from dataclasses import dataclass
+from dataclasses import field
+from enum import IntEnum
+from enum import unique
 
-import numpy as np
 import numba as nb
-from scipy.spatial.transform import Rotation
-from scipy.integrate import RK45
-from scipy import linalg as la
-
+import numpy as np
 import pydrex.core as _core
+from scipy import linalg as la
+from scipy.integrate import RK45
+from scipy.spatial.transform import Rotation
 
 
 @unique
@@ -121,7 +122,9 @@ class Mineral:
         self._fractions.append(self.fractions_init)
         self._orientations.append(self.orientations_init)
 
-    def update_orientations(self, config, finite_strain_ell, velocity_gradient, integration_time):
+    def update_orientations(
+        self, config, finite_strain_ell, velocity_gradient, integration_time
+    ):
         """Update orientations and volume distribution for the `Mineral`.
 
         Update crystalline orientations and grain volume distribution
@@ -138,18 +141,17 @@ class Mineral:
         <https://numpy.org/doc/stable/user/whatisnumpy.html>
 
         """
+
         def extract_vars(y):
             finite_strain_ell = y[:9].copy().reshape(3, 3)
             orientations = (
-                y[9:self.n_grains * 9 + 9]
+                y[9 : self.n_grains * 9 + 9]
                 .copy()
                 .reshape(self.n_grains, 3, 3)
                 .clip(-1, 1)
             )
             fractions = (
-                y[self.n_grains * 9 + 9:self.n_grains * 10 + 9]
-                .copy()
-                .clip(0, None)
+                y[self.n_grains * 9 + 9 : self.n_grains * 10 + 9].copy().clip(0, None)
             )
             fractions /= fractions.sum()
             return finite_strain_ell, orientations, fractions
@@ -170,11 +172,13 @@ class Mineral:
                 gbm_mobility=config["gbm_mobility"],
                 volume_fraction=volume_fraction,
             )
-            return np.hstack((
-                np.dot(velocity_gradient, finite_strain_ell).flatten(),
-                orientations_diff.flatten() * strain_rate_max,
-                fractions_diff * strain_rate_max
-            ))
+            return np.hstack(
+                (
+                    np.dot(velocity_gradient, finite_strain_ell).flatten(),
+                    orientations_diff.flatten() * strain_rate_max,
+                    fractions_diff * strain_rate_max,
+                )
+            )
 
         # Imposed macroscopic strain rate tensor.
         strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
@@ -194,12 +198,14 @@ class Mineral:
         sol = RK45(
             rhs,
             0,
-            np.hstack((
-                finite_strain_ell.flatten(),
-                self._orientations[-1].flatten(),
-                self._fractions[-1]
-            )),
-            integration_time
+            np.hstack(
+                (
+                    finite_strain_ell.flatten(),
+                    self._orientations[-1].flatten(),
+                    self._fractions[-1],
+                )
+            ),
+            integration_time,
         )
 
         while sol.status == "running":
@@ -234,7 +240,11 @@ class Mineral:
                 + f"- {len(self._fractions)} grain size results, and\n"
                 + f"- {len(self._orientations)} orientation results."
             )
-        if self._fractions[0].shape[0] == self._orientations[0].shape[0] == self.n_grains:
+        if (
+            self._fractions[0].shape[0]
+            == self._orientations[0].shape[0]
+            == self.n_grains
+        ):
             meta = np.array([self.phase, self.fabric, self.regime], dtype=np.uint8)
             np.savez(
                 filename,

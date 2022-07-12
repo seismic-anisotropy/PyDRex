@@ -2,7 +2,8 @@
 import pathlib
 
 import numpy as np
-from vtk import vtkXMLUnstructuredGridReader, vtkXMLPUnstructuredGridReader
+from vtk import vtkXMLPUnstructuredGridReader
+from vtk import vtkXMLUnstructuredGridReader
 
 
 def get_output(filename):
@@ -26,7 +27,7 @@ def get_output(filename):
 
 def _skip_column_every(a, n):
     """Skip a column in numpy array `a` every `n` indices.
-    
+
     Examples:
 
     >>> a = np.eye(10)
@@ -43,7 +44,7 @@ def _skip_column_every(a, n):
            [0., 0., 0., 0., 0., 0., 1.]])
     >>> _skip_column_every(a, 1)
     array([], shape=(10, 0), dtype=float64)
-    
+
     """
     return a[:, np.mod(np.arange(a.shape[1]), n) != n - 1]
 

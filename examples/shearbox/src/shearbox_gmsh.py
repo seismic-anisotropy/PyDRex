@@ -8,8 +8,8 @@ The API is defined in this file:
 
 """
 import argparse
-import pathlib
 import os
+import pathlib
 
 import gmsh as gm  # type: ignore
 
@@ -40,8 +40,8 @@ def write_shearbox(outfile, edgelength, resolution):
     gm.model.add(outpath.stem)
 
     gm.option.setNumber("Mesh.MshFileVersion", 2.2)
-    #gm.option.setNumber("Mesh.PartitionOldStyleMsh2", 1)
-    #gm.option.setNumber("Mesh.PartitionCreateGhostCells", 1)
+    # gm.option.setNumber("Mesh.PartitionOldStyleMsh2", 1)
+    # gm.option.setNumber("Mesh.PartitionCreateGhostCells", 1)
 
     # Set up coordinates for the front face (positive x-axis forward, right-handed axes).
     # Points are specified as (x, y, z, target_edge_length_for_neighbouring_elements)
@@ -84,29 +84,29 @@ def write_shearbox(outfile, edgelength, resolution):
     gm.model.geo.synchronize()
 
     # First arg to addPhysicalGroup() is the component dimension: 0D, 1D, 2D or 3D
-    #front_phys_tag = gm.model.addPhysicalGroup(2, [front_face_tag])
-    #gm.model.setPhysicalName(2, front_phys_tag, "Front")
-    #back_phys_tag = gm.model.addPhysicalGroup(2, [back_face_tag])
-    #gm.model.setPhysicalName(2, back_phys_tag, "Back")
-    #bot_phys_tag = gm.model.addPhysicalGroup(2, [bot_face_tag])
-    #gm.model.setPhysicalName(2, bot_phys_tag, "Bottom")
-    #right_phys_tag = gm.model.addPhysicalGroup(2, [right_face_tag])
-    #gm.model.setPhysicalName(2, right_phys_tag, "Right")
-    #top_phys_tag = gm.model.addPhysicalGroup(2, [top_face_tag])
-    #gm.model.setPhysicalName(2, top_phys_tag, "Top")
-    #left_phys_tag = gm.model.addPhysicalGroup(2, [left_face_tag])
-    #gm.model.setPhysicalName(2, left_phys_tag, "Left")
+    # front_phys_tag = gm.model.addPhysicalGroup(2, [front_face_tag])
+    # gm.model.setPhysicalName(2, front_phys_tag, "Front")
+    # back_phys_tag = gm.model.addPhysicalGroup(2, [back_face_tag])
+    # gm.model.setPhysicalName(2, back_phys_tag, "Back")
+    # bot_phys_tag = gm.model.addPhysicalGroup(2, [bot_face_tag])
+    # gm.model.setPhysicalName(2, bot_phys_tag, "Bottom")
+    # right_phys_tag = gm.model.addPhysicalGroup(2, [right_face_tag])
+    # gm.model.setPhysicalName(2, right_phys_tag, "Right")
+    # top_phys_tag = gm.model.addPhysicalGroup(2, [top_face_tag])
+    # gm.model.setPhysicalName(2, top_phys_tag, "Top")
+    # left_phys_tag = gm.model.addPhysicalGroup(2, [left_face_tag])
+    # gm.model.setPhysicalName(2, left_phys_tag, "Left")
 
     gm.model.mesh.generate(3)  # Generate 3D mesh
     # Using pathlib allows relative paths and it's a nice API.
     gm.write(f"{outpath.resolve()}")
 
-    #print(f"Front surface tag: {front_phys_tag}")
-    #print(f"Back surface tag: {back_phys_tag}")
-    #print(f"Bottom surface tag: {bot_phys_tag}")
-    #print(f"Right surface tag: {right_phys_tag}")
-    #print(f"Top surface tag: {top_phys_tag}")
-    #print(f"Left surface tag: {left_phys_tag}")
+    # print(f"Front surface tag: {front_phys_tag}")
+    # print(f"Back surface tag: {back_phys_tag}")
+    # print(f"Bottom surface tag: {bot_phys_tag}")
+    # print(f"Right surface tag: {right_phys_tag}")
+    # print(f"Top surface tag: {top_phys_tag}")
+    # print(f"Left surface tag: {left_phys_tag}")
 
     gm.finalize()
 

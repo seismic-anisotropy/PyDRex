@@ -1,6 +1,6 @@
 """PyDRex: Tensor operation functions and helpers."""
-import numpy as np
 import numba as nb
+import numpy as np
 
 
 PERMUTATION_SYMBOL = np.array(

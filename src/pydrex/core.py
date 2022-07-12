@@ -20,17 +20,16 @@ instead of using these routines directly, which do not circumvent all edge cases
 For example, the pathological case with a flow field with zero vorticity will crash.
 
 """
-import warnings
 import logging
+import warnings
 
+import numba as nb
 import numpy as np
 import numpy.linalg as la
-import numba as nb
-
-import pydrex.tensors as _tensors
 import pydrex.interpolations as _interp
-import pydrex.pathlines as _pathlines
 import pydrex.minerals as _minerals
+import pydrex.pathlines as _pathlines
+import pydrex.tensors as _tensors
 
 
 def solve(minerals, config, velocity_gradient, time_steps):
@@ -378,10 +377,10 @@ def _get_deformation_rate(phase, orientation, slip_rates):
         for j in range(3):
             if phase == _minerals.MineralPhase.olivine:
                 deformation_rate[i, j] = 2 * (
-                     slip_rates[0] * orientation[0, i] * orientation[1, j]
-                     + slip_rates[1] * orientation[0, i] * orientation[2, j]
-                     + slip_rates[2] * orientation[2, i] * orientation[1, j]
-                     + slip_rates[3] * orientation[2, i] * orientation[0, j]
+                    slip_rates[0] * orientation[0, i] * orientation[1, j]
+                    + slip_rates[1] * orientation[0, i] * orientation[2, j]
+                    + slip_rates[2] * orientation[2, i] * orientation[1, j]
+                    + slip_rates[3] * orientation[2, i] * orientation[0, j]
                 )
             elif phase == _minerals.MineralPhase.enstatite:
                 deformation_rate[i, j] = 2 * orientation[2, i] * orientation[0, j]
@@ -448,7 +447,7 @@ def _get_slip_rates_olivine(invariants, slip_indices, rrss, stress_exponent):
 
 @nb.njit(fastmath=True)
 def _get_slip_invariants_olivine(strain_rate, orientation):
-    """Calculate strain rate invariants for the four slip systems of olivine.
+    r"""Calculate strain rate invariants for the four slip systems of olivine.
 
     Calculates $I_{ij} = ∑_{ij} l_{i} n_{j} \dot{ε}_{ij}$ for each slip sytem.
 
@@ -536,12 +535,14 @@ def _get_strain_energy_olivine(
     # NOTE: Mistake in eq. 11, Kaminski 2004: spurrious division by strain rate scale.
     for i in slip_indices[1:]:
         # TODO: Verify rrss[i] == τ_0 / τ^sv
-        dislocation_density = rrss[i] ** (dislocation_exponent - stress_exponent) * np.abs(
-            slip_rates[i] * slip_rate_softest
-        ) ** (dislocation_exponent / stress_exponent)
+        dislocation_density = rrss[i] ** (
+            dislocation_exponent - stress_exponent
+        ) * np.abs(slip_rates[i] * slip_rate_softest) ** (
+            dislocation_exponent / stress_exponent
+        )
         # Dimensionless strain energy for this grain, see eq. 14, Fraters 2021.
         strain_energy += dislocation_density * np.exp(
-            -nucleation_efficiency * dislocation_density ** 2
+            -nucleation_efficiency * dislocation_density**2
         )
     return strain_energy
 
@@ -567,10 +568,10 @@ def _get_strain_energy_enstatite(
 
     """
     weight_factor = slip_rate_softest / rrss[slip_indices[-1]] ** stress_exponent
-    dislocation_density = rrss[slip_indices[-1]] ** (dislocation_exponent - stress_exponent) * np.abs(
-        weight_factor
-    ) ** (dislocation_exponent / stress_exponent)
+    dislocation_density = rrss[slip_indices[-1]] ** (
+        dislocation_exponent - stress_exponent
+    ) * np.abs(weight_factor) ** (dislocation_exponent / stress_exponent)
     # Dimensionless strain energy for this grain, see eq. 14, Fraters 2021.
     return dislocation_density * np.exp(
-        -nucleation_efficiency * dislocation_density ** 2
+        -nucleation_efficiency * dislocation_density**2
     )
