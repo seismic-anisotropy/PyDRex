@@ -1,7 +1,7 @@
 """PyDRex: Methods to calculate texture diagnostics.
 
-NOTE: Calculations expect orientation matrices $a$ to represent passive,
-i.e. alias rotations, which are defined in terms of the extrinsic ZXZ
+NOTE: Calculations expect orientation matrices $a$ to represent passive
+(i.e. alias) rotations, which are defined in terms of the extrinsic ZXZ
 euler angles $ϕ, θ, φ$ as
 
 $$
@@ -12,7 +12,7 @@ a = \begin{bmatrix}
     \\end{bmatrix}
 $$
 
-such that a[i,j] gives the direction cosine of the angle between the i-th
+such that a[i, j] gives the direction cosine of the angle between the i-th
 grain axis and the j-th external axis (in the global Eulerian frame).
 
 """
@@ -51,8 +51,8 @@ def bingham_average(orientations, axis="a"):
     # Eigenvector corresponding to largest eigenvalue is the mean direction.
     # SciPy returns eigenvalues in ascending order (same order for vectors).
     mean_vector = la.eigh(_scatter_matrix(orientations, row))[1][:, -1]
-    # Use abs because the mean vector [a, a, a] and [-a, -a, -a] are the same.
-    # This way the output form arccos is more consistent for measuring alignment.
+    # Use abs because the mean vectors [a, a, a] and [-a, -a, -a] are the same.
+    # This way the output from arccos is more consistent for measuring alignment.
     return np.abs(mean_vector / la.norm(mean_vector))
 
 
@@ -154,9 +154,9 @@ def misorientation_index(orientations):
 
 
 def misorientation_angles(combinations):
-    """Calculate the misorientation angles for a pairs of rotation matrices.
+    """Calculate the misorientation angles for pairs of rotation matrices.
 
-    Calculate the angles of the difference rotations between `combinations[:, 0]`
+    Calculate the angular distance between the rotations `combinations[:, 0]`
     and `combinations[:, 1]`, which are expected to be 3x3 passive (alias)
     rotation matrices.
 
@@ -279,7 +279,7 @@ def smallest_angle(vector, axis):
     The axis is specified using either of its two parallel unit vectors.
 
     """
-    angle = np.rad2deg(np.arccos(np.dot(vector, axis)))
+    angle = np.abs(np.rad2deg(np.arccos(np.dot(vector, axis))))
     if angle > 90:
         return 180 - angle
     return angle
