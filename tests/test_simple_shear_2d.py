@@ -21,9 +21,9 @@ class TestSinglePolycrystalOlivineA:
 
     def test_shearYZ_initQ1(
         self,
-        params_Kaminski2001_fig5_solid,
-        params_Kaminski2001_fig5_shortdash,
-        params_Kaminski2001_fig5_longdash,
+        params_Kaminski2001_fig5_solid,  # GBM = 0
+        params_Kaminski2001_fig5_shortdash,  # GBM = 50
+        params_Kaminski2001_fig5_longdash,  # GBM = 200
         outdir,
     ):
         """Test clockwise a-axis rotation around X.
@@ -35,7 +35,9 @@ class TestSinglePolycrystalOlivineA:
             L = 0 0 2
                 0 0 0
 
-        Similar to Fig. 5 in [Kaminski 2001]
+        Orientations set up for slip on (010)[100].
+        Tests the effect of grain boundary migration,
+        similar to Fig. 5 in [Kaminski 2001].
 
         [Kaminski 2001]: https://doi.org/10.1016%2Fs0012-821x%2801%2900356-9
 
@@ -46,7 +48,8 @@ class TestSinglePolycrystalOlivineA:
         timescale = 1 / (strain_rate_scale / 2)
         n_grains = 1000
 
-        # Initial orientations in first quadrant of YZ plane.
+        # Initial orientations with a-axis in first quadrant of the YZ plane,
+        # and c-axis along the +X direction (important!)
         # This means that the starting average is the same,
         # which is convenient for comparing the texture evolution.
         orientations_init = (
@@ -60,6 +63,10 @@ class TestSinglePolycrystalOlivineA:
             .inv()
             .as_matrix()
         )
+        # Uncomment to check a-axis vectors, should be near [0, a, a].
+        # assert False, f"{orientations_init[0:10, 0, :]}"
+        # Uncomment to check c-axis vectors, should be near [1, 0, 0].
+        # assert False, f"{orientations_init[0:10, 2, :]}"
 
         # One mineral to test each value of grain boundary mobility.
         minerals = [
@@ -83,9 +90,9 @@ class TestSinglePolycrystalOlivineA:
         for mineral, params in zip(
             minerals,
             (
-                params_Kaminski2001_fig5_solid,
-                params_Kaminski2001_fig5_shortdash,
-                params_Kaminski2001_fig5_longdash,
+                params_Kaminski2001_fig5_solid,  # GBM = 0
+                params_Kaminski2001_fig5_shortdash,  # GBM = 50
+                params_Kaminski2001_fig5_longdash,  # GBM = 200
             ),
         ):
             time = 0
@@ -159,7 +166,7 @@ class TestSinglePolycrystalOlivineA:
 
             # Optionally store plotting metadata.
             if outdir is not None:
-                labels.append(f"M* = {params['gbm_mobility']}")
+                labels.append(f"$M^∗$ = {params['gbm_mobility']}")
                 angles.append(misorient_angles)
                 indices.append(misorient_indices)
 
