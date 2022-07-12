@@ -135,7 +135,11 @@ class TestSinglePolycrystalOlivineA:
                 case 0:
                     np.testing.assert_allclose(
                         misorient_angles,
-                        45 * np.exp(np.linspace(0, timestop, n_timesteps) * (np.cos(np.pi / 2) - 1)),
+                        45
+                        * np.exp(
+                            np.linspace(0, timestop, n_timesteps)
+                            * (np.cos(np.pi / 2) - 1)
+                        ),
                         atol=3.0,
                     )
                     assert np.isclose(misorient_angles[halfway], 25, atol=2.0)
