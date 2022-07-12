@@ -1,7 +1,27 @@
+"""PyDRex: Methods to calculate texture diagnostics.
+
+NOTE: Calculations expect orientation matrices $a$ to represent passive
+(i.e. alias) rotations, which are defined in terms of the extrinsic ZXZ
+euler angles $ϕ, θ, φ$ as
+
+$$
+a = \begin{bmatrix}
+    \\cosφ\\cosϕ - \\cosθ\\sinϕ\\sinφ & \\cosθ\\cosϕ\\sinφ + \\cosφ\\sinϕ & \\sinφ\\sinθ
+   -\\sinφ\\cosϕ - \\cosθ\\sinϕ\\cosφ & \\cosθ\\cosϕ\\cosφ - \\sinφ\\sinϕ & \\cosφ\\sinθ
+            \\sinθ\\sinϕ           &           -\\sinθ\\cosϕ        &   \\cosθ
+    \\end{bmatrix}
+$$
+
+such that a[i, j] gives the direction cosine of the angle between the i-th
+grain axis and the j-th external axis (in the global Eulerian frame).
+
+"""
 import itertools as it
 
+import numba as nb
 import numpy as np
 import scipy.linalg as la
+import scipy.special as sp
 from numpy import random as rn
 
 
@@ -31,7 +51,9 @@ def bingham_average(orientations, axis="a"):
     # Eigenvector corresponding to largest eigenvalue is the mean direction.
     # SciPy returns eigenvalues in ascending order (same order for vectors).
     mean_vector = la.eigh(_scatter_matrix(orientations, row))[1][:, -1]
-    return mean_vector / la.norm(mean_vector)
+    # Use abs because the mean vectors [a, a, a] and [-a, -a, -a] are the same.
+    # This way the output from arccos is more consistent for measuring alignment.
+    return np.abs(mean_vector / la.norm(mean_vector))
 
 
 def symmetry(orientations, axis="a"):
@@ -115,9 +137,9 @@ def misorientation_index(orientations):
     [Skemer et al. 2005]: https://doi.org/10.1016/j.tecto.2005.08.023
 
     """
-    misorientations = [
-        misorientation_angle(A, B) for A, B in it.combinations(orientations, 2)
-    ]
+    misorientations = misorientation_angles(
+        np.array(list(it.combinations(orientations, 2)))
+    )
     # Number of misorientations within 1° bins.
     count_misorientations, _ = np.histogram(misorientations, bins=120, range=(0, 120))
     return (1 / 2 / len(misorientations)) * np.sum(
@@ -131,16 +153,32 @@ def misorientation_index(orientations):
     )
 
 
-def misorientation_angle(rot_a, rot_b):
-    """Calculate the misorientation angle for a pair of rotation matrices.
+def misorientation_angles(combinations):
+    """Calculate the misorientation angles for pairs of rotation matrices.
 
-    Calculate the angle of the difference rotation between `rot_a` and `rot_b`,
-    which are expected to be 3x3 rotation matrices.
+    Calculate the angular distance between the rotations `combinations[:, 0]`
+    and `combinations[:, 1]`, which are expected to be 3x3 passive (alias)
+    rotation matrices.
 
     """
-    diff_rot = rot_a @ rot_b.T
-    # Need to clip to [-1, 1] to avoid NaNs from np.arccos due to rounding errs.
-    return np.rad2deg(np.arccos(np.clip(np.abs(np.trace(diff_rot) - 1) / 2, -1, 1)))
+    return np.rad2deg(
+        np.arccos(
+            np.clip(
+                (
+                    np.trace(
+                        combinations[:, 0]
+                        @ np.transpose(combinations[:, 1], axes=[0, 2, 1]),
+                        axis1=1,
+                        axis2=2,
+                    )
+                    - 1.0
+                )
+                / 2,
+                -1.0,
+                1.0,
+            )
+        )
+    )
 
 
 def misorientations_random(low, high, symmetry=(2, 4)):
@@ -233,3 +271,15 @@ def misorientations_random(low, high, symmetry=(2, 4)):
             assert False  # Should never happen.
 
     return np.sum(counts_both) / 2
+
+
+def smallest_angle(vector, axis):
+    """Get smallest angle between a unit `vector` and a bidirectional `axis`.
+
+    The axis is specified using either of its two parallel unit vectors.
+
+    """
+    angle = np.abs(np.rad2deg(np.arccos(np.dot(vector, axis))))
+    if angle > 90:
+        return 180 - angle
+    return angle
