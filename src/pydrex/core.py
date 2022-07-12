@@ -1,19 +1,7 @@
-"""PyDRex: Core DRex functions.
+r"""PyDRex: Core DRex functions.
 
-At each point (either on a calculated pathline or for a pre-defined particle),
-CPO is calculated by discretizing the virtual particle into volume bins
-based on lattice rotation distribution.
-The number of these "grains" is fixed, but their relative volumes can change.
-Although referred to in the code as grains, they do not represent physical grains,
-instead providing an efficient alternative volume discretization.
-
-Grains do not have a defined spatial extent,
-and all calculations are performed at the centre point.
-For computational efficiency,
-the DRex model treats any interactions with other grains
-as interactions with an averaged effective medium.
-
-NOTE: The DRex model is not recommended if static recrystallization is significant.
+CPO can be calculated along a flow pathline, using interpolated velocity values,
+or for a Lagrangian particle experiencing a given velocity gradient.
 
 WARNING: It is recommended to use the `Mineral` class from `pydrex.minerals`
 instead of using these routines directly, which do not circumvent all edge cases.
