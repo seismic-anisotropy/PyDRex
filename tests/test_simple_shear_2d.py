@@ -128,7 +128,7 @@ class TestSinglePolycrystalOlivineA:
                 )
 
             # Check for uncorrupted record of initial condition.
-            assert np.isclose(misorient_angles[0], 45.0, atol=4.5)
+            assert np.isclose(misorient_angles[0], 45.0, atol=5.0)
             assert misorient_indices[0] < 0.7
             # Check for mostly smoothly decreasing misalignment.
             angles_diff = np.diff(misorient_angles)
@@ -142,12 +142,12 @@ class TestSinglePolycrystalOlivineA:
                 case 0:
                     np.testing.assert_allclose(
                         misorient_angles,
-                        45
+                        misorient_angles[0]
                         * np.exp(
                             np.linspace(0, timestop, n_timesteps)
-                            * (np.cos(np.pi / 2) - 1)
+                            * (np.cos(2 * np.deg2rad(misorient_angles[0])) - 1)
                         ),
-                        atol=3.0,
+                        atol=5.0,
                     )
                     assert np.isclose(misorient_angles[halfway], 25, atol=2.0)
                     assert np.isclose(misorient_angles[-1], 17.0, atol=1.0)
