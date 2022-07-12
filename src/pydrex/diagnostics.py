@@ -20,6 +20,7 @@ import itertools as it
 
 import numba as nb
 import numpy as np
+from numpy import random as rn
 import scipy.linalg as la
 import scipy.special as sp
 
