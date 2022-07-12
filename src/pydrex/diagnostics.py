@@ -6,10 +6,10 @@ euler angles $ϕ, θ, φ$ as
 
 $$
 a = \begin{bmatrix}
-    \cosφ\cosϕ - \cosθ\sinϕ\sinφ & \cosθ\cosϕ\sinφ + \cosφ\sinϕ & \sinφ\sinθ
-   -\sinφ\cosϕ - \cosθ\sinϕ\cosφ & \cosθ\cosϕ\cosφ - \sinφ\sinϕ & \cosφ\sinθ
-            \sinθ\sinϕ           &           -\sinθ\cosϕ        &   \cosθ
-    \end{bmatrix}
+    \\cosφ\\cosϕ - \\cosθ\\sinϕ\\sinφ & \\cosθ\\cosϕ\\sinφ + \\cosφ\\sinϕ & \\sinφ\\sinθ
+   -\\sinφ\\cosϕ - \\cosθ\\sinϕ\\cosφ & \\cosθ\\cosϕ\\cosφ - \\sinφ\\sinϕ & \\cosφ\\sinθ
+            \\sinθ\\sinϕ           &           -\\sinθ\\cosϕ        &   \\cosθ
+    \\end{bmatrix}
 $$
 
 such that a[i,j] gives the direction cosine of the angle between the i-th
@@ -18,10 +18,10 @@ grain axis and the j-th external axis (in the global Eulerian frame).
 """
 import itertools as it
 
+import numba as nb
 import numpy as np
 import scipy.linalg as la
 import scipy.special as sp
-import numba as nb
 
 
 def bingham_average(orientations, axis="a"):

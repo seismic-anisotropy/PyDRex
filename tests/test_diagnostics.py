@@ -11,14 +11,18 @@ class TestSymmetryPGR:
     def test_pointX(self):
         """Test diagnostics of point symmetry aligned to the X axis."""
         # Initial orientations within 10°.
-        orientations = Rotation.from_rotvec(
-            np.stack(
-                [
-                    [0, x * np.pi / 18 - np.pi / 36, x * np.pi / 18 - np.pi / 36]
-                    for x in rn.default_rng().random(100)
-                ]
+        orientations = (
+            Rotation.from_rotvec(
+                np.stack(
+                    [
+                        [0, x * np.pi / 18 - np.pi / 36, x * np.pi / 18 - np.pi / 36]
+                        for x in rn.default_rng().random(100)
+                    ]
+                )
             )
-        ).inv().as_matrix()
+            .inv()
+            .as_matrix()
+        )
         np.testing.assert_allclose(
             _diagnostics.symmetry(orientations, axis="a"), (1, 0, 0), atol=0.4e-1
         )
@@ -38,13 +42,17 @@ class TestVolumeWeighting:
 
     def test_upsample(self):
         """Test upsampling of the raw orientation data."""
-        orientations = Rotation.from_rotvec(
-            [
-                [0, 0, 0],
-                [0, 0, np.pi / 6],
-                [np.pi / 6, 0, 0],
-            ]
-        ).inv().as_matrix()
+        orientations = (
+            Rotation.from_rotvec(
+                [
+                    [0, 0, 0],
+                    [0, 0, np.pi / 6],
+                    [np.pi / 6, 0, 0],
+                ]
+            )
+            .inv()
+            .as_matrix()
+        )
         fractions = np.array([0.25, 0.6, 0.15])
         new_orientations = _diagnostics.resample_orientations(
             orientations,
@@ -55,13 +63,17 @@ class TestVolumeWeighting:
 
     def test_downsample(self):
         """Test downsampling of orientation data."""
-        orientations = Rotation.from_rotvec(
-            [
-                [0, 0, 0],
-                [0, 0, np.pi / 6],
-                [np.pi / 6, 0, 0],
-            ]
-        ).inv().as_matrix()
+        orientations = (
+            Rotation.from_rotvec(
+                [
+                    [0, 0, 0],
+                    [0, 0, np.pi / 6],
+                    [np.pi / 6, 0, 0],
+                ]
+            )
+            .inv()
+            .as_matrix()
+        )
         fractions = np.array([0.25, 0.6, 0.15])
         new_orientations = _diagnostics.resample_orientations(
             orientations,
@@ -86,12 +98,16 @@ class TestbinghamStats:
 
     def test_average_twopoles90Z(self):
         """Test bingham average of vectors rotated by ±90° around Z."""
-        orientations = Rotation.from_rotvec(
-            [
-                [0, 0, -np.pi / 2],
-                [0, 0, np.pi / 2],
-            ]
-        ).inv().as_matrix()
+        orientations = (
+            Rotation.from_rotvec(
+                [
+                    [0, 0, -np.pi / 2],
+                    [0, 0, np.pi / 2],
+                ]
+            )
+            .inv()
+            .as_matrix()
+        )
         a_mean = _diagnostics.bingham_average(orientations, axis="a")
         b_mean = _diagnostics.bingham_average(orientations, axis="b")
         c_mean = _diagnostics.bingham_average(orientations, axis="c")
@@ -101,14 +117,18 @@ class TestbinghamStats:
 
     def test_average_spread10X(self):
         """Test bingham average of vectors spread within 10° of the ±X-axis."""
-        orientations = Rotation.from_rotvec(
-            np.stack(
-                [
-                    [0, x * np.pi / 18 - np.pi / 36, x * np.pi / 18 - np.pi / 36]
-                    for x in rn.default_rng().random(100)
-                ]
+        orientations = (
+            Rotation.from_rotvec(
+                np.stack(
+                    [
+                        [0, x * np.pi / 18 - np.pi / 36, x * np.pi / 18 - np.pi / 36]
+                        for x in rn.default_rng().random(100)
+                    ]
+                )
             )
-        ).inv().as_matrix()
+            .inv()
+            .as_matrix()
+        )
         a_mean = _diagnostics.bingham_average(orientations, axis="a")
         b_mean = _diagnostics.bingham_average(orientations, axis="b")
         c_mean = _diagnostics.bingham_average(orientations, axis="c")
@@ -129,28 +149,36 @@ class TestMIndex:
 
     def test_texture_spread10X(self):
         """Test M-index for grains spread within 10° of the ±X axis."""
-        orientations = Rotation.from_rotvec(
-            np.stack(
-                [
-                    [0, x * np.pi / 18 - np.pi / 36, x * np.pi / 18 - np.pi / 36]
-                    for x in rn.default_rng().random(100)
-                ]
+        orientations = (
+            Rotation.from_rotvec(
+                np.stack(
+                    [
+                        [0, x * np.pi / 18 - np.pi / 36, x * np.pi / 18 - np.pi / 36]
+                        for x in rn.default_rng().random(100)
+                    ]
+                )
             )
-        ).inv().as_matrix()
+            .inv()
+            .as_matrix()
+        )
         assert np.isclose(
             _diagnostics.misorientation_index(orientations), 0.99, atol=1e-2
         )
 
     def test_texture_spread30X(self):
         """Test M-index for grains spread within 45° of the ±X axis."""
-        orientations = Rotation.from_rotvec(
-            np.stack(
-                [
-                    [0, x * np.pi / 4 - np.pi / 8, x * np.pi / 4 - np.pi / 8]
-                    for x in rn.default_rng().random(100)
-                ]
+        orientations = (
+            Rotation.from_rotvec(
+                np.stack(
+                    [
+                        [0, x * np.pi / 4 - np.pi / 8, x * np.pi / 4 - np.pi / 8]
+                        for x in rn.default_rng().random(100)
+                    ]
+                )
             )
-        ).inv().as_matrix()
+            .inv()
+            .as_matrix()
+        )
         assert np.isclose(
             _diagnostics.misorientation_index(orientations), 0.8, atol=0.1
         )
@@ -160,18 +188,22 @@ class TestMIndex:
         M_vals = np.empty(4)
         factors = (2, 4, 8, 16)
         for i, factor in enumerate(factors):
-            orientations = Rotation.from_rotvec(
-                np.stack(
-                    [
+            orientations = (
+                Rotation.from_rotvec(
+                    np.stack(
                         [
-                            0,
-                            x * np.pi / factor - np.pi / factor / 2,
-                            x * np.pi / factor - np.pi / factor / 2,
+                            [
+                                0,
+                                x * np.pi / factor - np.pi / factor / 2,
+                                x * np.pi / factor - np.pi / factor / 2,
+                            ]
+                            for x in rn.default_rng().random(500)
                         ]
-                        for x in rn.default_rng().random(500)
-                    ]
+                    )
                 )
-            ).inv().as_matrix()
+                .inv()
+                .as_matrix()
+            )
             M_vals[i] = _diagnostics.misorientation_index(orientations)
         assert np.all(
             np.diff(M_vals) >= 0
