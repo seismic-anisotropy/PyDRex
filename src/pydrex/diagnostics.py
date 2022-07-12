@@ -165,7 +165,12 @@ def misorientation_angles(combinations):
         np.arccos(
             np.clip(
                 (
-                    np.trace(combinations[:, 0] @ combinations[:, 1], axis1=1, axis2=2)
+                    np.trace(
+                        combinations[:, 0]
+                        @ np.transpose(combinations[:, 1], axes=[0, 2, 1]),
+                        axis1=1,
+                        axis2=2,
+                    )
                     - 1.0
                 )
                 / 2,
