@@ -36,10 +36,20 @@ def simple_shear_2d(
         markerseq = markers[int(i / (len(angles) / len(markers)))]
 
         ax_mean.plot(
-            timesteps, misorient_angles, markerseq, markersize=5, alpha=0.33, label=label
+            timesteps,
+            misorient_angles,
+            markerseq,
+            markersize=5,
+            alpha=0.33,
+            label=label,
         )
         ax_strength.plot(
-            timesteps, misorient_indices, markerseq, markersize=5, alpha=0.33, label=label
+            timesteps,
+            misorient_indices,
+            markerseq,
+            markersize=5,
+            alpha=0.33,
+            label=label,
         )
 
     ax_mean.plot(timesteps, 45 * np.exp(timesteps * (np.cos(np.pi) - 1)), "r--")

@@ -3,7 +3,6 @@ from pydrex import deformation_mechanism as _defmech
 from pydrex import minerals as _minerals
 
 
-
 def pytest_addoption(parser):
     parser.addoption(
         "--outdir",
