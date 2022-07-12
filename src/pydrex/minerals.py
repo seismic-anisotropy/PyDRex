@@ -47,26 +47,47 @@ class MineralPhase(IntEnum):
 
 @nb.njit
 def get_rrss(phase, fabric):
+    """Get Reference Resolved Shear Stress for the mineral `phase` and `fabric`.
+
+    Returns an array of the components of stress acting on each slip system
+    in the grain-local reference frame.
+
+    """
     if phase == MineralPhase.olivine:
-        if fabric == OlivineFabric.A:
-            return np.array([1, 2, 3, np.inf])
-        elif fabric == OlivineFabric.B:
-            return np.array([3, 2, 1, np.inf])
-        elif fabric == OlivineFabric.C:
-            return np.array([3, 2, np.inf, 1])
-        elif fabric == OlivineFabric.D:
-            return np.array([1, 1, 3, np.inf])
-        elif fabric == OlivineFabric.E:
-            return np.array([3, 1, 2, np.inf])
-        else:
-            assert False  # Should never happen.
+        match fabric:
+            case OlivineFabric.A:
+                return np.array([1, 2, 3, np.inf])
+            case OlivineFabric.B:
+                return np.array([3, 2, 1, np.inf])
+            case OlivineFabric.C:
+                return np.array([3, 2, np.inf, 1])
+            case OlivineFabric.D:
+                return np.array([1, 1, 3, np.inf])
+            case OlivineFabric.E:
+                return np.array([3, 1, 2, np.inf])
+            case _:
+                raise ValueError("fabric must be a valid `OlivineFabric`")
     elif phase == MineralPhase.enstatite:
         if fabric == EnstatiteFabric.A:
             return np.array([np.inf, np.inf, np.inf, 1])
-        else:
-            assert False  # Should never happen.
-    else:
-        assert False  # Should never happen.
+        raise ValueError("fabric must be a valid `EnstatiteFabric`")
+    raise ValueError("phase must be a valid `MineralPhase`")
+
+
+def get_primary_axis(fabric):
+    """Get primary slip axis name for the given olivine `fabric`."""
+    match fabric:
+        case OlivineFabric.A:
+            return "a"
+        case OlivineFabric.B:
+            return "c"
+        case OlivineFabric.C:
+            return "c"
+        case OlivineFabric.D:
+            return "a"
+        case OlivineFabric.E:
+            return "a"
+    raise ValueError(f"fabric must be a valid `OlivineFabric`, not {fabric}")
 
 
 @dataclass

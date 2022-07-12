@@ -3,6 +3,20 @@ from pydrex import deformation_mechanism as _defmech
 from pydrex import minerals as _minerals
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--outdir",
+        metavar="DIR",
+        default=[None],  # NOTE: `outdir` will just be None, not a list.
+        help="output directory in which to store PyDRex figures/logs",
+    )
+
+
+def pytest_generate_tests(metafunc):
+    if "outdir" in metafunc.fixturenames:
+        metafunc.parametrize("outdir", metafunc.config.getoption("outdir"))
+
+
 @pytest.fixture
 def olivine_disl_random_500():
     return [
