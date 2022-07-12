@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from numpy import random as rn
 from pydrex import diagnostics as _diagnostics
 from scipy.spatial.transform import Rotation
