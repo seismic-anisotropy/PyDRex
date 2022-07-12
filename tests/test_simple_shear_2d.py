@@ -124,7 +124,7 @@ class TestSinglePolycrystalOlivineA:
 
             # Check for uncorrupted record of initial condition.
             assert np.isclose(misorient_angles[0], 45.0, atol=3.5)
-            assert misorient_indices[0] < 0.2
+            assert misorient_indices[0] < 0.7
             # Check for mostly smoothly decreasing misalignment.
             angles_diff = np.diff(misorient_angles)
             assert np.max(angles_diff) < 3.0
@@ -137,18 +137,18 @@ class TestSinglePolycrystalOlivineA:
                 case 0:
                     assert np.isclose(misorient_angles[halfway], 25, atol=2.0)
                     assert np.isclose(misorient_angles[-1], 17.0, atol=1.0)
-                    assert np.isclose(misorient_indices[halfway], 0.3, atol=0.075)
-                    assert np.isclose(misorient_indices[-1], 0.7, atol=0.05)
+                    assert np.isclose(misorient_indices[halfway], 0.925, atol=0.075)
+                    assert np.isclose(misorient_indices[-1], 0.975, atol=0.05)
                 case 50:
                     assert np.isclose(misorient_angles[halfway], 15, atol=1.5)
                     assert np.isclose(misorient_angles[-1], 10, atol=1.0)
-                    assert np.isclose(misorient_indices[halfway], 0.65, atol=0.075)
-                    assert np.isclose(misorient_indices[-1], 0.85, atol=0.03)
+                    assert np.isclose(misorient_indices[halfway], 0.925, atol=0.075)
+                    assert np.isclose(misorient_indices[-1], 0.97, atol=0.03)
                 case 200:
                     assert np.isclose(misorient_angles[halfway], 9, atol=1.0)
                     assert np.isclose(misorient_angles[-1], 7, atol=1.0)
-                    assert np.isclose(misorient_indices[halfway], 0.88, atol=0.05)
-                    assert np.isclose(misorient_indices[-1], 0.95, atol=0.03)
+                    assert np.isclose(misorient_indices[halfway], 0.975, atol=0.05)
+                    assert np.isclose(misorient_indices[-1], 0.99, atol=0.03)
 
             # Optionally store plotting metadata.
             if outdir is not None:
