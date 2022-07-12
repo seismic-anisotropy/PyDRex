@@ -25,7 +25,7 @@ def simple_shear_2d(
     if len(angles) % len(markers) != 0:
         raise ValueError(
             "Number of data series must be divisible by number of markers."
-            + f" You've supplied {len(angles)} Minerals and {len(markers)} markers."
+            + f" You've supplied {len(angles)} data series and {len(markers)} markers."
         )
 
     for i, (misorient_angles, misorient_indices) in enumerate(zip(angles, indices)):

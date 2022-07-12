@@ -70,8 +70,8 @@ def get_rrss(phase, fabric):
     elif phase == MineralPhase.enstatite:
         if fabric == EnstatiteFabric.A:
             return np.array([np.inf, np.inf, np.inf, 1])
-        raise ValueError("fabric must be a valid `OlivineFabric`")
-    assert False  # Should never happen.
+        raise ValueError("fabric must be a valid `EnstatiteFabric`")
+    raise ValueError("phase must be a valid `MineralPhase`")
 
 
 def get_primary_axis(fabric):
