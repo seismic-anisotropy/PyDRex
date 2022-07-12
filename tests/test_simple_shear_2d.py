@@ -133,6 +133,11 @@ class TestSinglePolycrystalOlivineA:
             halfway = round(n_timesteps / 2)
             match params["gbm_mobility"]:
                 case 0:
+                    np.testing.assert_allclose(
+                        misorient_angles,
+                        45 * np.exp(np.linspace(0, timestop, n_timesteps) * (np.cos(np.pi / 2) - 1)),
+                        atol=3.0,
+                    )
                     assert np.isclose(misorient_angles[halfway], 25, atol=2.0)
                     assert np.isclose(misorient_angles[-1], 17.0, atol=1.0)
                     assert np.isclose(misorient_indices[halfway], 0.925, atol=0.075)
@@ -143,7 +148,7 @@ class TestSinglePolycrystalOlivineA:
                     assert np.isclose(misorient_indices[halfway], 0.925, atol=0.075)
                     assert np.isclose(misorient_indices[-1], 0.97, atol=0.03)
                 case 200:
-                    assert np.isclose(misorient_angles[halfway], 9, atol=1.0)
+                    assert np.isclose(misorient_angles[halfway], 9, atol=1.5)
                     assert np.isclose(misorient_angles[-1], 7, atol=1.0)
                     assert np.isclose(misorient_indices[halfway], 0.975, atol=0.05)
                     assert np.isclose(misorient_indices[-1], 0.99, atol=0.03)
@@ -163,4 +168,5 @@ class TestSinglePolycrystalOlivineA:
                 savefile=f"{outdir}/simple_shearYZ_single_olivineA_initQ1.png",
                 markers=("o", "v", "s"),
                 labels=labels,
+                refval=45,
             )

@@ -10,6 +10,7 @@ def simple_shear_2d(
     savefile="pydrex_simlpe_shear_2d.png",
     markers=("."),
     labels=None,
+    refval=None,
 ):
     """Plot diagnostics for 2D simple shear tests."""
     fig = plt.figure(figsize=(5, 8), dpi=300)
@@ -52,7 +53,12 @@ def simple_shear_2d(
             label=label,
         )
 
-    ax_mean.plot(timesteps, 45 * np.exp(timesteps * (np.cos(np.pi) - 1)), "r--")
+    if refval is not None:
+        ax_mean.plot(
+            timesteps,
+            refval * np.exp(timesteps * (np.cos(np.deg2rad(refval * 2)) - 1)),
+            "r--",
+        )
 
     if labels is not None:
         ax_mean.legend()
