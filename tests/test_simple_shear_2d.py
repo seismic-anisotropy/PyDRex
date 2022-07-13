@@ -301,7 +301,7 @@ class TestSinglePolycrystalOlivineA:
                 * np.exp(
                     np.linspace(0, timestop, n_timesteps)
                     * (np.cos(2 * np.deg2rad(misorient_angles[0])) - 1)
-                )
+                ),
             )
 
             # Check alignment and texture strength (half way and final value).
