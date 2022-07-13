@@ -74,4 +74,57 @@ This only affects CPO evolution by introducing a latency for the onset of grain
 boundary migration in nucleated grains. It also manifests as an upper bound on
 texture strength.
 
+## Parameter reference
+
+Model parameters should be provided in an `.ini` file.
+The file must contain section headers enclosed by square braces
+and key-value assignments, for example:
+
+```
+[Output]
+olivine = volume_distribution, orientations
+
+[D-Rex]
+olivine_fraction = 1
+stresss_exponent = 3.5
+...
+```
+
+The following reference describes the available sections and their parameters.
+
+### Geometry
+
+This section allows for specifying the geometry of the model domain,
+including any interpolation meshes.
+
+| Parameter | Description |
+| ---       | ---
+| `meshfile`  | [not implemented]
+
+### Output
+
+Parameters in the output section control which variables are stored to files,
+as well as any options for automatic postprocessing.
+
+| Parameter | Description | Default
+| ---       | ---         | ---
+| `simulation_name` | a short name (without spaces) used for the output folder and metadata | `pydrex_example`
+| `olivine` | the choice of olivine mineral outputs, from {`volume_distribution`, `orientations`} with multiple choices separated by a comma | `volume_distribution,orientations`
+| `enstatite` | the choice of enstatite mineral outputs, from {`volume_distribution`, `orientations`} with multiple choices separated by a comma | `volume_distribution,orientations`
+
+### D-Rex
+
+Parameters in the D-Rex section specify the runtime configuration for the D-Rex model.
+Read [the D-Rex introduction section](#the-d-rex-kinematic-cpo-model) for more details.
+
+| Parameter | Description | Default
+| ---       | ---         | ---
+| `olivine_fraction` | the volume ratio for olivine compared to the total aggregate volume | `1` (no enstatite component)
+| `stress_exponent` | the stress exponent $p$ that characterises the relationship between dislocation density and stress | `3.5`
+| `gbm_mobility` | the dimensionless grain boundary mobility $M^{∗}$ which controls the chance for growth of grains with lower than average dislocation energy | `125`
+| `gbs_threshold` | a threshold ratio of current to original volume below which small grains move by sliding rather than rotation | `0.3`
+| `nucleation_efficiency` | the dimensionless nucleation efficiency which controls the chance for new, small, strain-free sub-grains to be created inside high dislocation energy grains | `5`
+| `olivine_fabric` | [not implemented] | `A`
+| `number_of_grains` | the number of initial grains per crystal| `1000`
+
 """
