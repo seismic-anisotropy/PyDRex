@@ -58,6 +58,9 @@ def simple_shear_2d(
             timesteps,
             refval * np.exp(timesteps * (np.cos(np.deg2rad(refval * 2)) - 1)),
             "r--",
+            label=r"$θ ⋅ \exp[t ⋅ (\cos2θ - 1)]$,"
+            + "\n\t"
+            + rf"$\theta = {refval:.1f}$",
         )
 
     if labels is not None:

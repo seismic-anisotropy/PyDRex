@@ -18,32 +18,6 @@ def pytest_generate_tests(metafunc):
 
 
 @pytest.fixture
-def olivine_disl_random_500():
-    return [
-        _minerals.Mineral(
-            _minerals.MineralPhase.olivine,
-            fabric,
-            _defmech.Regime.dislocation,
-            500,
-        )
-        for fabric in _minerals.OlivineFabric
-    ]
-
-
-@pytest.fixture
-def enstatite_disl_random_500():
-    return [
-        _minerals.Mineral(
-            _minerals.MineralPhase.enstatite,
-            fabric,
-            _defmech.Regime.dislocation,
-            500,
-        )
-        for fabric in _minerals.EnstatiteFabric
-    ]
-
-
-@pytest.fixture
 def params_Fraters2021():
     return {
         "stress_exponent": 3.5,
