@@ -23,14 +23,14 @@ class TestSymmetryPGR:
             .as_matrix()
         )
         np.testing.assert_allclose(
-            _diagnostics.symmetry(orientations, axis="a"), (1, 0, 0), atol=0.4e-1
+            _diagnostics.symmetry(orientations, axis="a"), (1, 0, 0), atol=0.05
         )
 
     def test_random(self):
         """Test diagnostics of random grain orientations."""
         orientations = Rotation.random(1000).as_matrix()
         np.testing.assert_allclose(
-            _diagnostics.symmetry(orientations, axis="a"), (0, 0, 1), atol=0.1
+            _diagnostics.symmetry(orientations, axis="a"), (0, 0, 1), atol=0.15
         )
 
     # TODO: More symmetry tests.
