@@ -296,7 +296,7 @@ class TestSinglePolycrystalOlivineA:
             assert np.sum(angles_diff) < -25.0
             # Check that recrystallization is causing faster alignment.
             np.testing.assert_array_less(
-                misorient_angles - 3.5,  # Tolerance for GBM onset latency.
+                misorient_angles - 3.8,  # Tolerance for GBM onset latency.
                 misorient_angles[0]
                 * np.exp(
                     np.linspace(0, timestop, n_timesteps)
