@@ -132,7 +132,7 @@ class TestSinglePolycrystalOlivineA:
             assert misorient_indices[0] < 0.7
             # Check for mostly smoothly decreasing misalignment.
             angles_diff = np.diff(misorient_angles)
-            assert np.max(angles_diff) < 3.0
+            assert np.max(angles_diff) < 3.2
             assert np.min(angles_diff) > -7.5
             assert np.sum(angles_diff) < -25.0
 
@@ -291,12 +291,12 @@ class TestSinglePolycrystalOlivineA:
             assert misorient_indices[0] < 0.7
             # Check for mostly smoothly decreasing misalignment.
             angles_diff = np.diff(misorient_angles)
-            assert np.max(angles_diff) < 3.0
+            assert np.max(angles_diff) < 3.2
             assert np.min(angles_diff) > -7.5
             assert np.sum(angles_diff) < -25.0
             # Check that recrystallization is causing faster alignment.
             np.testing.assert_array_less(
-                misorient_angles - 3.5,  # Tolerance for GBM onset latency.
+                misorient_angles - 3.8,  # Tolerance for GBM onset latency.
                 misorient_angles[0]
                 * np.exp(
                     np.linspace(0, timestop, n_timesteps)
@@ -313,13 +313,13 @@ class TestSinglePolycrystalOlivineA:
                     assert np.isclose(misorient_indices[halfway], 0.975, atol=0.075)
                     assert np.isclose(misorient_indices[-1], 0.99, atol=0.03)
                 case 0.2:
-                    assert np.isclose(misorient_angles[halfway], 13, atol=1.5)
-                    assert np.isclose(misorient_angles[-1], 11, atol=1.25)
+                    assert np.isclose(misorient_angles[halfway], 13, atol=1.75)
+                    assert np.isclose(misorient_angles[-1], 11, atol=1.5)
                     assert np.isclose(misorient_indices[halfway], 0.755, atol=0.075)
                     assert np.isclose(misorient_indices[-1], 0.755, atol=0.075)
                 case 0.4:
                     assert np.isclose(misorient_angles[halfway], 19, atol=2.0)
-                    assert np.isclose(misorient_angles[-1], 16, atol=2.0)
+                    assert np.isclose(misorient_angles[-1], 16, atol=2.25)
                     assert misorient_indices[halfway] < 0.75
                     assert misorient_indices[-1] < 0.7
 
