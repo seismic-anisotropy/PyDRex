@@ -319,7 +319,7 @@ class TestSinglePolycrystalOlivineA:
                     assert np.isclose(misorient_indices[-1], 0.755, atol=0.075)
                 case 0.4:
                     assert np.isclose(misorient_angles[halfway], 19, atol=2.0)
-                    assert np.isclose(misorient_angles[-1], 16, atol=2.0)
+                    assert np.isclose(misorient_angles[-1], 16, atol=2.25)
                     assert misorient_indices[halfway] < 0.75
                     assert misorient_indices[-1] < 0.7
 
