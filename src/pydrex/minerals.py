@@ -343,3 +343,30 @@ class Mineral:
         self.orientations = list(data["orientations"])
         self.orientations_init = self.orientations[0]
         self.fractions_init = self.fractions[0]
+
+    @classmethod
+    def from_file(cls, filename):
+        """Construct a `Mineral` instance using data from a `numpy` NPZ file.
+
+        See also: `Mineral.save`.
+
+        """
+        if not filename.endswith(".npz"):
+            raise ValueError(
+                f"Must only load from numpy NPZ format. Cannot load from {filename}."
+            )
+        data = np.load(filename)
+        phase, fabric, regime = data["meta"]
+        fractions = list(data["fractions"])
+        orientations = list(data["orientations"])
+        mineral = cls(
+            phase,
+            fabric,
+            regime,
+            n_grains=len(fractions[0]),
+            fractions_init=fractions[0],
+            orientations_init=orientations[0],
+        )
+        mineral.fractions = fractions
+        mineral.orientations = orientations
+        return mineral
