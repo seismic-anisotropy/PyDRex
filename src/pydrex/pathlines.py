@@ -1,10 +1,12 @@
 """PyDRex: Functions for pathline construction."""
 import numpy as np
-from scipy import linalg as la
 from scipy import integrate as si
+from scipy import linalg as la
 
 
-def get_pathline(point, interp_velocity, interp_velocity_gradient, min_coords, max_coords):
+def get_pathline(
+    point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
+):
     """Determine the pathline for a particle in a steady state flow.
 
     The pathline will intersect the given `point` and follow a curve determined by
@@ -22,7 +24,9 @@ def get_pathline(point, interp_velocity, interp_velocity_gradient, min_coords, m
 
     """
 
-    def _max_strain(time, point, interp_velocity, interp_velocity_gradient, min_coords, max_coords):
+    def _max_strain(
+        time, point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
+    ):
         nonlocal event_time, event_time_prev, event_strain_prev, event_strain, event_strain_prev, event_flag
         # TODO: Refactor, move 10 "max strain" parameter to config?
         if event_flag:
@@ -70,14 +74,18 @@ def get_pathline(point, interp_velocity, interp_velocity_gradient, min_coords, m
     return path.t, path.sol
 
 
-def _ivp_func(time, point, interp_velocity, interp_velocity_gradient, min_coords, max_coords):
+def _ivp_func(
+    time, point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
+):
     """Internal use only, must have the same signature as `get_pathline`."""
     if _is_inside(point, min_coords, max_coords):
         return interp_velocity([point])[0]
     return np.zeros_like(point)
 
 
-def _ivp_jac(time, point, interp_velocity, interp_velocity_gradient, min_coords, max_coords):
+def _ivp_jac(
+    time, point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
+):
     """Internal use only, must have the same signature as `_ivp_func`."""
     if _is_inside(point, min_coords, max_coords):
         return interp_velocity_gradient([point])[0]
