@@ -1,3 +1,5 @@
+import pathlib
+
 import pytest
 from pydrex import deformation_mechanism as _defmech
 from pydrex import minerals as _minerals
@@ -120,3 +122,14 @@ def params_Hedjazian2017():
         "olivine_fraction": 0.7,
         "enstatite_fraction": 0.3,
     }
+
+
+@pytest.fixture
+def vtkfiles_2d_corner_flow():
+    datadir = pathlib.Path(__file__).parent / ".." / "data" / "vtu"
+    return (
+        datadir / "2d_corner_flow_2cmyr.vtu",
+        datadir / "2d_corner_flow_4cmyr.vtu",
+        datadir / "2d_corner_flow_6cmyr.vtu",
+        datadir / "2d_corner_flow_8cmyr.vtu",
+    )

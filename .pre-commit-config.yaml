@@ -39,3 +39,5 @@ repos:
     rev: v2.37.3
     hooks:
     -   id: pyupgrade
+
+exclude: 'data/*'
