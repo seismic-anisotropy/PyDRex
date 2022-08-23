@@ -48,11 +48,11 @@ def read_tuple_array(points, fieldname, skip3=False):
     if values.shape[1] == 9:  # Matrix data.
         values = values.reshape((values.shape[0], 3, 3))
         if skip3:
-            return values[:, 0:2, 0:2]
+            return values[:, :2, :2]
         return values
 
     if skip3:
-        return values[:, 0:2]
+        return values[:, :2]
     return values
 
 
