@@ -1,3 +1,4 @@
+"""PyDRex: tests for texture diagnostics."""
 import numpy as np
 from numpy import random as rn
 from scipy.spatial.transform import Rotation

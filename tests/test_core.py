@@ -1,3 +1,4 @@
+"""PyDRex: tests for core D-Rex routines."""
 import numpy as np
 from scipy.spatial.transform import Rotation
 

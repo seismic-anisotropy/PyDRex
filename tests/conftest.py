@@ -1,3 +1,4 @@
+"""Configuration and fixtures for PyDRex tests."""
 import pathlib
 
 import pytest
