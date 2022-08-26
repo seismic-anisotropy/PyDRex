@@ -47,13 +47,13 @@ def solve(minerals, config, velocity_gradient, time_steps):
     - `time_steps` (array) — time steps for the iteration loop
 
     Orientations and grain volume fractions are stored on the `Mineral`s.
-    Returns the finite strain ellipsoid after accumulated rotations.
+    Returns the deformation gradient after accumulated deformation.
 
     Array values must provide a NumPy-compatible interface:
     <https://numpy.org/doc/stable/user/whatisnumpy.html>
 
     """
-    finite_strain_ell = np.identity(3)  # Finite strain ellipsoid.
+    deformation_gradient = np.identity(3)  # Initially undeformed condition.
     # Imposed macroscopic strain rate tensor.
     strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
     # Strain rate scale (max. eigenvalue of strain rate).
@@ -63,7 +63,7 @@ def solve(minerals, config, velocity_gradient, time_steps):
     nondim_velocity_gradient = velocity_gradient / strain_rate_max
 
     for dt in time_steps:
-        finite_strain_ell = update_strain(finite_strain_ell, velocity_gradient, dt)
+        deformation_gradient = update_strain(deformation_gradient, velocity_gradient, dt)
         # TODO: Handle deformation mechanism regimes.
         for mineral in minerals:
             mineral.update_orientations(
@@ -73,7 +73,7 @@ def solve(minerals, config, velocity_gradient, time_steps):
                 config,
                 dt,
             )
-    return finite_strain_ell
+    return deformation_gradient
 
 
 def solve_interpolated(minerals, config, interpolators, node):
@@ -93,7 +93,7 @@ def solve_interpolated(minerals, config, interpolators, node):
 
     Orientations and grain volume fractions are stored on the `Mineral`s.
     Returns a tuple with the node (useful for multiprocessing)
-    and the finite strain ellipsoid after accumulated rotation.
+    and the deformation gradient tensor after accumulated deformation.
 
     Array values must provide a NumPy-compatible interface:
     <https://numpy.org/doc/stable/user/whatisnumpy.html>
@@ -106,7 +106,7 @@ def solve_interpolated(minerals, config, interpolators, node):
             for coord, i in zip(config["mesh"]["gridcoords"], node)
         ]
     )
-    finite_strain_ell = np.identity(3)  # Finite strain ellipsoid.
+    deformation_gradient = np.identity(3)  # Initially undeformed condition
 
     # If the velocity is zero, we don't need a pathline.
     velocity = _interp.get_velocity(point, interpolators)
@@ -194,7 +194,7 @@ def solve_interpolated(minerals, config, interpolators, node):
 
         for _ in range(n_iter):
             # TODO: Handle deformation mechanism regimes.
-            finite_strain_ell = update_strain(finite_strain_ell, velocity_gradient, dt)
+            deformation_gradient = update_strain(deformation_gradient, velocity_gradient, dt)
             for mineral in minerals:
                 mineral.update_orientations(
                     nondim_strain_rate,
@@ -206,26 +206,22 @@ def solve_interpolated(minerals, config, interpolators, node):
 
         time += n_iter * dt
 
-    return node, finite_strain_ell
+    return node, deformation_gradient
 
 
+# TODO: Replace with actual RK4 from scipy?
 @nb.njit(fastmath=True)
-def update_strain(finite_strain_ell, velocity_gradient, dt):
-    """Return updated finite strain ellipsoid using the RK4 scheme.
-
-    The FSE (finite strain ellipsoid) describes the orientation
-    of the principal strain axes with respect to the global reference frame.
-
-    """
-    fse1 = velocity_gradient @ finite_strain_ell * dt
-    fsei = finite_strain_ell + 0.5 * fse1
-    fse2 = velocity_gradient @ fsei * dt
-    fsei = finite_strain_ell + 0.5 * fse2
-    fse3 = velocity_gradient @ fsei * dt
-    fsei = finite_strain_ell + fse3
-    fse4 = velocity_gradient @ fsei * dt
-    finite_strain_ell += (fse1 / 2 + fse2 + fse3 + fse4 / 2) / 3
-    return finite_strain_ell
+def update_strain(deformation_gradient, velocity_gradient, dt):
+    """Return updated deformation gradient tensor using the RK4 scheme."""
+    deform_1 = velocity_gradient @ deformation_gradient * dt
+    deform_i = deformation_gradient + 0.5 * deform_1
+    deform_2 = velocity_gradient @ deform_i * dt
+    deform_i = deformation_gradient + 0.5 * deform_2
+    deform_3 = velocity_gradient @ deform_i * dt
+    deform_i = deformation_gradient + deform_3
+    deform_4 = velocity_gradient @ deform_i * dt
+    deformation_gradient += (deform_1 / 2 + deform_2 + deform_3 + deform_4 / 2) / 3
+    return deformation_gradient
 
 
 # 12 args is a lot, but this way we can use numba

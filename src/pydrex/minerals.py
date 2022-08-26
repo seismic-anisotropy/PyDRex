@@ -143,7 +143,7 @@ class Mineral:
         self._orientations.append(self.orientations_init)
 
     def update_orientations(
-        self, config, finite_strain_ell, velocity_gradient, integration_time
+        self, config, deformation_gradient, velocity_gradient, integration_time
     ):
         """Update orientations and volume distribution for the `Mineral`.
 
@@ -153,7 +153,7 @@ class Mineral:
 
         Args:
         - `config` (dict) — PyDRex configuration dictionary
-        - `finite_strain_ell` (array) — 3x3 finite strain ellipsoid (initial strain)
+        - `deformation_gradient` (array) — 3x3 initial deformation gradient tensor
         - `velocity_gradient` (array) — 3x3 velocity gradient matrix
         - `integration_time` (float) — total time of integrated dislocation creep
 
@@ -163,7 +163,7 @@ class Mineral:
         """
 
         def extract_vars(y):
-            finite_strain_ell = y[:9].copy().reshape(3, 3)
+            deformation_gradient = y[:9].copy().reshape(3, 3)
             orientations = (
                 y[9 : self.n_grains * 9 + 9]
                 .copy()
@@ -174,10 +174,10 @@ class Mineral:
                 y[self.n_grains * 9 + 9 : self.n_grains * 10 + 9].copy().clip(0, None)
             )
             fractions /= fractions.sum()
-            return finite_strain_ell, orientations, fractions
+            return deformation_gradient, orientations, fractions
 
         def rhs(t, y):
-            finite_strain_ell, orientations, fractions = extract_vars(y)
+            deformation_gradient, orientations, fractions = extract_vars(y)
             orientations_diff, fractions_diff = _core.derivatives(
                 phase=self.phase,
                 fabric=self.fabric,
@@ -194,7 +194,7 @@ class Mineral:
             )
             return np.hstack(
                 (
-                    np.dot(velocity_gradient, finite_strain_ell).flatten(),
+                    np.dot(velocity_gradient, deformation_gradient).flatten(),
                     orientations_diff.flatten() * strain_rate_max,
                     fractions_diff * strain_rate_max,
                 )
@@ -220,7 +220,7 @@ class Mineral:
             0,
             np.hstack(
                 (
-                    finite_strain_ell.flatten(),
+                    deformation_gradient.flatten(),
                     self._orientations[-1].flatten(),
                     self._fractions[-1],
                 )
@@ -230,7 +230,7 @@ class Mineral:
 
         while sol.status == "running":
             sol.step()
-            finite_strain_ell, orientations, fractions = extract_vars(sol.y)
+            deformation_gradient, orientations, fractions = extract_vars(sol.y)
             # Grain boundary sliding for small grains.
             mask = fractions < config["gbs_threshold"] / self.n_grains
             # No rotation: carry over previous orientations.
@@ -240,10 +240,10 @@ class Mineral:
             sol.y[9:] = np.hstack((orientations.flatten(), fractions))
 
         # Extract final values for this simulation step, append to storage.
-        finite_strain_ell, orientations, fractions = extract_vars(sol.y.squeeze())
+        deformation_gradient, orientations, fractions = extract_vars(sol.y.squeeze())
         self._orientations.append(orientations)
         self._fractions.append(fractions)
-        return finite_strain_ell
+        return deformation_gradient
 
     def save(self, filename):
         """Save CPO data for all stored timesteps to a `numpy` NPZ file.
