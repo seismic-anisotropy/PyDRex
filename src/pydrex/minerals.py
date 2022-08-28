@@ -198,14 +198,15 @@ class Mineral:
         def eval_rhs(t, y):
             """Evaluate right hand side of the D-Rex PDE."""
             deformation_gradient, orientations, fractions = extract_vars(y)
+            # Uses nondimensional values of strain rate and velocity gradient.
             orientations_diff, fractions_diff = _core.derivatives(
                 phase=self.phase,
                 fabric=self.fabric,
                 n_grains=self.n_grains,
                 orientations=orientations,
                 fractions=fractions,
-                strain_rate=nondim_strain_rate,
-                velocity_gradient=nondim_velocity_gradient,
+                strain_rate=strain_rate / strain_rate_max,
+                velocity_gradient=_velocity_gradient / strain_rate_max,
                 stress_exponent=config["stress_exponent"],
                 dislocation_exponent=config["dislocation_exponent"],
                 nucleation_efficiency=config["nucleation_efficiency"],
@@ -214,7 +215,7 @@ class Mineral:
             )
             return np.hstack(
                 (
-                    np.dot(velocity_gradient, deformation_gradient).flatten(),
+                    np.dot(_velocity_gradient, deformation_gradient).flatten(),
                     orientations_diff.flatten() * strain_rate_max,
                     fractions_diff * strain_rate_max,
                 )
@@ -227,20 +228,16 @@ class Mineral:
                     + " You must provide a pathline to use spatially varying fields."
                 )
             time_start, time_end, get_position = pathline
-            _velocity_gradient = velocity_gradient(get_position(time_start))
-            strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
-            strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
-            nondim_velocity_gradient = _velocity_gradient / strain_rate_max
-            nondim_strain_rate = strain_rate / strain_rate_max
+            _velocity_gradient = velocity_gradient([get_position(time_start)])[0]
             max_step = integration_time
         else:
-            strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
-            strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
-            nondim_velocity_gradient = velocity_gradient / strain_rate_max
-            nondim_strain_rate = strain_rate / strain_rate_max
+            _velocity_gradient = velocity_gradient
             time_start = 0
             time_end = integration_time
             max_step = np.inf
+
+        strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
+        strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
 
         # Volume fraction of the mineral phase.
         if self.phase == MineralPhase.olivine:
@@ -266,11 +263,12 @@ class Mineral:
 
         while advect.status == "running":
             if callable(velocity_gradient):
-                _velocity_gradient = velocity_gradient(get_position(advect.t))
-                strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
-                strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
-                nondim_velocity_gradient = _velocity_gradient / strain_rate_max
-                nondim_strain_rate = strain_rate / strain_rate_max
+                _velocity_gradient = velocity_gradient([get_position(advect.t)])[0]
+            else:
+                _velocity_gradient = velocity_gradient
+
+            strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
+            strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
 
             advect.step()
             deformation_gradient, orientations, fractions = extract_vars(advect.y)
