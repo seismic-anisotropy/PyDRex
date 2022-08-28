@@ -143,25 +143,39 @@ class Mineral:
         self._orientations.append(self.orientations_init)
 
     def update_orientations(
-        self, config, deformation_gradient, velocity_gradient, integration_time
+        self,
+        config,
+        deformation_gradient,
+        velocity_gradient,
+        integration_time,
+        pathline=None,
     ):
         """Update orientations and volume distribution for the `Mineral`.
 
         Update crystalline orientations and grain volume distribution
         for minerals undergoing plastic deformation.
-        Only 3D simulations are currently supported.
 
         Args:
         - `config` (dict) — PyDRex configuration dictionary
         - `deformation_gradient` (array) — 3x3 initial deformation gradient tensor
-        - `velocity_gradient` (array) — 3x3 velocity gradient matrix
-        - `integration_time` (float) — total time of integrated dislocation creep
+        - `velocity_gradient` (array or function) — 3x3 velocity gradient matrix,
+          or an interpolator that returns the matrix when evaluated at a point
+          along the provided pathline
+        - `integration_time` (float) — total time of integrated dislocation
+          creep (if `pathline` is not None, this is used as the maximum
+          integration timestep during forward advection, i.e. CPO calculation)
+        - `pathline` (function, optional) — function that returns a tuple
+          consisting of:
+            1. the time at which the mineral aggregate enters the domain
+            2. the time at which the mineral aggregate assumes its final position
+            3. a callable that accepts a time value and returns the position of
+               the mineral
 
         Array values must provide a NumPy-compatible interface:
         <https://numpy.org/doc/stable/user/whatisnumpy.html>
 
         """
-
+        # TODO: Check if we need to .copy() here.
         def extract_vars(y):
             deformation_gradient = y[:9].copy().reshape(3, 3)
             orientations = (
@@ -176,7 +190,8 @@ class Mineral:
             fractions /= fractions.sum()
             return deformation_gradient, orientations, fractions
 
-        def rhs(t, y):
+        def eval_rhs(t, y):
+            """Evaluate right hand side of the D-Rex PDE."""
             deformation_gradient, orientations, fractions = extract_vars(y)
             orientations_diff, fractions_diff = _core.derivatives(
                 phase=self.phase,
@@ -200,13 +215,28 @@ class Mineral:
                 )
             )
 
-        # Imposed macroscopic strain rate tensor.
-        strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
-        # Strain rate scale (max. eigenvalue of strain rate).
-        strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
-        # Dimensionless strain rate and velocity gradient.
-        nondim_strain_rate = strain_rate / strain_rate_max
-        nondim_velocity_gradient = velocity_gradient / strain_rate_max
+        if callable(velocity_gradient):
+            if pathline is None:
+                raise ValueError(
+                    "unable to evaluate velocity gradient callable."
+                    + " You must provide a pathline to use spatially varying fields."
+                )
+            time_start, time_end, get_position = pathline
+            _velocity_gradient = velocity_gradient(get_position(time_start))
+            strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
+            strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
+            nondim_velocity_gradient = _velocity_gradient / strain_rate_max
+            nondim_strain_rate = strain_rate / strain_rate_max
+            max_step = integration_time
+        else:
+            strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
+            strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
+            nondim_velocity_gradient = velocity_gradient / strain_rate_max
+            nondim_strain_rate = strain_rate / strain_rate_max
+            time_start = 0
+            time_end = integration_time
+            max_step = np.inf
+
         # Volume fraction of the mineral phase.
         if self.phase == MineralPhase.olivine:
             volume_fraction = config["olivine_fraction"]
@@ -215,9 +245,9 @@ class Mineral:
         else:
             assert False  # Should never happen.
 
-        sol = RK45(
-            rhs,
-            0,
+        advect = RK45(
+            eval_rhs,
+            time_start,
             np.hstack(
                 (
                     deformation_gradient.flatten(),
@@ -225,22 +255,30 @@ class Mineral:
                     self._fractions[-1],
                 )
             ),
-            integration_time,
+            time_end,
+            max_step=max_step,
         )
 
-        while sol.status == "running":
-            sol.step()
-            deformation_gradient, orientations, fractions = extract_vars(sol.y)
+        while advect.status == "running":
+            if callable(velocity_gradient):
+                _velocity_gradient = velocity_gradient(get_position(advect.t))
+                strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
+                strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
+                nondim_velocity_gradient = _velocity_gradient / strain_rate_max
+                nondim_strain_rate = strain_rate / strain_rate_max
+
+            advect.step()
+            deformation_gradient, orientations, fractions = extract_vars(advect.y)
             # Grain boundary sliding for small grains.
             mask = fractions < config["gbs_threshold"] / self.n_grains
             # No rotation: carry over previous orientations.
             orientations[mask, :, :] = self._orientations[0][mask, :, :]
             fractions[mask] = config["gbs_threshold"] / self.n_grains
             fractions /= fractions.sum()
-            sol.y[9:] = np.hstack((orientations.flatten(), fractions))
+            advect.y[9:] = np.hstack((orientations.flatten(), fractions))
 
         # Extract final values for this simulation step, append to storage.
-        deformation_gradient, orientations, fractions = extract_vars(sol.y.squeeze())
+        deformation_gradient, orientations, fractions = extract_vars(advect.y.squeeze())
         self._orientations.append(orientations)
         self._fractions.append(fractions)
         return deformation_gradient

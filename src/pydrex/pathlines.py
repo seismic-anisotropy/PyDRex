@@ -62,7 +62,7 @@ def get_pathline(
         _ivp_func,
         [0, -100e6 * 365.25 * 8.64e4],
         point,
-        method="RK45",
+        method="RK45",  # TODO: Compare to LSODA?
         first_step=1e10,
         max_step=np.inf,
         events=[_max_strain],
@@ -72,7 +72,9 @@ def get_pathline(
         atol=1e-8,
         rtol=1e-5,
     )
-    return path.t, path.sol
+    # Remove the last timestep, because the position will be outside the domain.
+    # The integration only stops AFTER the event is triggered.
+    return path.t[:-1], path.sol
 
 
 def _ivp_func(
