@@ -13,9 +13,9 @@ def pytest_addoption(parser):
     )
 
 
-def pytest_generate_tests(metafunc):
-    if "outdir" in metafunc.fixturenames:
-        metafunc.parametrize("outdir", metafunc.config.getoption("outdir"))
+@pytest.fixture
+def outdir(request):
+    return request.config.getoption("--outdir")
 
 
 @pytest.fixture
