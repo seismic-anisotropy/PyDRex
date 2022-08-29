@@ -177,7 +177,7 @@ class TestSinglePolycrystalOlivineA:
                 angles,
                 indices,
                 timestop=timestop,
-                savefile=f"{outdir}/simple_shearYZ_single_olivineA_initQ1.png",
+                savefile=f"{outdir}/simple_shearYZ_stationary_olivineA_initQ1.png",
                 markers=("o", "v", "s"),
                 labels=labels,
                 refval=45,
@@ -332,11 +332,11 @@ class TestSinglePolycrystalOlivineA:
 
         # Optionally plot figure.
         if outdir is not None:
-            _vis.simple_shear_2d(
+            _vis.simple_shear_stationary_2d(
                 angles,
                 indices,
                 timestop=timestop,
-                savefile=f"{outdir}/simple_shearXZ_single_olivineA_initQ1.png",
+                savefile=f"{outdir}/simple_shearXZ_stationary_olivineA_initQ1.png",
                 markers=("o", "v", "s"),
                 labels=labels,
                 refval=45,

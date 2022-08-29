@@ -7,6 +7,7 @@ Acronyms:
 """
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
+import pathlib as pl
 
 import numba as nb
 import numpy as np
@@ -143,7 +144,7 @@ class Mineral:
         self.fractions.append(self.fractions_init)
         self.orientations.append(self.orientations_init)
 
-        # Delete the initial values to avoid confusion.
+        # Delete the initial value duplicates to avoid confusion.
         del self.fractions_init
         del self.orientations_init
 
@@ -169,10 +170,9 @@ class Mineral:
         - `integration_time` (float) — total time of integrated dislocation
           creep (if `pathline` is not None, this is used as the maximum
           integration timestep during forward advection, i.e. CPO calculation)
-        - `pathline` (function, optional) — function that returns a tuple
-          consisting of:
-            1. the time at which the mineral aggregate enters the domain
-            2. the time at which the mineral aggregate assumes its final position
+        - `pathline` (tuple, optional) — tuple consisting of:
+            1. the time at which to start the CPO integration
+            2. the time at which to stop the CPO integration
             3. a callable that accepts a time value and returns the position of
                the mineral
 
@@ -258,6 +258,7 @@ class Mineral:
                 )
             ),
             time_end,
+            # first_step=1e9,
             max_step=max_step,
         )
 
@@ -307,6 +308,8 @@ class Mineral:
             == self.n_grains
         ):
             meta = np.array([self.phase, self.fabric, self.regime], dtype=np.uint8)
+            # Create parent directories if needed.
+            pl.Path(filename).parent.mkdir(parents=True, exist_ok=True)
             np.savez(
                 filename,
                 meta=meta,

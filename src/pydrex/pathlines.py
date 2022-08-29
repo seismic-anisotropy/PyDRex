@@ -15,7 +15,7 @@ def get_pathline(
     Args:
         `point` (NumPy array) — coordinates of the point
         `interp_velocity` (interpolator) — returns velocity vector at a point
-        `interp_velocity_gradient` — returns ∇v (3x3 matrix) at a point
+        `interp_velocity_gradient` (interpolator) — returns ∇v (3x3 matrix) at a point
         `min_coords` (iterable) — lower bound coordinate of the interpolation grid
         `max_coords` (iterable) — upper bound coordinate of the interpolation grid
 
@@ -65,7 +65,7 @@ def get_pathline(
         method="RK45",  # TODO: Compare to LSODA?
         first_step=1e10,
         max_step=np.inf,
-        events=[_max_strain],
+        # events=[_max_strain],
         args=(interp_velocity, interp_velocity_gradient, min_coords, max_coords),
         dense_output=True,
         jac=_ivp_jac,
@@ -74,6 +74,7 @@ def get_pathline(
     )
     # Remove the last timestep, because the position will be outside the domain.
     # The integration only stops AFTER the event is triggered.
+    # print(path.status)
     return path.t[:-1], path.sol
 
 
