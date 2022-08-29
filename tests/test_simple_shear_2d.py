@@ -131,7 +131,7 @@ class TestSinglePolycrystalOlivineA:
             assert misorient_indices[0] < 0.71
             # Check for mostly smoothly decreasing misalignment.
             angles_diff = np.diff(misorient_angles)
-            assert np.max(angles_diff) < 3.2
+            assert np.max(angles_diff) < 3.3
             assert np.min(angles_diff) > -7.5
             assert np.sum(angles_diff) < -25.0
 
@@ -153,7 +153,7 @@ class TestSinglePolycrystalOlivineA:
                     assert np.isclose(misorient_indices[halfway], 0.925, atol=0.075)
                     assert np.isclose(misorient_indices[-1], 0.975, atol=0.05)
                 case 50:
-                    assert np.isclose(misorient_angles[halfway], 15, atol=1.5)
+                    assert np.isclose(misorient_angles[halfway], 15, atol=2.0)
                     assert np.isclose(misorient_angles[-1], 10, atol=1.0)
                     assert np.isclose(misorient_indices[halfway], 0.925, atol=0.075)
                     assert np.isclose(misorient_indices[-1], 0.97, atol=0.03)
@@ -289,7 +289,7 @@ class TestSinglePolycrystalOlivineA:
             assert misorient_indices[0] < 0.71
             # Check for mostly smoothly decreasing misalignment.
             angles_diff = np.diff(misorient_angles)
-            assert np.max(angles_diff) < 3.2
+            assert np.max(angles_diff) < 3.3
             assert np.min(angles_diff) > -7.5
             assert np.sum(angles_diff) < -25.0
             # Check that recrystallization is causing faster alignment.
