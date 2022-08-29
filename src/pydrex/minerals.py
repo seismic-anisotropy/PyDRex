@@ -95,13 +95,14 @@ class Mineral:
 
     A `Mineral` stores CPO data for an aggregate of grains*.
     Additionally, mineral fabric type and deformation regime
-    are also tracked. See `pydrex.fabric` and `pydrex.deformation_mechanism`.
+    are also tracked. See `pydrex.deformation_mechanism`.
 
     Attributes:
     - `phase` (int) — ordinal number of the mineral phase, see `MineralPhase`
-    - `fabric` (int) — ordinal number of the fabric type, see `pydrex.fabric`
+    - `fabric` (int) — ordinal number of the fabric type, see `OlivineFabric`
+      and `EnstatiteFabric`
     - `regime` (int) — ordinal number of the deformation regime,
-        see `pydrex.deformation_mechanism.Regime`
+      see `pydrex.deformation_mechanism.Regime`
     - `n_grains` (int) — number of grains in the aggregate
     - `fractions_init` (array, optional) — initial dimensionless grain volumes
     - `orientations_init` (array, optional) — initial grain orientation matrices
@@ -126,8 +127,8 @@ class Mineral:
     orientations_init: np.ndarray = None
     # Private members to store values for all successive simulation steps.
     # Lists of numpy arrays will be `np.stack`ed when writing the NPZ file.
-    _fractions: list = field(default_factory=list)
-    _orientations: list = field(default_factory=list)
+    fractions: list = field(default_factory=list)
+    orientations: list = field(default_factory=list)
 
     def __post_init__(self):
         """Initialise random orientations and grain volume fractions."""
@@ -139,8 +140,12 @@ class Mineral:
             ).as_matrix()
 
         # Copy the initial values to the storage lists.
-        self._fractions.append(self.fractions_init)
-        self._orientations.append(self.orientations_init)
+        self.fractions.append(self.fractions_init)
+        self.orientations.append(self.orientations_init)
+
+        # Delete the initial values to avoid confusion.
+        del self.fractions_init
+        del self.orientations_init
 
     def update_orientations(
         self,
@@ -251,8 +256,8 @@ class Mineral:
             np.hstack(
                 (
                     deformation_gradient.flatten(),
-                    self._orientations[-1].flatten(),
-                    self._fractions[-1],
+                    self.orientations[-1].flatten(),
+                    self.fractions[-1],
                 )
             ),
             time_end,
@@ -272,15 +277,15 @@ class Mineral:
             # Grain boundary sliding for small grains.
             mask = fractions < config["gbs_threshold"] / self.n_grains
             # No rotation: carry over previous orientations.
-            orientations[mask, :, :] = self._orientations[0][mask, :, :]
+            orientations[mask, :, :] = self.orientations[0][mask, :, :]
             fractions[mask] = config["gbs_threshold"] / self.n_grains
             fractions /= fractions.sum()
             advect.y[9:] = np.hstack((orientations.flatten(), fractions))
 
         # Extract final values for this simulation step, append to storage.
         deformation_gradient, orientations, fractions = extract_vars(advect.y.squeeze())
-        self._orientations.append(orientations)
-        self._fractions.append(fractions)
+        self.orientations.append(orientations)
+        self.fractions.append(fractions)
         return deformation_gradient
 
     def save(self, filename):
@@ -291,32 +296,32 @@ class Mineral:
         See also: `numpy.savez`.
 
         """
-        if len(self._fractions) != len(self._orientations):
+        if len(self.fractions) != len(self.orientations):
             raise ValueError(
                 "Length of stored results must match."
                 + " You've supplied currupted data with:\n"
-                + f"- {len(self._fractions)} grain size results, and\n"
-                + f"- {len(self._orientations)} orientation results."
+                + f"- {len(self.fractions)} grain size results, and\n"
+                + f"- {len(self.orientations)} orientation results."
             )
         if (
-            self._fractions[0].shape[0]
-            == self._orientations[0].shape[0]
+            self.fractions[0].shape[0]
+            == self.orientations[0].shape[0]
             == self.n_grains
         ):
             meta = np.array([self.phase, self.fabric, self.regime], dtype=np.uint8)
             np.savez(
                 filename,
                 meta=meta,
-                fractions=np.stack(self._fractions),
-                orientations=np.stack(self._orientations),
+                fractions=np.stack(self.fractions),
+                orientations=np.stack(self.orientations),
             )
         else:
             raise ValueError(
                 "Size of CPO data arrays must match number of grains."
                 + " You've supplied corrupted data with:\n"
                 + f"- `n_grains = {self.n_grains}`,\n"
-                + f"- `_fractions[0].shape = {self._fractions[0].shape}`, and\n"
-                + f"- `_orientations[0].shape = {self._orientations[0].shape}`."
+                + f"- `fractions[0].shape = {self.fractions[0].shape}`, and\n"
+                + f"- `orientations[0].shape = {self.orientations[0].shape}`."
             )
 
     def load(self, filename):
@@ -334,7 +339,7 @@ class Mineral:
         self.phase = phase
         self.fabric = fabric
         self.regime = regime
-        self._fractions = list(data["fractions"])
-        self._orientations = list(data["orientations"])
-        self.orientations_init = self._orientations[0]
-        self.fractions_init = self._fractions[0]
+        self.fractions = list(data["fractions"])
+        self.orientations = list(data["orientations"])
+        self.orientations_init = self.orientations[0]
+        self.fractions_init = self.fractions[0]

@@ -109,13 +109,13 @@ class TestSinglePolycrystalOlivineA:
                 )
                 time += timestep * timescale
 
-            n_timesteps = len(mineral._orientations)
+            n_timesteps = len(mineral.orientations)
             misorient_angles = np.zeros(n_timesteps)
             misorient_indices = np.zeros(n_timesteps)
             # Loop over first dimension (time steps) of orientations.
-            for idx, matrices in enumerate(mineral._orientations):
+            for idx, matrices in enumerate(mineral.orientations):
                 orientations_resampled, _ = _diagnostics.resample_orientations(
-                    matrices, mineral._fractions[idx]
+                    matrices, mineral.fractions[idx]
                 )
                 direction_mean = _diagnostics.bingham_average(
                     orientations_resampled,
@@ -268,13 +268,13 @@ class TestSinglePolycrystalOlivineA:
                 )
                 time += timestep * timescale
 
-            n_timesteps = len(mineral._orientations)
+            n_timesteps = len(mineral.orientations)
             misorient_angles = np.zeros(n_timesteps)
             misorient_indices = np.zeros(n_timesteps)
             # Loop over first dimension (time steps) of orientations.
-            for idx, matrices in enumerate(mineral._orientations):
+            for idx, matrices in enumerate(mineral.orientations):
                 orientations_resampled, _ = _diagnostics.resample_orientations(
-                    matrices, mineral._fractions[idx]
+                    matrices, mineral.fractions[idx]
                 )
                 direction_mean = _diagnostics.bingham_average(
                     orientations_resampled,
