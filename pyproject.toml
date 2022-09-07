@@ -10,6 +10,3 @@ build-backend = "setuptools.build_meta"
 # Automatically use the version number from vcs (e.g. git) tags,
 # <https://github.com/pypa/setuptools_scm>.
 [tool.setuptools_scm]
-
-[tool.pytest.ini_options]
-log_cli = true

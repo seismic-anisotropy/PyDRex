@@ -1,5 +1,6 @@
 """Configuration and fixtures for PyDRex tests."""
-import pathlib
+import pathlib as pl
+import functools as ft
 
 import pytest
 import matplotlib
@@ -8,6 +9,15 @@ from pydrex import logger as _log
 
 matplotlib.use("Agg")  # Stop matplotlib from looking for $DISPLAY in env.
 _log.quiet_aliens()  # Stop imported modules from spamming the logs.
+
+
+def pytest_configure(config):
+    config.option.log_cli = True
+    if config.getoption("--log-cli-level") is None:
+        config.option.log_cli_level = "INFO"
+    else:
+        config.option.log_cli_level = config.getoption("--log-cli-level")
+    config.option.log_cli_format = _log.LOGGER_CONSOLE.formatter._fmt
 
 
 def pytest_addoption(parser):
@@ -131,7 +141,7 @@ def params_Hedjazian2017():
 
 @pytest.fixture
 def vtkfiles_2d_corner_flow():
-    datadir = pathlib.Path(__file__).parent / ".." / "data" / "vtu"
+    datadir = pl.Path(__file__).parent / ".." / "data" / "vtu"
     return (
         datadir / "2d_corner_flow_2cmyr.vtu",
         datadir / "2d_corner_flow_4cmyr.vtu",

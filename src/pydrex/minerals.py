@@ -282,7 +282,7 @@ class Mineral:
             time_start, time_end, get_position = pathline
             _velocity_gradient = velocity_gradient([get_position(time_start)])[0]
             _log.info(
-                "calculating CPO at %s (t=%s) with velocity gradient %s",
+                "calculating CPO at %s (t=%e) with velocity gradient %s",
                 get_position(time_start),
                 time_start,
                 _velocity_gradient.flatten(),
@@ -294,16 +294,16 @@ class Mineral:
             time_start = 0
             time_end = integration_time
             _log.info(
-                "calculating CPO from t=%s to t=%s with velocity gradient %s",
-                time_start,
-                time_end,
+                "calculating CPO for Δt=%e with velocity gradient %s",
+                time_end - time_start,
                 _velocity_gradient.flatten(),
             )
             # TODO: Smaller max step.
-            max_step = np.inf
+            max_step = (time_end - time_start) / 4
 
         strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
         strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
+        max_step = min(max_step, 1e-2 / strain_rate_max)
 
         if self.phase == MineralPhase.olivine:
             volume_fraction = config["olivine_fraction"]
@@ -324,12 +324,18 @@ class Mineral:
                 )
             ),
             time_end,
-            # first_step=1e9,  # TODO: How to choose this generally?
+            first_step=max_step / 4,
             max_step=max_step,
         )
         message = solver.step()
         if message is not None and solver.status == "failed":
             raise _err.IterationError(message)
+        _log.info(
+            "%s step_size=%e (max_step=%e)",
+            solver.__class__.__qualname__,
+            solver.step_size,
+            solver.max_step,
+        )
 
         deformation_gradient, orientations, fractions = apply_gbs(solver, config)
 
@@ -338,7 +344,7 @@ class Mineral:
             if callable(velocity_gradient):
                 _velocity_gradient = velocity_gradient([get_position(solver.t)])[0]
                 _log.info(
-                    "calculating CPO at %s (t=%s) with velocity gradient %s",
+                    "calculating CPO at %s (t=%e) with velocity gradient %s",
                     get_position(solver.t),
                     solver.t,
                     _velocity_gradient.flatten(),
@@ -348,10 +354,17 @@ class Mineral:
 
             strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
             strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
+            solver.max_step = min(solver.max_step, 1e-2 / strain_rate_max)
 
             message = solver.step()
             if message is not None and solver.status == "failed":
                 raise _err.IterationError(message)
+            _log.info(
+                "%s step_size=%e (max_step=%e)",
+                solver.__class__.__qualname__,
+                solver.step_size,
+                solver.max_step,
+            )
 
             deformation_gradient, orientations, fractions = apply_gbs(solver, config)
 

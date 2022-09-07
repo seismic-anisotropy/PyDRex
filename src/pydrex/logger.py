@@ -6,13 +6,28 @@ the "root" logger, which contains a bunch of noise from other imports/modules.
 
 """
 import logging
+import pathlib as pl
+
 
 LOGGER = logging.getLogger("pydrex")
+# To allow for multiple handlers at different levels, default level must be DEBUG.
+LOGGER.setLevel(logging.DEBUG)
+# Set up console handler, turned on by default.
 LOGGER_CONSOLE = logging.StreamHandler()
+# The format string is stored in .formatter._fmt
 LOGGER_CONSOLE.setFormatter(
-    logging.Formatter("%(name)s [%(asctime)s] %(levelname)s: %(message)s")
+    logging.Formatter("%(levelname)s [%(asctime)s] %(name)s: %(message)s")
 )
+LOGGER_CONSOLE.setLevel(logging.INFO)
 LOGGER.addHandler(LOGGER_CONSOLE)
+
+
+def logfile_enable(path, level=logging.DEBUG):
+    """Enable logging to a file at `path` with given `level`."""
+    pl.Path(path).parent.mkdir(parents=True, exist_ok=True)
+    logger_file = logging.FileHandler(path, mode="w")
+    logger_file.setFormatter(LOGGER_CONSOLE.formatter)
+    LOGGER.addHandler(logger_file)
 
 
 def critical(msg, *args, **kwargs):

@@ -38,6 +38,7 @@ from pydrex import diagnostics as _diagnostics
 from pydrex import minerals as _minerals
 from pydrex import visualisation as _vis
 from pydrex import pathlines as _pathlines
+from pydrex import logger as _log
 from scipy.spatial.transform import Rotation
 
 # TODO: Remove temp import
@@ -97,11 +98,9 @@ class TestOlivineA:
         n_grains = 1000
         orientations_init = Rotation.random(1000).as_matrix()
 
-        params = params_Kaminski2001_fig5_shortdash
-        params["gbm_mobility"] = 125
-
-        # Optional plotting setup.
+        # Optional plotting/logging setup.
         if outdir is not None:
+            _log.logfile_enable(f"{outdir}/corner_olivineA_nopathline.log")
             labels = []
             angles = []
             indices = []
@@ -134,7 +133,7 @@ class TestOlivineA:
                 timestep = 0.1 / la.norm(velocity)
                 deformation_gradient = mineral.update_orientations(
                     # params_Kaminski2001_fig5_shortdash,
-                    params,
+                    params_Kaminski2001_fig5_shortdash,
                     deformation_gradient,
                     get_velocity_gradient(θ_current, plate_velocity),
                     integration_time=timestep,
