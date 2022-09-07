@@ -39,6 +39,7 @@ from pydrex import pathlines as _pathlines
 from pydrex import visualisation as _vis
 from scipy import linalg as la
 from scipy.spatial.transform import Rotation
+
 # from numpy import random as rn
 # TODO: Remove temp import
 
