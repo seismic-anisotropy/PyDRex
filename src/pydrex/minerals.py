@@ -11,11 +11,13 @@ import pathlib as pl
 
 import numba as nb
 import numpy as np
+from pydrex import core as _core
+from pydrex import deformation_mechanism as _defmech
+from pydrex import logger as _log
+from pydrex import exceptions as _err
 from scipy import linalg as la
 from scipy.integrate import RK45
 from scipy.spatial.transform import Rotation
-
-import pydrex.core as _core
 
 
 @unique
@@ -119,17 +121,43 @@ class Mineral:
 
     """
 
-    phase: int
-    fabric: int
-    regime: int
-    n_grains: int
+    phase: int = MineralPhase.olivine
+    fabric: int = OlivineFabric.A
+    regime: int = _defmech.Regime.dislocation
+    n_grains: int = 1000
     # Initial condition, randomised if not given.
     fractions_init: np.ndarray = None
     orientations_init: np.ndarray = None
-    # Private members to store values for all successive simulation steps.
-    # Lists of numpy arrays will be `np.stack`ed when writing the NPZ file.
     fractions: list = field(default_factory=list)
     orientations: list = field(default_factory=list)
+
+    def __str__(self):
+        # String output, used for str(self) and f"{self}", etc.
+        if hasattr(self.fractions[0], "shape"):
+            shape_of_fractions = str(self.fractions[0].shape)
+        else:
+            shape_of_fractions = "(?)"
+
+        if hasattr(self.orientations[0], "shape"):
+            shape_of_orientations = str(self.orientations[0].shape)
+        else:
+            shape_of_orientations = "(?)"
+
+        return (
+            self.__class__.__qualname__
+            + f"(phase={self.phase!s}, "
+            + f"fabric={self.fabric!s}, "
+            + f"regime={self.regime!s}, "
+            + f"n_grains={self.n_grains!s}, "
+            + f"fractions=<{self.fractions.__class__.__qualname__}"
+            + f" of {self.fractions[0].__class__.__qualname__} {shape_of_fractions}>, "
+            + f"orientations=<{self.orientations.__class__.__qualname__}"
+            + f" of {self.orientations[0].__class__.__qualname__} {shape_of_orientations}>)"
+        )
+
+    def _repr_pretty_(self, p, cycle):
+        # Format to use when printing to IPython or other interactive console.
+        p.text(self.__str__() if not cycle else self.__class__.__qualname__ + "(...)")
 
     def __post_init__(self):
         """Initialise random orientations and grain volume fractions."""
@@ -148,6 +176,8 @@ class Mineral:
         del self.fractions_init
         del self.orientations_init
 
+        _log.info("created %s", self)
+
     def update_orientations(
         self,
         config,
@@ -165,7 +195,7 @@ class Mineral:
         - `config` (dict) — PyDRex configuration dictionary
         - `deformation_gradient` (array) — 3x3 initial deformation gradient tensor
         - `velocity_gradient` (array or function) — 3x3 velocity gradient matrix,
-          or an interpolator that returns the matrix when evaluated at a point
+          or an interpolator that returns the 3x3 matrix when evaluated at a point
           along the provided pathline
         - `integration_time` (float) — total time of integrated dislocation
           creep (if `pathline` is not None, this is used as the maximum
@@ -180,8 +210,9 @@ class Mineral:
         <https://numpy.org/doc/stable/user/whatisnumpy.html>
 
         """
-        # TODO: Check if we need to .copy() here.
+        # Set up callables for the ODE, some variables come from enclosing scope.
         def extract_vars(y):
+            # TODO: Check if we can avoid .copy() here.
             deformation_gradient = y[:9].copy().reshape(3, 3)
             orientations = (
                 y[9 : self.n_grains * 9 + 9]
@@ -221,25 +252,59 @@ class Mineral:
                 )
             )
 
+        def apply_gbs(solver, config):
+            deformation_gradient, orientations, fractions = extract_vars(solver.y)
+            # Grain boundary sliding for small grains.
+            mask = fractions < config["gbs_threshold"] / self.n_grains
+            _log.debug(
+                "grain boundary sliding activity (volume percentage): %s",
+                len(np.nonzero(mask)) / len(fractions),
+            )
+            # No rotation: carry over previous orientations.
+            orientations[mask, :, :] = self.orientations[0][mask, :, :]
+            fractions[mask] = config["gbs_threshold"] / self.n_grains
+            fractions /= fractions.sum()
+            solver.y[9:] = np.hstack((orientations.flatten(), fractions))
+            _log.debug(
+                "orientations (quaternions):\n%s\nvolume distribution:\n%s",
+                [r.as_quat() for r in map(Rotation.from_matrix, orientations)],
+                fractions,
+            )
+            return deformation_gradient, orientations, fractions
+
+        # Set up pathline or time integral bounds and initial condition.
         if callable(velocity_gradient):
             if pathline is None:
                 raise ValueError(
                     "unable to evaluate velocity gradient callable."
-                    + " You must provide a pathline to use spatially varying fields."
+                    + " You must provide the `pathline` to use a velocity gradient callable."
                 )
             time_start, time_end, get_position = pathline
             _velocity_gradient = velocity_gradient([get_position(time_start)])[0]
+            _log.info(
+                "calculating CPO at %s (t=%s) with velocity gradient %s",
+                get_position(time_start),
+                time_start,
+                _velocity_gradient.flatten(),
+            )
+            # TODO: Smaller max step.
             max_step = integration_time
         else:
             _velocity_gradient = velocity_gradient
             time_start = 0
             time_end = integration_time
+            _log.info(
+                "calculating CPO from t=%s to t=%s with velocity gradient %s",
+                time_start,
+                time_end,
+                _velocity_gradient.flatten(),
+            )
+            # TODO: Smaller max step.
             max_step = np.inf
 
         strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
         strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
 
-        # Volume fraction of the mineral phase.
         if self.phase == MineralPhase.olivine:
             volume_fraction = config["olivine_fraction"]
         elif self.phase == MineralPhase.enstatite:
@@ -247,7 +312,8 @@ class Mineral:
         else:
             assert False  # Should never happen.
 
-        advect = RK45(
+        # Initialise solver and perform first step.
+        solver = RK45(
             eval_rhs,
             time_start,
             np.hstack(
@@ -258,31 +324,39 @@ class Mineral:
                 )
             ),
             time_end,
-            # first_step=1e9,
+            # first_step=1e9,  # TODO: How to choose this generally?
             max_step=max_step,
         )
+        message = solver.step()
+        if message is not None and solver.status == "failed":
+            raise _err.IterationError(message)
 
-        while advect.status == "running":
+        deformation_gradient, orientations, fractions = apply_gbs(solver, config)
+
+        # Solve ODE using numerical iteration scheme.
+        while solver.status == "running":
             if callable(velocity_gradient):
-                _velocity_gradient = velocity_gradient([get_position(advect.t)])[0]
+                _velocity_gradient = velocity_gradient([get_position(solver.t)])[0]
+                _log.info(
+                    "calculating CPO at %s (t=%s) with velocity gradient %s",
+                    get_position(solver.t),
+                    solver.t,
+                    _velocity_gradient.flatten(),
+                )
             else:
                 _velocity_gradient = velocity_gradient
 
             strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
             strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
 
-            advect.step()
-            deformation_gradient, orientations, fractions = extract_vars(advect.y)
-            # Grain boundary sliding for small grains.
-            mask = fractions < config["gbs_threshold"] / self.n_grains
-            # No rotation: carry over previous orientations.
-            orientations[mask, :, :] = self.orientations[0][mask, :, :]
-            fractions[mask] = config["gbs_threshold"] / self.n_grains
-            fractions /= fractions.sum()
-            advect.y[9:] = np.hstack((orientations.flatten(), fractions))
+            message = solver.step()
+            if message is not None and solver.status == "failed":
+                raise _err.IterationError(message)
+
+            deformation_gradient, orientations, fractions = apply_gbs(solver, config)
 
         # Extract final values for this simulation step, append to storage.
-        deformation_gradient, orientations, fractions = extract_vars(advect.y.squeeze())
+        deformation_gradient, orientations, fractions = extract_vars(solver.y.squeeze())
         self.orientations.append(orientations)
         self.fractions.append(fractions)
         return deformation_gradient
@@ -302,11 +376,7 @@ class Mineral:
                 + f"- {len(self.fractions)} grain size results, and\n"
                 + f"- {len(self.orientations)} orientation results."
             )
-        if (
-            self.fractions[0].shape[0]
-            == self.orientations[0].shape[0]
-            == self.n_grains
-        ):
+        if self.fractions[0].shape[0] == self.orientations[0].shape[0] == self.n_grains:
             meta = np.array([self.phase, self.fabric, self.regime], dtype=np.uint8)
             # Create parent directories if needed.
             pl.Path(filename).parent.mkdir(parents=True, exist_ok=True)

@@ -77,6 +77,7 @@ def get_velocity_gradient(θ, plate_velocity):
 class TestOlivineA:
     """Tests for pure A-type olivine polycrystals in 2D corner flows."""
 
+    @pytest.mark.wip
     def test_corner_nopathline_init_random(
         self,
         params_Kaminski2001_fig5_shortdash,
