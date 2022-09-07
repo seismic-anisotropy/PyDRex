@@ -1,9 +1,9 @@
 """Configuration and fixtures for PyDRex tests."""
-import pathlib as pl
 import functools as ft
+import pathlib as pl
 
-import pytest
 import matplotlib
+import pytest
 from pydrex import logger as _log
 
 

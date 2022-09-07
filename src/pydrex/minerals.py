@@ -13,8 +13,8 @@ import numba as nb
 import numpy as np
 from pydrex import core as _core
 from pydrex import deformation_mechanism as _defmech
-from pydrex import logger as _log
 from pydrex import exceptions as _err
+from pydrex import logger as _log
 from scipy import linalg as la
 from scipy.integrate import RK45
 from scipy.spatial.transform import Rotation

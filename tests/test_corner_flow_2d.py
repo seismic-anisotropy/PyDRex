@@ -28,28 +28,29 @@ Similar to Fig. 5 in [Kaminski 2002].
 """
 import itertools as it
 
-import numpy as np
 import numba as nb
-
-# from numpy import random as rn
-from scipy import linalg as la
+import numpy as np
+import pytest
 from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
-from pydrex import minerals as _minerals
-from pydrex import visualisation as _vis
-from pydrex import pathlines as _pathlines
 from pydrex import logger as _log
+from pydrex import minerals as _minerals
+from pydrex import pathlines as _pathlines
+from pydrex import visualisation as _vis
+from scipy import linalg as la
 from scipy.spatial.transform import Rotation
-
+# from numpy import random as rn
 # TODO: Remove temp import
-import pytest
 
 
 @nb.njit
 def get_velocity_polar(θ, plate_velocity):
     """Return velocity in a corner flow (Polar coordinate basis)."""
-    return 2 * plate_velocity / np.pi * np.array(
-        [θ * np.sin(θ) - np.cos(θ), θ * np.cos(θ)]
+    return (
+        2
+        * plate_velocity
+        / np.pi
+        * np.array([θ * np.sin(θ) - np.cos(θ), θ * np.cos(θ)])
     )
 
 
@@ -58,8 +59,13 @@ def get_velocity(θ, plate_velocity):
     """Return velocity in a corner flow (Cartesian coordinate basis)."""
     sinθ = np.sin(θ)
     cosθ = np.cos(θ)
-    return 2 * plate_velocity / np.pi * np.array(
-        [θ - sinθ * cosθ, 0., cosθ**2],
+    return (
+        2
+        * plate_velocity
+        / np.pi
+        * np.array(
+            [θ - sinθ * cosθ, 0.0, cosθ**2],
+        )
     )
 
 
@@ -68,11 +74,18 @@ def get_velocity_gradient(θ, plate_velocity):
     """Return velocity gradient in a corner flow (Cartesian coordinate basis)."""
     sinθ = np.sin(θ)
     cosθ = np.cos(θ)
-    return 4. * plate_velocity / np.pi * np.array([
-        [0., 0., 0.],
-        [0., 0., 0.],
-        [cosθ * sinθ**2, 0, cosθ**2 * sinθ],
-    ])
+    return (
+        4.0
+        * plate_velocity
+        / np.pi
+        * np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0],
+                [cosθ * sinθ**2, 0, cosθ**2 * sinθ],
+            ]
+        )
+    )
 
 
 class TestOlivineA:
@@ -216,6 +229,7 @@ class TestOlivineA:
                 xlims=(0, domain_width),
                 zlims=(-domain_height, 0),
             )
+
 
 #     @pytest.mark.wip
 #     def test_corner_pathline_prescribed_init_random(

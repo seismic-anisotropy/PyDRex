@@ -63,7 +63,9 @@ def solve(minerals, config, velocity_gradient, time_steps):
     nondim_velocity_gradient = velocity_gradient / strain_rate_max
 
     for dt in time_steps:
-        deformation_gradient = update_strain(deformation_gradient, velocity_gradient, dt)
+        deformation_gradient = update_strain(
+            deformation_gradient, velocity_gradient, dt
+        )
         # TODO: Handle deformation mechanism regimes.
         for mineral in minerals:
             mineral.update_orientations(
@@ -194,7 +196,9 @@ def solve_interpolated(minerals, config, interpolators, node):
 
         for _ in range(n_iter):
             # TODO: Handle deformation mechanism regimes.
-            deformation_gradient = update_strain(deformation_gradient, velocity_gradient, dt)
+            deformation_gradient = update_strain(
+                deformation_gradient, velocity_gradient, dt
+            )
             for mineral in minerals:
                 mineral.update_orientations(
                     nondim_strain_rate,
