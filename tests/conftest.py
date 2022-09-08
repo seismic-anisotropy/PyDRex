@@ -12,11 +12,11 @@ _log.quiet_aliens()  # Stop imported modules from spamming the logs.
 
 
 def pytest_configure(config):
+    # Make sure --log-cli-level can be used by default.
     config.option.log_cli = True
-    if config.getoption("--log-cli-level") is None:
-        config.option.log_cli_level = "INFO"
-    else:
-        config.option.log_cli_level = config.getoption("--log-cli-level")
+    # Make sure pytest never prints more than WARNING messages by default.
+    config.option.log_level = "WARNING"
+    # Inherit format for "live logs" (--log-cli-level) from our logger.
     config.option.log_cli_format = _log.LOGGER_CONSOLE.formatter._fmt
 
 
