@@ -241,9 +241,11 @@ def corner_flow_nointerp_2d(
     # Some hacky workaround to have better edges between the contours.
     for c in Π_contours.collections:
         c.set_edgecolor("face")
+    plt.rcParams["axes.grid"] = False
     fig.colorbar(
         Π_contours, label="grain orientation lag, Π", location="bottom", pad=0.05
     ).ax.invert_xaxis()
+    plt.rcParams["axes.grid"] = True
 
     # Lines to show texture threshold and shear direction.
     ax_strength.axhline(cpo_threshold, color="k", linestyle=":")
