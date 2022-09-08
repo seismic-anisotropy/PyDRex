@@ -173,7 +173,7 @@ class TestSinglePolycrystalOlivineA:
 
         # Optionally plot figure.
         if outdir is not None:
-            _vis.simple_shear_2d(
+            _vis.simple_shear_stationary_2d(
                 angles,
                 indices,
                 timestop=timestop,
