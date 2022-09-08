@@ -199,7 +199,7 @@ class Mineral:
           along the provided pathline
         - `integration_time` (float) — total time of integrated dislocation
           creep (if `pathline` is not None, this is used as the maximum
-          integration timestep during forward advection, i.e. CPO calculation)
+          integration timestep during CPO calculation)
         - `pathline` (tuple, optional) — tuple consisting of:
             1. the time at which to start the CPO integration
             2. the time at which to stop the CPO integration
@@ -287,7 +287,6 @@ class Mineral:
                 time_start,
                 _velocity_gradient.flatten(),
             )
-            # TODO: Smaller max step.
             max_step = integration_time
         else:
             _velocity_gradient = velocity_gradient
@@ -298,8 +297,7 @@ class Mineral:
                 time_end - time_start,
                 _velocity_gradient.flatten(),
             )
-            # TODO: Smaller max step.
-            max_step = (time_end - time_start) / 4
+            max_step = time_end - time_start
 
         strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
         strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
@@ -324,7 +322,7 @@ class Mineral:
                 )
             ),
             time_end,
-            first_step=max_step / 4,
+            first_step=max_step / 4,  # TODO: Move divisor to config?
             max_step=max_step,
         )
         message = solver.step()
