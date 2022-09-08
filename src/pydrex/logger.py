@@ -27,6 +27,7 @@ def logfile_enable(path, level=logging.DEBUG):
     pl.Path(path).parent.mkdir(parents=True, exist_ok=True)
     logger_file = logging.FileHandler(path, mode="w")
     logger_file.setFormatter(LOGGER_CONSOLE.formatter)
+    logger_file.setLevel(level)
     LOGGER.addHandler(logger_file)
 
 
