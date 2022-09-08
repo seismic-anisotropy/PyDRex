@@ -105,7 +105,7 @@ class TestOlivineA:
         domain_height = 1.0  # Normalised to olivine-spinel transition.
         domain_width = 5.0
         n_grains = 1000
-        orientations_init = Rotation.random(1000).as_matrix()
+        orientations_init = Rotation.random(n_grains, random_state=1).as_matrix()
 
         # Optional plotting/logging setup.
         if outdir is not None:
@@ -243,7 +243,7 @@ class TestOlivineA:
 #         plate_velocity = 2.0 / (100.0 * 365.0 * 86400.0)
 #         domain_width = 5.0
 #         n_grains = 1000
-#         orientations_init = Rotation.random(1000).as_matrix()
+#         orientations_init = Rotation.random(n_grains, random_state=1).as_matrix()
 
 #         params = params_Kaminski2001_fig5_shortdash
 #         params["gbm_mobility"] = 125
