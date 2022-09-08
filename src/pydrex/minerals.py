@@ -162,7 +162,7 @@ class Mineral:
     def __post_init__(self):
         """Initialise random orientations and grain volume fractions."""
         if self.fractions_init is None:
-            self.fractions_init = np.full(self.n_grains, 1. / self.n_grains)
+            self.fractions_init = np.full(self.n_grains, 1.0 / self.n_grains)
         if self.orientations_init is None:
             self.orientations_init = Rotation.random(
                 self.n_grains, random_state=1
@@ -267,7 +267,9 @@ class Mineral:
             solver.y[9:] = np.hstack((orientations.flatten(), fractions))
             _log.debug(
                 "orientations (quaternions):\n%s",
-                np.array([list(r.as_quat()) for r in map(Rotation.from_matrix, orientations)]),
+                np.array(
+                    [list(r.as_quat()) for r in map(Rotation.from_matrix, orientations)]
+                ),
             )
             _log.debug(
                 "volume distribution: mean=%e, min=%e, max=%e",

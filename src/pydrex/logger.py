@@ -5,9 +5,9 @@ which logger to use, so just using `logging.debug` for example always uses
 the "root" logger, which contains a bunch of noise from other imports/modules.
 
 """
+import functools as ft
 import logging
 import pathlib as pl
-import functools as ft
 
 import numpy as np
 
