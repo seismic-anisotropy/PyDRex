@@ -30,7 +30,6 @@ import itertools as it
 
 import numba as nb
 import numpy as np
-import pytest
 from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
 from pydrex import logger as _log
@@ -39,9 +38,6 @@ from pydrex import pathlines as _pathlines
 from pydrex import visualisation as _vis
 from scipy import linalg as la
 from scipy.spatial.transform import Rotation
-
-# from numpy import random as rn
-# TODO: Remove temp import
 
 
 @nb.njit
@@ -92,7 +88,6 @@ def get_velocity_gradient(θ, plate_velocity):
 class TestOlivineA:
     """Tests for pure A-type olivine polycrystals in 2D corner flows."""
 
-    @pytest.mark.wip
     def test_corner_nopathline_init_random(
         self,
         params_Kaminski2001_fig5_shortdash,
