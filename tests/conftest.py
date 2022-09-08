@@ -24,7 +24,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--outdir",
         metavar="DIR",
-        default=[None],  # NOTE: `outdir` will just be None, not a list.
+        default=None,
         help="output directory in which to store PyDRex figures/logs",
     )
 
