@@ -7,6 +7,16 @@ the "root" logger, which contains a bunch of noise from other imports/modules.
 """
 import logging
 import pathlib as pl
+import functools as ft
+
+import numpy as np
+
+
+np.set_printoptions(
+    formatter={"float_kind": np.format_float_scientific},
+    linewidth=1000,
+)
+np.set_string_function(ft.partial(np.array2string, separator=", "), repr=False)
 
 
 LOGGER = logging.getLogger("pydrex")

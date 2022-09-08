@@ -266,10 +266,16 @@ class Mineral:
             fractions /= fractions.sum()
             solver.y[9:] = np.hstack((orientations.flatten(), fractions))
             _log.debug(
-                "orientations (quaternions):\n%s\nvolume distribution:\n%s",
-                [r.as_quat() for r in map(Rotation.from_matrix, orientations)],
-                fractions,
+                "orientations (quaternions):\n%s",
+                np.array([list(r.as_quat()) for r in map(Rotation.from_matrix, orientations)]),
             )
+            _log.debug(
+                "volume distribution: mean=%e, min=%e, max=%e",
+                np.mean(fractions),
+                fractions.min(),
+                fractions.max(),
+            )
+
             return deformation_gradient, orientations, fractions
 
         # Set up pathline or time integral bounds and initial condition.

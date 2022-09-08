@@ -1,5 +1,4 @@
 """Configuration and fixtures for PyDRex tests."""
-import functools as ft
 import pathlib as pl
 
 import matplotlib
