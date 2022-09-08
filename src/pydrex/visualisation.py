@@ -196,17 +196,18 @@ def corner_flow_nointerp_2d(
             label=label,
             zorder=10,
         )
-        ax_path.quiver(
-            r_series[mask_cpo] * np.sin(θ_series[mask_cpo]),
-            -r_series[mask_cpo] * np.cos(θ_series[mask_cpo]),
-            bingham_vectors[mask_cpo, 0],
-            -bingham_vectors[mask_cpo, 2],
-            color=color,
-            pivot="mid",
-            headaxislength=0,
-            headlength=0,
-            zorder=10,
-        )
+        if np.any(mask_cpo):
+            ax_path.quiver(
+                r_series[mask_cpo] * np.sin(θ_series[mask_cpo]),
+                -r_series[mask_cpo] * np.cos(θ_series[mask_cpo]),
+                bingham_vectors[mask_cpo, 0],
+                -bingham_vectors[mask_cpo, 2],
+                color=color,
+                pivot="mid",
+                headaxislength=0,
+                headlength=0,
+                zorder=10,
+            )
         ax_path.plot(
             r_series[corner_step] * np.sin(θ_series[corner_step]),
             -r_series[corner_step] * np.cos(θ_series[corner_step]),
