@@ -154,10 +154,9 @@ class TestOlivineA:
                 )
                 r_current += r_current * velocity[0] * timestep
                 θ_current += velocity[1] * timestep
-                if outdir is not None:
-                    r_vals.append(r_current)
-                    θ_vals.append(θ_current)
-                    t_vals.append(t_vals[-1] + timestep)
+                r_vals.append(r_current)
+                θ_vals.append(θ_current)
+                t_vals.append(t_vals[-1] + timestep)
 
             # print(f"r_vals:\n {r_vals}\n")
             # print(f"θ_vals:\n {θ_vals}\n")
