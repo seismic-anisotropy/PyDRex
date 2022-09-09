@@ -153,8 +153,7 @@ class TestOlivineA:
                 θ_vals.append(θ_current)
                 t_vals.append(t_vals[-1] + timestep)
 
-            # print(f"r_vals:\n {r_vals}\n")
-            # print(f"θ_vals:\n {θ_vals}\n")
+            _log.info("final deformation gradient:\n%s", deformation_gradient)
             n_timesteps = len(t_vals)
             assert (
                 n_timesteps

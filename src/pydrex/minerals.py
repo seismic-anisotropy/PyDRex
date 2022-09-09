@@ -252,8 +252,7 @@ class Mineral:
                 )
             )
 
-        def apply_gbs(solver, config):
-            deformation_gradient, orientations, fractions = extract_vars(solver.y)
+        def apply_gbs(orientations, fractions, config):
             # Grain boundary sliding for small grains.
             mask = fractions < config["gbs_threshold"] / self.n_grains
             _log.debug(
@@ -264,7 +263,6 @@ class Mineral:
             orientations[mask, :, :] = self.orientations[0][mask, :, :]
             fractions[mask] = config["gbs_threshold"] / self.n_grains
             fractions /= fractions.sum()
-            solver.y[9:] = np.hstack((orientations.flatten(), fractions))
             _log.debug(
                 "orientations (quaternions):\n%s",
                 np.array(
@@ -277,8 +275,7 @@ class Mineral:
                 fractions.min(),
                 fractions.max(),
             )
-
-            return deformation_gradient, orientations, fractions
+            return orientations, fractions
 
         # Set up pathline or time integral bounds and initial condition.
         if callable(velocity_gradient):
@@ -343,7 +340,9 @@ class Mineral:
             solver.max_step,
         )
 
-        deformation_gradient, orientations, fractions = apply_gbs(solver, config)
+        deformation_gradient, orientations, fractions = extract_vars(solver.y)
+        orientations, fractions = apply_gbs(orientations, fractions, config)
+        solver.y[9:] = np.hstack((orientations.flatten(), fractions))
 
         # Solve ODE using numerical iteration scheme.
         while solver.status == "running":
@@ -372,7 +371,9 @@ class Mineral:
                 solver.max_step,
             )
 
-            deformation_gradient, orientations, fractions = apply_gbs(solver, config)
+            deformation_gradient, orientations, fractions = extract_vars(solver.y)
+            orientations, fractions = apply_gbs(orientations, fractions, config)
+            solver.y[9:] = np.hstack((orientations.flatten(), fractions))
 
         # Extract final values for this simulation step, append to storage.
         deformation_gradient, orientations, fractions = extract_vars(solver.y.squeeze())
