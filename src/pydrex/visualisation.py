@@ -5,7 +5,6 @@ import pathlib as pl
 import numpy as np
 from matplotlib import pyplot as plt
 
-
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
 

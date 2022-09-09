@@ -3,8 +3,8 @@ import pathlib as pl
 
 import matplotlib
 import pytest
-from pydrex import logger as _log
 
+from pydrex import logger as _log
 
 matplotlib.use("Agg")  # Stop matplotlib from looking for $DISPLAY in env.
 _log.quiet_aliens()  # Stop imported modules from spamming the logs.
