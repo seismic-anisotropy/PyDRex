@@ -1,5 +1,7 @@
 """PyDRex: Custom exceptions."""
 # <https://docs.python.org/3.8/tutorial/errors.html#user-defined-exceptions>
+
+
 class Error(Exception):
     """Base class for exceptions in PyDRex."""
 

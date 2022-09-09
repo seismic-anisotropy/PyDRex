@@ -1,7 +1,8 @@
 import numpy as np
 from numpy import random as rn
-from pydrex import diagnostics as _diagnostics
 from scipy.spatial.transform import Rotation
+
+from pydrex import diagnostics as _diagnostics
 
 
 class TestSymmetryPGR:

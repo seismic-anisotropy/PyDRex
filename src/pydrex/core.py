@@ -26,6 +26,7 @@ import warnings
 import numba as nb
 import numpy as np
 import numpy.linalg as la
+
 import pydrex.interpolations as _interp
 import pydrex.minerals as _minerals
 import pydrex.pathlines as _pathlines
@@ -113,7 +114,10 @@ def solve_interpolated(minerals, config, interpolators, node):
     if la.norm(velocity, ord=2) < 1e-15:
         logging.debug("skipping pathline calculation, velocity magnitude is too small")
         velocity_gradient = _interp.get_velocity_gradient(point, interpolators)
-        # deformation_mechanism = _interp.get_deformation_mechanism(point, interpolators)
+        # deformation_mechanism = _interp.get_deformation_mechanism(
+        #     point,
+        #     interpolators,
+        # )
         # Imposed macroscopic strain rate tensor.
         strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
         # Strain rate scale (max. eigenvalue of strain rate).
@@ -130,7 +134,8 @@ def solve_interpolated(minerals, config, interpolators, node):
         time_end = path_times[0]
         # TODO: Handle this in pathline construction somehow?
         # Skip the first timestep if it is outside the numerical domain.
-        # Needed because `get_pathline` will stop after checking _is_inside in _max_strain.
+        # Needed because `get_pathline` will stop after checking _is_inside in
+        # _max_strain.
         for t in reversed(path_times):
             if _pathlines._is_inside(
                 path_eval(t), config["mesh"]["gridmin"], config["mesh"]["gridmax"]
@@ -151,7 +156,10 @@ def solve_interpolated(minerals, config, interpolators, node):
                 )
                 break
             velocity_gradient = _interp.get_velocity_gradient(point, interpolators)
-            # deformation_mechanism = _interp.get_deformation_mechanism(point, interpolators)
+            # deformation_mechanism = _interp.get_deformation_mechanism(
+            #     point,
+            #     interpolators,
+            # )
             # Imposed macroscopic strain rate tensor.
             strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
             # Strain rate scale (max. eigenvalue of strain rate).
@@ -240,18 +248,23 @@ def derivatives(
     """Get derivatives of orientation and volume distribution.
 
     Args:
-    - `phase` (int) — ordinal number of the mineral phase, see `pydrex.minerals.MineralPhase`
+    - `phase` (int) — ordinal number of the mineral phase
+                      see `pydrex.minerals.MineralPhase`
     - `fabric` (int) — ordinal number of the fabric type, see `pydrex.fabric`
     - `n_grains` (int) — number of "grains" i.e. discrete volume segments
     - `orientations` (array) — `n_grains`x3x3 orientations (direction cosines)
-    - `fractions` (array) — volume fractions of the "grains" relative to aggregate volume
-    - `strain_rate` (array) — 3x3 dimensionless macroscopic strain rate tensor
-    - `velocity_gradient` (array) — 3x3 dimensionless macroscopic velocity gradient tensor
+    - `fractions` (array) — volume fractions of the "grains" relative to aggregate
+                            volume
+    - `strain_rate` (array) — 3x3 dimensionless macroscopic strain-rate tensor
+    - `velocity_gradient` (array) — 3x3 dimensionless macroscopic velocity gradient
+                                    tensor
     - `stress_exponent` (float) — value of `n` for `shear_stress ∝ |strain_rate|^(1/n)`
-    - `dislocation_exponent` (float) — value of `p` for `dislocation_density ∝ shear_stress^p`
+    - `dislocation_exponent` (float) — value of `p` for
+                                       `dislocation_density ∝ shear_stress^p`
     - `nucleation_efficiency` (float) — parameter controlling grain nucleation
     - `gmb_mobility` (float) — grain boundary mobility parameter
-    - `volume_fraction` (float) — volume fraction of the mineral phase relative to other phases
+    - `volume_fraction` (float) — volume fraction of the mineral phase relative to
+                                  other phases
 
     WARNING: Raises zero-division errors if the vorticity is zero.
 
@@ -296,7 +309,8 @@ def _get_rotation_and_strain(
     """Get the crystal axes rotation rate and strain energy of individual grain.
 
     Args:
-    - `phase` (int) — ordinal number of the mineral phase, see `pydrex.minerals.MineralPhase`
+    - `phase` (int) — ordinal number of the mineral phase
+                      see `pydrex.minerals.MineralPhase`
     - `fabric` (int) — ordinal number of the fabric type, see `pydrex.fabric`
     - `orientation` (array) — 3x3 orientation matrix (direction cosines)
     - `strain_rate` (array) — 3x3 dimensionless strain rate matrix
@@ -367,7 +381,8 @@ def _get_deformation_rate(phase, orientation, slip_rates):
     defined by the principal strain axes (finite strain ellipsoid).
 
     Args:
-    - `phase` (int) — ordinal number of the mineral phase, see `pydrex.minerals.MineralPhase`
+    - `phase` (int) — ordinal number of the mineral phase
+                      see `pydrex.minerals.MineralPhase`
     - `orientation` (array) — 3x3 orientation matrix (direction cosines)
     - `slip_rates` (array) — slip rates relative to slip rate on softest slip system
 
@@ -425,9 +440,11 @@ def _get_slip_rates_olivine(invariants, slip_indices, rrss, stress_exponent):
 
     Args:
     - `invariants` (array) — strain rate invariants for the four slip systems
-    - `slip_indices` (array) — indices that sort the RRSS by increasing slip rate activity
+    - `slip_indices` (array) — indices that sort the RRSS by increasing slip-rate
+                               activity
     - `rrss` (array) — reference resolved shear stresses (RRSS), see `pydrex.fabric`
-    - `stress_exponent` (float) — exponent for the stress dependence of dislocation density
+    - `stress_exponent` (float) — exponent for the stress dependence of dislocation
+                                  density
 
     """
     i_inac, i_min, i_int, i_max = slip_indices
@@ -520,10 +537,12 @@ def _get_strain_energy_olivine(
     Args:
     - `rrss` (array) — reference resolved shear stresses (RRSS), see `pydrex.fabric`
     - `slip_rates` (array) — slip rates relative to slip rate on softest slip system
-    - `slip_indices` (array) — indices that sort the RRSS by increasing slip rate activity
+    - `slip_indices` (array) — indices that sort the RRSS by increasing slip-rate
+                               activity
     - `slip_rate_softest` (float) — slip rate on the softest (most active) slip system
     - `stress_exponent` (float) — value of `n` for `shear_stress ∝ |strain_rate|^(1/n)`
-    - `dislocation_exponent` (float) — value of `p` for `dislocation_density ∝ shear_stress^p`
+    - `dislocation_exponent` (float) — value of `p` for
+                                       `dislocation_density ∝ shear_stress^p`
     - `nucleation_efficiency` (float) — parameter controlling grain nucleation
 
     Note that "new" grains are assumed to rotate with their parent.
@@ -560,10 +579,12 @@ def _get_strain_energy_enstatite(
 
     Args:
     - `rrss` (array) — reference resolved shear stresses (RRSS), see `pydrex.fabric`
-    - `slip_indices` (array) — indices that sort the RRSS by increasing slip rate activity
+    - `slip_indices` (array) — indices that sort the RRSS by increasing slip-rate
+                               activity
     - `slip_rate_softest` (float) — slip rate on the softest (most active) slip system
     - `stress_exponent` (float) — value of `n` for `shear_stress ∝ |strain_rate|^(1/n)`
-    - `dislocation_exponent` (float) — value of `p` for `dislocation_density ∝ shear_stress^p`
+    - `dislocation_exponent` (float) — value of `p` for
+                                       `dislocation_density ∝ shear_stress^p`
     - `nucleation_efficiency` (float) — parameter controlling grain nucleation
 
     """

@@ -5,17 +5,16 @@ Acronyms:
     i.e. components of stress acting on each slip system in the grain reference frame
 
 """
-from dataclasses import dataclass
-from dataclasses import field
-from enum import IntEnum
-from enum import unique
+from dataclasses import dataclass, field
+from enum import IntEnum, unique
 
 import numba as nb
 import numpy as np
-import pydrex.core as _core
 from scipy import linalg as la
 from scipy.integrate import RK45
 from scipy.spatial.transform import Rotation
+
+import pydrex.core as _core
 
 
 @unique
@@ -104,8 +103,8 @@ class Mineral:
     - `regime` (int) — ordinal number of the deformation regime,
         see `pydrex.deformation_mechanism.Regime`
     - `n_grains` (int) — number of grains in the aggregate
-    - `fractions_init` (array, optional) — dimensionless volumes of the grains (initial)
-    - `orientations_init` (array, optional) — orientation matrices of the grains (initial)
+    - `fractions_init` (array, optional) — initial dimensionless grain volumes
+    - `orientations_init` (array, optional) — initial grain orientation matrices
 
     By default, a uniform volume distribution of random orientations is generated.
 

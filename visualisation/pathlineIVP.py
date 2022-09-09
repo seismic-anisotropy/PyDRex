@@ -6,13 +6,10 @@ from time import perf_counter
 import matplotlib.pyplot as plt
 import numpy as np
 import vtk
-from DRexParam import gridMax
-from DRexParam import gridMin
-from DRexParam import size
+from DRexParam import gridMax, gridMin, size
 from numpy.linalg import eigvalsh
 from scipy.integrate import solve_ivp
-from scipy.interpolate import CloughTocher2DInterpolator
-from scipy.interpolate import NearestNDInterpolator
+from scipy.interpolate import CloughTocher2DInterpolator, NearestNDInterpolator
 from scipy.spatial import Delaunay
 from scipy.spatial.transform import Rotation as R
 

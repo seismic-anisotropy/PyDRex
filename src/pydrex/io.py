@@ -4,6 +4,7 @@ import pathlib
 import runpy
 
 import numpy as np
+
 import pydrex.exceptions as _err
 
 

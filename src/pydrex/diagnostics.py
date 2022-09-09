@@ -18,10 +18,8 @@ grain axis and the j-th external axis (in the global Eulerian frame).
 """
 import itertools as it
 
-import numba as nb
 import numpy as np
 import scipy.linalg as la
-import scipy.special as sp
 from numpy import random as rn
 
 
@@ -74,7 +72,7 @@ def symmetry(orientations, axis="a"):
 
     See e.g. [Vollmer 1990].
 
-    [Vollmer 1990]: https://doi.org/10.1130%2F0016-7606%281990%29102%3C0786%3Aaaoemt%3E2.3.co%3B2
+    [Vollmer 1990]: https://doi.org/10.1130/0016-7606(1990)102%3C0786:AAOEMT%3E2.3.CO;2
 
     """
     match axis:

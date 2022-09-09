@@ -27,7 +27,8 @@ def get_pathline(
     def _max_strain(
         time, point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
     ):
-        nonlocal event_time, event_time_prev, event_strain_prev, event_strain, event_strain_prev, event_flag
+        nonlocal event_time, event_time_prev, event_strain_prev, event_strain
+        nonlocal event_strain_prev, event_flag
         # TODO: Refactor, move 10 "max strain" parameter to config?
         if event_flag:
             return (event_strain if time == event_time else event_strain_prev) - 10

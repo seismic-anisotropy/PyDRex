@@ -4,36 +4,33 @@
 ###############################################################################
 import argparse
 from time import perf_counter
-from warnings import catch_warnings
-from warnings import simplefilter
+from warnings import catch_warnings, simplefilter
 
 import numpy as np
-from DRexParam import checkpoint
-from DRexParam import chi
-from DRexParam import gridCoords
-from DRexParam import gridMax
-from DRexParam import gridMin
-from DRexParam import gridNodes
-from DRexParam import lamb
-from DRexParam import mob
-from DRexParam import name
-from DRexParam import S0
-from DRexParam import S0_ens
-from DRexParam import size
-from DRexParam import stressexp
-from DRexParam import tau
-from DRexParam import tau_ens
-from DRexParam import Xol
+from DRexParam import (
+    S0,
+    S0_ens,
+    Xol,
+    checkpoint,
+    chi,
+    gridCoords,
+    gridMax,
+    gridMin,
+    gridNodes,
+    lamb,
+    mob,
+    name,
+    size,
+    stressexp,
+    tau,
+    tau_ens,
+)
 from numba import jit
-from numpy.linalg import eigh
-from numpy.linalg import eigvalsh
-from numpy.linalg import norm
-from scipy.integrate import RK45
+from numpy.linalg import eigh, eigvalsh, norm
 from scipy.integrate import solve_ivp
 from scipy.interpolate import NearestNDInterpolator
 from scipy.spatial.transform import Rotation as R
-from vtk import vtkXMLPUnstructuredGridReader
-from vtk import vtkXMLUnstructuredGridReader
+from vtk import vtkXMLPUnstructuredGridReader, vtkXMLUnstructuredGridReader
 
 ###############################################################################
 #
@@ -477,120 +474,27 @@ def deriv(lx, ex, acsi, acsi_ens, fse, odfi, odfi_ens, alpha):
 
 # Calculation of strain along pathlines
 def strain(pathTime, pathDense, dictGlobals):
-    def extractVars(y):
-        fse = y[:9].copy().reshape(3, 3)
-        acs = y[9 : size * 9 + 9].copy().reshape(size, 3, 3).clip(-1, 1)
-        acs_ens = y[size * 9 + 9 : size * 18 + 9].copy().reshape(size, 3, 3)
-        acs_ens.clip(-1, 1, out=acs_ens)
-        odf = y[size * 18 + 9 : size * 19 + 9].copy().clip(0, None)
-        odf /= odf.sum()
-        odf_ens = y[size * 19 + 9 : size * 20 + 9].copy().clip(0, None)
-        odf_ens /= odf_ens.sum()
-        return fse, acs, acs_ens, odf, odf_ens
-
-    def grainBoundarySliding(acs, acs_ens, odf, odf_ens):
-        mask = odf < chi / size
-        mask_ens = odf_ens < chi / size
-        acs[mask, :, :] = acs0[mask, :, :]
-        acs_ens[mask_ens, :, :] = acs0[mask_ens, :, :]
-        odf[mask] = chi / size
-        odf /= odf.sum()
-        odf_ens[mask_ens] = chi / size
-        odf_ens /= odf_ens.sum()
-        return acs, acs_ens, odf, odf_ens
-
-    def derivIVP(t, y):
-        fsei, acsi, acsi_ens, odfi, odfi_ens = extractVars(y)
-        dotacs, dotacs_ens, dotodf, dotodf_ens = deriv(
-            L / epsnot, e / epsnot, acsi, acsi_ens, fse, odfi, odfi_ens, alpha
-        )
-        return np.hstack(
-            (
-                np.dot(L, fsei).flatten(),
-                dotacs.flatten() * epsnot,
-                dotacs_ens.flatten() * epsnot,
-                dotodf * epsnot,
-                dotodf_ens * epsnot,
-            )
-        )
-
-    def eventIVP(t, y):
-        nonlocal alpha, e, epsnot, fse, L
-        fse, acs, acs_ens, odf, odf_ens = extractVars(y)
-        acs, acs_ens, odf, odf_ens = grainBoundarySliding(acs, acs_ens, odf, odf_ens)
-        y[9:] = np.hstack((acs.flatten(), acs_ens.flatten(), odf, odf_ens))
-        currPoint = pathDense(t)
-        L, epsnot = interpVelGrad(currPoint, dictGlobals)
-        e = (L + L.transpose()) / 2
-        alpha = iDefMech(*currPoint)
-        return -1
-
-    chi, gridCoords, iDefMech, iCellAvgLen, size = (
+    chi, gridCoords, iDefMech, size = (
         dictGlobals["chi"],
         dictGlobals["gridCoords"],
         dictGlobals["iDefMech"],
-        dictGlobals["iCellAvgLen"],
         dictGlobals["size"],
     )
-
-    # Direction cosine matrix with uniformly distributed rotations.
-    acs0 = R.random(size, random_state=1).as_matrix()
-
     fse = np.identity(3)
-
+    # Uniformly distributed rotations represented as rotation matrices
+    acs0 = R.random(size, random_state=1).as_matrix()
+    acs, acs_ens = acs0.copy(), acs0.copy()
+    odf, odf_ens = np.ones(size) / size, np.ones(size) / size
     for time in reversed(pathTime):
         if isInside(pathDense(time), dictGlobals):
             currTime = time
             break
-
-    currPoint = pathDense(currTime)
-    L, epsnot = interpVelGrad(currPoint, dictGlobals)
-    e = (L + L.transpose()) / 2
-    alpha = iDefMech(*currPoint)
-
-    currVel = interpVel(currPoint, dictGlobals)
-    indLeft = [
-        np.searchsorted(gridCoords[x], currPoint[x]) for x in range(currPoint.size)
-    ]
-    gridStep = []
-    for coord, ind in zip(gridCoords, indLeft):
-        try:
-            gridStep.append(coord[ind + 1] - coord[ind])
-        except IndexError:
-            gridStep.append(coord[ind] - coord[ind - 1])
-    # dtPathline = max(min(gridStep), iCellAvgLen(*currPoint)) / 4 / norm(currVel)
-    dtPathline = min(gridStep) / 4 / norm(currVel)
-    dt = min(dtPathline, pathTime[0] - currTime, 1e-2 / epsnot)
-
-    sol = RK45(
-        derivIVP,
-        currTime,
-        np.hstack(
-            (
-                fse.flatten(),
-                acs0.copy().flatten(),
-                acs0.copy().flatten(),
-                np.ones(size) / size,
-                np.ones(size) / size,
-            )
-        ),
-        pathTime[0],
-        first_step=dt,
-        max_step=1.25 * dt,
-        atol=1e-6,
-        rtol=1e-3,
-    )
-    sol.step()
-    fse, acs, acs_ens, odf, odf_ens = extractVars(sol.y)
-    acs, acs_ens, odf, odf_ens = grainBoundarySliding(acs, acs_ens, odf, odf_ens)
-    sol.y[9:] = np.hstack((acs.flatten(), acs_ens.flatten(), odf, odf_ens))
-    while sol.status != "finished":
-        currPoint = pathDense(sol.t)
+    while currTime < pathTime[0]:
+        currPoint = pathDense(currTime)
+        currVel = interpVel(currPoint, dictGlobals)
         L, epsnot = interpVelGrad(currPoint, dictGlobals)
         e = (L + L.transpose()) / 2
         alpha = iDefMech(*currPoint)
-
-        currVel = interpVel(currPoint, dictGlobals)
         indLeft = [
             np.searchsorted(gridCoords[x], currPoint[x]) for x in range(currPoint.size)
         ]
@@ -600,26 +504,90 @@ def strain(pathTime, pathDense, dictGlobals):
                 gridStep.append(coord[ind + 1] - coord[ind])
             except IndexError:
                 gridStep.append(coord[ind] - coord[ind - 1])
-        # dtPathline = max(min(gridStep), iCellAvgLen(*currPoint)) / 4 / norm(currVel)
-        dtPathline = min(gridStep) / 4 / norm(currVel)
-        dt = min(dtPathline, pathTime[0] - currTime, 1e-2 / epsnot)
-        sol.max_step = 1.25 * dt
-
-        sol.step()
-        fse, acs, acs_ens, odf, odf_ens = extractVars(sol.y)
-        acs, acs_ens, odf, odf_ens = grainBoundarySliding(acs, acs_ens, odf, odf_ens)
-        sol.y[9:] = np.hstack((acs.flatten(), acs_ens.flatten(), odf, odf_ens))
-
-    """
-    sol = solve_ivp(
-        derivIVP, [currTime, pathTime[0]],
-        np.hstack((fse.flatten(), acs0.copy().flatten(), acs0.copy().flatten(),
-                   np.ones(size) / size, np.ones(size) / size)),
-        method='DOP853', first_step=dt, max_step=dt * 5,
-        t_eval=[pathTime[0]], events=[eventIVP], atol=1e-4, rtol=1e-3)
-    """
-    fse, acs, acs_ens, odf, odf_ens = extractVars(sol.y.squeeze())
-    acs, acs_ens, odf, odf_ens = grainBoundarySliding(acs, acs_ens, odf, odf_ens)
+        dtPathline = min(gridStep) / 4 / norm(currVel, ord=2)
+        dtPathline = min(dtPathline, pathTime[0] - currTime)
+        # time stepping for LPO calculation
+        dt = min(dtPathline, 1e-2 / epsnot)
+        # number of iterations in the LPO loop
+        nbIter = int(dtPathline / dt)
+        # LPO loop on the point on the pathline
+        for iter in range(nbIter):
+            # CALL 1/4
+            dotacs, dotacs_ens, dotodf, dotodf_ens = deriv(
+                L / epsnot, e / epsnot, acs, acs_ens, fse, odf, odf_ens, alpha
+            )
+            kfse1 = np.dot(L, fse) * dt
+            kodf1 = dotodf * dt * epsnot
+            kodf1_ens = dotodf_ens * dt * epsnot
+            kac1 = dotacs * dt * epsnot
+            kac1_ens = dotacs_ens * dt * epsnot
+            fsei = fse + 0.5 * kfse1
+            acsi = np.clip(acs + 0.5 * kac1, -1, 1)
+            acsi_ens = np.clip(acs_ens + 0.5 * kac1_ens, -1, 1)
+            odfi = np.clip(odf + 0.5 * kodf1, 0, None)
+            odfi /= odfi.sum()
+            odfi_ens = np.clip(odf_ens + 0.5 * kodf1_ens, 0, None)
+            odfi_ens /= odfi_ens.sum()
+            # CALL 2/4
+            dotacs, dotacs_ens, dotodf, dotodf_ens = deriv(
+                L / epsnot, e / epsnot, acsi, acsi_ens, fse, odfi, odfi_ens, alpha
+            )
+            kfse2 = np.dot(L, fsei) * dt
+            kodf2 = dotodf * dt * epsnot
+            kodf2_ens = dotodf_ens * dt * epsnot
+            kac2 = dotacs * dt * epsnot
+            kac2_ens = dotacs_ens * dt * epsnot
+            fsei = fse + 0.5 * kfse2
+            acsi = np.clip(acs + 0.5 * kac2, -1, 1)
+            acsi_ens = np.clip(acs_ens + 0.5 * kac2_ens, -1, 1)
+            odfi = np.clip(odf + 0.5 * kodf2, 0, None)
+            odfi /= odfi.sum()
+            odfi_ens = np.clip(odf_ens + 0.5 * kodf2_ens, 0, None)
+            odfi_ens /= odfi_ens.sum()
+            # CALL 3/4
+            dotacs, dotacs_ens, dotodf, dotodf_ens = deriv(
+                L / epsnot, e / epsnot, acsi, acsi_ens, fse, odfi, odfi_ens, alpha
+            )
+            kfse3 = np.dot(L, fsei) * dt
+            kodf3 = dotodf * dt * epsnot
+            kodf3_ens = dotodf_ens * dt * epsnot
+            kac3 = dotacs * dt * epsnot
+            kac3_ens = dotacs_ens * dt * epsnot
+            fsei = fse + kfse3
+            acsi = np.clip(acs + kac3, -1, 1)
+            acsi_ens = np.clip(acs_ens + kac3_ens, -1, 1)
+            odfi = np.clip(odf + kodf3, 0, None)
+            odfi /= odfi.sum()
+            odfi_ens = np.clip(odf_ens + kodf3_ens, 0, None)
+            odfi_ens /= odfi_ens.sum()
+            # CALL 4/4
+            dotacs, dotacs_ens, dotodf, dotodf_ens = deriv(
+                L / epsnot, e / epsnot, acsi, acsi_ens, fse, odfi, odfi_ens, alpha
+            )
+            kfse4 = np.dot(L, fsei) * dt
+            kodf4 = dotodf * dt * epsnot
+            kodf4_ens = dotodf_ens * dt * epsnot
+            kac4 = dotacs * dt * epsnot
+            kac4_ens = dotacs_ens * dt * epsnot
+            fse += (kfse1 / 2 + kfse2 + kfse3 + kfse4 / 2) / 3
+            acs = np.clip(acs + (kac1 / 2 + kac2 + kac3 + kac4 / 2) / 3, -1, 1)
+            acs_ens = np.clip(
+                acs_ens + (kac1_ens / 2 + kac2_ens + kac3_ens + kac4_ens / 2) / 3, -1, 1
+            )
+            odf += (kodf1 / 2 + kodf2 + kodf3 + kodf4 / 2) / 3
+            odf_ens += (kodf1_ens / 2 + kodf2_ens + kodf3_ens + kodf4_ens / 2) / 3
+            odf /= odf.sum()
+            odf_ens /= odf_ens.sum()
+            # Grain-boundary sliding
+            mask = odf < chi / size
+            mask_ens = odf_ens < chi / size
+            acs[mask, :, :] = acs0[mask, :, :]
+            acs_ens[mask_ens, :, :] = acs0[mask_ens, :, :]
+            odf[mask] = chi / size
+            odf_ens[mask_ens] = chi / size
+            odf /= odf.sum()
+            odf_ens /= odf_ens.sum()
+        currTime += nbIter * dt
     return fse, acs, acs_ens, odf, odf_ens
 
 
@@ -757,7 +725,7 @@ def pathline(currPoint, dictGlobals):
             ivpFunc,
             [0, -100e6 * 365.25 * 8.64e4],
             currPoint,
-            method="LSODA",
+            method="RK45",
             first_step=1e10,
             max_step=np.inf,
             t_eval=None,
@@ -865,20 +833,6 @@ def main(inputArgs):
         "gridNodes": gridNodes,
         "gridCoords": gridCoords,
     }
-
-    nbCells = vtkOut.GetNumberOfCells()
-    cellLen = np.zeros(coords.shape[0])
-    cellAround = np.zeros(coords.shape[0])
-    for i in range(nbCells):
-        cell = vtkOut.GetCell(i)
-        cellLength = np.sqrt(cell.GetLength2())
-        for j in range(cell.GetNumberOfPoints()):
-            pointId = cell.GetPointId(j)
-            cellLen[pointId] += cellLength
-            cellAround[pointId] += 1
-    dictGlobals["iCellAvgLen"] = NearestNDInterpolator(
-        coords[:, :-1], cellLen / cellAround
-    )
 
     if dim == 2:
         interpObj = [["iVelX", "iVelZ"], ["iLxx", "iLzx", "iLxz", "iLzz"]]

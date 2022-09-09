@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-from numpy import amax
-from numpy import amin
-from numpy import array
-from numpy import diag
-from numpy import hstack
-from numpy import inf
-from numpy import linspace
+from numpy import amax, amin, array, diag, hstack, inf, linspace
 
 name = "Tag"  # A little tag to keep track
 

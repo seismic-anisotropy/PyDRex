@@ -2,8 +2,7 @@
 import pathlib
 
 import numpy as np
-from vtk import vtkXMLPUnstructuredGridReader
-from vtk import vtkXMLUnstructuredGridReader
+from vtk import vtkXMLPUnstructuredGridReader, vtkXMLUnstructuredGridReader
 
 
 def get_output(filename):
@@ -59,7 +58,8 @@ def read_tuple_array(points, fieldname, skip3=False):
 def read_coord_array(vtkgrid, skip_empty=True, convert_depth=True):
     """Read coordinates from `vtkgrid` into a numpy array.
 
-    Create a numpy array with coordinates extracted from a vtk{Uns,S}tructuredGrid object.
+    Create a numpy array with coordinates extracted from a vtk{Uns,S}tructuredGrid
+    object.
 
     If `skip_empty` is True (default), columns full of zeros are skipped.
     These are often present in VTK output files from 2D simulations.

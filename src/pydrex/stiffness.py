@@ -12,7 +12,6 @@ from the original DRex code:
 """
 import numpy as np
 
-
 OLIVINE = np.array(
     [
         [320.71, 69.84, 71.22, 0.0, 0.0, 0.0],
