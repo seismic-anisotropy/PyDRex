@@ -9,11 +9,12 @@ from the grain-local to the global (Eulerian) frame.
 """
 import numpy as np
 from numpy import random as rn
+from scipy.spatial.transform import Rotation
+
 from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
 from pydrex import minerals as _minerals
 from pydrex import visualisation as _vis
-from scipy.spatial.transform import Rotation
 
 
 class TestSinglePolycrystalOlivineA:

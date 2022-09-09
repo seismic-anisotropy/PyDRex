@@ -1,8 +1,6 @@
 import pathlib
 
 import pytest
-from pydrex import deformation_mechanism as _defmech
-from pydrex import minerals as _minerals
 
 
 def pytest_addoption(parser):
@@ -41,7 +39,7 @@ def params_Kaminski2001_fig5_solid():
         "gbm_mobility": 0,
         "gbs_threshold": 0,
         "nucleation_efficiency": 5,
-        "minerals": ("olivine"),
+        "minerals": "olivine",
         "olivine_fraction": 1,
     }
 
@@ -54,7 +52,7 @@ def params_Kaminski2001_fig5_shortdash():
         "gbm_mobility": 50,
         "gbs_threshold": 0,
         "nucleation_efficiency": 5,
-        "minerals": ("olivine"),
+        "minerals": "olivine",
         "olivine_fraction": 1,
     }
 
@@ -67,7 +65,7 @@ def params_Kaminski2001_fig5_longdash():
         "gbm_mobility": 200,
         "gbs_threshold": 0,
         "nucleation_efficiency": 5,
-        "minerals": ("olivine"),
+        "minerals": "olivine",
         "olivine_fraction": 1,
     }
 
@@ -80,7 +78,7 @@ def params_Kaminski2004_fig4_triangles():
         "gbm_mobility": 125,
         "gbs_threshold": 0.4,
         "nucleation_efficiency": 5,
-        "minerals": ("olivine"),
+        "minerals": "olivine",
         "olivine_fraction": 1.0,
     }
 
@@ -93,7 +91,7 @@ def params_Kaminski2004_fig4_squares():
         "gbm_mobility": 125,
         "gbs_threshold": 0.2,
         "nucleation_efficiency": 5,
-        "minerals": ("olivine"),
+        "minerals": "olivine",
         "olivine_fraction": 1.0,
     }
 
@@ -106,7 +104,7 @@ def params_Kaminski2004_fig4_circles():
         "gbm_mobility": 125,
         "gbs_threshold": 0,
         "nucleation_efficiency": 5,
-        "minerals": ("olivine"),
+        "minerals": "olivine",
         "olivine_fraction": 1.0,
     }
 

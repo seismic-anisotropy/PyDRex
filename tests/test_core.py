@@ -1,11 +1,8 @@
 import numpy as np
-import pydrex.core as _core
-import pydrex.deformation_mechanism as _defmech
-import pydrex.minerals as _minerals
-import pytest
-from scipy import linalg as la
 from scipy.spatial.transform import Rotation
 
+import pydrex.core as _core
+import pydrex.minerals as _minerals
 
 # def test_update_strain():
 #    ...

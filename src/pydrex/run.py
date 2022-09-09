@@ -25,35 +25,34 @@ from multiprocessing import Pool
 
 import numpy as np
 
+import pydrex.core as _core
+import pydrex.interpolations as _interp
+import pydrex.io as _io
+import pydrex.vtk_helpers as _vtk
+
+# import pydrex.deformation_mechanism as _defmech
+# import pydrex.exceptions as _err
+# import pydrex.pole_figures as _fig
+
 try:  # <https://pypi.org/project/colored-traceback/>
-    import colored_traceback.always  # pylint: disable=unused-import
+    import colored_traceback.always  # noqa: F401
 except ImportError:
     pass
 
-HAS_CHARM = False
 try:
-    from charm4py import charm  # TODO: Suppress charm4py complaints when not in use.
+    from charm4py import charm  # noqa: F401
 
     HAS_CHARM = True
 except ImportError:
-    pass
+    HAS_CHARM = False
 
-HAS_RAY = False
+
 try:
-    import ray
+    import ray  # noqa: F401
 
     HAS_RAY = True
 except ImportError:
-    pass
-
-import pydrex.vtk_helpers as _vtk
-import pydrex.io as _io
-import pydrex.interpolations as _interp
-import pydrex.exceptions as _err
-import pydrex.core as _core
-import pydrex.deformation_mechanism as _defmech
-
-# import pydrex.pole_figures as _fig
+    HAS_RAY = False
 
 
 def main():
@@ -133,7 +132,10 @@ def _get_args() -> argparse.Namespace:
     parser.add_argument(
         "-c",
         "--config",
-        help="path to configuration file with simulation parameters (default: ./pydrex.ini)",
+        help=(
+            "path to configuration file with simulation parameters (default:"
+            " ./pydrex.ini)"
+        ),
         default="pydrex.ini",
     )
     parser.add_argument(
@@ -277,20 +279,22 @@ def _update_diagnostics(
 
 
 # def _run_with_charm(args):
-#    config, interpolators, diagnostics = _setup(_get_args(), begin)
-#
-#    # TODO: Refactor and remove magic numbers.
-#    n_batch = np.ceil(np.sum(diagnostics["grid_mask_completed"] == 0) / 6e4).astype(int)
-#    for _ in range(n_batch):
-#        nodes2do = np.asarray(diagnostics["grid_mask_completed"] == 0).nonzero()
-#        futures = charm.pool.map_async(
-#            ft.partial(_core.solve, config=config, interpolators=interpolators),
-#            list(zip(*[nodes[:60000] for nodes in nodes2do])),
-#            multi_future=True,
-#        )
-#
-#        for future in charm.iwait(futures):
-#            _update_diagnostics(diagnostics, config, *future.get())
+#     config, interpolators, diagnostics = _setup(_get_args(), begin)
+
+#     # TODO: Refactor and remove magic numbers.
+#     n_batch = np.ceil(
+#         np.sum(diagnostics["grid_mask_completed"] == 0) / 6e4,
+#     ).astype(int)
+#     for _ in range(n_batch):
+#         nodes2do = np.asarray(diagnostics["grid_mask_completed"] == 0).nonzero()
+#         futures = charm.pool.map_async(
+#             ft.partial(_core.solve, config=config, interpolators=interpolators),
+#             list(zip(*[nodes[:60000] for nodes in nodes2do])),
+#             multi_future=True,
+#         )
+
+#         for future in charm.iwait(futures):
+#             _update_diagnostics(diagnostics, config, *future.get())
 
 
 # Appending to the same file from multiple processes is not safe.

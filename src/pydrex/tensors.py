@@ -2,7 +2,6 @@
 import numba as nb
 import numpy as np
 
-
 PERMUTATION_SYMBOL = np.array(
     [
         [[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]],

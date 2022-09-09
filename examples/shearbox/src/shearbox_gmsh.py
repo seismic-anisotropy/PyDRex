@@ -43,7 +43,7 @@ def write_shearbox(outfile, edgelength, resolution):
     # gm.option.setNumber("Mesh.PartitionOldStyleMsh2", 1)
     # gm.option.setNumber("Mesh.PartitionCreateGhostCells", 1)
 
-    # Set up coordinates for the front face (positive x-axis forward, right-handed axes).
+    # Set up coordinates for the front face: positive x-axis forward, right-handed axes
     # Points are specified as (x, y, z, target_edge_length_for_neighbouring_elements)
     front_vertices = [
         (edgelength / 2, -edgelength / 2, -edgelength / 2, resolution),
@@ -68,7 +68,8 @@ def write_shearbox(outfile, edgelength, resolution):
     # - the extruded entity itself at index 1, and
     # - the remaining components at successive indices.
     # The ordering of the remaining components is not documented... ¯\_(ツ)_/¯
-    # Seems to be anticlockwise from the bottom side for a cube, i.e. bottom, right, top, left
+    # Seems to be anticlockwise from the bottom side for a cube
+    # i.e. bottom, right, top, left
     # See also <https://gmsh.info/doc/texinfo/gmsh.html#Extrusions>
     (
         (_, back_face_tag),

@@ -4,11 +4,8 @@ import argparse
 import matplotlib.patheffects as path_effects
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tck
-from DRexParam import dim
-from DRexParam import gridCoords
-from DRexParam import name
-from numpy import linspace
-from numpy import load
+from DRexParam import dim, gridCoords, name
+from numpy import linspace, load
 
 
 def makeFilledContourPlot(
