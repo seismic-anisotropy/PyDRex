@@ -18,16 +18,18 @@ np.set_printoptions(
 np.set_string_function(ft.partial(np.array2string, separator=", "), repr=False)
 
 
+# To create a new logger we use getLogger as recommeded by the logging docs.
 LOGGER = logging.getLogger("pydrex")
 # To allow for multiple handlers at different levels, default level must be DEBUG.
 LOGGER.setLevel(logging.DEBUG)
-# Set up console handler, turned on by default.
+# Set up console handler.
 LOGGER_CONSOLE = logging.StreamHandler()
 # The format string is stored in .formatter._fmt
 LOGGER_CONSOLE.setFormatter(
     logging.Formatter("%(levelname)s [%(asctime)s] %(name)s: %(message)s")
 )
 LOGGER_CONSOLE.setLevel(logging.INFO)
+# Turn on console logger by default.
 LOGGER.addHandler(LOGGER_CONSOLE)
 
 

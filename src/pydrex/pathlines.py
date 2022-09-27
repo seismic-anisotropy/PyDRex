@@ -3,6 +3,8 @@ import numpy as np
 from scipy import integrate as si
 from scipy import linalg as la
 
+from pydrex import logger as _log
+
 
 def get_pathline(
     point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
@@ -74,7 +76,9 @@ def get_pathline(
     )
     # Remove the last timestep, because the position will be outside the domain.
     # The integration only stops AFTER the event is triggered.
-    # print(path.status)
+    # _log.info(
+    #     "calculated pathline from %s (t=%s) to %s (t=%s)",
+
     return path.t[:-1], path.sol
 
 
