@@ -36,7 +36,7 @@ def get_pathline(
             return (event_strain if time == event_time else event_strain_prev) - 10
 
         if _is_inside(point, min_coords, max_coords):
-            velocity_gradient = interp_velocity_gradient([point])[0]
+            velocity_gradient = interp_velocity_gradient(np.atleast_2d(point))[0]
             # Imposed macroscopic strain rate tensor.
             strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
             # Strain rate scale (max. eigenvalue of strain rate).
@@ -65,9 +65,9 @@ def get_pathline(
         [0, -100e6 * 365.25 * 8.64e4],
         point,
         method="RK45",  # TODO: Compare to LSODA?
-        first_step=1e10,
+        # first_step=1e10,
         max_step=np.inf,
-        # events=[_max_strain],
+        events=[_max_strain],
         args=(interp_velocity, interp_velocity_gradient, min_coords, max_coords),
         dense_output=True,
         jac=_ivp_jac,
@@ -89,7 +89,7 @@ def _ivp_func(
 ):
     """Internal use only, must have the same signature as `get_pathline`."""
     if _is_inside(point, min_coords, max_coords):
-        return interp_velocity([point])[0]
+        return interp_velocity(np.atleast_2d(point))[0]
     return np.zeros_like(point)
 
 
@@ -98,7 +98,7 @@ def _ivp_jac(
 ):
     """Internal use only, must have the same signature as `_ivp_func`."""
     if _is_inside(point, min_coords, max_coords):
-        return interp_velocity_gradient([point])[0]
+        return interp_velocity_gradient(np.atleast_2d(point))[0]
     return np.zeros((np.array(point).size,) * 2)
 
 

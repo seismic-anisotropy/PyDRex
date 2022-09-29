@@ -280,7 +280,9 @@ class Mineral:
                     + " You must provide the `pathline` to use a velocity gradient callable."
                 )
             time_start, time_end, get_position = pathline
-            _velocity_gradient = velocity_gradient([get_position(time_start)])[0]
+            _velocity_gradient = velocity_gradient(
+                np.atleast_2d(get_position(time_start))
+            )[0]
             _log.info(
                 "calculating CPO at %s (t=%e) with velocity gradient %s",
                 get_position(time_start),
@@ -342,7 +344,9 @@ class Mineral:
         # Solve ODE using numerical iteration scheme.
         while solver.status == "running":
             if callable(velocity_gradient):
-                _velocity_gradient = velocity_gradient([get_position(solver.t)])[0]
+                _velocity_gradient = velocity_gradient(
+                    np.atleast_2d(get_position(solver.t))
+                )[0]
                 _log.info(
                     "calculating CPO at %s (t=%e) with velocity gradient %s",
                     get_position(solver.t),
