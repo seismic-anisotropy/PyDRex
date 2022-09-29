@@ -2,13 +2,18 @@ r"""PyDRex: 2D corner flow tests.
 
 The flow field is defined by:
 $$
-u = \frac{2 U}{π}(θ\sinθ - \cosθ) ⋅ \hat{r} + \frac{2 U}{π}θ\cosθ ⋅ \hat{θ}
+u = \frac{dr}{dt} ⋅ \hat{r} + r \frac{dθ}{dt} ⋅ \hat{θ}
+= \frac{2 U}{π}(θ\sinθ - \cosθ) ⋅ \hat{r} + \frac{2 U}{π}θ\cosθ ⋅ \hat{θ}
 $$
 where $r = θ = 0$ points vertically downwards along the ridge axis
 and $θ = π/2$ points along the surface. $$U$$ is the half spreading velocity.
 Streamlines for the flow obey:
 $$
-\psi = \frac{2 U r}{π}θ\cosθ
+ψ = \frac{2 U r}{π}θ\cosθ
+$$
+and are related to the velocity through:
+$$
+u = -\frac{1}{r} ⋅ \frac{dψ}{dθ} ⋅ \hat{r} + \frac{dψ}{dr}\hat{θ}
 $$
 The velocity gradient in the Cartesian (x, z) basis is given by:
 $$
@@ -40,15 +45,14 @@ from pydrex import minerals as _minerals
 from pydrex import pathlines as _pathlines
 from pydrex import visualisation as _vis
 
+# from pydrex import vtk_helpers as _vtk
+
 
 @nb.njit
 def get_velocity_polar(θ, plate_velocity):
     """Return velocity in a corner flow (Polar coordinate basis)."""
-    return (
-        2
-        * plate_velocity
-        / np.pi
-        * np.array([θ * np.sin(θ) - np.cos(θ), θ * np.cos(θ)])
+    return (2 * plate_velocity / np.pi) * np.array(
+        [θ * np.sin(θ) - np.cos(θ), θ * np.cos(θ)]
     )
 
 
@@ -57,13 +61,8 @@ def get_velocity(θ, plate_velocity):
     """Return velocity in a corner flow (Cartesian coordinate basis)."""
     sinθ = np.sin(θ)
     cosθ = np.cos(θ)
-    return (
-        2
-        * plate_velocity
-        / np.pi
-        * np.array(
-            [θ - sinθ * cosθ, 0.0, cosθ**2],
-        )
+    return (2 * plate_velocity / np.pi) * np.array(
+        [θ - sinθ * cosθ, 0.0, cosθ**2],
     )
 
 
@@ -72,17 +71,12 @@ def get_velocity_gradient(θ, plate_velocity):
     """Return velocity gradient in a corner flow (Cartesian coordinate basis)."""
     sinθ = np.sin(θ)
     cosθ = np.cos(θ)
-    return (
-        4.0
-        * plate_velocity
-        / np.pi
-        * np.array(
-            [
-                [0.0, 0.0, 0.0],
-                [0.0, 0.0, 0.0],
-                [cosθ * sinθ**2, 0, cosθ**2 * sinθ],
-            ]
-        )
+    return (4.0 * plate_velocity / np.pi) * np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [cosθ * sinθ**2, 0, cosθ**2 * sinθ],
+        ]
     )
 
 
@@ -142,14 +136,13 @@ class TestOlivineA:
                 velocity = get_velocity_polar(θ_current, plate_velocity)
                 timestep = 0.1 / la.norm(velocity)
                 deformation_gradient = mineral.update_orientations(
-                    # params_Kaminski2001_fig5_shortdash,
                     params_Kaminski2001_fig5_shortdash,
                     deformation_gradient,
                     get_velocity_gradient(θ_current, plate_velocity),
                     integration_time=timestep,
                 )
-                r_current += r_current * velocity[0] * timestep
-                θ_current += velocity[1] * timestep
+                r_current += velocity[0] * timestep
+                θ_current += velocity[1] * timestep / r_current
                 r_vals.append(r_current)
                 θ_vals.append(θ_current)
                 t_vals.append(t_vals[-1] + timestep)
