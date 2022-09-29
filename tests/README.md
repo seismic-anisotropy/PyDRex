@@ -2,8 +2,8 @@
 
 Running the tests requires [pytest](https://docs.pytest.org).
 From the root of the source tree, run `pytest`.
-To print more verbose information (pytest jargon: “live logs”),
-use the flag `pytest --log-cli-level`, e.g. `pytest --log-cli-level=INFO`
+To print more verbose information (including INFO level logging),
+use the flag `pytest -v`.
 The custom optional flag `--outdir="OUT"` can be used
 to produce output figures, data dumps and logs and save them in the directory `"OUT"`.
 The value `"."` can be used to save these in the current directory.

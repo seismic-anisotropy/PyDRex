@@ -13,10 +13,10 @@ build-backend = "setuptools.build_meta"
 
 # Some global pytest configuration settings, avoids having an extra pytest.ini file.
 [tool.pytest.ini_options]
+# NOTE: Do NOT use pytest log_cli option, see tests/conftest for logging setup.
 # Only look in '.tests/`, don't search git subprojects/worktrees or anything like that,
 # <https://github.com/pytest-dev/pytest/issues/10298>.
 testpaths = ["tests"]
 # --tb=short : Use short tracebacks, terminal scrollback is precious.
 # --show-capture=no : Don't show captured output (stdout/stderr/logs) for failed tests.
-# -s : Don't show captured output (stoud/stderr/logs) for passing tests.
-addopts = "--tb=short -s --show-capture=no"
+addopts = "--tb=short --show-capture=no"
