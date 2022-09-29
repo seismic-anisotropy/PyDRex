@@ -207,7 +207,8 @@ class TestOlivineA:
                 indices.append(misorient_indices)
                 r_paths.append(r_vals)
                 θ_paths.append(θ_vals)
-                timestamps.append(t_vals)
+                # Make timestamps end at 0 for nicer plotting.
+                timestamps.append([t - t_vals[-1] for t in t_vals])
                 directions.append(bingham_vectors)
 
         if outdir is not None:
@@ -218,6 +219,7 @@ class TestOlivineA:
                 θ_paths,
                 directions,
                 timestamps,
+                xlabel=f"x ⇀ ({plate_velocity:.2e} m/s)",
                 savefile=f"{outdir}/corner_olivineA_nopathline.png",
                 markers=("o", "v", "s", "p"),
                 labels=labels,

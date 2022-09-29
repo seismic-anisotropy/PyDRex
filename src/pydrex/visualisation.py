@@ -118,6 +118,7 @@ def corner_flow_nointerp_2d(
     θ_paths,
     directions,
     timestamps,
+    xlabel,
     savefile="pydrex_corner_nointerp_2d.png",
     markers=("."),
     labels=None,
@@ -137,7 +138,7 @@ def corner_flow_nointerp_2d(
     ax_strength.set_xlabel("Time (s)")
     ax_path = fig.add_subplot(grid[3])
     ax_path.set_ylabel("z")
-    ax_path.set_xlabel("x ⇀")
+    ax_path.set_xlabel(xlabel)
     ax_path.xaxis.set_ticks_position("top")
     ax_path.xaxis.set_label_position("top")
 
@@ -196,6 +197,7 @@ def corner_flow_nointerp_2d(
             zorder=10,
         )
         if np.any(mask_cpo):
+            # TODO: Scale bingham_vectors by a meaningful length; FSE long axis?
             ax_path.quiver(
                 r_series[mask_cpo] * np.sin(θ_series[mask_cpo]),
                 -r_series[mask_cpo] * np.cos(θ_series[mask_cpo]),
@@ -251,10 +253,10 @@ def corner_flow_nointerp_2d(
     ax_strength.axhline(cpo_threshold, color="k", linestyle=":")
     ax_mean.axhline(0, color="k")
     ax_mean.text(
-        (ax_mean.get_xlim()[1] - ax_mean.get_xlim()[0]) / 2.0,
-        6,
-        "horizontal alignment",
-        horizontalalignment="center",
+        ax_mean.get_xlim()[0],
+        0,
+        "= horizontal alignment",
+        horizontalalignment="left",
         verticalalignment="center",
         backgroundcolor="white",
     )
