@@ -520,17 +520,17 @@ class TestOlivineA:
     #             directions.append(bingham_vectors)
 
     #     if outdir is not None:
-            # _vis.corner_flow_nointerp_2d(
-            #     angles,
-            #     indices,
-            #     r_vals,
-            #     θ_vals,
-            #     directions,
-            #     timestamps,
-            #     xlabel=f"x ⇀ ({_get_velocity([[0.0, 0.0]]):.2e} m/s)",
-            #     savefile=f"{outdir}/cornerXZ_olivineA_pathline_prescribed.png",
-            #     markers=("o", "v", "s", "p"),
-            #     labels=labels,
-            #     xlims=(0, domain_width),
-            #     zlims=(0, domain_height),
-            # )
+    # _vis.corner_flow_nointerp_2d(
+    #     angles,
+    #     indices,
+    #     r_vals,
+    #     θ_vals,
+    #     directions,
+    #     timestamps,
+    #     xlabel=f"x ⇀ ({_get_velocity([[0.0, 0.0]]):.2e} m/s)",
+    #     savefile=f"{outdir}/cornerXZ_olivineA_pathline_prescribed.png",
+    #     markers=("o", "v", "s", "p"),
+    #     labels=labels,
+    #     xlims=(0, domain_width),
+    #     zlims=(0, domain_height),
+    # )
