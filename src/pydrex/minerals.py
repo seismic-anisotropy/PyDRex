@@ -265,13 +265,7 @@ class Mineral:
             fractions[mask] = config["gbs_threshold"] / self.n_grains
             fractions /= fractions.sum()
             _log.debug(
-                "orientations (quaternions):\n%s",
-                np.array(
-                    [list(r.as_quat()) for r in map(Rotation.from_matrix, orientations)]
-                ),
-            )
-            _log.debug(
-                "volume distribution: mean=%e, min=%e, max=%e",
+                "grain volume fractions: mean=%e, min=%e, max=%e",
                 np.mean(fractions),
                 fractions.min(),
                 fractions.max(),
@@ -334,7 +328,7 @@ class Mineral:
         message = solver.step()
         if message is not None and solver.status == "failed":
             raise _err.IterationError(message)
-        _log.info(
+        _log.debug(
             "%s step_size=%e (max_step=%e)",
             solver.__class__.__qualname__,
             solver.step_size,
@@ -365,7 +359,7 @@ class Mineral:
             message = solver.step()
             if message is not None and solver.status == "failed":
                 raise _err.IterationError(message)
-            _log.info(
+            _log.debug(
                 "%s step_size=%e (max_step=%e)",
                 solver.__class__.__qualname__,
                 solver.step_size,

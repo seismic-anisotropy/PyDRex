@@ -74,11 +74,13 @@ def get_pathline(
         atol=1e-8,
         rtol=1e-5,
     )
+    _log.info(
+        "calculated pathline from %s (t=%e) to %s (t=%e)",
+        path.sol(path.t[0]), path.t[0], path.sol(path.t[-2]), path.t[-2]
+    )
+
     # Remove the last timestep, because the position will be outside the domain.
     # The integration only stops AFTER the event is triggered.
-    # _log.info(
-    #     "calculated pathline from %s (t=%s) to %s (t=%s)",
-
     return path.t[:-1], path.sol
 
 

@@ -18,26 +18,47 @@ np.set_printoptions(
 np.set_string_function(ft.partial(np.array2string, separator=", "), repr=False)
 
 
+class ConsoleFormatter(logging.Formatter):
+    """Log formatter that uses terminal color codes."""
+
+    def colorfmt(self, code):
+        return f"\033[{code}m%(levelname)s [%(asctime)s]\033[m %(name)s: %(message)s"
+
+    def format(self, record):
+        format_specs = {
+            logging.CRITICAL: self.colorfmt("1;31"),
+            logging.ERROR: self.colorfmt("31"),
+            logging.INFO: self.colorfmt("32"),
+            logging.WARNING: self.colorfmt("33"),
+            logging.DEBUG: self.colorfmt("34"),
+        }
+        self._style._fmt = format_specs.get(record.levelno)
+        return super().format(record)
+
+
 # To create a new logger we use getLogger as recommeded by the logging docs.
 LOGGER = logging.getLogger("pydrex")
 # To allow for multiple handlers at different levels, default level must be DEBUG.
 LOGGER.setLevel(logging.DEBUG)
 # Set up console handler.
 LOGGER_CONSOLE = logging.StreamHandler()
-# The format string is stored in .formatter._fmt
-LOGGER_CONSOLE.setFormatter(
-    logging.Formatter("%(levelname)s [%(asctime)s] %(name)s: %(message)s")
-)
+LOGGER_CONSOLE.setFormatter(ConsoleFormatter(datefmt="%H:%M:%S"))
 LOGGER_CONSOLE.setLevel(logging.INFO)
 # Turn on console logger by default.
 LOGGER.addHandler(LOGGER_CONSOLE)
 
 
+# FIXME: This should be a context manager so we can make sure the file gets closed.
 def logfile_enable(path, level=logging.DEBUG):
     """Enable logging to a file at `path` with given `level`."""
     pl.Path(path).parent.mkdir(parents=True, exist_ok=True)
     logger_file = logging.FileHandler(path, mode="w")
-    logger_file.setFormatter(LOGGER_CONSOLE.formatter)
+    logger_file.setFormatter(
+        logging.Formatter(
+            "%(levelname)s [%(asctime)s] %(name)s: %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+    )
     logger_file.setLevel(level)
     LOGGER.addHandler(logger_file)
 
