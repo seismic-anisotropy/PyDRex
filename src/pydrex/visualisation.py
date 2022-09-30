@@ -111,7 +111,7 @@ def _lag_corner_flow(θ):
 
 
 @check_marker_seq
-def corner_flow_nointerp_2d(
+def corner_flow_2d(
     angles,
     indices,
     r_paths,
@@ -141,6 +141,12 @@ def corner_flow_nointerp_2d(
     ax_path.set_xlabel(xlabel)
     ax_path.xaxis.set_ticks_position("top")
     ax_path.xaxis.set_label_position("top")
+    if (
+        xlims is not None
+        and zlims is not None
+        and np.isclose(np.diff(xlims), np.diff(zlims), atol=1e-5)
+    ):
+        ax_path.set_aspect("equal")
 
     for i, (
         misorient_angles,
