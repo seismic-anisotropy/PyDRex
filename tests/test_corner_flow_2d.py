@@ -36,8 +36,8 @@ import itertools as it
 import numba as nb
 import numpy as np
 from scipy import linalg as la
-from scipy.spatial.transform import Rotation
 from scipy.interpolate import RBFInterpolator
+from scipy.spatial.transform import Rotation
 
 from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
@@ -412,29 +412,33 @@ class TestOlivineA:
         data = vtk_output.GetPointData()
         coords = _vtk.read_coord_array(vtk_output)
         # Somehow the minus sign is lost in the vtu despite being in fluidity.
-        coords[:, 1] = - coords[:, 1]
+        coords[:, 1] = -coords[:, 1]
         x_max = np.amax(coords[:, 0])
         x_min = np.amin(coords[:, 0])
-        assert np.isclose(x_max, 1., atol=1e-10)
-        assert np.isclose(x_min, 0., atol=1e-10)
+        assert np.isclose(x_max, 1.0, atol=1e-10)
+        assert np.isclose(x_min, 0.0, atol=1e-10)
         z_max = np.amax(coords[:, 1])
         z_min = np.amin(coords[:, 1])
-        assert np.isclose(z_max, 0., atol=1e-10)
-        assert np.isclose(z_min, -1., atol=1e-10)
+        assert np.isclose(z_max, 0.0, atol=1e-10)
+        assert np.isclose(z_min, -1.0, atol=1e-10)
 
         _get_velocity = RBFInterpolator(
-            coords, _vtk.read_tuple_array(data, "Velocity", skip3=True),
+            coords,
+            _vtk.read_tuple_array(data, "Velocity", skip3=True),
             neighbors=200,
         )
         _get_velocity_gradient = RBFInterpolator(
-            coords, _vtk.read_tuple_array(data, "VelocityGradient", skip3=True),
+            coords,
+            _vtk.read_tuple_array(data, "VelocityGradient", skip3=True),
             neighbors=200,
         )
 
         def _get_velocity_gradient_3d(point):
             return np.insert(
                 np.insert(_get_velocity_gradient(point[:, ::2]), [1], 0, axis=1),
-                [1], 0, axis=2
+                [1],
+                0,
+                axis=2,
             )
 
         # Note: θ values are in radians.
