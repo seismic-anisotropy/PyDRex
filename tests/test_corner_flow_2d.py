@@ -479,9 +479,8 @@ class TestOlivineA:
                 x_current, z_current = get_position(time_end)
                 r_current = np.sqrt(x_current**2 + z_current**2)
                 θ_current = np.arctan2(x_current, -z_current)
-                if outdir is not None:
-                    r_vals.append(r_current)
-                    θ_vals.append(θ_current)
+                r_vals.append(r_current)
+                θ_vals.append(θ_current)
 
             r_vals.append(r_exit)
             θ_vals.append(θ_exit)
