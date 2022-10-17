@@ -301,7 +301,7 @@ def _update_diagnostics(
 class PIDFileHandler(WatchedFileHandler):
     def __init__(self, filename, mode="a", encoding=None, delay=0):
         filename = self._append_pid_to_filename(filename)
-        super(PIDFileHandler, self).__init__(filename, mode, encoding, delay)
+        super().__init__(filename, mode, encoding, delay)
 
     def _append_pid_to_filename(self, filename):
         pid = os.getpid()
