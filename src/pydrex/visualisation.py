@@ -119,7 +119,7 @@ def corner_flow_2d(
     directions,
     timestamps,
     xlabel,
-    savefile="pydrex_corner_nointerp_2d.png",
+    savefile="pydrex_corner_2d.png",
     markers=("."),
     labels=None,
     xlims=None,
@@ -131,7 +131,8 @@ def corner_flow_2d(
     fig = plt.figure(figsize=(5, 12), dpi=300)
     grid = fig.add_gridspec(4, 1, hspace=0.05, height_ratios=(0.3, 0.3, 0.1, 0.3))
     ax_mean = fig.add_subplot(grid[0])
-    ax_mean.set_ylabel("Mean angle ∈ [0, 90]°")
+    ax_mean.set_ylabel("Mean angle from horizontal ∈ [0, 90]°")
+    ax_mean.set_ylim((0, 90))
     ax_mean.tick_params(labelbottom=False)
     ax_strength = fig.add_subplot(grid[1], sharex=ax_mean)
     ax_strength.set_ylabel("Texture strength (M-index)")
@@ -175,7 +176,24 @@ def corner_flow_2d(
             label=label,
         )
         color = mean_angles[0].get_color()  # `mean_angles` has one element.
-        ax_mean.axvline(t_series[corner_step], linestyle="--", color=color)
+        ax_mean.plot(
+            t_series[corner_step],
+            misorient_angles[corner_step],
+            marker,
+            markersize=5,
+            color="k",
+            zorder=11,
+            alpha=0.33,
+        )
+        ax_strength.plot(
+            t_series[corner_step],
+            misorient_indices[corner_step],
+            marker,
+            markersize=5,
+            color="k",
+            zorder=11,
+            alpha=0.33
+        )
         ax_strength.plot(
             t_series,
             misorient_indices,
@@ -184,11 +202,6 @@ def corner_flow_2d(
             color=color,
             alpha=0.33,
             label=label,
-        )
-        ax_strength.axvline(
-            t_series[corner_step],
-            linestyle="--",
-            color=color,
         )
 
         # Plot the prescribed pathlines, indicate CPO and location of Π ≈ 1.
@@ -208,7 +221,7 @@ def corner_flow_2d(
                 r_series[mask_cpo] * np.sin(θ_series[mask_cpo]),
                 -r_series[mask_cpo] * np.cos(θ_series[mask_cpo]),
                 bingham_vectors[mask_cpo, 0],
-                -bingham_vectors[mask_cpo, 2],
+                bingham_vectors[mask_cpo, 2],
                 color=color,
                 pivot="mid",
                 headaxislength=0,
@@ -256,17 +269,7 @@ def corner_flow_2d(
     plt.rcParams["axes.grid"] = True
 
     # Lines to show texture threshold and shear direction.
-    ax_strength.axhline(cpo_threshold, color="k", linestyle=":")
-    ax_mean.axhline(0, color="k")
-    ax_mean.text(
-        ax_mean.get_xlim()[0],
-        0,
-        "= horizontal alignment",
-        horizontalalignment="left",
-        verticalalignment="center",
-        backgroundcolor="white",
-    )
-
+    ax_strength.axhline(cpo_threshold, color="k", linestyle="--")
     if labels is not None:
         ax_mean.legend()
 

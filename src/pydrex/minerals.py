@@ -5,9 +5,11 @@ Acronyms:
     i.e. components of stress acting on each slip system in the grain reference frame
 
 """
+import io
 import pathlib as pl
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
+from zipfile import ZipFile
 
 import numba as nb
 import numpy as np
@@ -247,7 +249,7 @@ class Mineral:
             )
             return np.hstack(
                 (
-                    np.dot(_velocity_gradient, deformation_gradient).flatten(),
+                    (_velocity_gradient @ deformation_gradient).flatten(),
                     orientations_diff.flatten() * strain_rate_max,
                     fractions_diff * strain_rate_max,
                 )
@@ -304,6 +306,7 @@ class Mineral:
         strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
         strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
         max_step = min(max_step, 1e-2 / strain_rate_max)
+        # max_step = 1e6
 
         if self.phase == MineralPhase.olivine:
             volume_fraction = config["olivine_fraction"]
@@ -380,8 +383,11 @@ class Mineral:
         self.fractions.append(fractions)
         return deformation_gradient
 
-    def save(self, filename):
+    def save(self, filename, postfix=None):
         """Save CPO data for all stored timesteps to a `numpy` NPZ file.
+
+        If the file specified by `filename` exists and `postfix` is not `None`,
+        the data is appended to the NPZ file in fields ending with "_`postfix`".
 
         Raises a `ValueError` if the data shapes are not compatible.
 
@@ -396,15 +402,29 @@ class Mineral:
                 + f"- {len(self.orientations)} orientation results."
             )
         if self.fractions[0].shape[0] == self.orientations[0].shape[0] == self.n_grains:
-            meta = np.array([self.phase, self.fabric, self.regime], dtype=np.uint8)
+            data = {
+                "meta": np.array(
+                    [self.phase, self.fabric, self.regime], dtype=np.uint8
+                ),
+                "fractions": np.stack(self.fractions),
+                "orientations": np.stack(self.orientations),
+            }
+            path = pl.Path(filename)
             # Create parent directories if needed.
-            pl.Path(filename).parent.mkdir(parents=True, exist_ok=True)
-            np.savez(
-                filename,
-                meta=meta,
-                fractions=np.stack(self.fractions),
-                orientations=np.stack(self.orientations),
-            )
+            path.parent.mkdir(parents=True, exist_ok=True)
+            # Append to file if it exists, requires postfix (unique name).
+            if path.exists() and postfix is not None:
+                archive = ZipFile(filename, mode="a", allowZip64=True)
+                for key in data.keys():
+                    with archive.open(
+                        f"{key}_{postfix}", "w", force_zip64=True
+                    ) as file:
+                        buffer = io.BytesIO()
+                        np.save(buffer, data[key])
+                        file.write(buffer.getvalue())
+                        buffer.close()
+            else:
+                np.savez(filename, **data)
         else:
             raise ValueError(
                 "Size of CPO data arrays must match number of grains."

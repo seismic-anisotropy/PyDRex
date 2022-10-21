@@ -8,13 +8,13 @@ from the grain-local to the global (Eulerian) frame.
 
 """
 import numpy as np
-from numpy import random as rn
 from scipy.spatial.transform import Rotation
 
 from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
 from pydrex import minerals as _minerals
 from pydrex import visualisation as _vis
+from pydrex import logger as _log
 
 
 class TestSinglePolycrystalOlivineA:
@@ -25,6 +25,7 @@ class TestSinglePolycrystalOlivineA:
         params_Kaminski2001_fig5_solid,  # GBM = 0
         params_Kaminski2001_fig5_shortdash,  # GBM = 50
         params_Kaminski2001_fig5_longdash,  # GBM = 200
+        rng,
         outdir,
     ):
         """Test clockwise a-axis rotation around X.
@@ -58,7 +59,7 @@ class TestSinglePolycrystalOlivineA:
                 "zxz",
                 [
                     [x * np.pi / 2, np.pi / 2, np.pi / 2]
-                    for x in rn.default_rng().random(n_grains)
+                    for x in rng.random(n_grains)
                 ],
             )
             .inv()
@@ -188,6 +189,7 @@ class TestSinglePolycrystalOlivineA:
         params_Kaminski2004_fig4_triangles,  # GBS = 0.4
         params_Kaminski2004_fig4_squares,  # GBS = 0.2
         params_Kaminski2004_fig4_circles,  # GBS = 0
+        rng,
         outdir,
     ):
         """Test clockwise a-axis rotation around Y.
@@ -217,7 +219,7 @@ class TestSinglePolycrystalOlivineA:
                 "zxz",
                 [
                     [x * np.pi / 2, np.pi / 2, 0]
-                    for x in rn.default_rng().random(n_grains)
+                    for x in rng.random(n_grains)
                 ],
             )
             .inv()
@@ -243,6 +245,7 @@ class TestSinglePolycrystalOlivineA:
 
         # Optional plotting setup.
         if outdir is not None:
+            _log.logfile_enable(f"{outdir}/simple_shearXZ_initQ1.log")
             labels = []
             angles = []
             indices = []

@@ -4,6 +4,7 @@ import pathlib as pl
 import matplotlib
 import pytest
 from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
+from numpy import random as rn
 
 from pydrex import logger as _log
 
@@ -173,7 +174,9 @@ def vtkfiles_2d_corner_flow():
     datadir = pl.Path(__file__).parent / ".." / "data" / "vtu"
     return (
         datadir / "2d_corner_flow_2cmyr.vtu",
-        datadir / "2d_corner_flow_4cmyr.vtu",
-        datadir / "2d_corner_flow_6cmyr.vtu",
-        datadir / "2d_corner_flow_8cmyr.vtu",
     )
+
+
+@pytest.fixture
+def rng():
+    return rn.default_rng()

@@ -5,7 +5,7 @@ $$
 u = \frac{dr}{dt} ⋅ \hat{r} + r \frac{dθ}{dt} ⋅ \hat{θ}
 = \frac{2 U}{π}(θ\sinθ - \cosθ) ⋅ \hat{r} + \frac{2 U}{π}θ\cosθ ⋅ \hat{θ}
 $$
-where $r = θ = 0$ points vertically downwards along the ridge axis
+where $θ = 0$ points vertically downwards along the ridge axis
 and $θ = π/2$ points along the surface. $$U$$ is the half spreading velocity.
 Streamlines for the flow obey:
 $$
@@ -73,9 +73,9 @@ def get_velocity_gradient(θ, plate_velocity):
     cosθ = np.cos(θ)
     return (4.0 * plate_velocity / np.pi) * np.array(
         [
+            [cosθ**3, 0.0, cosθ**2 * sinθ],
             [0.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0],
-            [cosθ * sinθ**2, 0, cosθ**2 * sinθ],
+            [-sinθ * cosθ**2, 0, -(sinθ**2) * cosθ],
         ]
     )
 
@@ -83,7 +83,7 @@ def get_velocity_gradient(θ, plate_velocity):
 class TestOlivineA:
     """Tests for pure A-type olivine polycrystals in 2D corner flows."""
 
-    def test_corner_nopathline_init_random(
+    def test_corner_nopathline_init_isotropic(
         self,
         params_Kaminski2001_fig5_shortdash,
         outdir,
@@ -100,7 +100,14 @@ class TestOlivineA:
         domain_height = 1.0  # Normalised to olivine-spinel transition.
         domain_width = 5.0
         n_grains = 1000
-        orientations_init = Rotation.random(n_grains, random_state=1).as_matrix()
+        # orientations_init = Rotation.random(n_grains, random_state=1).as_matrix()
+        orientations_init = (  # FIXME: Zero-division error when from_euler("y", 0)
+            Rotation.from_euler(
+                "y", np.linspace(0.1, 360, n_grains)[:, None], degrees=True
+            )
+            .inv()
+            .as_matrix()
+        )
 
         # Optional plotting/logging setup.
         if outdir is not None:
@@ -134,7 +141,7 @@ class TestOlivineA:
             # While the polycrystal is in the domain.
             while r_current * np.sin(θ_current) < domain_width:
                 velocity = get_velocity_polar(θ_current, plate_velocity)
-                timestep = 0.1 / la.norm(velocity)
+                timestep = 0.2 / la.norm(velocity)
                 deformation_gradient = mineral.update_orientations(
                     params_Kaminski2001_fig5_shortdash,
                     deformation_gradient,
@@ -184,17 +191,16 @@ class TestOlivineA:
                 )
                 bingham_vectors[idx] = direction_mean
 
-            # TODO: Do the asserts here.
-            # angles_diff = np.diff(misorient_angles)
-            # assert np.max(angles_diff) < ...
-            # assert np.min(angles_diff) > ...
-            # assert np.sum(angles_diff) < ...
+            # TODO: More asserts after I figure out what is wrong.
+            assert misorient_angles[-1] < 15
+            if x_init < 2:
+                assert misorient_indices[-1] > 0.55
 
             if outdir is not None:
                 mineral.save(
-                    f"{outdir}/corner_olivineA_nopathline_{str(x_init).replace('.', 'd')}.npz"
+                    f"{outdir}/corner_olivineA_nopathline.npz",
+                    str(x_init).replace('.', 'd')
                 )
-                # TODO: Also save processed data?
                 labels.append(rf"$x_{0}$ = {x_init}")
                 angles.append(misorient_angles)
                 indices.append(misorient_indices)
@@ -216,13 +222,14 @@ class TestOlivineA:
                 savefile=f"{outdir}/corner_olivineA_nopathline.png",
                 markers=("o", "v", "s", "p"),
                 labels=labels,
-                xlims=(0, domain_width),
+                xlims=(0, domain_width + 0.25),
                 zlims=(-domain_height, 0),
             )
 
-    def test_corner_pathline_prescribed_init_random(
+    def test_corner_pathline_prescribed_init_isotropic(
         self,
         params_Kaminski2001_fig5_shortdash,
+        rng,
         outdir,
     ):
         """Test CPO evolution during forward integration along a pathline.
@@ -237,11 +244,27 @@ class TestOlivineA:
         domain_height = 1.0  # Normalised to olivine-spinel transition.
         domain_width = 5.0
         n_grains = 1000
-        orientations_init = Rotation.random(n_grains, random_state=1).as_matrix()
+        # orientations_init = Rotation.random(n_grains, random_state=1).as_matrix()
+        orientations_init = (  # FIXME: Zero-division error when from_euler("y", 0)
+            Rotation.from_euler(
+                "y", np.linspace(0.1, 360, n_grains)[:, None], degrees=True
+            )
+            .inv()
+            .as_matrix()
+        )
+        # orientations_init = (
+        #     Rotation.from_euler(
+        #         "zxz",
+        #         [[5 * np.pi / 8, np.pi / 2, 0] for x in rng.random(n_grains)],
+        #     )
+        #     .inv()
+        #     .as_matrix()
+        # )
         n_timesteps = 20  # Number of places along the pathline to compute CPO.
 
         # Optional plotting setup.
         if outdir is not None:
+            _log.logfile_enable(f"{outdir}/corner_olivineA_pathline_prescribed.log")
             labels = []
             angles = []
             indices = []
@@ -295,7 +318,6 @@ class TestOlivineA:
                     deformation_gradient,
                     _get_velocity_gradient,
                     integration_time=time_end - time_start,
-                    # FIXME: get_position seems to get stuck, need pathline tests
                     pathline=(time_start, time_end, get_position),
                 )
                 x_current, _, z_current = get_position(time_end)
@@ -342,18 +364,19 @@ class TestOlivineA:
                     orientations_resampled
                 )
                 bingham_vectors[idx] = direction_mean
+                np.testing.assert_allclose(bingham_vectors[:, 1], 0, atol=1e-10)
+                # _log.info("mean direction: %s", direction_mean)
 
-            # TODO: Do the asserts here.
-            # angles_diff = np.diff(misorient_angles)
-            # assert np.max(angles_diff) < ...
-            # assert np.min(angles_diff) > ...
-            # assert np.sum(angles_diff) < ...
+            # TODO: More asserts after I figure out what is wrong.
+            assert misorient_angles[-1] < 15
+            if z_exit > -0.6:
+                assert misorient_indices[-1] > 0.55
 
             if outdir is not None:
                 mineral.save(
-                    f"{outdir}/corner_olivineA_pathline_prescribed_{str(z_exit).replace('.', 'd')}.npz"
+                    f"{outdir}/corner_olivineA_pathline_prescribed",
+                    str(z_exit).replace('.', 'd')
                 )
-                # TODO: Also save processed data?
                 labels.append(rf"$z_{{f}}$ = {z_exit}")
                 angles.append(misorient_angles)
                 indices.append(misorient_indices)
@@ -374,14 +397,15 @@ class TestOlivineA:
                 savefile=f"{outdir}/corner_olivineA_pathline_prescribed.png",
                 markers=("o", "v", "s", "p"),
                 labels=labels,
-                xlims=(0, domain_width),
+                xlims=(0, domain_width + 0.25),
                 zlims=(-domain_height, 0),
             )
 
-    def test_corner_pathline_numerical_init_random(
+    def test_corner_pathline_numerical_init_isotropic(
         self,
         params_Kaminski2001_fig5_shortdash,
         vtkfiles_2d_corner_flow,
+        rng,
         outdir,
     ):
         """Test CPO evolution during forward integration along a pathline.
@@ -391,15 +415,23 @@ class TestOlivineA:
 
         Initial condition: fully random orientations in all 4 `Mineral`s.
 
-        Plate velocity: 2, 4, 6 and 8 cm/yr (4 vtu files).
+        Plate velocity: 2 cm/yr (prescribed in vtu data).
 
         """
         n_grains = 1000
-        orientations_init = Rotation.random(n_grains, random_state=1).as_matrix()
+        # orientations_init = Rotation.random(n_grains, random_state=1).as_matrix()
+        orientations_init = (  # FIXME: Zero-division error when from_euler("y", 0)
+            Rotation.from_euler(
+                "y", np.linspace(0.1, 360, n_grains)[:, None], degrees=True
+            )
+            .inv()
+            .as_matrix()
+        )
         n_timesteps = 20
 
         # Optional plotting setup.
         if outdir is not None:
+            _log.logfile_enable(f"{outdir}/corner_olivineA_pathline_numerical.log")
             labels = []
             angles = []
             indices = []
@@ -408,14 +440,12 @@ class TestOlivineA:
             directions = []
             timestamps = []
 
-        vtk_output = _vtk.get_output(vtkfiles_2d_corner_flow[3])
+        vtk_output = _vtk.get_output(vtkfiles_2d_corner_flow[0])
         data = vtk_output.GetPointData()
-        coords = _vtk.read_coord_array(vtk_output)
-        # Somehow the minus sign is lost in the vtu despite being in fluidity.
-        coords[:, 1] = -coords[:, 1]
+        coords = _vtk.read_coord_array(vtk_output, convert_depth=False)
         x_max = np.amax(coords[:, 0])
         x_min = np.amin(coords[:, 0])
-        assert np.isclose(x_max, 1.0, atol=1e-10)
+        assert np.isclose(x_max, 5.0, atol=1e-10)
         assert np.isclose(x_min, 0.0, atol=1e-10)
         z_max = np.amax(coords[:, 1])
         z_min = np.amin(coords[:, 1])
@@ -425,12 +455,12 @@ class TestOlivineA:
         _get_velocity = RBFInterpolator(
             coords,
             _vtk.read_tuple_array(data, "Velocity", skip3=True),
-            neighbors=200,
+            neighbors=20,
         )
         _get_velocity_gradient = RBFInterpolator(
             coords,
             _vtk.read_tuple_array(data, "VelocityGradient", skip3=True),
-            neighbors=200,
+            neighbors=20,
         )
 
         def _get_velocity_gradient_3d(point):
@@ -473,7 +503,7 @@ class TestOlivineA:
                     params_Kaminski2001_fig5_shortdash,
                     deformation_gradient,
                     _get_velocity_gradient_3d,
-                    integration_time=time_end - time_start,
+                    integration_time=(time_end - time_start) / 4,
                     pathline=(time_start, time_end, _get_position_3d),
                 )
                 x_current, z_current = get_position(time_end)
@@ -522,17 +552,16 @@ class TestOlivineA:
                 )
                 bingham_vectors[idx] = direction_mean
 
-            # TODO: Do the asserts here.
-            # angles_diff = np.diff(misorient_angles)
-            # assert np.max(angles_diff) < ...
-            # assert np.min(angles_diff) > ...
-            # assert np.sum(angles_diff) < ...
+            # TODO: More asserts after I figure out what is wrong.
+            assert misorient_angles[-1] < 15
+            if z_exit > -0.6:
+                assert misorient_indices[-1] > 0.55
 
             if outdir is not None:
                 mineral.save(
-                    f"{outdir}/corner_olivineA_pathline_numerical_{str(z_exit).replace('.', 'd')}.npz"
+                    f"{outdir}/corner_olivineA_pathline_numerical",
+                    str(z_exit).replace('.', 'd')
                 )
-                # TODO: Also save processed data?
                 labels.append(rf"$z_{{f}}$ = {z_exit}")
                 angles.append(misorient_angles)
                 indices.append(misorient_indices)

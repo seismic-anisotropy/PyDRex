@@ -9,6 +9,7 @@ import functools as ft
 import logging
 import pathlib as pl
 
+import numba as nb
 import numpy as np
 
 np.set_printoptions(
@@ -42,7 +43,7 @@ LOGGER = logging.getLogger("pydrex")
 LOGGER.setLevel(logging.DEBUG)
 # Set up console handler.
 LOGGER_CONSOLE = logging.StreamHandler()
-LOGGER_CONSOLE.setFormatter(ConsoleFormatter(datefmt="%H:%M:%S"))
+LOGGER_CONSOLE.setFormatter(ConsoleFormatter(datefmt="%H:%M"))
 LOGGER_CONSOLE.setLevel(logging.INFO)
 # Turn on console logger by default.
 LOGGER.addHandler(LOGGER_CONSOLE)
