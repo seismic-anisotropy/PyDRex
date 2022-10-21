@@ -9,7 +9,6 @@ import functools as ft
 import logging
 import pathlib as pl
 
-import numba as nb
 import numpy as np
 
 np.set_printoptions(
