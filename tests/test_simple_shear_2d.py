@@ -12,9 +12,9 @@ from scipy.spatial.transform import Rotation
 
 from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
+from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import visualisation as _vis
-from pydrex import logger as _log
 
 
 class TestSinglePolycrystalOlivineA:
@@ -57,10 +57,7 @@ class TestSinglePolycrystalOlivineA:
         orientations_init = (
             Rotation.from_euler(
                 "zxz",
-                [
-                    [x * np.pi / 2, np.pi / 2, np.pi / 2]
-                    for x in rng.random(n_grains)
-                ],
+                [[x * np.pi / 2, np.pi / 2, np.pi / 2] for x in rng.random(n_grains)],
             )
             .inv()
             .as_matrix()
@@ -217,10 +214,7 @@ class TestSinglePolycrystalOlivineA:
         orientations_init = (
             Rotation.from_euler(
                 "zxz",
-                [
-                    [x * np.pi / 2, np.pi / 2, 0]
-                    for x in rng.random(n_grains)
-                ],
+                [[x * np.pi / 2, np.pi / 2, 0] for x in rng.random(n_grains)],
             )
             .inv()
             .as_matrix()

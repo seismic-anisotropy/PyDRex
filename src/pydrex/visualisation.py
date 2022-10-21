@@ -192,7 +192,7 @@ def corner_flow_2d(
             markersize=5,
             color="k",
             zorder=11,
-            alpha=0.33
+            alpha=0.33,
         )
         ax_strength.plot(
             t_series,

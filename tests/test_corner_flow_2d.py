@@ -199,7 +199,7 @@ class TestOlivineA:
             if outdir is not None:
                 mineral.save(
                     f"{outdir}/corner_olivineA_nopathline.npz",
-                    str(x_init).replace('.', 'd')
+                    str(x_init).replace(".", "d"),
                 )
                 labels.append(rf"$x_{0}$ = {x_init}")
                 angles.append(misorient_angles)
@@ -375,7 +375,7 @@ class TestOlivineA:
             if outdir is not None:
                 mineral.save(
                     f"{outdir}/corner_olivineA_pathline_prescribed",
-                    str(z_exit).replace('.', 'd')
+                    str(z_exit).replace(".", "d"),
                 )
                 labels.append(rf"$z_{{f}}$ = {z_exit}")
                 angles.append(misorient_angles)
@@ -560,7 +560,7 @@ class TestOlivineA:
             if outdir is not None:
                 mineral.save(
                     f"{outdir}/corner_olivineA_pathline_numerical",
-                    str(z_exit).replace('.', 'd')
+                    str(z_exit).replace(".", "d"),
                 )
                 labels.append(rf"$z_{{f}}$ = {z_exit}")
                 angles.append(misorient_angles)
