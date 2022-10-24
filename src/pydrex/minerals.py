@@ -5,8 +5,11 @@ Acronyms:
     i.e. components of stress acting on each slip system in the grain reference frame
 
 """
+import io
+import pathlib as pl
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
+from zipfile import ZipFile
 
 import numba as nb
 import numpy as np
@@ -14,7 +17,10 @@ from scipy import linalg as la
 from scipy.integrate import RK45
 from scipy.spatial.transform import Rotation
 
-import pydrex.core as _core
+from pydrex import core as _core
+from pydrex import deformation_mechanism as _defmech
+from pydrex import exceptions as _err
+from pydrex import logger as _log
 
 
 @unique
@@ -95,13 +101,14 @@ class Mineral:
 
     A `Mineral` stores CPO data for an aggregate of grains*.
     Additionally, mineral fabric type and deformation regime
-    are also tracked. See `pydrex.fabric` and `pydrex.deformation_mechanism`.
+    are also tracked. See `pydrex.deformation_mechanism`.
 
     Attributes:
     - `phase` (int) — ordinal number of the mineral phase, see `MineralPhase`
-    - `fabric` (int) — ordinal number of the fabric type, see `pydrex.fabric`
+    - `fabric` (int) — ordinal number of the fabric type, see `OlivineFabric`
+      and `EnstatiteFabric`
     - `regime` (int) — ordinal number of the deformation regime,
-        see `pydrex.deformation_mechanism.Regime`
+      see `pydrex.deformation_mechanism.Regime`
     - `n_grains` (int) — number of grains in the aggregate
     - `fractions_init` (array, optional) — initial dimensionless grain volumes
     - `orientations_init` (array, optional) — initial grain orientation matrices
@@ -117,53 +124,99 @@ class Mineral:
 
     """
 
-    phase: int
-    fabric: int
-    regime: int
-    n_grains: int
+    phase: int = MineralPhase.olivine
+    fabric: int = OlivineFabric.A
+    regime: int = _defmech.Regime.dislocation
+    n_grains: int = 1000
     # Initial condition, randomised if not given.
     fractions_init: np.ndarray = None
     orientations_init: np.ndarray = None
-    # Private members to store values for all successive simulation steps.
-    # Lists of numpy arrays will be `np.stack`ed when writing the NPZ file.
-    _fractions: list = field(default_factory=list)
-    _orientations: list = field(default_factory=list)
+    fractions: list = field(default_factory=list)
+    orientations: list = field(default_factory=list)
+
+    def __str__(self):
+        # String output, used for str(self) and f"{self}", etc.
+        if hasattr(self.fractions[0], "shape"):
+            shape_of_fractions = str(self.fractions[0].shape)
+        else:
+            shape_of_fractions = "(?)"
+
+        if hasattr(self.orientations[0], "shape"):
+            shape_of_orientations = str(self.orientations[0].shape)
+        else:
+            shape_of_orientations = "(?)"
+
+        return (
+            self.__class__.__qualname__
+            + f"(phase={self.phase!s}, "
+            + f"fabric={self.fabric!s}, "
+            + f"regime={self.regime!s}, "
+            + f"n_grains={self.n_grains!s}, "
+            + f"fractions=<{self.fractions.__class__.__qualname__}"
+            + f" of {self.fractions[0].__class__.__qualname__} {shape_of_fractions}>, "
+            + f"orientations=<{self.orientations.__class__.__qualname__}"
+            + f" of {self.orientations[0].__class__.__qualname__} {shape_of_orientations}>)"
+        )
+
+    def _repr_pretty_(self, p, cycle):
+        # Format to use when printing to IPython or other interactive console.
+        p.text(self.__str__() if not cycle else self.__class__.__qualname__ + "(...)")
 
     def __post_init__(self):
         """Initialise random orientations and grain volume fractions."""
         if self.fractions_init is None:
-            self.fractions_init = np.ones(self.n_grains) / self.n_grains
+            self.fractions_init = np.full(self.n_grains, 1.0 / self.n_grains)
         if self.orientations_init is None:
             self.orientations_init = Rotation.random(
                 self.n_grains, random_state=1
             ).as_matrix()
 
         # Copy the initial values to the storage lists.
-        self._fractions.append(self.fractions_init)
-        self._orientations.append(self.orientations_init)
+        self.fractions.append(self.fractions_init)
+        self.orientations.append(self.orientations_init)
+
+        # Delete the initial value duplicates to avoid confusion.
+        del self.fractions_init
+        del self.orientations_init
+
+        _log.info("created %s", self)
 
     def update_orientations(
-        self, config, finite_strain_ell, velocity_gradient, integration_time
+        self,
+        config,
+        deformation_gradient,
+        velocity_gradient,
+        integration_time,
+        pathline=None,
     ):
         """Update orientations and volume distribution for the `Mineral`.
 
         Update crystalline orientations and grain volume distribution
         for minerals undergoing plastic deformation.
-        Only 3D simulations are currently supported.
 
         Args:
         - `config` (dict) — PyDRex configuration dictionary
-        - `finite_strain_ell` (array) — 3x3 finite strain ellipsoid (initial strain)
-        - `velocity_gradient` (array) — 3x3 velocity gradient matrix
-        - `integration_time` (float) — total time of integrated dislocation creep
+        - `deformation_gradient` (array) — 3x3 initial deformation gradient tensor
+        - `velocity_gradient` (array or function) — 3x3 velocity gradient matrix,
+          or an interpolator that returns the 3x3 matrix when evaluated at a point
+          along the provided pathline
+        - `integration_time` (float) — total time of integrated dislocation
+          creep (if `pathline` is not None, this is used as the maximum
+          integration timestep during CPO calculation)
+        - `pathline` (tuple, optional) — tuple consisting of:
+            1. the time at which to start the CPO integration
+            2. the time at which to stop the CPO integration
+            3. a callable that accepts a time value and returns the position of
+               the mineral
 
         Array values must provide a NumPy-compatible interface:
         <https://numpy.org/doc/stable/user/whatisnumpy.html>
 
         """
-
+        # Set up callables for the ODE, some variables come from enclosing scope.
         def extract_vars(y):
-            finite_strain_ell = y[:9].copy().reshape(3, 3)
+            # TODO: Check if we can avoid .copy() here.
+            deformation_gradient = y[:9].copy().reshape(3, 3)
             orientations = (
                 y[9 : self.n_grains * 9 + 9]
                 .copy()
@@ -174,18 +227,20 @@ class Mineral:
                 y[self.n_grains * 9 + 9 : self.n_grains * 10 + 9].copy().clip(0, None)
             )
             fractions /= fractions.sum()
-            return finite_strain_ell, orientations, fractions
+            return deformation_gradient, orientations, fractions
 
-        def rhs(t, y):
-            finite_strain_ell, orientations, fractions = extract_vars(y)
+        def eval_rhs(t, y):
+            """Evaluate right hand side of the D-Rex PDE."""
+            deformation_gradient, orientations, fractions = extract_vars(y)
+            # Uses nondimensional values of strain rate and velocity gradient.
             orientations_diff, fractions_diff = _core.derivatives(
                 phase=self.phase,
                 fabric=self.fabric,
                 n_grains=self.n_grains,
                 orientations=orientations,
                 fractions=fractions,
-                strain_rate=nondim_strain_rate,
-                velocity_gradient=nondim_velocity_gradient,
+                strain_rate=strain_rate / strain_rate_max,
+                velocity_gradient=_velocity_gradient / strain_rate_max,
                 stress_exponent=config["stress_exponent"],
                 dislocation_exponent=config["dislocation_exponent"],
                 nucleation_efficiency=config["nucleation_efficiency"],
@@ -194,20 +249,65 @@ class Mineral:
             )
             return np.hstack(
                 (
-                    np.dot(velocity_gradient, finite_strain_ell).flatten(),
+                    (_velocity_gradient @ deformation_gradient).flatten(),
                     orientations_diff.flatten() * strain_rate_max,
                     fractions_diff * strain_rate_max,
                 )
             )
 
-        # Imposed macroscopic strain rate tensor.
-        strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
-        # Strain rate scale (max. eigenvalue of strain rate).
+        def apply_gbs(orientations, fractions, config):
+            # Grain boundary sliding for small grains.
+            mask = fractions < config["gbs_threshold"] / self.n_grains
+            _log.debug(
+                "grain boundary sliding activity (volume percentage): %s",
+                len(np.nonzero(mask)) / len(fractions),
+            )
+            # No rotation: carry over previous orientations.
+            orientations[mask, :, :] = self.orientations[0][mask, :, :]
+            fractions[mask] = config["gbs_threshold"] / self.n_grains
+            fractions /= fractions.sum()
+            _log.debug(
+                "grain volume fractions: mean=%e, min=%e, max=%e",
+                np.mean(fractions),
+                fractions.min(),
+                fractions.max(),
+            )
+            return orientations, fractions
+
+        # Set up pathline or time integral bounds and initial condition.
+        if callable(velocity_gradient):
+            if pathline is None:
+                raise ValueError(
+                    "unable to evaluate velocity gradient callable."
+                    + " You must provide the `pathline` to use a velocity gradient callable."
+                )
+            time_start, time_end, get_position = pathline
+            _velocity_gradient = velocity_gradient(
+                np.atleast_2d(get_position(time_start))
+            )[0]
+            _log.info(
+                "calculating CPO at %s (t=%e) with velocity gradient %s",
+                get_position(time_start),
+                time_start,
+                _velocity_gradient.flatten(),
+            )
+            max_step = integration_time
+        else:
+            _velocity_gradient = velocity_gradient
+            time_start = 0
+            time_end = integration_time
+            _log.info(
+                "calculating CPO for Δt=%e with velocity gradient %s",
+                time_end - time_start,
+                _velocity_gradient.flatten(),
+            )
+            max_step = time_end - time_start
+
+        strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
         strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
-        # Dimensionless strain rate and velocity gradient.
-        nondim_strain_rate = strain_rate / strain_rate_max
-        nondim_velocity_gradient = velocity_gradient / strain_rate_max
-        # Volume fraction of the mineral phase.
+        max_step = min(max_step, 1e-2 / strain_rate_max)
+        # max_step = 1e6
+
         if self.phase == MineralPhase.olivine:
             volume_fraction = config["olivine_fraction"]
         elif self.phase == MineralPhase.enstatite:
@@ -215,70 +315,123 @@ class Mineral:
         else:
             assert False  # Should never happen.
 
-        sol = RK45(
-            rhs,
-            0,
+        # Initialise solver and perform first step.
+        solver = RK45(
+            eval_rhs,
+            time_start,
             np.hstack(
                 (
-                    finite_strain_ell.flatten(),
-                    self._orientations[-1].flatten(),
-                    self._fractions[-1],
+                    deformation_gradient.flatten(),
+                    self.orientations[-1].flatten(),
+                    self.fractions[-1],
                 )
             ),
-            integration_time,
+            time_end,
+            first_step=max_step / 4,  # TODO: Move divisor to config?
+            max_step=max_step,
+        )
+        message = solver.step()
+        if message is not None and solver.status == "failed":
+            raise _err.IterationError(message)
+        _log.debug(
+            "%s step_size=%e (max_step=%e)",
+            solver.__class__.__qualname__,
+            solver.step_size,
+            solver.max_step,
         )
 
-        while sol.status == "running":
-            sol.step()
-            finite_strain_ell, orientations, fractions = extract_vars(sol.y)
-            # Grain boundary sliding for small grains.
-            mask = fractions < config["gbs_threshold"] / self.n_grains
-            # No rotation: carry over previous orientations.
-            orientations[mask, :, :] = self._orientations[0][mask, :, :]
-            fractions[mask] = config["gbs_threshold"] / self.n_grains
-            fractions /= fractions.sum()
-            sol.y[9:] = np.hstack((orientations.flatten(), fractions))
+        deformation_gradient, orientations, fractions = extract_vars(solver.y)
+        orientations, fractions = apply_gbs(orientations, fractions, config)
+        solver.y[9:] = np.hstack((orientations.flatten(), fractions))
+
+        # Solve ODE using numerical iteration scheme.
+        while solver.status == "running":
+            if callable(velocity_gradient):
+                _velocity_gradient = velocity_gradient(
+                    np.atleast_2d(get_position(solver.t))
+                )[0]
+                _log.info(
+                    "calculating CPO at %s (t=%e) with velocity gradient %s",
+                    get_position(solver.t),
+                    solver.t,
+                    _velocity_gradient.flatten(),
+                )
+            else:
+                _velocity_gradient = velocity_gradient
+
+            strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
+            strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
+            solver.max_step = min(solver.max_step, 1e-2 / strain_rate_max)
+
+            message = solver.step()
+            if message is not None and solver.status == "failed":
+                raise _err.IterationError(message)
+            _log.debug(
+                "%s step_size=%e (max_step=%e)",
+                solver.__class__.__qualname__,
+                solver.step_size,
+                solver.max_step,
+            )
+
+            deformation_gradient, orientations, fractions = extract_vars(solver.y)
+            orientations, fractions = apply_gbs(orientations, fractions, config)
+            solver.y[9:] = np.hstack((orientations.flatten(), fractions))
 
         # Extract final values for this simulation step, append to storage.
-        finite_strain_ell, orientations, fractions = extract_vars(sol.y.squeeze())
-        self._orientations.append(orientations)
-        self._fractions.append(fractions)
-        return finite_strain_ell
+        deformation_gradient, orientations, fractions = extract_vars(solver.y.squeeze())
+        self.orientations.append(orientations)
+        self.fractions.append(fractions)
+        return deformation_gradient
 
-    def save(self, filename):
+    def save(self, filename, postfix=None):
         """Save CPO data for all stored timesteps to a `numpy` NPZ file.
+
+        If the file specified by `filename` exists and `postfix` is not `None`,
+        the data is appended to the NPZ file in fields ending with "_`postfix`".
 
         Raises a `ValueError` if the data shapes are not compatible.
 
         See also: `numpy.savez`.
 
         """
-        if len(self._fractions) != len(self._orientations):
+        if len(self.fractions) != len(self.orientations):
             raise ValueError(
                 "Length of stored results must match."
                 + " You've supplied currupted data with:\n"
-                + f"- {len(self._fractions)} grain size results, and\n"
-                + f"- {len(self._orientations)} orientation results."
+                + f"- {len(self.fractions)} grain size results, and\n"
+                + f"- {len(self.orientations)} orientation results."
             )
-        if (
-            self._fractions[0].shape[0]
-            == self._orientations[0].shape[0]
-            == self.n_grains
-        ):
-            meta = np.array([self.phase, self.fabric, self.regime], dtype=np.uint8)
-            np.savez(
-                filename,
-                meta=meta,
-                fractions=np.stack(self._fractions),
-                orientations=np.stack(self._orientations),
-            )
+        if self.fractions[0].shape[0] == self.orientations[0].shape[0] == self.n_grains:
+            data = {
+                "meta": np.array(
+                    [self.phase, self.fabric, self.regime], dtype=np.uint8
+                ),
+                "fractions": np.stack(self.fractions),
+                "orientations": np.stack(self.orientations),
+            }
+            path = pl.Path(filename)
+            # Create parent directories if needed.
+            path.parent.mkdir(parents=True, exist_ok=True)
+            # Append to file if it exists, requires postfix (unique name).
+            if path.exists() and postfix is not None:
+                archive = ZipFile(filename, mode="a", allowZip64=True)
+                for key in data.keys():
+                    with archive.open(
+                        f"{key}_{postfix}", "w", force_zip64=True
+                    ) as file:
+                        buffer = io.BytesIO()
+                        np.save(buffer, data[key])
+                        file.write(buffer.getvalue())
+                        buffer.close()
+            else:
+                np.savez(filename, **data)
         else:
             raise ValueError(
                 "Size of CPO data arrays must match number of grains."
                 + " You've supplied corrupted data with:\n"
                 + f"- `n_grains = {self.n_grains}`,\n"
-                + f"- `_fractions[0].shape = {self._fractions[0].shape}`, and\n"
-                + f"- `_orientations[0].shape = {self._orientations[0].shape}`."
+                + f"- `fractions[0].shape = {self.fractions[0].shape}`, and\n"
+                + f"- `orientations[0].shape = {self.orientations[0].shape}`."
             )
 
     def load(self, filename):
@@ -296,7 +449,34 @@ class Mineral:
         self.phase = phase
         self.fabric = fabric
         self.regime = regime
-        self._fractions = list(data["fractions"])
-        self._orientations = list(data["orientations"])
-        self.orientations_init = self._orientations[0]
-        self.fractions_init = self._fractions[0]
+        self.fractions = list(data["fractions"])
+        self.orientations = list(data["orientations"])
+        self.orientations_init = self.orientations[0]
+        self.fractions_init = self.fractions[0]
+
+    @classmethod
+    def from_file(cls, filename):
+        """Construct a `Mineral` instance using data from a `numpy` NPZ file.
+
+        See also: `Mineral.save`.
+
+        """
+        if not filename.endswith(".npz"):
+            raise ValueError(
+                f"Must only load from numpy NPZ format. Cannot load from {filename}."
+            )
+        data = np.load(filename)
+        phase, fabric, regime = data["meta"]
+        fractions = list(data["fractions"])
+        orientations = list(data["orientations"])
+        mineral = cls(
+            phase,
+            fabric,
+            regime,
+            n_grains=len(fractions[0]),
+            fractions_init=fractions[0],
+            orientations_init=orientations[0],
+        )
+        mineral.fractions = fractions
+        mineral.orientations = orientations
+        return mineral

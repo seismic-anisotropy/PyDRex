@@ -8,11 +8,11 @@ from the grain-local to the global (Eulerian) frame.
 
 """
 import numpy as np
-from numpy import random as rn
 from scipy.spatial.transform import Rotation
 
 from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
+from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import visualisation as _vis
 
@@ -25,6 +25,7 @@ class TestSinglePolycrystalOlivineA:
         params_Kaminski2001_fig5_solid,  # GBM = 0
         params_Kaminski2001_fig5_shortdash,  # GBM = 50
         params_Kaminski2001_fig5_longdash,  # GBM = 200
+        rng,
         outdir,
     ):
         """Test clockwise a-axis rotation around X.
@@ -56,10 +57,7 @@ class TestSinglePolycrystalOlivineA:
         orientations_init = (
             Rotation.from_euler(
                 "zxz",
-                [
-                    [x * np.pi / 2, np.pi / 2, np.pi / 2]
-                    for x in rn.default_rng().random(n_grains)
-                ],
+                [[x * np.pi / 2, np.pi / 2, np.pi / 2] for x in rng.random(n_grains)],
             )
             .inv()
             .as_matrix()
@@ -109,13 +107,13 @@ class TestSinglePolycrystalOlivineA:
                 )
                 time += timestep * timescale
 
-            n_timesteps = len(mineral._orientations)
+            n_timesteps = len(mineral.orientations)
             misorient_angles = np.zeros(n_timesteps)
             misorient_indices = np.zeros(n_timesteps)
             # Loop over first dimension (time steps) of orientations.
-            for idx, matrices in enumerate(mineral._orientations):
+            for idx, matrices in enumerate(mineral.orientations):
                 orientations_resampled, _ = _diagnostics.resample_orientations(
-                    matrices, mineral._fractions[idx]
+                    matrices, mineral.fractions[idx]
                 )
                 direction_mean = _diagnostics.bingham_average(
                     orientations_resampled,
@@ -173,11 +171,11 @@ class TestSinglePolycrystalOlivineA:
 
         # Optionally plot figure.
         if outdir is not None:
-            _vis.simple_shear_2d(
+            _vis.simple_shear_stationary_2d(
                 angles,
                 indices,
                 timestop=timestop,
-                savefile=f"{outdir}/simple_shearYZ_single_olivineA_initQ1.png",
+                savefile=f"{outdir}/simple_shearYZ_stationary_olivineA_initQ1.png",
                 markers=("o", "v", "s"),
                 labels=labels,
                 refval=45,
@@ -188,6 +186,7 @@ class TestSinglePolycrystalOlivineA:
         params_Kaminski2004_fig4_triangles,  # GBS = 0.4
         params_Kaminski2004_fig4_squares,  # GBS = 0.2
         params_Kaminski2004_fig4_circles,  # GBS = 0
+        rng,
         outdir,
     ):
         """Test clockwise a-axis rotation around Y.
@@ -215,10 +214,7 @@ class TestSinglePolycrystalOlivineA:
         orientations_init = (
             Rotation.from_euler(
                 "zxz",
-                [
-                    [x * np.pi / 2, np.pi / 2, 0]
-                    for x in rn.default_rng().random(n_grains)
-                ],
+                [[x * np.pi / 2, np.pi / 2, 0] for x in rng.random(n_grains)],
             )
             .inv()
             .as_matrix()
@@ -243,6 +239,7 @@ class TestSinglePolycrystalOlivineA:
 
         # Optional plotting setup.
         if outdir is not None:
+            _log.logfile_enable(f"{outdir}/simple_shearXZ_initQ1.log")
             labels = []
             angles = []
             indices = []
@@ -268,13 +265,13 @@ class TestSinglePolycrystalOlivineA:
                 )
                 time += timestep * timescale
 
-            n_timesteps = len(mineral._orientations)
+            n_timesteps = len(mineral.orientations)
             misorient_angles = np.zeros(n_timesteps)
             misorient_indices = np.zeros(n_timesteps)
             # Loop over first dimension (time steps) of orientations.
-            for idx, matrices in enumerate(mineral._orientations):
+            for idx, matrices in enumerate(mineral.orientations):
                 orientations_resampled, _ = _diagnostics.resample_orientations(
-                    matrices, mineral._fractions[idx]
+                    matrices, mineral.fractions[idx]
                 )
                 direction_mean = _diagnostics.bingham_average(
                     orientations_resampled,
@@ -332,11 +329,11 @@ class TestSinglePolycrystalOlivineA:
 
         # Optionally plot figure.
         if outdir is not None:
-            _vis.simple_shear_2d(
+            _vis.simple_shear_stationary_2d(
                 angles,
                 indices,
                 timestop=timestop,
-                savefile=f"{outdir}/simple_shearXZ_single_olivineA_initQ1.png",
+                savefile=f"{outdir}/simple_shearXZ_stationary_olivineA_initQ1.png",
                 markers=("o", "v", "s"),
                 labels=labels,
                 refval=45,

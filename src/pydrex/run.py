@@ -220,7 +220,7 @@ def _init_diagnostics(config, restart):
         k: np.zeros(output_opts[k]) for k in it.chain(olivine_opts, enstatite_opts)
     }
     # TODO: Store a more compact representation of the strain?
-    diagnostics["finite_strain_ell"] = np.empty((*gridshape, dim, dim))
+    diagnostics["deformation_gradient"] = np.empty((*gridshape, dim, dim))
     diagnostics["grid_mask_completed"] = np.zeros(gridshape)
 
     if restart:
@@ -234,13 +234,13 @@ def _update_diagnostics(
     diagnostics,
     config,
     node,
-    finite_strain_ell,
+    deformation_gradient,
     olivine_orientations,
     enstatite_orientations,
     olivine_vol_dist,
     enstatite_vol_dist,
 ):
-    diagnostics["finite_strain_ell"][node] = finite_strain_ell
+    diagnostics["deformation_gradient"][node] = deformation_gradient
     diagnostics["olivine_orientations"][node, :, :, :] = olivine_orientations
     diagnostics["enstatite_orientations"][node, :, :, :] = enstatite_orientations
     diagnostics["olivine_volume_distribution"][node, :] = olivine_vol_dist

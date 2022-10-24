@@ -16,3 +16,16 @@ class MeshError(Error):
 
     def __init__(self, message):  # pylint: disable=super-init-not-called
         self.message = message
+
+
+class IterationError(Error):
+    """Exception raised for errors in numerical iteration schemes.
+
+    Attributes:
+        message — explanation of the error
+
+    """
+
+    def __init__(self, message):  # pylint: disable=super-init-not-called
+        # TODO: Add data attribute? Timestep?
+        self.message = message

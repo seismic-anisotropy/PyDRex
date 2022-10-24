@@ -3,6 +3,8 @@ import numpy as np
 from scipy import integrate as si
 from scipy import linalg as la
 
+from pydrex import logger as _log
+
 
 def get_pathline(
     point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
@@ -15,7 +17,7 @@ def get_pathline(
     Args:
         `point` (NumPy array) — coordinates of the point
         `interp_velocity` (interpolator) — returns velocity vector at a point
-        `interp_velocity_gradient` — returns ∇v (3x3 matrix) at a point
+        `interp_velocity_gradient` (interpolator) — returns ∇v (3x3 matrix) at a point
         `min_coords` (iterable) — lower bound coordinate of the interpolation grid
         `max_coords` (iterable) — upper bound coordinate of the interpolation grid
 
@@ -34,7 +36,7 @@ def get_pathline(
             return (event_strain if time == event_time else event_strain_prev) - 10
 
         if _is_inside(point, min_coords, max_coords):
-            velocity_gradient = interp_velocity_gradient([point])[0]
+            velocity_gradient = interp_velocity_gradient(np.atleast_2d(point))[0]
             # Imposed macroscopic strain rate tensor.
             strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
             # Strain rate scale (max. eigenvalue of strain rate).
@@ -62,9 +64,10 @@ def get_pathline(
         _ivp_func,
         [0, -100e6 * 365.25 * 8.64e4],
         point,
-        method="RK45",
-        first_step=1e10,
+        method="RK45",  # TODO: Compare to LSODA?
+        # first_step=1e10,
         max_step=np.inf,
+        # max_step=1e6,
         events=[_max_strain],
         args=(interp_velocity, interp_velocity_gradient, min_coords, max_coords),
         dense_output=True,
@@ -72,7 +75,17 @@ def get_pathline(
         atol=1e-8,
         rtol=1e-5,
     )
-    return path.t, path.sol
+    _log.info(
+        "calculated pathline from %s (t=%e) to %s (t=%e)",
+        path.sol(path.t[0]),
+        path.t[0],
+        path.sol(path.t[-2]),
+        path.t[-2],
+    )
+
+    # Remove the last timestep, because the position will be outside the domain.
+    # The integration only stops AFTER the event is triggered.
+    return path.t[:-1], path.sol
 
 
 def _ivp_func(
@@ -80,7 +93,7 @@ def _ivp_func(
 ):
     """Internal use only, must have the same signature as `get_pathline`."""
     if _is_inside(point, min_coords, max_coords):
-        return interp_velocity([point])[0]
+        return interp_velocity(np.atleast_2d(point))[0]
     return np.zeros_like(point)
 
 
@@ -89,7 +102,7 @@ def _ivp_jac(
 ):
     """Internal use only, must have the same signature as `_ivp_func`."""
     if _is_inside(point, min_coords, max_coords):
-        return interp_velocity_gradient([point])[0]
+        return interp_velocity_gradient(np.atleast_2d(point))[0]
     return np.zeros((np.array(point).size,) * 2)
 
 

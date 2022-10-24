@@ -1,3 +1,4 @@
+"""PyDRex: tests for texture diagnostics."""
 import numpy as np
 from numpy import random as rn
 from scipy.spatial.transform import Rotation
@@ -83,7 +84,7 @@ class TestVolumeWeighting:
         assert np.all(a in orientations for a in new_orientations)
 
 
-class TestbinghamStats:
+class TestBinghamStats:
     """Tests for antipodally symmetric (bingham) statistics."""
 
     def test_average_0(self):

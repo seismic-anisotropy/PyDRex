@@ -1,20 +1,67 @@
-import pathlib
+"""Configuration and fixtures for PyDRex tests."""
+import pathlib as pl
 
+import matplotlib
 import pytest
+from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
+from numpy import random as rn
+
+from pydrex import logger as _log
+
+matplotlib.use("Agg")  # Stop matplotlib from looking for $DISPLAY in env.
+_log.quiet_aliens()  # Stop imported modules from spamming the logs.
+
+
+# The default pytest logging plugin always creates its own handlers...
+class PytestConsoleLogger(LoggingPlugin):
+    """Pytest plugin that allows linking up a custom console logger."""
+
+    name = "pytest-console-logger"
+
+    def __init__(self, config, *args, **kwargs):
+        super().__init__(config, *args, **kwargs)
+        terminal_reporter = config.pluginmanager.get_plugin("terminalreporter")
+        capture_manager = config.pluginmanager.get_plugin("capturemanager")
+        handler = _LiveLoggingStreamHandler(terminal_reporter, capture_manager)
+        handler.setFormatter(_log.LOGGER_CONSOLE.formatter)
+        handler.setLevel(_log.LOGGER_CONSOLE.level)
+        self.log_cli_handler = handler
+
+    # Override original, which tries to delete some silly globals that we aren't
+    # using anymore, this might break the (already quite broken) -s/--capture.
+    @pytest.hookimpl(hookwrapper=True)
+    def pytest_runtest_teardown(self, item):
+        self.log_cli_handler.set_when("teardown")
+        yield from self._runtest_for(item, "teardown")
+
+
+# Hook up our logging plugin last,
+# it relies on terminalreporter and capturemanager.
+@pytest.hookimpl(trylast=True)
+def pytest_configure(config):
+    if config.option.verbose > 0:
+        terminal_reporter = config.pluginmanager.get_plugin("terminalreporter")
+        capture_manager = config.pluginmanager.get_plugin("capturemanager")
+        handler = _LiveLoggingStreamHandler(terminal_reporter, capture_manager)
+        handler.setFormatter(_log.LOGGER_CONSOLE.formatter)
+        handler.setLevel(_log.LOGGER_CONSOLE.level)
+        config.pluginmanager.register(
+            PytestConsoleLogger(config), PytestConsoleLogger.name
+        )
 
 
 def pytest_addoption(parser):
     parser.addoption(
         "--outdir",
         metavar="DIR",
-        default=[None],  # NOTE: `outdir` will just be None, not a list.
+        default=None,
         help="output directory in which to store PyDRex figures/logs",
     )
 
 
-def pytest_generate_tests(metafunc):
-    if "outdir" in metafunc.fixturenames:
-        metafunc.parametrize("outdir", metafunc.config.getoption("outdir"))
+@pytest.fixture
+def outdir(request):
+    return request.config.getoption("--outdir")
 
 
 @pytest.fixture
@@ -124,10 +171,10 @@ def params_Hedjazian2017():
 
 @pytest.fixture
 def vtkfiles_2d_corner_flow():
-    datadir = pathlib.Path(__file__).parent / ".." / "data" / "vtu"
-    return (
-        datadir / "2d_corner_flow_2cmyr.vtu",
-        datadir / "2d_corner_flow_4cmyr.vtu",
-        datadir / "2d_corner_flow_6cmyr.vtu",
-        datadir / "2d_corner_flow_8cmyr.vtu",
-    )
+    datadir = pl.Path(__file__).parent / ".." / "data" / "vtu"
+    return (datadir / "2d_corner_flow_2cmyr.vtu",)
+
+
+@pytest.fixture
+def rng():
+    return rn.default_rng()

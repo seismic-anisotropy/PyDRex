@@ -1,4 +1,4 @@
-"""PyDRex: Methods to calculate texture diagnostics.
+r"""PyDRex: Methods to calculate texture diagnostics.
 
 NOTE: Calculations expect orientation matrices $a$ to represent passive
 (i.e. alias) rotations, which are defined in terms of the extrinsic ZXZ
@@ -6,10 +6,10 @@ euler angles $ϕ, θ, φ$ as
 
 $$
 a = \begin{bmatrix}
-    \\cosφ\\cosϕ - \\cosθ\\sinϕ\\sinφ & \\cosθ\\cosϕ\\sinφ + \\cosφ\\sinϕ & \\sinφ\\sinθ
-   -\\sinφ\\cosϕ - \\cosθ\\sinϕ\\cosφ & \\cosθ\\cosϕ\\cosφ - \\sinφ\\sinϕ & \\cosφ\\sinθ
-            \\sinθ\\sinϕ           &           -\\sinθ\\cosϕ        &   \\cosθ
-    \\end{bmatrix}
+    \cosφ\cosϕ - \cosθ\sinϕ\sinφ & \cosθ\cosϕ\sinφ + \cosφ\sinϕ & \sinφ\sinθ
+   -\sinφ\cosϕ - \cosθ\sinϕ\cosφ & \cosθ\cosϕ\cosφ - \sinφ\sinϕ & \cosφ\sinθ
+            \sinθ\sinϕ           &           -\sinθ\cosϕ        &   \cosθ
+    \end{bmatrix}
 $$
 
 such that a[i, j] gives the direction cosine of the angle between the i-th
@@ -48,10 +48,9 @@ def bingham_average(orientations, axis="a"):
     # https://courses.eas.ualberta.ca/eas421/lecturepages/orientation.html
     # Eigenvector corresponding to largest eigenvalue is the mean direction.
     # SciPy returns eigenvalues in ascending order (same order for vectors).
+    # SciPy uses lower triangular entries by default, no need for all components.
     mean_vector = la.eigh(_scatter_matrix(orientations, row))[1][:, -1]
-    # Use abs because the mean vectors [a, a, a] and [-a, -a, -a] are the same.
-    # This way the output from arccos is more consistent for measuring alignment.
-    return np.abs(mean_vector / la.norm(mean_vector))
+    return mean_vector / la.norm(mean_vector)
 
 
 def symmetry(orientations, axis="a"):
@@ -86,6 +85,7 @@ def symmetry(orientations, axis="a"):
             raise ValueError(f"axis must be 'a', 'b', or 'c', not {axis}")
 
     scatter = _scatter_matrix(orientations, row)
+    # SciPy uses lower triangular entries by default, no need for all components.
     eigvals_descending = la.eigvalsh(scatter)[::-1]
     sum_eigvals = np.sum(eigvals_descending)
     return (
@@ -139,12 +139,13 @@ def misorientation_index(orientations):
         np.array(list(it.combinations(orientations, 2)))
     )
     # Number of misorientations within 1° bins.
+    # TODO: Make n_bins and θmax args to the function.
     count_misorientations, _ = np.histogram(misorientations, bins=120, range=(0, 120))
-    return (1 / 2 / len(misorientations)) * np.sum(
+    return (1 / 2) * np.sum(
         np.abs(
             [
-                misorientations_random(i, i + 1) * len(misorientations)
-                - count_misorientations[i]
+                misorientations_random(i, i + 1)
+                - count_misorientations[i] / len(misorientations)
                 for i in range(120)
             ]
         )
@@ -157,6 +158,8 @@ def misorientation_angles(combinations):
     Calculate the angular distance between the rotations `combinations[:, 0]`
     and `combinations[:, 1]`, which are expected to be 3x3 passive (alias)
     rotation matrices.
+
+    See also <http://boris-belousov.net/2016/12/01/quat-dist/>.
 
     """
     return np.rad2deg(
@@ -277,7 +280,9 @@ def smallest_angle(vector, axis):
     The axis is specified using either of its two parallel unit vectors.
 
     """
-    angle = np.abs(np.rad2deg(np.arccos(np.dot(vector, axis))))
+    angle = np.rad2deg(
+        np.arccos(np.dot(vector, axis) / (la.norm(vector) * la.norm(axis)))
+    )
     if angle > 90:
         return 180 - angle
     return angle
