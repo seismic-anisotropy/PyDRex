@@ -80,7 +80,7 @@ def _resolve_path(path, refdir=None):
         _path = cwd / refdir / path
     if _path.is_file():
         return _path.resolve()
-    raise IOError(f"file '{_path}' does not exist")
+    raise OSError(f"file '{_path}' does not exist")
 
 
 def read_mesh(meshfile):
