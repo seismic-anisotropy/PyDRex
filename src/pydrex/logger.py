@@ -36,7 +36,7 @@ class ConsoleFormatter(logging.Formatter):
         return super().format(record)
 
 
-# To create a new logger we use getLogger as recommeded by the logging docs.
+# To create a new logger we use getLogger as recommended by the logging docs.
 LOGGER = logging.getLogger("pydrex")
 # To allow for multiple handlers at different levels, default level must be DEBUG.
 LOGGER.setLevel(logging.DEBUG)

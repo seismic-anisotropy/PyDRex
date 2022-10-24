@@ -12,7 +12,7 @@ matplotlib.use("Agg")  # Stop matplotlib from looking for $DISPLAY in env.
 _log.quiet_aliens()  # Stop imported modules from spamming the logs.
 
 
-# The default pytest logging-plugin always creates its own handlers...
+# The default pytest logging plugin always creates its own handlers...
 class PytestConsoleLogger(LoggingPlugin):
     """Pytest plugin that allows linking up a custom console logger."""
 
