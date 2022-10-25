@@ -133,7 +133,7 @@ class TestSinglePolycrystalOlivineA:
             angles_diff = np.diff(misorient_angles)
             assert np.max(angles_diff) < 3.6
             assert np.min(angles_diff) > -7.5
-            assert np.sum(angles_diff) < -25.0
+            assert np.sum(angles_diff) < -24.0
 
             # Check alignment and texture strength (half way and final value).
             halfway = round(n_timesteps / 2)
@@ -291,7 +291,7 @@ class TestSinglePolycrystalOlivineA:
             angles_diff = np.diff(misorient_angles)
             assert np.max(angles_diff) < 3.6
             assert np.min(angles_diff) > -7.5
-            assert np.sum(angles_diff) < -25.0
+            assert np.sum(angles_diff) < -24.0
             # Check that recrystallization is causing faster alignment.
             np.testing.assert_array_less(
                 misorient_angles - 3.8,  # Tolerance for GBM onset latency.
@@ -317,9 +317,9 @@ class TestSinglePolycrystalOlivineA:
                     assert np.isclose(misorient_indices[-1], 0.755, atol=0.075)
                 case 0.4:
                     assert np.isclose(misorient_angles[halfway], 19, atol=2.0)
-                    assert np.isclose(misorient_angles[-1], 16, atol=2.25)
+                    assert np.isclose(misorient_angles[-1], 16, atol=2.5)
                     assert misorient_indices[halfway] < 0.75
-                    assert misorient_indices[-1] < 0.7
+                    assert misorient_indices[-1] < 0.71
 
             # Optionally store plotting metadata.
             if outdir is not None:
