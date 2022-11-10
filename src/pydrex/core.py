@@ -253,7 +253,7 @@ def _get_slip_rates_olivine(invariants, slip_indices, rrss, stress_exponent):
 def _get_slip_invariants_olivine(strain_rate, orientation):
     r"""Calculate strain rate invariants for the four slip systems of olivine.
 
-    Calculates $I_{ij} = ∑_{ij} l_{i} n_{j} \dot{ε}_{ij}$ for each slip sytem.
+    Calculates $I = ∑_{ij} l_{i} n_{j} \dot{ε}_{ij}$ for each slip sytem.
 
     Args:
     - `strain_rate` (array) — 3x3 dimensionless strain rate matrix
@@ -263,9 +263,13 @@ def _get_slip_invariants_olivine(strain_rate, orientation):
     invariants = np.zeros(4)
     for i in range(3):
         for j in range(3):
+            # (010)[100]
             invariants[0] += strain_rate[i, j] * orientation[0, i] * orientation[1, j]
+            # (001)[100]
             invariants[1] += strain_rate[i, j] * orientation[0, i] * orientation[2, j]
+            # (010)[001]
             invariants[2] += strain_rate[i, j] * orientation[2, i] * orientation[1, j]
+            # (100)[001]
             invariants[3] += strain_rate[i, j] * orientation[2, i] * orientation[0, j]
     return invariants
 
