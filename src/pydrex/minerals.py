@@ -226,6 +226,7 @@ class Mineral:
             fractions = (
                 y[self.n_grains * 9 + 9 : self.n_grains * 10 + 9].copy().clip(0, None)
             )
+            # FIXME: Guard against zero-division? Why is .sum ≈ 0?
             fractions /= fractions.sum()
             return deformation_gradient, orientations, fractions
 
@@ -265,6 +266,7 @@ class Mineral:
             # No rotation: carry over previous orientations.
             orientations[mask, :, :] = self.orientations[0][mask, :, :]
             fractions[mask] = config["gbs_threshold"] / self.n_grains
+            # FIXME: Guard against zero-division? Why is .sum ≈ 0?
             fractions /= fractions.sum()
             _log.debug(
                 "grain volume fractions: mean=%e, min=%e, max=%e",
@@ -305,7 +307,7 @@ class Mineral:
 
         strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
         strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
-        max_step = min(max_step, 1e-2 / strain_rate_max)
+        # max_step = min(max_step, 1e-2 / strain_rate_max)
         # max_step = 1e6
 
         if self.phase == MineralPhase.olivine:
@@ -361,7 +363,7 @@ class Mineral:
 
             strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
             strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
-            solver.max_step = min(solver.max_step, 1e-2 / strain_rate_max)
+            # solver.max_step = min(solver.max_step, 1e-2 / strain_rate_max)
 
             message = solver.step()
             if message is not None and solver.status == "failed":
