@@ -20,31 +20,11 @@ instead of using these routines directly, which do not circumvent all edge cases
 For example, the pathological case with a flow field with zero vorticity will crash.
 
 """
-import logging
-import warnings
-
 import numba as nb
 import numpy as np
-import numpy.linalg as la
 
 import pydrex.minerals as _minerals
-import pydrex.pathlines as _pathlines
 import pydrex.tensors as _tensors
-
-
-# TODO: Replace with actual RK4 from scipy?
-@nb.njit(fastmath=True)
-def update_strain(deformation_gradient, velocity_gradient, dt):
-    """Return updated deformation gradient tensor using the RK4 scheme."""
-    deform_1 = velocity_gradient @ deformation_gradient * dt
-    deform_i = deformation_gradient + 0.5 * deform_1
-    deform_2 = velocity_gradient @ deform_i * dt
-    deform_i = deformation_gradient + 0.5 * deform_2
-    deform_3 = velocity_gradient @ deform_i * dt
-    deform_i = deformation_gradient + deform_3
-    deform_4 = velocity_gradient @ deform_i * dt
-    deformation_gradient += (deform_1 / 2 + deform_2 + deform_3 + deform_4 / 2) / 3
-    return deformation_gradient
 
 
 # 12 args is a lot, but this way we can use numba
