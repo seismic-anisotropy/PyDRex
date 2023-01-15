@@ -8,6 +8,7 @@ the "root" logger, which contains a bunch of noise from other imports/modules.
 import functools as ft
 import logging
 import pathlib as pl
+import contextlib as cl
 
 import numpy as np
 
@@ -48,7 +49,7 @@ LOGGER_CONSOLE.setLevel(logging.INFO)
 LOGGER.addHandler(LOGGER_CONSOLE)
 
 
-# FIXME: This should be a context manager so we can make sure the file gets closed.
+@cl.contextmanager
 def logfile_enable(path, level=logging.DEBUG):
     """Enable logging to a file at `path` with given `level`."""
     pl.Path(path).parent.mkdir(parents=True, exist_ok=True)
@@ -61,6 +62,8 @@ def logfile_enable(path, level=logging.DEBUG):
     )
     logger_file.setLevel(level)
     LOGGER.addHandler(logger_file)
+    yield
+    logger_file.close()
 
 
 def critical(msg, *args, **kwargs):
