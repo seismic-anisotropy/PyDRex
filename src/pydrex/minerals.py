@@ -269,10 +269,11 @@ class Mineral:
             # FIXME: Guard against zero-division? Why is .sum ≈ 0?
             fractions /= fractions.sum()
             _log.debug(
-                "grain volume fractions: mean=%e, min=%e, max=%e",
-                np.mean(fractions),
-                fractions.min(),
-                fractions.max(),
+                "grain volume fractions: median=%e, min=%e, max=%e, sum=%e",
+                np.median(fractions),
+                np.min(fractions),
+                np.max(fractions),
+                np.sum(fractions),
             )
             return orientations, fractions
 
@@ -332,15 +333,22 @@ class Mineral:
             first_step=max_step / 4,  # TODO: Move divisor to config?
             max_step=max_step,
         )
-        message = solver.step()
-        if message is not None and solver.status == "failed":
-            raise _err.IterationError(message)
+        _log.debug(
+            "grain volume fractions: mean=%e, min=%e, max=%e, sum=%e",
+            np.median(self.fractions[-1]),
+            np.min(self.fractions[-1]),
+            np.max(self.fractions[-1]),
+            np.sum(self.fractions[-1]),
+        )
         _log.debug(
             "%s step_size=%e (max_step=%e)",
             solver.__class__.__qualname__,
             solver.step_size,
             solver.max_step,
         )
+        message = solver.step()
+        if message is not None and solver.status == "failed":
+            raise _err.IterationError(message)
 
         deformation_gradient, orientations, fractions = extract_vars(solver.y)
         orientations, fractions = apply_gbs(orientations, fractions, config)
@@ -365,15 +373,15 @@ class Mineral:
             strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
             # solver.max_step = min(solver.max_step, 1e-2 / strain_rate_max)
 
-            message = solver.step()
-            if message is not None and solver.status == "failed":
-                raise _err.IterationError(message)
             _log.debug(
                 "%s step_size=%e (max_step=%e)",
                 solver.__class__.__qualname__,
                 solver.step_size,
                 solver.max_step,
             )
+            message = solver.step()
+            if message is not None and solver.status == "failed":
+                raise _err.IterationError(message)
 
             deformation_gradient, orientations, fractions = extract_vars(solver.y)
             orientations, fractions = apply_gbs(orientations, fractions, config)
