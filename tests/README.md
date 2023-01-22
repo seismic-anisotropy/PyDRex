@@ -13,7 +13,7 @@ If a test method can produce such output for debugging, it should accept the `ou
 positional argument, and check if its value is not `None`.
 If `outdir is None` then no persistent output should be produced.
 If `outdir` is a directory path (string):
-- logs can be saved by calling `pydrex.logger.logfile_enable`,
+- logs can be saved by using the `pydrex.logger.logfile_enable` context manager,
   which accepts a path name and an optional logging level as per Python's `logging` module
   (the default is `logging.DEBUG` which implies the most verbose output),
 - figures can be saved by (implementing and) calling a helper from `pydrex.visualisation`, and
