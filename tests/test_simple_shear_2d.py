@@ -242,7 +242,9 @@ class TestSinglePolycrystalOlivineA:
         # Optional plotting and logging setup.
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(f"{outdir}/simple_shearXZ_initQ1.log")
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/simple_shearXZ_initQ1.log"
+            )
             labels = []
             angles = []
             indices = []

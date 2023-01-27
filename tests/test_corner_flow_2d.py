@@ -31,8 +31,8 @@ Similar to Fig. 5 in [Kaminski 2002].
 [Kaminski 2002](https://doi.org/10.1029/2001GC000222)
 
 """
-import itertools as it
 import contextlib as cl
+import itertools as it
 
 import numba as nb
 import numpy as np
@@ -113,7 +113,9 @@ class TestOlivineA:
         # Optional plotting and logging setup.
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(f"{outdir}/corner_olivineA_nopathline.log")
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/corner_olivineA_nopathline.log"
+            )
             labels = []
             angles = []
             indices = []
@@ -268,7 +270,9 @@ class TestOlivineA:
         # Optional plotting and logging setup.
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(f"{outdir}/corner_olivineA_pathline_prescribed.log")
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/corner_olivineA_pathline_prescribed.log"
+            )
             labels = []
             angles = []
             indices = []
@@ -316,7 +320,9 @@ class TestOlivineA:
                 r_vals = []
                 θ_vals = []
                 deformation_gradient = np.eye(3)
-                times = np.linspace(timestamps_back[-1], timestamps_back[0], n_timesteps)
+                times = np.linspace(
+                    timestamps_back[-1], timestamps_back[0], n_timesteps
+                )
                 for time_start, time_end in it.pairwise(times):
                     deformation_gradient = mineral.update_orientations(
                         params_Kaminski2001_fig5_shortdash,
@@ -437,7 +443,9 @@ class TestOlivineA:
         # Optional plotting and logging setup.
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(f"{outdir}/corner_olivineA_pathline_numerical.log")
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/corner_olivineA_pathline_numerical.log"
+            )
             labels = []
             angles = []
             indices = []
@@ -504,7 +512,9 @@ class TestOlivineA:
                 r_vals = []
                 θ_vals = []
                 deformation_gradient = np.eye(3)
-                times = np.linspace(timestamps_back[-1], timestamps_back[0], n_timesteps)
+                times = np.linspace(
+                    timestamps_back[-1], timestamps_back[0], n_timesteps
+                )
                 for time_start, time_end in it.pairwise(times):
                     deformation_gradient = mineral.update_orientations(
                         params_Kaminski2001_fig5_shortdash,
