@@ -269,10 +269,11 @@ class Mineral:
             # FIXME: Guard against zero-division? Why is .sum ≈ 0?
             fractions /= fractions.sum()
             _log.debug(
-                "grain volume fractions: mean=%e, min=%e, max=%e",
-                np.mean(fractions),
-                fractions.min(),
-                fractions.max(),
+                "grain volume fractions: median=%e, min=%e, max=%e, sum=%e",
+                np.median(fractions),
+                np.min(fractions),
+                np.max(fractions),
+                np.sum(fractions),
             )
             return orientations, fractions
 
