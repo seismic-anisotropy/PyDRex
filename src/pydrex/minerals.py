@@ -332,6 +332,7 @@ class Mineral:
             time_end,
             first_step=max_step / 4,  # TODO: Move divisor to config?
             max_step=max_step,
+            atol=np.inf,  # FIXME: Different solver or smart way to set tolerance.
         )
         message = solver.step()
         if message is not None and solver.status == "failed":
