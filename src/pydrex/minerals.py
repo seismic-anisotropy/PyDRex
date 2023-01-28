@@ -437,8 +437,10 @@ class Mineral:
                 + f"- `orientations[0].shape = {self.orientations[0].shape}`."
             )
 
-    def load(self, filename):
+    def load(self, filename, postfix=None):
         """Load CPO data from a `numpy` NPZ file.
+
+        If `postfix` is not `None`, data is read from fields ending with "_`postfix`".
 
         See also: `Mineral.save`.
 
@@ -448,18 +450,26 @@ class Mineral:
                 f"Must only load from numpy NPZ format. Cannot load from {filename}."
             )
         data = np.load(filename)
-        phase, fabric, regime = data["meta"]
+        if postfix is not None:
+            phase, fabric, regime = data[f"meta_{postfix}"]
+            self.fractions = list(data[f"fractions_{postfix}"])
+            self.orientations = list(data[f"orientations_{postfix}"])
+        else:
+            phase, fabric, regime = data["meta"]
+            self.fractions = list(data["fractions"])
+            self.orientations = list(data["orientations"])
+
         self.phase = phase
         self.fabric = fabric
         self.regime = regime
-        self.fractions = list(data["fractions"])
-        self.orientations = list(data["orientations"])
         self.orientations_init = self.orientations[0]
         self.fractions_init = self.fractions[0]
 
     @classmethod
-    def from_file(cls, filename):
+    def from_file(cls, filename, postfix=None):
         """Construct a `Mineral` instance using data from a `numpy` NPZ file.
+
+        If `postfix` is not `None`, data is read from fields ending with "_`postfix`".
 
         See also: `Mineral.save`.
 
@@ -469,9 +479,15 @@ class Mineral:
                 f"Must only load from numpy NPZ format. Cannot load from {filename}."
             )
         data = np.load(filename)
-        phase, fabric, regime = data["meta"]
-        fractions = list(data["fractions"])
-        orientations = list(data["orientations"])
+        if postfix is not None:
+            phase, fabric, regime = data[f"meta_{postfix}"]
+            fractions = list(data[f"fractions_{postfix}"])
+            orientations = list(data[f"orientations_{postfix}"])
+        else:
+            phase, fabric, regime = data["meta"]
+            fractions = list(data["fractions"])
+            orientations = list(data["orientations"])
+
         mineral = cls(
             phase,
             fabric,
