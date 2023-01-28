@@ -68,7 +68,7 @@ def get_pathline(
         # first_step=1e10,
         max_step=np.inf,
         # max_step=1e6,
-        # events=[_max_strain],
+        events=[_max_strain],
         args=(interp_velocity, interp_velocity_gradient, min_coords, max_coords),
         dense_output=True,
         jac=_ivp_jac,
