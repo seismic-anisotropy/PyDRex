@@ -7,6 +7,8 @@ which represents the change of coordinates
 from the grain-local to the global (Eulerian) frame.
 
 """
+import contextlib as cl
+
 import numpy as np
 from scipy.spatial.transform import Rotation
 
@@ -237,95 +239,99 @@ class TestSinglePolycrystalOlivineA:
             for i in range(3)
         ]
 
-        # Optional plotting setup.
+        # Optional plotting and logging setup.
+        optional_logging = cl.nullcontext()
         if outdir is not None:
-            _log.logfile_enable(f"{outdir}/simple_shearXZ_initQ1.log")
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/simple_shearXZ_initQ1.log"
+            )
             labels = []
             angles = []
             indices = []
 
-        for mineral, params in zip(
-            minerals,
-            (
-                params_Kaminski2004_fig4_triangles,  # GBS = 0.4
-                params_Kaminski2004_fig4_squares,  # GBS = 0.2
-                params_Kaminski2004_fig4_circles,  # GBS = 0
-            ),
-        ):
-            time = 0
-            timestep = 0.025
-            timestop = 1
-            deformation_gradient = np.eye(3)  # Undeformed initial state.
-            while time < timestop * timescale:
-                deformation_gradient = mineral.update_orientations(
-                    params,
-                    deformation_gradient,
-                    velocity_gradient,
-                    integration_time=timestep * timescale,
-                )
-                time += timestep * timescale
-
-            n_timesteps = len(mineral.orientations)
-            misorient_angles = np.zeros(n_timesteps)
-            misorient_indices = np.zeros(n_timesteps)
-            # Loop over first dimension (time steps) of orientations.
-            for idx, matrices in enumerate(mineral.orientations):
-                orientations_resampled, _ = _diagnostics.resample_orientations(
-                    matrices, mineral.fractions[idx]
-                )
-                direction_mean = _diagnostics.bingham_average(
-                    orientations_resampled,
-                    axis=_minerals.get_primary_axis(mineral.fabric),
-                )
-                misorient_angles[idx] = _diagnostics.smallest_angle(
-                    direction_mean, [1, 0, 0]
-                )
-                misorient_indices[idx] = _diagnostics.misorientation_index(
-                    orientations_resampled
-                )
-
-            # Check for uncorrupted record of initial condition.
-            assert np.isclose(misorient_angles[0], 45.0, atol=5.0)
-            assert misorient_indices[0] < 0.71
-            # Check for mostly smoothly decreasing misalignment.
-            angles_diff = np.diff(misorient_angles)
-            assert np.max(angles_diff) < 3.6
-            assert np.min(angles_diff) > -7.5
-            assert np.sum(angles_diff) < -24.0
-            # Check that recrystallization is causing faster alignment.
-            np.testing.assert_array_less(
-                misorient_angles - 3.8,  # Tolerance for GBM onset latency.
-                misorient_angles[0]
-                * np.exp(
-                    np.linspace(0, timestop, n_timesteps)
-                    * (np.cos(2 * np.deg2rad(misorient_angles[0])) - 1)
+        with optional_logging:
+            for mineral, params in zip(
+                minerals,
+                (
+                    params_Kaminski2004_fig4_triangles,  # GBS = 0.4
+                    params_Kaminski2004_fig4_squares,  # GBS = 0.2
+                    params_Kaminski2004_fig4_circles,  # GBS = 0
                 ),
-            )
+            ):
+                time = 0
+                timestep = 0.025
+                timestop = 1
+                deformation_gradient = np.eye(3)  # Undeformed initial state.
+                while time < timestop * timescale:
+                    deformation_gradient = mineral.update_orientations(
+                        params,
+                        deformation_gradient,
+                        velocity_gradient,
+                        integration_time=timestep * timescale,
+                    )
+                    time += timestep * timescale
 
-            # Check alignment and texture strength (half way and final value).
-            halfway = round(n_timesteps / 2)
-            match params["gbs_threshold"]:
-                case 0:
-                    assert np.isclose(misorient_angles[halfway], 11, atol=1.5)
-                    assert np.isclose(misorient_angles[-1], 8, atol=1.25)
-                    assert np.isclose(misorient_indices[halfway], 0.975, atol=0.075)
-                    assert np.isclose(misorient_indices[-1], 0.99, atol=0.03)
-                case 0.2:
-                    assert np.isclose(misorient_angles[halfway], 13, atol=2.05)
-                    assert np.isclose(misorient_angles[-1], 11, atol=1.5)
-                    assert np.isclose(misorient_indices[halfway], 0.755, atol=0.08)
-                    assert np.isclose(misorient_indices[-1], 0.755, atol=0.075)
-                case 0.4:
-                    assert np.isclose(misorient_angles[halfway], 19, atol=2.0)
-                    assert np.isclose(misorient_angles[-1], 16, atol=2.5)
-                    assert misorient_indices[halfway] < 0.75
-                    assert misorient_indices[-1] < 0.71
+                n_timesteps = len(mineral.orientations)
+                misorient_angles = np.zeros(n_timesteps)
+                misorient_indices = np.zeros(n_timesteps)
+                # Loop over first dimension (time steps) of orientations.
+                for idx, matrices in enumerate(mineral.orientations):
+                    orientations_resampled, _ = _diagnostics.resample_orientations(
+                        matrices, mineral.fractions[idx]
+                    )
+                    direction_mean = _diagnostics.bingham_average(
+                        orientations_resampled,
+                        axis=_minerals.get_primary_axis(mineral.fabric),
+                    )
+                    misorient_angles[idx] = _diagnostics.smallest_angle(
+                        direction_mean, [1, 0, 0]
+                    )
+                    misorient_indices[idx] = _diagnostics.misorientation_index(
+                        orientations_resampled
+                    )
 
-            # Optionally store plotting metadata.
-            if outdir is not None:
-                labels.append(f"$f_{{gbs}}$ = {params['gbs_threshold']}")
-                angles.append(misorient_angles)
-                indices.append(misorient_indices)
+                # Check for uncorrupted record of initial condition.
+                assert np.isclose(misorient_angles[0], 45.0, atol=5.0)
+                assert misorient_indices[0] < 0.71
+                # Check for mostly smoothly decreasing misalignment.
+                angles_diff = np.diff(misorient_angles)
+                assert np.max(angles_diff) < 3.6
+                assert np.min(angles_diff) > -7.5
+                assert np.sum(angles_diff) < -24.0
+                # Check that recrystallization is causing faster alignment.
+                np.testing.assert_array_less(
+                    misorient_angles - 3.8,  # Tolerance for GBM onset latency.
+                    misorient_angles[0]
+                    * np.exp(
+                        np.linspace(0, timestop, n_timesteps)
+                        * (np.cos(2 * np.deg2rad(misorient_angles[0])) - 1)
+                    ),
+                )
+
+                # Check alignment and texture strength (half way and final value).
+                halfway = round(n_timesteps / 2)
+                match params["gbs_threshold"]:
+                    case 0:
+                        assert np.isclose(misorient_angles[halfway], 11, atol=1.5)
+                        assert np.isclose(misorient_angles[-1], 8, atol=1.25)
+                        assert np.isclose(misorient_indices[halfway], 0.975, atol=0.075)
+                        assert np.isclose(misorient_indices[-1], 0.99, atol=0.03)
+                    case 0.2:
+                        assert np.isclose(misorient_angles[halfway], 13, atol=2.05)
+                        assert np.isclose(misorient_angles[-1], 11, atol=1.5)
+                        assert np.isclose(misorient_indices[halfway], 0.755, atol=0.08)
+                        assert np.isclose(misorient_indices[-1], 0.755, atol=0.075)
+                    case 0.4:
+                        assert np.isclose(misorient_angles[halfway], 19, atol=2.0)
+                        assert np.isclose(misorient_angles[-1], 16, atol=2.5)
+                        assert misorient_indices[halfway] < 0.75
+                        assert misorient_indices[-1] < 0.71
+
+                # Optionally store plotting metadata.
+                if outdir is not None:
+                    labels.append(f"$f_{{gbs}}$ = {params['gbs_threshold']}")
+                    angles.append(misorient_angles)
+                    indices.append(misorient_indices)
 
         # Optionally plot figure.
         if outdir is not None:

@@ -172,7 +172,7 @@ def params_Hedjazian2017():
 @pytest.fixture
 def vtkfiles_2d_corner_flow():
     datadir = pl.Path(__file__).parent / ".." / "data" / "vtu"
-    return (datadir / "2d_corner_flow_2cmyr.vtu",)
+    return (datadir / "corner2d_2cmyr_5e5x1e5.vtu",)
 
 
 @pytest.fixture

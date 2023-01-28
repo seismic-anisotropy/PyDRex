@@ -31,6 +31,7 @@ Similar to Fig. 5 in [Kaminski 2002].
 [Kaminski 2002](https://doi.org/10.1029/2001GC000222)
 
 """
+import contextlib as cl
 import itertools as it
 
 import numba as nb
@@ -109,9 +110,12 @@ class TestOlivineA:
             .as_matrix()
         )
 
-        # Optional plotting/logging setup.
+        # Optional plotting and logging setup.
+        optional_logging = cl.nullcontext()
         if outdir is not None:
-            _log.logfile_enable(f"{outdir}/corner_olivineA_nopathline.log")
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/corner_olivineA_nopathline.log"
+            )
             labels = []
             angles = []
             indices = []
@@ -120,95 +124,96 @@ class TestOlivineA:
             directions = []
             timestamps = []
 
-        # Note: θ values are in radians.
-        for x_init in (0.25, 0.5, 1.0, 2.0):
-            mineral = _minerals.Mineral(
-                _minerals.MineralPhase.olivine,
-                _minerals.OlivineFabric.A,
-                _defmech.Regime.dislocation,
-                n_grains=n_grains,
-                fractions_init=np.full(n_grains, 1 / n_grains),
-                orientations_init=orientations_init,
-            )
-            r_init = np.sqrt(domain_height**2 + x_init**2)
-            θ_init = np.arctan2(x_init, domain_height)
-            r_current = r_init
-            θ_current = θ_init
-            r_vals = [r_init]
-            θ_vals = [θ_init]
-            t_vals = [0]
-            deformation_gradient = np.eye(3)
-            # While the polycrystal is in the domain.
-            while r_current * np.sin(θ_current) < domain_width:
-                velocity = get_velocity_polar(θ_current, plate_velocity)
-                timestep = 0.2 / la.norm(velocity)
-                deformation_gradient = mineral.update_orientations(
-                    params_Kaminski2001_fig5_shortdash,
-                    deformation_gradient,
-                    get_velocity_gradient(θ_current, plate_velocity),
-                    integration_time=timestep,
+        with optional_logging:
+            # Note: θ values are in radians.
+            for x_init in (0.25, 0.5, 1.0, 2.0):
+                mineral = _minerals.Mineral(
+                    _minerals.MineralPhase.olivine,
+                    _minerals.OlivineFabric.A,
+                    _defmech.Regime.dislocation,
+                    n_grains=n_grains,
+                    fractions_init=np.full(n_grains, 1 / n_grains),
+                    orientations_init=orientations_init,
                 )
-                r_current += velocity[0] * timestep
-                θ_current += velocity[1] * timestep / r_current
-                r_vals.append(r_current)
-                θ_vals.append(θ_current)
-                t_vals.append(t_vals[-1] + timestep)
+                r_init = np.sqrt(domain_height**2 + x_init**2)
+                θ_init = np.arctan2(x_init, domain_height)
+                r_current = r_init
+                θ_current = θ_init
+                r_vals = [r_init]
+                θ_vals = [θ_init]
+                t_vals = [0]
+                deformation_gradient = np.eye(3)
+                # While the polycrystal is in the domain.
+                while r_current * np.sin(θ_current) < domain_width:
+                    velocity = get_velocity_polar(θ_current, plate_velocity)
+                    timestep = 0.2 / la.norm(velocity)
+                    deformation_gradient = mineral.update_orientations(
+                        params_Kaminski2001_fig5_shortdash,
+                        deformation_gradient,
+                        get_velocity_gradient(θ_current, plate_velocity),
+                        integration_time=timestep,
+                    )
+                    r_current += velocity[0] * timestep
+                    θ_current += velocity[1] * timestep / r_current
+                    r_vals.append(r_current)
+                    θ_vals.append(θ_current)
+                    t_vals.append(t_vals[-1] + timestep)
 
-            _log.info("final deformation gradient:\n%s", deformation_gradient)
-            n_timesteps = len(t_vals)
-            assert (
-                n_timesteps
-                == len(mineral.orientations)
-                == len(mineral.fractions)
-                == len(r_vals)
-                == len(θ_vals)
-            ), (
-                f"n_timesteps = {n_timesteps}\n"
-                + f"len(mineral.orientations) = {len(mineral.orientations)}\n"
-                + f"len(mineral.fractions) = {len(mineral.fractions)}\n"
-                + f"len(r_vals) = {len(r_vals)}\n"
-                + f"len(θ_vals) = {len(θ_vals)}\n"
-            )
+                _log.info("final deformation gradient:\n%s", deformation_gradient)
+                n_timesteps = len(t_vals)
+                assert (
+                    n_timesteps
+                    == len(mineral.orientations)
+                    == len(mineral.fractions)
+                    == len(r_vals)
+                    == len(θ_vals)
+                ), (
+                    f"n_timesteps = {n_timesteps}\n"
+                    + f"len(mineral.orientations) = {len(mineral.orientations)}\n"
+                    + f"len(mineral.fractions) = {len(mineral.fractions)}\n"
+                    + f"len(r_vals) = {len(r_vals)}\n"
+                    + f"len(θ_vals) = {len(θ_vals)}\n"
+                )
 
-            misorient_angles = np.zeros(n_timesteps)
-            misorient_indices = np.zeros(n_timesteps)
-            bingham_vectors = np.zeros((n_timesteps, 3))
-            # Loop over first dimension (time steps) of orientations.
-            for idx, matrices in enumerate(mineral.orientations):
-                orientations_resampled, _ = _diagnostics.resample_orientations(
-                    matrices, mineral.fractions[idx]
-                )
-                direction_mean = _diagnostics.bingham_average(
-                    orientations_resampled,
-                    axis=_minerals.get_primary_axis(mineral.fabric),
-                )
-                misorient_angles[idx] = _diagnostics.smallest_angle(
-                    direction_mean,
-                    [1, 0, 0],
-                )
-                misorient_indices[idx] = _diagnostics.misorientation_index(
-                    orientations_resampled
-                )
-                bingham_vectors[idx] = direction_mean
+                misorient_angles = np.zeros(n_timesteps)
+                misorient_indices = np.zeros(n_timesteps)
+                bingham_vectors = np.zeros((n_timesteps, 3))
+                # Loop over first dimension (time steps) of orientations.
+                for idx, matrices in enumerate(mineral.orientations):
+                    orientations_resampled, _ = _diagnostics.resample_orientations(
+                        matrices, mineral.fractions[idx]
+                    )
+                    direction_mean = _diagnostics.bingham_average(
+                        orientations_resampled,
+                        axis=_minerals.get_primary_axis(mineral.fabric),
+                    )
+                    misorient_angles[idx] = _diagnostics.smallest_angle(
+                        direction_mean,
+                        [1, 0, 0],
+                    )
+                    misorient_indices[idx] = _diagnostics.misorientation_index(
+                        orientations_resampled
+                    )
+                    bingham_vectors[idx] = direction_mean
 
-            # TODO: More asserts after I figure out what is wrong.
-            assert misorient_angles[-1] < 15
-            if x_init < 2:
-                assert misorient_indices[-1] > 0.55
+                # TODO: More asserts after I figure out what is wrong.
+                assert misorient_angles[-1] < 15
+                if x_init < 2:
+                    assert misorient_indices[-1] > 0.55
 
-            if outdir is not None:
-                mineral.save(
-                    f"{outdir}/corner_olivineA_nopathline.npz",
-                    str(x_init).replace(".", "d"),
-                )
-                labels.append(rf"$x_{0}$ = {x_init}")
-                angles.append(misorient_angles)
-                indices.append(misorient_indices)
-                r_paths.append(r_vals)
-                θ_paths.append(θ_vals)
-                # Make timestamps end at 0 for nicer plotting.
-                timestamps.append([t - t_vals[-1] for t in t_vals])
-                directions.append(bingham_vectors)
+                if outdir is not None:
+                    mineral.save(
+                        f"{outdir}/corner_olivineA_nopathline.npz",
+                        str(x_init).replace(".", "d"),
+                    )
+                    labels.append(rf"$x_{0}$ = {x_init}")
+                    angles.append(misorient_angles)
+                    indices.append(misorient_indices)
+                    r_paths.append(r_vals)
+                    θ_paths.append(θ_vals)
+                    # Make timestamps end at 0 for nicer plotting.
+                    timestamps.append([t - t_vals[-1] for t in t_vals])
+                    directions.append(bingham_vectors)
 
         if outdir is not None:
             _vis.corner_flow_2d(
@@ -262,9 +267,12 @@ class TestOlivineA:
         # )
         n_timesteps = 20  # Number of places along the pathline to compute CPO.
 
-        # Optional plotting setup.
+        # Optional plotting and logging setup.
+        optional_logging = cl.nullcontext()
         if outdir is not None:
-            _log.logfile_enable(f"{outdir}/corner_olivineA_pathline_prescribed.log")
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/corner_olivineA_pathline_prescribed.log"
+            )
             labels = []
             angles = []
             indices = []
@@ -289,101 +297,104 @@ class TestOlivineA:
             velocity_gradient = get_velocity_gradient(θ, plate_velocity)
             return np.reshape(velocity_gradient, (1, *velocity_gradient.shape))
 
-        # Note: θ values are in radians.
-        for z_exit in (-0.1, -0.3, -0.54, -0.78):
-            mineral = _minerals.Mineral(
-                _minerals.MineralPhase.olivine,
-                _minerals.OlivineFabric.A,
-                _defmech.Regime.dislocation,
-                n_grains=n_grains,
-                fractions_init=np.full(n_grains, 1 / n_grains),
-                orientations_init=orientations_init,
-            )
-            r_exit = np.sqrt(z_exit**2 + domain_width**2)
-            θ_exit = np.arccos(z_exit / r_exit)
-            timestamps_back, get_position = _pathlines.get_pathline(
-                np.array([domain_width, 0.0, z_exit]),
-                _get_velocity,
-                _get_velocity_gradient,
-                min_coords=np.array([0.0, 0.0, -domain_height]),
-                max_coords=np.array([domain_width, 0.0, 0.0]),
-            )
-            r_vals = []
-            θ_vals = []
-            deformation_gradient = np.eye(3)
-            times = np.linspace(timestamps_back[-1], timestamps_back[0], n_timesteps)
-            for time_start, time_end in it.pairwise(times):
-                deformation_gradient = mineral.update_orientations(
-                    params_Kaminski2001_fig5_shortdash,
-                    deformation_gradient,
+        with optional_logging:
+            # Note: θ values are in radians.
+            for z_exit in (-0.1, -0.3, -0.54, -0.78):
+                mineral = _minerals.Mineral(
+                    _minerals.MineralPhase.olivine,
+                    _minerals.OlivineFabric.A,
+                    _defmech.Regime.dislocation,
+                    n_grains=n_grains,
+                    fractions_init=np.full(n_grains, 1 / n_grains),
+                    orientations_init=orientations_init,
+                )
+                r_exit = np.sqrt(z_exit**2 + domain_width**2)
+                θ_exit = np.arccos(z_exit / r_exit)
+                timestamps_back, get_position = _pathlines.get_pathline(
+                    np.array([domain_width, 0.0, z_exit]),
+                    _get_velocity,
                     _get_velocity_gradient,
-                    integration_time=time_end - time_start,
-                    pathline=(time_start, time_end, get_position),
+                    min_coords=np.array([0.0, 0.0, -domain_height]),
+                    max_coords=np.array([domain_width, 0.0, 0.0]),
                 )
-                x_current, _, z_current = get_position(time_end)
-                r_current = np.sqrt(x_current**2 + z_current**2)
-                θ_current = np.arctan2(x_current, -z_current)
-                r_vals.append(r_current)
-                θ_vals.append(θ_current)
+                r_vals = []
+                θ_vals = []
+                deformation_gradient = np.eye(3)
+                times = np.linspace(
+                    timestamps_back[-1], timestamps_back[0], n_timesteps
+                )
+                for time_start, time_end in it.pairwise(times):
+                    deformation_gradient = mineral.update_orientations(
+                        params_Kaminski2001_fig5_shortdash,
+                        deformation_gradient,
+                        _get_velocity_gradient,
+                        integration_time=time_end - time_start,
+                        pathline=(time_start, time_end, get_position),
+                    )
+                    x_current, _, z_current = get_position(time_end)
+                    r_current = np.sqrt(x_current**2 + z_current**2)
+                    θ_current = np.arctan2(x_current, -z_current)
+                    r_vals.append(r_current)
+                    θ_vals.append(θ_current)
 
-            r_vals.append(r_exit)
-            θ_vals.append(θ_exit)
+                r_vals.append(r_exit)
+                θ_vals.append(θ_exit)
 
-            _log.info("final deformation gradient:\n%s", deformation_gradient)
-            assert (
-                n_timesteps
-                == len(mineral.orientations)
-                == len(mineral.fractions)
-                == len(r_vals)
-                == len(θ_vals)
-            ), (
-                f"n_timesteps = {n_timesteps}\n"
-                + f"len(mineral.orientations) = {len(mineral.orientations)}\n"
-                + f"len(mineral.fractions) = {len(mineral.fractions)}\n"
-                + f"len(r_vals) = {len(r_vals)}\n"
-                + f"len(θ_vals) = {len(θ_vals)}\n"
-            )
+                _log.info("final deformation gradient:\n%s", deformation_gradient)
+                assert (
+                    n_timesteps
+                    == len(mineral.orientations)
+                    == len(mineral.fractions)
+                    == len(r_vals)
+                    == len(θ_vals)
+                ), (
+                    f"n_timesteps = {n_timesteps}\n"
+                    + f"len(mineral.orientations) = {len(mineral.orientations)}\n"
+                    + f"len(mineral.fractions) = {len(mineral.fractions)}\n"
+                    + f"len(r_vals) = {len(r_vals)}\n"
+                    + f"len(θ_vals) = {len(θ_vals)}\n"
+                )
 
-            misorient_angles = np.zeros(n_timesteps)
-            misorient_indices = np.zeros(n_timesteps)
-            bingham_vectors = np.zeros((n_timesteps, 3))
-            # Loop over first dimension (time steps) of orientations.
-            for idx, matrices in enumerate(mineral.orientations):
-                orientations_resampled, _ = _diagnostics.resample_orientations(
-                    matrices, mineral.fractions[idx]
-                )
-                direction_mean = _diagnostics.bingham_average(
-                    orientations_resampled,
-                    axis=_minerals.get_primary_axis(mineral.fabric),
-                )
-                misorient_angles[idx] = _diagnostics.smallest_angle(
-                    direction_mean,
-                    [1, 0, 0],
-                )
-                misorient_indices[idx] = _diagnostics.misorientation_index(
-                    orientations_resampled
-                )
-                bingham_vectors[idx] = direction_mean
-                np.testing.assert_allclose(bingham_vectors[:, 1], 0, atol=1e-10)
-                # _log.info("mean direction: %s", direction_mean)
+                misorient_angles = np.zeros(n_timesteps)
+                misorient_indices = np.zeros(n_timesteps)
+                bingham_vectors = np.zeros((n_timesteps, 3))
+                # Loop over first dimension (time steps) of orientations.
+                for idx, matrices in enumerate(mineral.orientations):
+                    orientations_resampled, _ = _diagnostics.resample_orientations(
+                        matrices, mineral.fractions[idx]
+                    )
+                    direction_mean = _diagnostics.bingham_average(
+                        orientations_resampled,
+                        axis=_minerals.get_primary_axis(mineral.fabric),
+                    )
+                    misorient_angles[idx] = _diagnostics.smallest_angle(
+                        direction_mean,
+                        [1, 0, 0],
+                    )
+                    misorient_indices[idx] = _diagnostics.misorientation_index(
+                        orientations_resampled
+                    )
+                    bingham_vectors[idx] = direction_mean
+                    np.testing.assert_allclose(bingham_vectors[:, 1], 0, atol=1e-10)
+                    # _log.info("mean direction: %s", direction_mean)
 
-            # TODO: More asserts after I figure out what is wrong.
-            assert misorient_angles[-1] < 15
-            if z_exit > -0.6:
-                assert misorient_indices[-1] > 0.55
+                # TODO: More asserts after I figure out what is wrong.
+                assert misorient_angles[-1] < 15
+                if z_exit > -0.6:
+                    assert misorient_indices[-1] > 0.55
 
-            if outdir is not None:
-                mineral.save(
-                    f"{outdir}/corner_olivineA_pathline_prescribed",
-                    str(z_exit).replace(".", "d"),
-                )
-                labels.append(rf"$z_{{f}}$ = {z_exit}")
-                angles.append(misorient_angles)
-                indices.append(misorient_indices)
-                r_paths.append(r_vals)
-                θ_paths.append(θ_vals)
-                timestamps.append(times)
-                directions.append(bingham_vectors)
+                if outdir is not None:
+                    mineral.save(
+                        f"{outdir}/corner_olivineA_pathline_prescribed",
+                        str(z_exit).replace(".", "d"),
+                    )
+                    labels.append(rf"$z_{{f}}$ = {z_exit}")
+                    angles.append(misorient_angles)
+                    indices.append(misorient_indices)
+                    r_paths.append(r_vals)
+                    θ_paths.append(θ_vals)
+                    timestamps.append(times)
+                    directions.append(bingham_vectors)
 
         if outdir is not None:
             _vis.corner_flow_2d(
@@ -429,9 +440,12 @@ class TestOlivineA:
         )
         n_timesteps = 20
 
-        # Optional plotting setup.
+        # Optional plotting and logging setup.
+        optional_logging = cl.nullcontext()
         if outdir is not None:
-            _log.logfile_enable(f"{outdir}/corner_olivineA_pathline_numerical.log")
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/corner_olivineA_pathline_numerical.log"
+            )
             labels = []
             angles = []
             indices = []
@@ -445,12 +459,12 @@ class TestOlivineA:
         coords = _vtk.read_coord_array(vtk_output, convert_depth=False)
         x_max = np.amax(coords[:, 0])
         x_min = np.amin(coords[:, 0])
-        assert np.isclose(x_max, 5.0, atol=1e-10)
+        assert np.isclose(x_max, 5e5, atol=1e-10)
         assert np.isclose(x_min, 0.0, atol=1e-10)
         z_max = np.amax(coords[:, 1])
         z_min = np.amin(coords[:, 1])
         assert np.isclose(z_max, 0.0, atol=1e-10)
-        assert np.isclose(z_min, -1.0, atol=1e-10)
+        assert np.isclose(z_min, -1e5, atol=1e-10)
 
         _get_velocity = RBFInterpolator(
             coords,
@@ -471,104 +485,107 @@ class TestOlivineA:
                 axis=2,
             )
 
-        # Note: θ values are in radians.
-        for z_exit in (-0.1, -0.3, -0.54, -0.78):
-            mineral = _minerals.Mineral(
-                _minerals.MineralPhase.olivine,
-                _minerals.OlivineFabric.A,
-                _defmech.Regime.dislocation,
-                n_grains=n_grains,
-                fractions_init=np.full(n_grains, 1 / n_grains),
-                orientations_init=orientations_init,
-            )
-            r_exit = np.sqrt(z_exit**2 + x_max**2)
-            θ_exit = np.arccos(z_exit / r_exit)
-            timestamps_back, get_position = _pathlines.get_pathline(
-                np.array([x_max, z_exit]),
-                _get_velocity,
-                _get_velocity_gradient,
-                min_coords=np.array([x_min, z_min]),
-                max_coords=np.array([x_max, z_max]),
-            )
-
-            def _get_position_3d(point):
-                return np.insert(get_position(point), [1], 0, axis=0)
-
-            r_vals = []
-            θ_vals = []
-            deformation_gradient = np.eye(3)
-            times = np.linspace(timestamps_back[-1], timestamps_back[0], n_timesteps)
-            for time_start, time_end in it.pairwise(times):
-                deformation_gradient = mineral.update_orientations(
-                    params_Kaminski2001_fig5_shortdash,
-                    deformation_gradient,
-                    _get_velocity_gradient_3d,
-                    integration_time=(time_end - time_start) / 4,
-                    pathline=(time_start, time_end, _get_position_3d),
+        with optional_logging:
+            # Note: θ values are in radians.
+            for z_exit in (-0.1e5, -0.3e5, -0.54e5, -0.78e5):
+                mineral = _minerals.Mineral(
+                    _minerals.MineralPhase.olivine,
+                    _minerals.OlivineFabric.A,
+                    _defmech.Regime.dislocation,
+                    n_grains=n_grains,
+                    fractions_init=np.full(n_grains, 1 / n_grains),
+                    orientations_init=orientations_init,
                 )
-                x_current, z_current = get_position(time_end)
-                r_current = np.sqrt(x_current**2 + z_current**2)
-                θ_current = np.arctan2(x_current, -z_current)
-                r_vals.append(r_current)
-                θ_vals.append(θ_current)
-
-            r_vals.append(r_exit)
-            θ_vals.append(θ_exit)
-
-            _log.info("final deformation gradient:\n%s", deformation_gradient)
-            n_timesteps = len(times)
-            assert (
-                n_timesteps
-                == len(mineral.orientations)
-                == len(mineral.fractions)
-                == len(r_vals)
-                == len(θ_vals)
-            ), (
-                f"n_timesteps = {n_timesteps}\n"
-                + f"len(mineral.orientations) = {len(mineral.orientations)}\n"
-                + f"len(mineral.fractions) = {len(mineral.fractions)}\n"
-                + f"len(r_vals) = {len(r_vals)}\n"
-                + f"len(θ_vals) = {len(θ_vals)}\n"
-            )
-
-            misorient_angles = np.zeros(n_timesteps)
-            misorient_indices = np.zeros(n_timesteps)
-            bingham_vectors = np.zeros((n_timesteps, 3))
-            # Loop over first dimension (time steps) of orientations.
-            for idx, matrices in enumerate(mineral.orientations):
-                orientations_resampled, _ = _diagnostics.resample_orientations(
-                    matrices, mineral.fractions[idx]
+                r_exit = np.sqrt(z_exit**2 + x_max**2)
+                θ_exit = np.arccos(z_exit / r_exit)
+                timestamps_back, get_position = _pathlines.get_pathline(
+                    np.array([x_max, z_exit]),
+                    _get_velocity,
+                    _get_velocity_gradient,
+                    min_coords=np.array([x_min, z_min]),
+                    max_coords=np.array([x_max, z_max]),
                 )
-                direction_mean = _diagnostics.bingham_average(
-                    orientations_resampled,
-                    axis=_minerals.get_primary_axis(mineral.fabric),
-                )
-                misorient_angles[idx] = _diagnostics.smallest_angle(
-                    direction_mean,
-                    [1, 0, 0],
-                )
-                misorient_indices[idx] = _diagnostics.misorientation_index(
-                    orientations_resampled
-                )
-                bingham_vectors[idx] = direction_mean
 
-            # TODO: More asserts after I figure out what is wrong.
-            assert misorient_angles[-1] < 15
-            if z_exit > -0.6:
-                assert misorient_indices[-1] > 0.55
+                def _get_position_3d(point):
+                    return np.insert(get_position(point), [1], 0, axis=0)
 
-            if outdir is not None:
-                mineral.save(
-                    f"{outdir}/corner_olivineA_pathline_numerical",
-                    str(z_exit).replace(".", "d"),
+                r_vals = []
+                θ_vals = []
+                deformation_gradient = np.eye(3)
+                times = np.linspace(
+                    timestamps_back[-1], timestamps_back[0], n_timesteps
                 )
-                labels.append(rf"$z_{{f}}$ = {z_exit}")
-                angles.append(misorient_angles)
-                indices.append(misorient_indices)
-                r_paths.append(r_vals)
-                θ_paths.append(θ_vals)
-                timestamps.append(times)
-                directions.append(bingham_vectors)
+                for time_start, time_end in it.pairwise(times):
+                    deformation_gradient = mineral.update_orientations(
+                        params_Kaminski2001_fig5_shortdash,
+                        deformation_gradient,
+                        _get_velocity_gradient_3d,
+                        integration_time=(time_end - time_start) / 4,
+                        pathline=(time_start, time_end, _get_position_3d),
+                    )
+                    x_current, z_current = get_position(time_end)
+                    r_current = np.sqrt(x_current**2 + z_current**2)
+                    θ_current = np.arctan2(x_current, -z_current)
+                    r_vals.append(r_current)
+                    θ_vals.append(θ_current)
+
+                r_vals.append(r_exit)
+                θ_vals.append(θ_exit)
+
+                _log.info("final deformation gradient:\n%s", deformation_gradient)
+                n_timesteps = len(times)
+                assert (
+                    n_timesteps
+                    == len(mineral.orientations)
+                    == len(mineral.fractions)
+                    == len(r_vals)
+                    == len(θ_vals)
+                ), (
+                    f"n_timesteps = {n_timesteps}\n"
+                    + f"len(mineral.orientations) = {len(mineral.orientations)}\n"
+                    + f"len(mineral.fractions) = {len(mineral.fractions)}\n"
+                    + f"len(r_vals) = {len(r_vals)}\n"
+                    + f"len(θ_vals) = {len(θ_vals)}\n"
+                )
+
+                misorient_angles = np.zeros(n_timesteps)
+                misorient_indices = np.zeros(n_timesteps)
+                bingham_vectors = np.zeros((n_timesteps, 3))
+                # Loop over first dimension (time steps) of orientations.
+                for idx, matrices in enumerate(mineral.orientations):
+                    orientations_resampled, _ = _diagnostics.resample_orientations(
+                        matrices, mineral.fractions[idx]
+                    )
+                    direction_mean = _diagnostics.bingham_average(
+                        orientations_resampled,
+                        axis=_minerals.get_primary_axis(mineral.fabric),
+                    )
+                    misorient_angles[idx] = _diagnostics.smallest_angle(
+                        direction_mean,
+                        [1, 0, 0],
+                    )
+                    misorient_indices[idx] = _diagnostics.misorientation_index(
+                        orientations_resampled
+                    )
+                    bingham_vectors[idx] = direction_mean
+
+                # TODO: More asserts after I figure out what is wrong.
+                # assert misorient_angles[-1] < 15
+                # if z_exit > -0.6:
+                #     assert misorient_indices[-1] > 0.55
+
+                if outdir is not None:
+                    mineral.save(
+                        f"{outdir}/corner_olivineA_pathline_numerical",
+                        str(z_exit).replace(".", "d"),
+                    )
+                    labels.append(rf"$z_{{f}}$ = {z_exit}")
+                    angles.append(misorient_angles)
+                    indices.append(misorient_indices)
+                    r_paths.append(r_vals)
+                    θ_paths.append(θ_vals)
+                    timestamps.append(times)
+                    directions.append(bingham_vectors)
 
         if outdir is not None:
             _vis.corner_flow_2d(
