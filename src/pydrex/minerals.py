@@ -391,8 +391,8 @@ class Mineral:
     def save(self, filename, postfix=None):
         """Save CPO data for all stored timesteps to a `numpy` NPZ file.
 
-        If the file specified by `filename` exists and `postfix` is not `None`,
-        the data is appended to the NPZ file in fields ending with "_`postfix`".
+        If `postfix` is not `None`, the data is appended to the NPZ file
+        in fields ending with "_`postfix`".
 
         Raises a `ValueError` if the data shapes are not compatible.
 
@@ -417,8 +417,8 @@ class Mineral:
             path = pl.Path(filename)
             # Create parent directories if needed.
             path.parent.mkdir(parents=True, exist_ok=True)
-            # Append to file if it exists, requires postfix (unique name).
-            if path.exists() and postfix is not None:
+            # Append to file, requires postfix (unique name).
+            if postfix is not None:
                 archive = ZipFile(filename, mode="a", allowZip64=True)
                 for key in data.keys():
                     with archive.open(
