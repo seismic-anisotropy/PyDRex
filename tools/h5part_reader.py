@@ -93,7 +93,6 @@ if __name__ == "__main__":
             fractions = np.empty((n_timesteps, args.ngrains))
 
             for t in range(n_timesteps):
-
                 # Extract particle position.
                 x[t] = file[f"Step#{t}/x"][particle_id - 1]
                 y[t] = file[f"Step#{t}/y"][particle_id - 1]

@@ -213,6 +213,7 @@ class Mineral:
         <https://numpy.org/doc/stable/user/whatisnumpy.html>
 
         """
+
         # Set up callables for the ODE, some variables come from enclosing scope.
         def extract_vars(y):
             # TODO: Check if we can avoid .copy() here.
