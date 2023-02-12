@@ -4,6 +4,7 @@ import pathlib as pl
 
 import numpy as np
 from matplotlib import pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
@@ -54,7 +55,7 @@ def simple_shear_stationary_2d(
     labels=None,
     refval=None,
 ):
-    """Plot diagnostics for stationary A-type olivine 2D simple shear tests."""
+    """Plot diagnostics for stationary A-type olivine 2D simple shear box tests."""
     fig = plt.figure(figsize=(5, 8), dpi=300)
     grid = fig.add_gridspec(2, 1, hspace=0.05)
     ax_mean = fig.add_subplot(grid[0])
@@ -102,20 +103,20 @@ def simple_shear_stationary_2d(
     _savefig_deep(fig, savefile)
 
 
-def _lag_corner_flow(θ):
-    # Grain orientation lag for corner flow, eq. 11 in Kaminski 2002.
-    return np.array(
-        (θ * (θ**2 + np.cos(θ) ** 2))
-        / (np.tan(θ) * (θ**2 + np.cos(θ) ** 2 - θ * np.sin(2 * θ)))
+def _lag_2d_corner_flow(θ):
+    # Predicted grain orientation lag for 2D corner flow, eq. 11 in Kaminski 2002.
+    _θ = np.ma.masked_less(θ, 1e-15)
+    return (_θ * (_θ**2 + np.cos(_θ) ** 2)) / (
+        np.tan(_θ) * (_θ**2 + np.cos(_θ) ** 2 - _θ * np.sin(2 * _θ))
     )
 
 
 @check_marker_seq
 def corner_flow_2d(
+    x_paths,
+    z_paths,
     angles,
     indices,
-    r_paths,
-    θ_paths,
     directions,
     timestamps,
     xlabel,
@@ -128,40 +129,38 @@ def corner_flow_2d(
     Π_levels=(0.1, 0.5, 1, 2, 3),
 ):
     """Plot diagnostics for prescribed path 2D corner flow tests."""
-    fig = plt.figure(figsize=(5, 12), dpi=300)
-    grid = fig.add_gridspec(4, 1, hspace=0.05, height_ratios=(0.3, 0.3, 0.1, 0.3))
-    ax_mean = fig.add_subplot(grid[0])
-    ax_mean.set_ylabel("Mean angle from horizontal ∈ [0, 90]°")
-    ax_mean.set_ylim((0, 90))
-    ax_mean.tick_params(labelbottom=False)
-    ax_strength = fig.add_subplot(grid[1], sharex=ax_mean)
+    fig = plt.figure(figsize=(12, 8), dpi=300)
+    grid = fig.add_gridspec(2, 2, hspace=-0.2, wspace=0.025)
+    ax_domain = fig.add_subplot(grid[0, :])
+    ax_domain.set_ylabel("z")
+    ax_domain.set_xlabel(xlabel)
+    ax_domain.xaxis.set_ticks_position("top")
+    ax_domain.xaxis.set_label_position("top")
+    ax_domain.set_aspect("equal")
+    ax_strength = fig.add_subplot(grid[1, 0])
     ax_strength.set_ylabel("Texture strength (M-index)")
     ax_strength.set_xlabel("Time (s)")
-    ax_path = fig.add_subplot(grid[3])
-    ax_path.set_ylabel("z")
-    ax_path.set_xlabel(xlabel)
-    ax_path.xaxis.set_ticks_position("top")
-    ax_path.xaxis.set_label_position("top")
-    if (
-        xlims is not None
-        and zlims is not None
-        and np.isclose(np.diff(xlims), np.diff(zlims), atol=1e-5)
-    ):
-        ax_path.set_aspect("equal")
+    ax_mean = fig.add_subplot(grid[1, 1])
+    ax_mean.set_ylabel("Mean angle from horizontal (°)")
+    ax_mean.set_xlabel("Time (s)")
+    ax_mean.set_ylim((0, 90))
+    ax_mean.yaxis.set_ticks_position("right")
+    ax_mean.yaxis.set_label_position("right")
 
     for i, (
         misorient_angles,
         misorient_indices,
-        r_series,
-        θ_series,
+        x_series,
+        z_series,
         bingham_vectors,
         t_series,
-    ) in enumerate(zip(angles, indices, r_paths, θ_paths, directions, timestamps)):
-        r_series = np.array(r_series)
-        θ_series = np.array(θ_series)
+    ) in enumerate(zip(angles, indices, x_paths, z_paths, directions, timestamps)):
+        x_series = np.array(x_series)
+        z_series = np.array(z_series)
         # Π := grain orientation lag, dimensionless, see Kaminski 2002.
-        Π_series = _lag_corner_flow(θ_series)
+        Π_series = _lag_2d_corner_flow(np.arctan2(x_series, -z_series))
         Π_max_step = np.argmax(Π_series)
+        # TODO: Fix the rest.
         # Index of timestamp where Π ≈ 1 (corner).
         corner_step = Π_max_step + np.argmin(np.abs(Π_series[Π_max_step:] - 1.0))
 
@@ -206,9 +205,9 @@ def corner_flow_2d(
 
         # Plot the prescribed pathlines, indicate CPO and location of Π ≈ 1.
         mask_cpo = misorient_indices > cpo_threshold
-        ax_path.plot(
-            r_series[~mask_cpo] * np.sin(θ_series[~mask_cpo]),
-            -r_series[~mask_cpo] * np.cos(θ_series[~mask_cpo]),
+        ax_domain.plot(
+            x_series[~mask_cpo],
+            z_series[~mask_cpo],
             marker,
             markersize=5,
             alpha=0.33,
@@ -217,43 +216,44 @@ def corner_flow_2d(
         )
         if np.any(mask_cpo):
             # TODO: Scale bingham_vectors by a meaningful length; FSE long axis?
-            ax_path.quiver(
-                r_series[mask_cpo] * np.sin(θ_series[mask_cpo]),
-                -r_series[mask_cpo] * np.cos(θ_series[mask_cpo]),
+            ax_domain.quiver(
+                x_series[mask_cpo],
+                z_series[mask_cpo],
                 bingham_vectors[mask_cpo, 0],
                 bingham_vectors[mask_cpo, 2],
                 color=color,
                 pivot="mid",
+                width=3e-3,
                 headaxislength=0,
                 headlength=0,
                 zorder=10,
             )
-        ax_path.plot(
-            r_series[corner_step] * np.sin(θ_series[corner_step]),
-            -r_series[corner_step] * np.cos(θ_series[corner_step]),
+        ax_domain.plot(
+            x_series[corner_step],
+            z_series[corner_step],
             marker,
             markersize=5,
             color="k",
             zorder=11,
         )
         if xlims is not None:
-            ax_path.set_xlim(*xlims)
+            ax_domain.set_xlim(*xlims)
         if zlims is not None:
-            ax_path.set_ylim(*zlims)
+            ax_domain.set_ylim(*zlims)
 
     # Plot grain orientation lag contours.
     x_ticks = np.linspace(
-        *ax_path.get_xlim(), len(ax_path.xaxis.get_major_ticks()) * 10 + 1
+        *ax_domain.get_xlim(), len(ax_domain.xaxis.get_major_ticks()) * 10 + 1
     )
     z_ticks = np.linspace(
-        *ax_path.get_ylim(), len(ax_path.yaxis.get_major_ticks()) * 10 + 1
+        *ax_domain.get_ylim(), len(ax_domain.yaxis.get_major_ticks()) * 10 + 1
     )
     x_grid, z_grid = np.meshgrid(x_ticks, z_ticks)
     θ_grid = np.arctan2(x_grid, -z_grid)
-    Π_contours = ax_path.contourf(
+    Π_contours = ax_domain.contourf(
         x_ticks,
         z_ticks,
-        _lag_corner_flow(θ_grid),
+        _lag_2d_corner_flow(θ_grid),
         levels=Π_levels,
         extend="min",
         cmap="copper_r",
@@ -263,8 +263,11 @@ def corner_flow_2d(
     for c in Π_contours.collections:
         c.set_edgecolor("face")
     plt.rcParams["axes.grid"] = False
+    divider = make_axes_locatable(ax_domain)
     fig.colorbar(
-        Π_contours, label="grain orientation lag, Π", location="bottom", pad=0.05
+        Π_contours,
+        label="grain orientation lag, Π",
+        cax=divider.append_axes("right", size="2%", pad=0.05),
     ).ax.invert_xaxis()
     plt.rcParams["axes.grid"] = True
 
