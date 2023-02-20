@@ -3,12 +3,12 @@ import functools as ft
 import pathlib as pl
 
 import numpy as np
-from scipy import linalg as la
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from scipy import linalg as la
 
-from pydrex import minerals as _minerals
 from pydrex import diagnostics as _diagnostics
+from pydrex import minerals as _minerals
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True

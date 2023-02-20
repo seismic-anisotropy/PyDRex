@@ -49,10 +49,10 @@ from scipy.spatial.transform import Rotation
 
 from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
-from pydrex import stats as _stats
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import pathlines as _pathlines
+from pydrex import stats as _stats
 from pydrex import visualisation as _vis
 
 
@@ -68,7 +68,7 @@ def get_velocity(x, z, plate_velocity):
 def get_velocity_gradient(x, z, plate_velocity):
     """Return velocity gradient in a corner flow (Cartesian coordinate basis)."""
     return (4.0 * plate_velocity / (np.pi * (x**2 + z**2) ** 2)) * np.array(
-        [[-x**2 * z, 0.0, x**3], [0.0, 0.0, 0.0], [-x * z**2, 0.0, x**2 * z]]
+        [[-(x**2) * z, 0.0, x**3], [0.0, 0.0, 0.0], [-x * z**2, 0.0, x**2 * z]]
     )
 
 

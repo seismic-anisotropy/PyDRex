@@ -2,7 +2,6 @@
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-
 _RNG = np.random.default_rng()
 
 
