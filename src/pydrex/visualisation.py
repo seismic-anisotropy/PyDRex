@@ -301,6 +301,16 @@ def set_polefig_axis(ax, ref_axes="xz"):
 
 
 def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
+    """Calculate stereographic poles from 3D orientation matrices.
+
+    Expects `orientations` to be an array with shape (N, 3, 3).
+    The optional arguments `ref_axes` and `hkl` can be used to specify
+    the stereograph axes and the crystallographic axis respectively.
+    The stereograph axes should be given as a string of two letters,
+    e.g. "xz" (default), and the third letter in the set "xyz" is used
+    as the upward pointing axis for the lower hemisphere Lambert equal area projection.
+
+    """
     upward_axes = next((set("xyz") - set(ref_axes)).__iter__())
     axes_map = {"x": 0, "y": 1, "z": 2}
     directions = np.tensordot(orientations.transpose([0, 2, 1]), hkl, axes=(2, 0))
@@ -319,6 +329,10 @@ def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
     # )
 
     # Lambert equal-area projection, in Cartesian coords from 3D to the circle.
+    # TODO: Find a good reference or derive the equations to check.
+    # This stuff just comes from wikipedia:
+    # https://en.wikipedia.org/wiki/Lambert_azimuthal_equal-area_projection#cite_ref-borradaile2003_6-0
+    # Also from the implementation of Fraters & Billen 2021.
     stereograph_xvals = _directions[:, axes_map[ref_axes[0]]] / (
         1 + np.abs(directions[:, axes_map[upward_axes]])
     )

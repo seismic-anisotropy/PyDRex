@@ -9,7 +9,7 @@ def isotropic_orientations(n_grains, symmetry=(2, 4), rng=_RNG):
     """Get orientation matrices for an isotropic polycrystal of minerals.
 
     The optional argument `symmetry` accepts a tuple of integers (a, b)
-    that specify the crystal symmetry system of the mineral.
+    that specifies the crystal symmetry system of the mineral.
     See `misorientations_random` for details.
 
     The optional argument `rng` can be used to specify an alternative
@@ -31,7 +31,7 @@ def isotropic_orientations(n_grains, symmetry=(2, 4), rng=_RNG):
     orientations[0] = Rotation.random()
     axis_map = {0: "X", 1: "Y", 2: "Z"}
     for n in range(1, n_grains):
-        # The location of each new grain is determined by the misorienatation angle from
+        # The location of each new grain is determined by the misorientation angle from
         # the mean of all existing grains.
         # TODO: Improve by composing with the 'most remote' orientation instead of n - 1?
         δθ = rng.choice(max_θ, p=weights)
@@ -52,7 +52,7 @@ def misorientations_random(low, high, symmetry=(2, 4)):
     and `high` is bounded by the maximum theoretical misorientation angle θmax.
 
     The optional argument `symmetry` accepts a tuple of integers (a, b)
-    that specify the crystal symmetry system:
+    that specifies the crystal symmetry system:
 
     system  triclinic  monoclinic  orthorhombic  rhombohedral tetragonal hexagonal
     ------------------------------------------------------------------------------
