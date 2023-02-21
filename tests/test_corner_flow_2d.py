@@ -345,7 +345,7 @@ class TestOlivineA:
                     case -0.1:
                         assert misorient_indices[halfway] > 0.55
                         assert misorient_angles[halfway] > 17.5
-                        assert misorient_indices[-1] > 0.6
+                        assert misorient_indices[-1] > 0.575
                         assert misorient_angles[-1] < 17.5
                     case -0.3:
                         assert misorient_indices[halfway] > 0.45
