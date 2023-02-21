@@ -1,4 +1,4 @@
-r"""PyDRex: Methods to calculate texture diagnostics.
+r"""> PyDRex: Methods to calculate texture diagnostics.
 
 NOTE: Calculations expect orientation matrices $a$ to represent passive
 (i.e. alias) rotations, which are defined in terms of the extrinsic ZXZ
@@ -6,9 +6,9 @@ euler angles $ϕ, θ, φ$ as
 
 $$
 a = \begin{bmatrix}
-    \cosφ\cosϕ - \cosθ\sinϕ\sinφ & \cosθ\cosϕ\sinφ + \cosφ\sinϕ & \sinφ\sinθ
-   -\sinφ\cosϕ - \cosθ\sinϕ\cosφ & \cosθ\cosϕ\cosφ - \sinφ\sinϕ & \cosφ\sinθ
-            \sinθ\sinϕ           &           -\sinθ\cosϕ        &   \cosθ
+        \cosφ\cosϕ - \cosθ\sinϕ\sinφ & \cosθ\cosϕ\sinφ + \cosφ\sinϕ & \sinφ\sinθ \cr
+        -\sinφ\cosϕ - \cosθ\sinϕ\cosφ & \cosθ\cosϕ\cosφ - \sinφ\sinϕ & \cosφ\sinθ \cr
+        \sinθ\sinϕ & -\sinθ\cosϕ & \cosθ
     \end{bmatrix}
 $$
 
@@ -21,6 +21,8 @@ import itertools as it
 import numpy as np
 import scipy.linalg as la
 from numpy import random as rn
+
+from pydrex import stats as _st
 
 
 def bingham_average(orientations, axis="a"):
@@ -144,7 +146,7 @@ def misorientation_index(orientations):
     return (1 / 2) * np.sum(
         np.abs(
             [
-                misorientations_random(i, i + 1)
+                _st.misorientations_random(i, i + 1)
                 - count_misorientations[i] / len(misorientations)
                 for i in range(120)
             ]
@@ -180,98 +182,6 @@ def misorientation_angles(combinations):
             )
         )
     )
-
-
-def misorientations_random(low, high, symmetry=(2, 4)):
-    """Get expected count of misorientation angles for an isotropic aggregate.
-
-    Estimate the expected number of misorientation angles between grains
-    that would fall within (`low`, `high`) in degrees for an aggregate
-    with randomly oriented grains, where `low` ∈ [0, `high`),
-    and `high` is bounded by the maximum theoretical misorientation angle θmax.
-
-    The optional argument `symmetry` accepts a tuple of integers (a, b)
-    that specify the crystal symmetry system:
-
-    system  triclinic  monoclinic  orthorhombic  rhombohedral tetragonal hexagonal
-    ------------------------------------------------------------------------------
-    M       1          2           2             3            4          6
-    N       1          2           4             6            8          12
-    θmax    180°       180°        120°          120°         90°        90°
-
-    This is identically Table 1 in [Grimmer 1979].
-    The orthorhombic system (olivine) is selected by default.
-
-    [Grimmer 1979]: https://doi.org/10.1016/0036-9748(79)90058-9
-
-    """
-    match symmetry:
-        case (2, 4) | (3, 6):
-            maxval = 120
-        case (4, 8) | (6, 12):
-            maxval = 90
-        case (1, 1) | (2, 2):
-            maxval = 180
-        case _:
-            raise ValueError(f"incorrect symmetry values (M, N) = {symmetry}")
-    M, N = symmetry
-    if not 0 <= low <= high <= maxval:
-        raise ValueError(
-            f"bounds must obey `low` ∈ [0, `high`) and `high` < {maxval}.\n"
-            + f"You've supplied (`low`, `high`) = ({low}, {high})."
-        )
-
-    counts_low = 0  # Number of counts at the lower bin edge.
-    counts_high = 0  # ... at the higher bin edge.
-    counts_both = [counts_low, counts_high]
-
-    # Some constant factors.
-    a = np.tan(np.deg2rad(90 / M))
-    b = 2 * np.rad2deg(np.arctan(np.sqrt(1 + a**2)))
-    c = round(2 * np.rad2deg(np.arctan(np.sqrt(1 + 2 * a**2))))
-
-    for i, edgeval in enumerate([low, high]):
-        d = np.deg2rad(edgeval)
-
-        if 0 <= edgeval <= (180 / M):
-            counts_both[i] += (N / 180) * (1 - np.cos(d))
-
-        elif (180 / M) <= edgeval <= (180 * M / N):
-            counts_both[i] += (N / 180) * a * np.sin(d)
-
-        elif 90 <= edgeval <= b:
-            counts_both[i] += (M / 90) * ((M + a) * np.sin(d) - M * (1 - np.cos(d)))
-
-        elif b <= edgeval <= c:
-            ν = np.tan(np.deg2rad(edgeval / 2)) ** 2
-
-            counts_both[i] = (M / 90) * (
-                (M + a) * np.sin(d)
-                - M * (1 - np.cos(d))
-                + (M / 180)
-                * (
-                    (1 - np.cos(d))
-                    * (
-                        np.rad2deg(
-                            np.arccos((1 - ν * np.cos(np.deg2rad(180 / M))) / (ν - 1))
-                        )
-                        + 2
-                        * np.rad2deg(
-                            np.arccos(a / (np.sqrt(ν - a**2) * np.sqrt(ν - 1)))
-                        )
-                    )
-                    - 2
-                    * np.sin(d)
-                    * (
-                        2 * np.rad2deg(np.arccos(a / np.sqrt(ν - 1)))
-                        + a * np.rad2deg(np.arccos(1 / np.sqrt(ν - a**2)))
-                    )
-                )
-            )
-        else:
-            assert False  # Should never happen.
-
-    return np.sum(counts_both) / 2
 
 
 def smallest_angle(vector, axis):
