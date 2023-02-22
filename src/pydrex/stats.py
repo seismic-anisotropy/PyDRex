@@ -1,73 +1,112 @@
-"""> PyDRex: Statistical methods."""
+"""> PyDRex: Statistical methods for orientation and elasticity data."""
 import numpy as np
-from scipy.spatial.transform import Rotation
+
+from pydrex import tensors as _tensors
+from pydrex import stiffness as _stiffness
+from pydrex import minerals as _minerals
 
 _RNG = np.random.default_rng()
 
 
-def isotropic_orientations(n_grains, symmetry=(2, 4), rng=_RNG):
-    """Get orientation matrices for an isotropic polycrystal of minerals.
+def average_stiffness(minerals, config):
+    """Calculate average elastic tensor from a list of `minerals`.
 
-    The optional argument `symmetry` accepts a tuple of integers (a, b)
-    that specifies the crystal symmetry system of the mineral.
-    See `misorientations_random` for details.
-
-    The optional argument `rng` can be used to specify an alternative
-    pseudorandom generator, see `numpy.random.Generator`.
-
-    NOTE: Experimental, currently only marginally better than
-    `scipy.spatial.transform.Rotation.random()` and definitely more expensive.
+    The `config` dictionary must contain volume fractions of all occuring mineral phases,
+    indexed by keys of the format `"<phase>_fraction"`.
 
     """
-    # Discrete density of misorientation angles used as weights to the sampler.
-    max_θ = _max_misorientation(symmetry)
-    weights = np.array(
-        [misorientations_random(θ - 1, θ, symmetry) for θ in range(1, max_θ + 1)]
-    )
-    weights /= weights.sum()
-    # Allocate n_grains worth of identity rotations.
-    orientations = Rotation.from_quat(np.tile([0, 0, 0, 1], (n_grains, 1)))
-    # Set random first orientation.
-    orientations[0] = Rotation.random()
-    axis_map = {0: "X", 1: "Y", 2: "Z"}
-    for n in range(1, n_grains):
-        # The location of each new grain is determined by the misorientation angle from
-        # the mean of all existing grains.
-        # TODO: Improve by composing with the 'most remote' orientation instead of n - 1?
-        δθ = rng.choice(max_θ, p=weights)
-        orientations[n] = (
-            orientations[n - 1]
-            * Rotation.mean(orientations[:n])
-            * Rotation.from_euler(axis_map[rng.choice(3)], δθ, degrees=True)
-        )
-    return orientations
+    n_grains = minerals[0].n_grains
+    assert np.all(
+        [m.n_grains == n_grains for m in minerals[1:]]
+    ), "cannot average minerals with varying grain counts"
+    elastic_tensors = []
+    for phase in _minerals.MineralPhase:
+        if phase == _minerals.MineralPhase.olivine:
+            elastic_tensors.append(
+                _tensors.Voigt_to_elastic_tensor(_stiffness.OLIVINE)
+            )
+        elif phase == _minerals.MineralPhase.enstatite:
+            elastic_tensors.append(
+                _tensors.Voigt_to_elastic_tensor(_stiffness.ENSTATITE)
+            )
+
+    average_tensor = np.zeros((3, 3, 3, 3))
+    for n in n_grains:
+        for mineral in minerals:
+            if mineral.phase == _minerals.MineralPhase.olivine:
+                average_tensor += (
+                    _tensors.rotated_tensor(mineral.orientations[n, ...].transpose())
+                    * mineral.fractions[n]
+                    * config["olivine_fraction"]
+                )
+            elif mineral.phase == _minerals.MineralPhase.enstatite:
+                average_tensor += (
+                    _tensors.rotated_tensor(minerals.orientations[n, ...].transpose())
+                    * mineral.fractions[n]
+                    * config["enstatite_fraction"]
+                )
+    return _tensors.elastic_tensor_to_Voigt(average_tensor)
 
 
-def misorientations_random(low, high, symmetry=(2, 4)):
+def resample_orientations(orientations, fractions, n_samples=None, rng=_RNG):
+    """Generate new samples from `orientations` weighed by the volume distribution.
+
+    If the optional number of samples `n_samples` is not specified,
+    it will be set to the number of original "grains" (length of `fractions`).
+    The argument `rng` can be used to specify a custom random number generator.
+
+    """
+    if n_samples is None:
+        n_samples = len(fractions)
+    sort_ascending = np.argsort(fractions)
+    # Cumulative volume fractions
+    fractions_ascending = fractions[sort_ascending]
+    cumfrac = fractions_ascending.cumsum()
+    # Number of new samples with volume less than each cumulative fraction.
+    count_less = np.searchsorted(cumfrac, rng.random(n_samples))
+    return orientations[sort_ascending][count_less], fractions_ascending[count_less]
+
+
+def _scatter_matrix(orientations, row):
+    # Lower triangular part of the symmetric scatter (inertia) matrix,
+    # see eq. 2.4 in Watson 1966 or eq. 9.2.10 in Mardia & Jupp 2009 (with n = 1),
+    # it's a summation of the outer product of the [h, k, l] vector with itself,
+    # so taking the row assumes that `orientations` are passive rotations of the
+    # reference frame [h, k, l] vector.
+    scatter = np.zeros((3, 3))
+    scatter[0, 0] = np.sum(orientations[:, row, 0] ** 2)
+    scatter[1, 1] = np.sum(orientations[:, row, 1] ** 2)
+    scatter[2, 2] = np.sum(orientations[:, row, 2] ** 2)
+    scatter[1, 0] = np.sum(orientations[:, row, 0] * orientations[:, row, 1])
+    scatter[2, 0] = np.sum(orientations[:, row, 0] * orientations[:, row, 2])
+    scatter[2, 1] = np.sum(orientations[:, row, 1] * orientations[:, row, 2])
+    return scatter
+
+
+def misorientations_random(low, high, system=(2, 4)):
     """Get expected count of misorientation angles for an isotropic aggregate.
 
     Estimate the expected number of misorientation angles between grains
-    that would fall within (`low`, `high`) in degrees for an aggregate
-    with randomly oriented grains, where `low` ∈ [0, `high`),
-    and `high` is bounded by the maximum theoretical misorientation angle θmax.
+    that would fall within $($`low`, `high`$)$ in degrees for an aggregate
+    with randomly oriented grains, where `low` $∈ [0, $`high`$)$,
+    and `high` is bounded by the maximum theoretical misorientation angle
+    for the given symmetry system.
 
-    The optional argument `symmetry` accepts a tuple of integers (a, b)
-    that specifies the crystal symmetry system:
+    The optional argument `system` accepts a tuple of integers (a, b)
+    that specifies the crystal symmetry system according to:
 
-    system  triclinic  monoclinic  orthorhombic  rhombohedral tetragonal hexagonal
-    ------------------------------------------------------------------------------
-    M       1          2           2             3            4          6
-    N       1          2           4             6            8          12
-    θmax    180°       180°        120°          120°         90°        90°
+        system  triclinic  monoclinic  orthorhombic  rhombohedral tetragonal hexagonal
+        ------------------------------------------------------------------------------
+        a       1          2           2             3            4          6
+        b       1          2           4             6            8          12
+        θmax    180°       180°        120°          120°         90°        90°
 
-    This is identically Table 1 in [Grimmer 1979].
+    This is identically Table 1 in [Grimmer 1979](https://doi.org/10.1016/0036-9748(79)90058-9).
     The orthorhombic system (olivine) is selected by default.
 
-    [Grimmer 1979]: https://doi.org/10.1016/0036-9748(79)90058-9
-
     """
-    max_θ = _max_misorientation(symmetry)
-    M, N = symmetry
+    max_θ = _max_misorientation(system)
+    M, N = system
     if not 0 <= low <= high <= max_θ:
         raise ValueError(
             f"bounds must obey `low` ∈ [0, `high`) and `high` < {max_θ}.\n"
@@ -127,8 +166,9 @@ def misorientations_random(low, high, symmetry=(2, 4)):
     return np.sum(counts_both) / 2
 
 
-def _max_misorientation(symmetry):
-    match symmetry:
+def _max_misorientation(system):
+    # Maximum misorientation angle for two grains of the given symmetry system.
+    match system:
         case (2, 4) | (3, 6):
             max_θ = 120
         case (4, 8) | (6, 12):
@@ -136,5 +176,5 @@ def _max_misorientation(symmetry):
         case (1, 1) | (2, 2):
             max_θ = 180
         case _:
-            raise ValueError(f"incorrect symmetry values (M, N) = {symmetry}")
+            raise ValueError(f"incorrect system values (M, N) = {system}")
     return max_θ
