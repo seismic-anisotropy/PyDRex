@@ -1,9 +1,9 @@
 """> PyDRex: Statistical methods for orientation and elasticity data."""
 import numpy as np
 
-from pydrex import tensors as _tensors
-from pydrex import stiffness as _stiffness
 from pydrex import minerals as _minerals
+from pydrex import stiffness as _stiffness
+from pydrex import tensors as _tensors
 
 _RNG = np.random.default_rng()
 
@@ -22,9 +22,7 @@ def average_stiffness(minerals, config):
     elastic_tensors = []
     for phase in _minerals.MineralPhase:
         if phase == _minerals.MineralPhase.olivine:
-            elastic_tensors.append(
-                _tensors.Voigt_to_elastic_tensor(_stiffness.OLIVINE)
-            )
+            elastic_tensors.append(_tensors.Voigt_to_elastic_tensor(_stiffness.OLIVINE))
         elif phase == _minerals.MineralPhase.enstatite:
             elastic_tensors.append(
                 _tensors.Voigt_to_elastic_tensor(_stiffness.ENSTATITE)

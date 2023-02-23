@@ -14,9 +14,9 @@ from scipy.spatial.transform import Rotation
 
 from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
-from pydrex import stats as _stats
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
+from pydrex import stats as _stats
 from pydrex import visualisation as _vis
 
 
