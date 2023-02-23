@@ -342,13 +342,11 @@ def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
     return stereograph_xvals, stereograph_yvals
 
 
-def polefigures(datafile, step=1, postfix=None, savefile="polefigures.png", **kwargs):
+def polefigures(datafile, step=1, postfix=None, savefile="polefigures.png"):
     """Plot pole figures for CPO data.
 
     The data is read from fields ending with the optional `postfix` in the NPZ file
     `datafile`. Pole figures are plotted at every `step` number of timesteps.
-
-    Any additional optional keyword arguments are passed to `poles`.
 
     """
     mineral = _minerals.Mineral.from_file(datafile, postfix=postfix)
@@ -368,7 +366,7 @@ def polefigures(datafile, step=1, postfix=None, savefile="polefigures.png", **kw
     for n, orientations in enumerate(orientations_resampled):
         ax100 = fig100.add_subplot(1, n_orientations, n + 1)
         set_polefig_axis(ax100)
-        ax100.scatter(*poles(orientations, **kwargs), s=0.3, alpha=0.33, zorder=11)
+        ax100.scatter(*poles(orientations), s=0.3, alpha=0.33, zorder=11)
         # ax100.contourf(*point_density(*poles(orientations)))
 
         ax010 = fig010.add_subplot(1, n_orientations, n + 1)
