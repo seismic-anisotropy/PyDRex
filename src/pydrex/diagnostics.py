@@ -93,33 +93,55 @@ def symmetry(orientations, axis="a"):
     )
 
 
-def misorientation_index(orientations, bins="doane", system=(2, 4)):
+def misorientation_index(orientations, bins=None, system=(2, 4)):
     """Calculate M-index for polycrystal orientations.
 
     The `bins` argument is passed to `numpy.histogram`.
+    If left as `None`, 1° bins will be used as recommended by the reference paper.
     The symmetry system can be specified using the `system` argument.
     The default system is orthorhombic.
 
     See [Skemer et al. 2005](https://doi.org/10.1016/j.tecto.2005.08.023).
 
     """
-    misorientations = misorientation_angles(
+    # Compute and bin misorientation angles from orientation data.
+    misorientations_data = misorientation_angles(
         np.array(list(it.combinations(orientations, 2)))
     )
     θmax = _st._max_misorientation(system)
-    count_misorientations, _ = np.histogram(
-        misorientations, bins="doane", range=(0, θmax)
+    misorientations_count, bin_edges = np.histogram(
+        misorientations_data, bins=θmax, range=(0, θmax), density=True
     )
-    print(len(count_misorientations))
-    return (1 / 2) * np.sum(
-        np.abs(
-            [
-                _st.misorientations_random(i, i + 1)
-                - count_misorientations[i] / len(misorientations)
-                for i in range(len(count_misorientations))
-            ]
-        )
+
+    # Compute counts of theoretical misorientation for an isotropic aggregate,
+    # using the same bins (Skemer 2005 recommend 1° bins).
+    misorientations_theory = np.array(
+        [
+            _st.misorientations_random(bin_edges[i], bin_edges[i + 1])
+            for i in range(len(misorientations_count))
+        ]
     )
+
+    # Equation 2 in Skemer 2005.
+    return (θmax / (2 * len(misorientations_count))) * np.sum(
+        np.abs(misorientations_theory - misorientations_count)
+    )
+
+
+def coaxial_index(orientations, axis1="b", axis2="a"):
+    r"""Calculate coaxial “BA” index for a combination of two crystal axes.
+
+    The BA index of [Mainprice et al. 2015](https://doi.org/10.1144/SP409.8)
+    is derived from the eigenvalue `symmetry` diagnostics and measures point vs girdle
+    symmetry in the aggregate. $BA \in [0, 1]$ where $BA = 0$ corresponds to a perfect
+    axial girdle texture and $BA = 1$ represents a point symmetry texture assuming that
+    the random component $R$ is negligible. May be less susceptible to random
+    fluctuations compared to the raw eigenvalue diagnostics.
+
+    """
+    P1, G1, _ = symmetry(orientations, axis=axis1)
+    P2, G2, _ = symmetry(orientations, axis=axis2)
+    return 0.5 * (2 - (P1 / (G1 + P1)) - (G2 / (G2 + P2)))
 
 
 def misorientation_angles(combinations):
