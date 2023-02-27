@@ -1,9 +1,10 @@
-"""PyDRex: tests for texture diagnostics."""
+"""> PyDRex: tests for texture diagnostics."""
 import numpy as np
 from numpy import random as rn
 from scipy.spatial.transform import Rotation
 
 from pydrex import diagnostics as _diagnostics
+from pydrex import stats as _stats
 
 
 class TestSymmetryPGR:
@@ -35,7 +36,17 @@ class TestSymmetryPGR:
             _diagnostics.symmetry(orientations, axis="a"), (0, 0, 1), atol=0.15
         )
 
-    # TODO: More symmetry tests.
+    def test_girdle(self):
+        """Test diagnostics of girdled orientations."""
+        rng = rn.default_rng()
+        a = np.zeros(1000)
+        b = np.zeros(1000)
+        c = rng.normal(0, 1.0, size=1000)
+        d = rng.normal(0, 1.0, size=1000)
+        orientations = Rotation.from_quat(np.column_stack([a, b, c, d])).as_matrix()
+        np.testing.assert_allclose(
+            _diagnostics.symmetry(orientations, axis="a"), (0, 1, 0), atol=0.1
+        )
 
 
 class TestVolumeWeighting:
@@ -55,7 +66,7 @@ class TestVolumeWeighting:
             .as_matrix()
         )
         fractions = np.array([0.25, 0.6, 0.15])
-        new_orientations = _diagnostics.resample_orientations(
+        new_orientations = _stats.resample_orientations(
             orientations,
             fractions,
             25,
@@ -76,7 +87,7 @@ class TestVolumeWeighting:
             .as_matrix()
         )
         fractions = np.array([0.25, 0.6, 0.15])
-        new_orientations = _diagnostics.resample_orientations(
+        new_orientations = _stats.resample_orientations(
             orientations,
             fractions,
             2,
@@ -145,7 +156,7 @@ class TestMIndex:
         """Test M-index for random (uniform distribution) grain orientations."""
         orientations = Rotation.random(1000).as_matrix()
         assert np.isclose(
-            _diagnostics.misorientation_index(orientations), 0.38, atol=1e-2
+            _diagnostics.misorientation_index(orientations), 0.29, atol=1e-2
         )
 
     def test_texture_spread10X(self):
@@ -181,7 +192,7 @@ class TestMIndex:
             .as_matrix()
         )
         assert np.isclose(
-            _diagnostics.misorientation_index(orientations), 0.8, atol=0.1
+            _diagnostics.misorientation_index(orientations), 0.82, atol=0.1
         )
 
     def test_textures_increasing(self):
@@ -209,3 +220,13 @@ class TestMIndex:
         assert np.all(
             np.diff(M_vals) >= 0
         ), f"M-index values {M_vals} are not increasing"
+
+    def test_texture_girdle(self):
+        """Test M-index for girdled texture."""
+        rng = rn.default_rng()
+        a = np.zeros(1000)
+        b = np.zeros(1000)
+        c = rng.normal(0, 1.0, size=1000)
+        d = rng.normal(0, 1.0, size=1000)
+        orientations = Rotation.from_quat(np.column_stack([a, b, c, d])).as_matrix()
+        np.isclose(_diagnostics.misorientation_index(orientations), 0.37, atol=0.03)

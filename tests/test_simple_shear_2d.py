@@ -16,6 +16,7 @@ from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
+from pydrex import stats as _stats
 from pydrex import visualisation as _vis
 
 
@@ -114,7 +115,7 @@ class TestSinglePolycrystalOlivineA:
             misorient_indices = np.zeros(n_timesteps)
             # Loop over first dimension (time steps) of orientations.
             for idx, matrices in enumerate(mineral.orientations):
-                orientations_resampled, _ = _diagnostics.resample_orientations(
+                orientations_resampled, _ = _stats.resample_orientations(
                     matrices, mineral.fractions[idx]
                 )
                 direction_mean = _diagnostics.bingham_average(
@@ -276,7 +277,7 @@ class TestSinglePolycrystalOlivineA:
                 misorient_indices = np.zeros(n_timesteps)
                 # Loop over first dimension (time steps) of orientations.
                 for idx, matrices in enumerate(mineral.orientations):
-                    orientations_resampled, _ = _diagnostics.resample_orientations(
+                    orientations_resampled, _ = _stats.resample_orientations(
                         matrices, mineral.fractions[idx]
                     )
                     direction_mean = _diagnostics.bingham_average(

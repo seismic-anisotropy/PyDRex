@@ -129,7 +129,7 @@ def corner_flow_2d(
     labels=None,
     xlims=None,
     zlims=None,
-    cpo_threshold=0.4,
+    cpo_threshold=0.33,
     Π_levels=(0.1, 0.5, 1, 2, 3),
 ):
     """Plot diagnostics for prescribed path 2D corner flow tests."""

@@ -44,7 +44,6 @@ import itertools as it
 
 import numba as nb
 import numpy as np
-from scipy import linalg as la
 from scipy.spatial.transform import Rotation
 
 from pydrex import deformation_mechanism as _defmech
@@ -75,146 +74,6 @@ def get_velocity_gradient(x, z, plate_velocity):
 class TestOlivineA:
     """Tests for pure A-type olivine polycrystals in 2D corner flows."""
 
-    def test_forward_init_isotropic(
-        self,
-        params_Kaminski2001_fig5_shortdash,
-        outdir,
-    ):
-        """Test CPO evolution during forward advection under prescribed velocity.
-
-        Initial condition: fully random orientations in all 4 `Mineral`s.
-
-        Plate velocity: 2 cm/yr
-
-        """
-        # Plate velocity (half spreading rate), convert cm/yr to m/s.
-        plate_velocity = 2.0 / (100.0 * 365.0 * 86400.0)
-        domain_height = 1.0  # Normalised to olivine-spinel transition.
-        domain_width = 5.0
-        n_grains = 1000
-        orientations_init = _stats.isotropic_orientations(n_grains).as_matrix()
-
-        # Optional plotting and logging setup.
-        optional_logging = cl.nullcontext()
-        if outdir is not None:
-            optional_logging = _log.logfile_enable(
-                f"{outdir}/corner_olivineA_forward.log"
-            )
-            labels = []
-            angles = []
-            indices = []
-            x_paths = []
-            z_paths = []
-            directions = []
-            timestamps = []
-
-        with optional_logging:
-            # Note: θ values are in radians.
-            for x_init in (0.25, 0.5, 1.0, 2.0):
-                mineral = _minerals.Mineral(
-                    _minerals.MineralPhase.olivine,
-                    _minerals.OlivineFabric.A,
-                    _defmech.Regime.dislocation,
-                    n_grains=n_grains,
-                    fractions_init=np.full(n_grains, 1 / n_grains),
-                    orientations_init=orientations_init,
-                )
-                x_current = x_init
-                z_current = -domain_height
-                x_vals = [x_current]
-                z_vals = [z_current]
-                t_vals = [0]
-                deformation_gradient = np.eye(3)
-                # While the polycrystal is in the domain.
-                while x_current < domain_width:
-                    velocity = get_velocity(x_current, z_current, plate_velocity)
-                    timestep = 0.2 / la.norm(velocity)
-                    deformation_gradient = mineral.update_orientations(
-                        params_Kaminski2001_fig5_shortdash,
-                        deformation_gradient,
-                        get_velocity_gradient(x_current, z_current, plate_velocity),
-                        integration_time=timestep,
-                    )
-                    # Basic forward advection (Euler method).
-                    x_current += velocity[0] * timestep
-                    z_current += velocity[-1] * timestep
-                    x_vals.append(x_current)
-                    z_vals.append(z_current)
-                    t_vals.append(t_vals[-1] + timestep)
-
-                _log.info("final deformation gradient:\n%s", deformation_gradient)
-                n_timesteps = len(t_vals)
-                assert (
-                    n_timesteps
-                    == len(mineral.orientations)
-                    == len(mineral.fractions)
-                    == len(x_vals)
-                    == len(z_vals)
-                ), (
-                    f"n_timesteps = {n_timesteps}\n"
-                    + f"len(mineral.orientations) = {len(mineral.orientations)}\n"
-                    + f"len(mineral.fractions) = {len(mineral.fractions)}\n"
-                    + f"len(x_vals) = {len(x_vals)}\n"
-                    + f"len(z_vals) = {len(z_vals)}\n"
-                )
-
-                misorient_angles = np.zeros(n_timesteps)
-                misorient_indices = np.zeros(n_timesteps)
-                bingham_vectors = np.zeros((n_timesteps, 3))
-                # Loop over first dimension (time steps) of orientations.
-                for idx, matrices in enumerate(mineral.orientations):
-                    orientations_resampled, _ = _diagnostics.resample_orientations(
-                        matrices, mineral.fractions[idx]
-                    )
-                    direction_mean = _diagnostics.bingham_average(
-                        orientations_resampled,
-                        axis=_minerals.get_primary_axis(mineral.fabric),
-                    )
-                    misorient_angles[idx] = _diagnostics.smallest_angle(
-                        direction_mean,
-                        [1, 0, 0],
-                    )
-                    misorient_indices[idx] = _diagnostics.misorientation_index(
-                        orientations_resampled
-                    )
-                    bingham_vectors[idx] = direction_mean
-
-                # TODO: More asserts after I figure out what is wrong.
-                # assert misorient_angles[-1] < 15
-                # if x_init < 2:
-                #     assert misorient_indices[-1] > 0.55
-
-                if outdir is not None:
-                    mineral.save(
-                        f"{outdir}/corner_olivineA_forward.npz",
-                        str(x_init).replace(".", "d"),
-                    )
-                    labels.append(rf"$x_{0}$ = {x_init}")
-                    angles.append(misorient_angles)
-                    indices.append(misorient_indices)
-                    x_paths.append(x_vals)
-                    z_paths.append(z_vals)
-                    # Make timestamps end at 0 for nicer plotting.
-                    timestamps.append([t - t_vals[-1] for t in t_vals])
-                    directions.append(bingham_vectors)
-
-        if outdir is not None:
-            _vis.corner_flow_2d(
-                x_paths,
-                z_paths,
-                angles,
-                indices,
-                directions,
-                timestamps,
-                xlabel=f"x ⇀ ({plate_velocity:.2e} m/s)",
-                savefile=f"{outdir}/corner_olivineA_forward.png",
-                markers=("o", "v", "s", "p"),
-                labels=labels,
-                xlims=(0, domain_width + 0.25),
-                zlims=(-domain_height, 0),
-                cpo_threshold=0.35,
-            )
-
     def test_corner_pathline_prescribed_init_isotropic(
         self,
         params_Kaminski2001_fig5_shortdash,
@@ -232,7 +91,7 @@ class TestOlivineA:
         plate_velocity = 2.0 / (100.0 * 365.0 * 86400.0)
         domain_height = 1.0  # Normalised to olivine-spinel transition.
         domain_width = 5.0
-        n_grains = 1000
+        n_grains = 1000  # NOTE: Changes affect texture strength and tolerances.
         orientations_init = Rotation.random(n_grains, random_state=1).as_matrix()
         n_timesteps = 20  # Number of places along the pathline to compute CPO.
 
@@ -322,7 +181,7 @@ class TestOlivineA:
                 bingham_vectors = np.zeros((n_timesteps, 3))
                 # Loop over first dimension (time steps) of orientations.
                 for idx, matrices in enumerate(mineral.orientations):
-                    orientations_resampled, _ = _diagnostics.resample_orientations(
+                    orientations_resampled, _ = _stats.resample_orientations(
                         matrices, mineral.fractions[idx]
                     )
                     direction_mean = _diagnostics.bingham_average(
@@ -338,30 +197,6 @@ class TestOlivineA:
                     )
                     bingham_vectors[idx] = direction_mean
 
-                assert misorient_indices[0] < 0.4
-                halfway = round(n_timesteps / 2)
-                # TODO: Use np.isclose
-                match z_exit:
-                    case -0.1:
-                        assert misorient_indices[halfway] > 0.55
-                        assert misorient_angles[halfway] > 17.5
-                        assert misorient_indices[-1] > 0.575
-                        assert misorient_angles[-1] < 17.5
-                    case -0.3:
-                        assert misorient_indices[halfway] > 0.45
-                        assert misorient_angles[halfway] > 20
-                        assert misorient_indices[-1] > 0.525
-                        assert misorient_angles[-1] < 20
-                    case -0.54:
-                        assert misorient_indices[halfway] > 0.425
-                        assert misorient_angles[halfway] > 22.5
-                        assert misorient_indices[-1] > 0.5
-                        assert misorient_angles[-1] < 22.5
-                    case -0.78:
-                        # TODO: Results from this pathline are weird.
-                        # No tests for now...
-                        pass
-
                 if outdir is not None:
                     mineral.save(
                         f"{outdir}/corner_olivineA_pathline_prescribed.npz",
@@ -374,6 +209,31 @@ class TestOlivineA:
                     z_paths.append(z_vals)
                     timestamps.append(times)
                     directions.append(bingham_vectors)
+
+                # Check that we start below the default cpo visualisation threshold.
+                assert misorient_indices[0] < 0.33
+                halfway = round(n_timesteps / 2)
+                # TODO: Use np.isclose
+                match z_exit:
+                    case -0.1:
+                        assert misorient_indices[halfway] > 0.75
+                        assert misorient_angles[halfway] > 17.5
+                        assert misorient_indices[-1] > 0.8
+                        assert misorient_angles[-1] < 17.5
+                    case -0.3:
+                        assert misorient_indices[halfway] > 0.65
+                        assert misorient_angles[halfway] > 20
+                        assert misorient_indices[-1] > 0.75
+                        assert misorient_angles[-1] < 20
+                    case -0.54:
+                        assert misorient_indices[halfway] > 0.575
+                        assert misorient_angles[halfway] > 22.5
+                        assert misorient_indices[-1] > 0.7
+                        assert misorient_angles[-1] < 22.5
+                    case -0.78:
+                        # TODO: Results from this pathline are a bit weird.
+                        # No tests for now...
+                        pass
 
         if outdir is not None:
             _vis.corner_flow_2d(

@@ -1,26 +1,24 @@
 r"""> PyDRex: Methods to calculate texture diagnostics.
 
-NOTE: Calculations expect orientation matrices $a$ to represent passive
-(i.e. alias) rotations, which are defined in terms of the extrinsic ZXZ
-euler angles $ϕ, θ, φ$ as
-
-$$
-a = \begin{bmatrix}
-        \cosφ\cosϕ - \cosθ\sinϕ\sinφ & \cosθ\cosϕ\sinφ + \cosφ\sinϕ & \sinφ\sinθ \cr
-        -\sinφ\cosϕ - \cosθ\sinϕ\cosφ & \cosθ\cosϕ\cosφ - \sinφ\sinϕ & \cosφ\sinθ \cr
-        \sinθ\sinϕ & -\sinθ\cosϕ & \cosθ
-    \end{bmatrix}
-$$
-
-such that a[i, j] gives the direction cosine of the angle between the i-th
-grain axis and the j-th external axis (in the global Eulerian frame).
+.. note::
+    Calculations expect orientation matrices $a$ to represent passive
+    (i.e. alias) rotations, which are defined in terms of the extrinsic ZXZ
+    euler angles $ϕ, θ, φ$ as
+    $$
+    a = \begin{bmatrix}
+            \cosφ\cosϕ - \cosθ\sinϕ\sinφ & \cosθ\cosϕ\sinφ + \cosφ\sinϕ & \sinφ\sinθ \cr
+            -\sinφ\cosϕ - \cosθ\sinϕ\cosφ & \cosθ\cosϕ\cosφ - \sinφ\sinϕ & \cosφ\sinθ \cr
+            \sinθ\sinϕ & -\sinθ\cosϕ & \cosθ
+        \end{bmatrix}
+    $$
+    such that a[i, j] gives the direction cosine of the angle between the i-th
+    grain axis and the j-th external axis (in the global Eulerian frame).
 
 """
 import itertools as it
 
 import numpy as np
 import scipy.linalg as la
-from numpy import random as rn
 
 from pydrex import stats as _st
 
@@ -32,9 +30,9 @@ def bingham_average(orientations, axis="a"):
     of the given crystallographic `axis`, or the a-axis by default.
     Valid axis specifiers are "a" for [100], "b" for [010] and "c" for [001].
 
-    See e.g. [Watson 1966].
+    See also: [Watson 1966](https://doi.org/10.1086%2F627211),
+    [Mardia & Jupp, “Directional Statistics”](https://doi.org/10.1002/9780470316979).
 
-    [Watson 1966]: https://doi.org/10.1086%2F627211
 
     """
     match axis:
@@ -51,29 +49,27 @@ def bingham_average(orientations, axis="a"):
     # Eigenvector corresponding to largest eigenvalue is the mean direction.
     # SciPy returns eigenvalues in ascending order (same order for vectors).
     # SciPy uses lower triangular entries by default, no need for all components.
-    mean_vector = la.eigh(_scatter_matrix(orientations, row))[1][:, -1]
+    mean_vector = la.eigh(_st._scatter_matrix(orientations, row))[1][:, -1]
     return mean_vector / la.norm(mean_vector)
 
 
 def symmetry(orientations, axis="a"):
-    """Compute texture symmetry eigenvalue diagnostics.
+    r"""Compute texture symmetry eigenvalue diagnostics from olivine orientation matrices.
 
     Compute Point, Girdle and Random symmetry diagnostics
     for ternary texture classification.
     Returns the tuple (P, G, R) where
-
     $$
-    P = (λ_{1} - λ_{2}) / N
-    G = 2 (λ_{2} - λ_{3}) / N
-    R = 3 λ_{3} / N
+    \begin{align\*}
+    P &= (λ_{1} - λ_{2}) / N \cr
+    G &= 2 (λ_{2} - λ_{3}) / N \cr
+    R &= 3 λ_{3} / N
+    \end{align\*}
     $$
-
-    with N the sum of the eigenvalues $λ_{1} ≥ λ_{2} ≥ λ_{3}$
+    with $N$ the sum of the eigenvalues $λ_{1} ≥ λ_{2} ≥ λ_{3}$
     of the scatter (inertia) matrix.
 
-    See e.g. [Vollmer 1990].
-
-    [Vollmer 1990]: https://doi.org/10.1130/0016-7606(1990)102%3C0786:AAOEMT%3E2.3.CO;2
+    See e.g. [Vollmer 1990](https://doi.org/10.1130/0016-7606(1990)102%3C0786:AAOEMT%3E2.3.CO;2).
 
     """
     match axis:
@@ -86,7 +82,7 @@ def symmetry(orientations, axis="a"):
         case _:
             raise ValueError(f"axis must be 'a', 'b', or 'c', not {axis}")
 
-    scatter = _scatter_matrix(orientations, row)
+    scatter = _st._scatter_matrix(orientations, row)
     # SciPy uses lower triangular entries by default, no need for all components.
     eigvals_descending = la.eigvalsh(scatter)[::-1]
     sum_eigvals = np.sum(eigvals_descending)
@@ -97,61 +93,55 @@ def symmetry(orientations, axis="a"):
     )
 
 
-def _scatter_matrix(orientations, row):
-    # Lower triangular part of the symmetric scatter (inertia) matrix,
-    # see eq. 2.4 in Watson 1966.
-    scatter = np.zeros((3, 3))
-    scatter[0, 0] = np.sum(orientations[:, row, 0] ** 2)
-    scatter[1, 1] = np.sum(orientations[:, row, 1] ** 2)
-    scatter[2, 2] = np.sum(orientations[:, row, 2] ** 2)
-    scatter[1, 0] = np.sum(orientations[:, row, 0] * orientations[:, row, 1])
-    scatter[2, 0] = np.sum(orientations[:, row, 0] * orientations[:, row, 2])
-    scatter[2, 1] = np.sum(orientations[:, row, 1] * orientations[:, row, 2])
-    return scatter
+def misorientation_index(orientations, bins=None, system=(2, 4)):
+    """Calculate M-index for polycrystal orientations.
 
+    The `bins` argument is passed to `numpy.histogram`.
+    If left as `None`, 1° bins will be used as recommended by the reference paper.
+    The symmetry system can be specified using the `system` argument.
+    The default system is orthorhombic.
 
-def resample_orientations(orientations, fractions, n_samples=None):
-    """Generate new samples from `orientations` based on volume distribution.
-
-    If the optional number of samples is not specified,
-    it will be set to the number of original "grains" (length of `fractions`).
+    See [Skemer et al. 2005](https://doi.org/10.1016/j.tecto.2005.08.023).
 
     """
-    if n_samples is None:
-        n_samples = len(fractions)
-    sort_ascending = np.argsort(fractions)
-    # Cumulative volume fractions
-    fractions_ascending = fractions[sort_ascending]
-    cumfrac = fractions_ascending.cumsum()
-    # Number of new samples with volume less than each cumulative fraction.
-    rng = rn.default_rng()
-    count_less = np.searchsorted(cumfrac, rng.random(n_samples))
-    return orientations[sort_ascending][count_less], fractions_ascending[count_less]
-
-
-def misorientation_index(orientations):
-    """Calculate M-index for olivine polycrystal orientations.
-
-    See [Skemer et al. 2005].
-
-    [Skemer et al. 2005]: https://doi.org/10.1016/j.tecto.2005.08.023
-
-    """
-    misorientations = misorientation_angles(
+    # Compute and bin misorientation angles from orientation data.
+    misorientations_data = misorientation_angles(
         np.array(list(it.combinations(orientations, 2)))
     )
-    # Number of misorientations within 1° bins.
-    # TODO: Make n_bins and θmax args to the function.
-    count_misorientations, _ = np.histogram(misorientations, bins=120, range=(0, 120))
-    return (1 / 2) * np.sum(
-        np.abs(
-            [
-                _st.misorientations_random(i, i + 1)
-                - count_misorientations[i] / len(misorientations)
-                for i in range(120)
-            ]
-        )
+    θmax = _st._max_misorientation(system)
+    misorientations_count, bin_edges = np.histogram(
+        misorientations_data, bins=θmax, range=(0, θmax), density=True
     )
+
+    # Compute counts of theoretical misorientation for an isotropic aggregate,
+    # using the same bins (Skemer 2005 recommend 1° bins).
+    misorientations_theory = np.array(
+        [
+            _st.misorientations_random(bin_edges[i], bin_edges[i + 1])
+            for i in range(len(misorientations_count))
+        ]
+    )
+
+    # Equation 2 in Skemer 2005.
+    return (θmax / (2 * len(misorientations_count))) * np.sum(
+        np.abs(misorientations_theory - misorientations_count)
+    )
+
+
+def coaxial_index(orientations, axis1="b", axis2="a"):
+    r"""Calculate coaxial “BA” index for a combination of two crystal axes.
+
+    The BA index of [Mainprice et al. 2015](https://doi.org/10.1144/SP409.8)
+    is derived from the eigenvalue `symmetry` diagnostics and measures point vs girdle
+    symmetry in the aggregate. $BA \in [0, 1]$ where $BA = 0$ corresponds to a perfect
+    axial girdle texture and $BA = 1$ represents a point symmetry texture assuming that
+    the random component $R$ is negligible. May be less susceptible to random
+    fluctuations compared to the raw eigenvalue diagnostics.
+
+    """
+    P1, G1, _ = symmetry(orientations, axis=axis1)
+    P2, G2, _ = symmetry(orientations, axis=axis2)
+    return 0.5 * (2 - (P1 / (G1 + P1)) - (G2 / (G2 + P2)))
 
 
 def misorientation_angles(combinations):
