@@ -1,7 +1,7 @@
-"""> PyDRex: Lagrangian data structures and fabric/RRSS selection.
+"""> PyDRex: Lagrangian data structures and fabric/CRSS selection.
 
 Acronyms:
-- RRSS = Reference Resolved Shear Stress,
+- CRSS = Critical Resolved Shear Stress,
     i.e. components of stress acting on each slip system in the grain reference frame
 
 """
@@ -51,8 +51,8 @@ class MineralPhase(IntEnum):
 
 
 @nb.njit
-def get_rrss(phase, fabric):
-    """Get Reference Resolved Shear Stress for the mineral `phase` and `fabric`.
+def get_crss(phase, fabric):
+    """Get Critical Resolved Shear Stress for the mineral `phase` and `fabric`.
 
     Returns an array of the components of stress acting on each slip system
     in the grain-local reference frame.
@@ -244,7 +244,7 @@ class Mineral:
                 strain_rate=strain_rate / strain_rate_max,
                 velocity_gradient=_velocity_gradient / strain_rate_max,
                 stress_exponent=config["stress_exponent"],
-                dislocation_exponent=config["dislocation_exponent"],
+                deformation_exponent=config["deformation_exponent"],
                 nucleation_efficiency=config["nucleation_efficiency"],
                 gbm_mobility=config["gbm_mobility"],
                 volume_fraction=volume_fraction,
