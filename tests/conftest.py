@@ -1,4 +1,4 @@
-"""Configuration and fixtures for PyDRex tests."""
+"""> Configuration and fixtures for PyDRex tests."""
 import pathlib as pl
 
 import matplotlib
