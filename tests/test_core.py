@@ -1,12 +1,9 @@
-"""PyDRex: tests for core D-Rex routines."""
+"""> PyDRex: tests for core D-Rex routines."""
 import numpy as np
 from scipy.spatial.transform import Rotation
 
 import pydrex.core as _core
 import pydrex.minerals as _minerals
-
-# def test_update_strain():
-#    ...
 
 
 class TestSimpleShearSingleGrains:

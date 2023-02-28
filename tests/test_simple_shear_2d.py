@@ -1,4 +1,4 @@
-"""PyDRex: 2D simple shear tests.
+"""> PyDRex: 2D simple shear tests.
 
 NOTE: In scipy, rotations are represented as a matrix
 that transforms [1, 0, 0] to the new a-axis vector.
