@@ -23,3 +23,13 @@ The package metadata and full list of dependencies are specified in [`setup.cfg`
 
 Some tests can optionally output figures or extended diagnostics when run locally.
 Check the [test suite README](tests/README.md) for details.
+
+## Documentation
+
+The documentation can be build using [pdoc](https://github.com/mitmproxy/pdoc),
+using the command:
+
+    pdoc -t docs/template -o html --math src/pydrex/ tests/*.py
+
+which will output the html documentation into a folder called `html`.
+The homepage will be `html/pydrex.html`.
