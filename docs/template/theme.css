@@ -38,7 +38,7 @@
   }
 }
 
-.homediv { max-width: 1080px; }
+.homediv { padding-top: 56px; max-width: 1080px; }
 
 .button {
     background-color: var(--muted);
