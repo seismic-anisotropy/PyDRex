@@ -32,7 +32,7 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m venv .venv-gh-pages
           source .venv-gh-pages/bin/activate
-          python3 -m pip install "$PWD"[doc]
+          python3 -m pip install "$PWD"[doc,test]
           pdoc -t docs/template -o html --math src/pydrex tests/*.py
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
