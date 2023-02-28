@@ -1,4 +1,4 @@
-"""PyDRex: Visualisation helpers for tests/examples."""
+"""> PyDRex: Visualisation helpers for tests/examples."""
 import functools as ft
 import pathlib as pl
 
@@ -446,7 +446,11 @@ def _schmidt_count(cos_dist, σ=None):
 def point_density(
     x_data, y_data, kernel=_kamb_count, σ=3, gridsize=(100, 100), weights=None
 ):
-    """Calculate point density of spherical data projected onto a circle."""
+    """Calculate point density of spherical data projected onto a circle.
+
+    .. warning:: This method is currently broken.
+
+    """
     if weights is None:
         weights = 1
 

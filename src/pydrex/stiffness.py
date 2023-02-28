@@ -1,4 +1,4 @@
-"""PyDRex: Stiffness matrices for minerals.
+"""> PyDRex: Stiffness matrices for minerals.
 
 The provided matrices encode the stiffness tensor in the compact Voigt notation.
 The stiffness matrices contain values of the elastic constants in GPa.

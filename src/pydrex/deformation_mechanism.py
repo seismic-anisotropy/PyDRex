@@ -1,4 +1,4 @@
-"""PyDRex: Deformation mechanism enums."""
+"""> PyDRex: Deformation mechanism enums."""
 from enum import IntEnum, unique
 
 

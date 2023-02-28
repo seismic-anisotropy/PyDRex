@@ -1,4 +1,4 @@
-"""PyDRex: Lagrangian data structures and fabric/RRSS selection.
+"""> PyDRex: Lagrangian data structures and fabric/RRSS selection.
 
 Acronyms:
 - RRSS = Reference Resolved Shear Stress,

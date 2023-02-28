@@ -1,4 +1,4 @@
-"""PyDRex: Interpolation callbacks and helpers."""
+"""> PyDRex: Interpolation callbacks and helpers."""
 # NOTE: Module contains delayed imports (search for 'Delayed import' comments).
 import itertools as it
 
@@ -15,15 +15,15 @@ def default_interpolators(config, coords, vtk_output, mpl_interp=None):
     """Create a dictionary of default interpolator callbacks for PyDRex input.
 
     Args:
-        `config` (dict) — PyDRex configuration parameters
-        `coords` (2D or 3D NumPy array) — coordinates of the interpolation mesh
-        `vtk_output` (vtk{Un,S}tructuredGrid) — the VTK input grid
+    - `config` (dict) — PyDRex configuration parameters
+    - `coords` (2D or 3D NumPy array) — coordinates of the interpolation mesh
+    - `vtk_output` (vtk{Un,S}tructuredGrid) — the VTK input grid
 
     Optionaly pass a string to `mpl_interp` to use
     `matplotlib.tri.CubicTriInterpolator` with the chosen smoothing algorithm.
     Only valid for 2D data with pre-existing triangulations.
 
-    See also `pydrex.interpolators.create_interpolators`.
+    See also `create_interpolators`.
 
     """
     if config["mesh"]["dimension"] != coords.shape[1]:
@@ -149,10 +149,10 @@ def create_interpolators(interpolator, coords, data, triangles=None, **kwargs):
     """Create interpolator callbacks for data arrays.
 
     Args:
-        `intepolator` (object) — interpolator class to use
-        `coords` (2D or 3D NumPy array) — coordinates of the finite element mesh
-        `data` (NumPy array) — data used to create the interpolators
-        `triangles` (optional) — 2D triangle vertex indices, see below
+    - `intepolator` (object) — interpolator class to use
+    - `coords` (2D or 3D NumPy array) — coordinates of the finite element mesh
+    - `data` (NumPy array) — data used to create the interpolators
+    - `triangles` (optional) — 2D triangle vertex indices, see below
 
     Optional kwargs will be passed to the interpolation constructor.
 

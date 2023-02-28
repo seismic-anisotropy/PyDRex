@@ -1,8 +1,31 @@
-"""PyDRex: logger settings and boilerplate.
+"""> PyDRex: logger settings and boilerplate.
 
 Python's logging module is weird and its methods don't allow us to specify
 which logger to use, so just using `logging.debug` for example always uses
-the "root" logger, which contains a bunch of noise from other imports/modules.
+the "root" logger, which spams a bunch of messages from other imports/modules.
+Instead, the methods in this module are thin wrappers that use custom
+logging objects (`pydrex.logger.LOGGER` and `pydrex.logger.CONSOLE_LOGGER`).
+The method `quiet_aliens` can be invoked to suppress most messages
+from third-party modules, except critical errors and warnings from Numba.
+
+For most applications, the `logfile_enable` context manager is recommended.
+Always use the old printf style formatting for log messages, not fstrings,
+otherwise the values will always be converted to strings even when logging is disabled.
+Example:
+
+```python
+from pydrex import logger as _log
+_log.quiet_aliens()
+with _log.logfile_enable("my_log_file.log"):
+    value = 42
+    _log.critical("critical error with value: %s", value)
+    _log.error("runtime error with value: %s", value)
+    _log.warning("warning with value: %s", value)
+    _log.info("information message with value: %s", value)
+    _log.debug("verbose debugging message with value: %s", value)
+    ... # Construct Minerals, update orientations, etc.
+
+```
 
 """
 import contextlib as cl

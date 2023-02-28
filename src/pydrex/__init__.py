@@ -1,28 +1,31 @@
 r"""
-
 #### Simulate crystallographic preferred orientation evolution in polycrystals
 
 ---
 
-**This software is currently in early development.
-Only modules that have tests are anywhere close to being usable.**
-
----
+.. warning::
+    **This software is currently in early development.
+    Only modules that have tests are anywhere close to being stable.**
 
 ## About
 
 The core routines are based on the original implementation by Édouard Kaminski,
 which can be [downloaded from this link (~90KB)](http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz).
 The reference paper is [Kaminski & Ribe 2001](https://doi.org/10.1016/s0012-821x(01)00356-9),
-and an open-acess paper which discusses the model is [Fraters & Billen 2021](https://doi.org/10.1029/2021gc009846).
+and an open-acess paper which discusses the model is [Fraters & Billen 2021](https://doi.org/10.1029/2021gc009846). [TODO: Add our paper]
 
 The package is currently not available on PyPi,
-and must be installed by cloning the source code and using `pip install .`
-(with the dot) in the top-level folder.
+and must be installed by cloning the [source code](https://github.com/Patol75/PyDRex).
+and using `pip install .` (with the dot) in the top-level folder.
 Multiprocessing is not yet available in the packaged version.
 Running the tests requires [pytest](https://docs.pytest.org/en/stable/),
 and the custom pytest flag `--outdir="OUT"` can be used to save output figures
 to the folder called OUT (or the current folder, using `"."`).
+
+The submodule sidebar on the left can be used
+to discover the public API of this package.
+Some of the tests are also documented and can serve as usage examples.
+They can be viewed in the module index (modules starting with `test_`).
 
 ## The D-Rex kinematic CPO model
 
@@ -52,8 +55,8 @@ $$
 
 where $b$ is the length of the Burgers' vector, $σ$ is the stress
 and $μ$ is the shear modulus. The value of the exponent $p$ is given by the
-'stress_exponent' input parameter. For an overview of available parameters,
-see [the source code, for now...]
+`stress_exponent` input parameter. For an overview of available parameters,
+see [the `tests/conftest.py` source code, for now...]
 
 The effects of dynamic recrystallization are twofold. Grains with a higher than
 average dislocation density may be affected by either grain nucleation, which is
@@ -76,7 +79,8 @@ texture strength.
 
 ## Parameter reference
 
-Model parameters should be provided in an `.ini` file.
+Model parameters will eventually be provided in an `.ini` file.
+[For now just pass a dictionary to `config` in the `Mineral.update_orientations` method]
 The file must contain section headers enclosed by square braces
 and key-value assignments, for example:
 
@@ -119,12 +123,15 @@ Read [the D-Rex introduction section](#the-d-rex-kinematic-cpo-model) for more d
 
 | Parameter | Description | Default
 | ---       | ---         | ---
-| `olivine_fraction` | the volume ratio for olivine compared to the total aggregate volume | `1` (no enstatite component)
 | `stress_exponent` | the stress exponent $p$ that characterises the relationship between dislocation density and stress | `3.5`
+| `dislocation_exponent` | the exponent $n$ that characterises the relationship between stress and rate of deformation | `1.5`
 | `gbm_mobility` | the dimensionless grain boundary mobility $M^{∗}$ which controls the chance for growth of grains with lower than average dislocation energy | `125`
 | `gbs_threshold` | a threshold ratio of current to original volume below which small grains move by sliding rather than rotation | `0.3`
 | `nucleation_efficiency` | the dimensionless nucleation efficiency which controls the chance for new, small, strain-free sub-grains to be created inside high dislocation energy grains | `5`
-| `olivine_fabric` | [not implemented] | `A`
 | `number_of_grains` | the number of initial grains per crystal| `1000`
+| `olivine_fabric` | [not implemented] | `A`
+| `minerals` | a tuple of mineral phase names that specify the composition of the polycrystal | `("olivine",)`
+| `olivine_fraction` | the volume fraction of olivine compared to other phases (1 for pure olivine) | `1`
+| `<phase>_fraction` | the volume fraction of any other phases (sum of all volume fractions must sum to 1) | N/A
 
 """

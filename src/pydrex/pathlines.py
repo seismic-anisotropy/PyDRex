@@ -1,4 +1,4 @@
-"""PyDRex: Functions for pathline construction."""
+"""> PyDRex: Functions for pathline construction."""
 import numpy as np
 from scipy import integrate as si
 from scipy import linalg as la

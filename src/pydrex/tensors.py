@@ -1,4 +1,4 @@
-"""PyDRex: Tensor operation functions and helpers."""
+"""> PyDRex: Tensor operation functions and helpers."""
 import numba as nb
 import numpy as np
 

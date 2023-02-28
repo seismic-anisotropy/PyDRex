@@ -1,11 +1,12 @@
-r"""PyDRex: Core DRex functions.
+r"""> PyDRex: Core D-ReX functions.
 
 CPO can be calculated along a flow pathline, using interpolated velocity values,
 or for a Lagrangian particle experiencing a given velocity gradient.
 
-WARNING: It is recommended to use the `Mineral` class from `pydrex.minerals`
-instead of using these routines directly, which do not circumvent all edge cases.
-For example, the pathological case with a flow field with zero vorticity will crash.
+.. warning::
+    It is recommended to use the `Mineral` class from `pydrex.minerals`
+    instead of using these routines directly, which do not circumvent all edge cases.
+    For example, the pathological case with a flow field with zero vorticity will crash.
 
 """
 import numba as nb
@@ -52,8 +53,7 @@ def derivatives(
     - `gmb_mobility` (float) — grain boundary mobility parameter
     - `volume_fraction` (float) — volume fraction of the mineral phase relative to
                                   other phases
-
-    WARNING: Raises zero-division errors if the vorticity is zero.
+    .. warning:: Raises zero-division errors if the vorticity is zero.
 
     Returns a tuple with the rotation rates and grain volume fraction changes.
 
