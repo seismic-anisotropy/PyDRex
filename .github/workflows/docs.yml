@@ -33,7 +33,7 @@ jobs:
           python3 -m venv .venv-gh-pages
           source .venv-gh-pages/bin/activate
           python3 -m pip install "$PWD"[doc,test]
-          pdoc -t docs/template -o html --math src/pydrex tests/*.py
+          pdoc -t docs/template -o html --math pydrex tests
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         # If you're changing the branch from main,

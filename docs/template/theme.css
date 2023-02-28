@@ -37,3 +37,26 @@
       --annotation: #00c037;
   }
 }
+
+.homediv { max-width: 1080px; }
+
+.button {
+    background-color: var(--muted);
+    color: var(--pdoc-background);
+    border: none;
+    padding: 16px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: bold;
+    font-size: 20px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    width: 48%;
+}
+
+.button:hover {
+    background-color: var(--text);
+    color: var(--active);
+}
