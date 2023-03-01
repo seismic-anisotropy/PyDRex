@@ -7,8 +7,8 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import linalg as la
 
-from pydrex import diagnostics as _diagnostics
 from pydrex import minerals as _minerals
+from pydrex import stats as _stats
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
@@ -351,7 +351,7 @@ def polefigures(datafile, step=1, postfix=None, savefile="polefigures.png"):
     """
     mineral = _minerals.Mineral.from_file(datafile, postfix=postfix)
     orientations_resampled = [
-        _diagnostics.resample_orientations(_orientations, _fractions)[0]
+        _stats.resample_orientations(_orientations, _fractions)[0]
         for _orientations, _fractions in zip(mineral.orientations, mineral.fractions)
     ]
     n_orientations = len(orientations_resampled)
