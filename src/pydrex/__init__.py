@@ -12,7 +12,7 @@ r"""
 The core routines are based on the original implementation by Édouard Kaminski,
 which can be [downloaded from this link (~90KB)](http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz).
 The reference paper is [Kaminski & Ribe 2001](https://doi.org/10.1016/s0012-821x(01)00356-9),
-and an open-acess paper which discusses the model is [Fraters & Billen 2021](https://doi.org/10.1029/2021gc009846). [TODO: Add our paper]
+and an open-access paper which discusses the model is [Fraters & Billen 2021](https://doi.org/10.1029/2021gc009846). [TODO: Add our paper]
 
 The package is currently not available on PyPi,
 and must be installed by cloning the [source code](https://github.com/Patol75/PyDRex).
@@ -61,7 +61,7 @@ see [the `tests/conftest.py` source code, for now...]
 The effects of dynamic recrystallization are twofold. Grains with a higher than
 average dislocation density may be affected by either grain nucleation, which is
 the formation of initially small, strain-free sub-grains, or grain boundary
-migratiton, by which process other grains of lower strain energy annex a portion
+migration, by which process other grains of lower strain energy annex a portion
 of its volume. Nucleation occurs mostly in grains oriented favourably for
 dislocation glide, and the new grains also grow by grain boundary migration.
 If nucleation is too inefficient, the dislocation density in deformation-aligned
@@ -90,7 +90,7 @@ olivine = volume_distribution, orientations
 
 [D-Rex]
 olivine_fraction = 1
-stresss_exponent = 3.5
+stress_exponent = 3.5
 ...
 ```
 

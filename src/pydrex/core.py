@@ -342,7 +342,7 @@ def _get_strain_energy_olivine(
     strain_energy = 0.0
     # Dimensionless dislocation density for each slip system.
     # See eq. 16 Fraters 2021.
-    # NOTE: Mistake in eq. 11, Kaminski 2004: spurrious division by strain rate scale.
+    # NOTE: Mistake in eq. 11, Kaminski 2004: spurious division by strain rate scale.
     for i in slip_indices[1:]:
         # TODO: Verify crss[i] == τ_0 / τ^sv
         dislocation_density = crss[i] ** (

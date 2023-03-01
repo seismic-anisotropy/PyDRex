@@ -11,7 +11,7 @@ _RNG = np.random.default_rng()
 def average_stiffness(minerals, config):
     """Calculate average elastic tensor from a list of `minerals`.
 
-    The `config` dictionary must contain volume fractions of all occuring mineral phases,
+    The `config` dictionary must contain volume fractions of all occurring mineral phases,
     indexed by keys of the format `"<phase>_fraction"`.
 
     """
