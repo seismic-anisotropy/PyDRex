@@ -5,6 +5,7 @@
 This repository contains a Python 3 reimplementation of the D-Rex model
 for the evolution of crystallographic preferred orientation in polycrystals.
 The code is available for use under the [GNU GPL v3](LICENSE) license.
+Documentation is accessible via Python's REPL `help()` and also [online](https://patol75.github.io/PyDRex/).
 
 ## Install
 
@@ -26,10 +27,11 @@ Check the [test suite README](tests/README.md) for details.
 
 ## Documentation
 
-The documentation can be build using [pdoc](https://github.com/mitmproxy/pdoc),
-using the command:
+The documentation can be built offline using [pdoc](https://github.com/mitmproxy/pdoc),
+with the command:
 
-    pdoc -t docs/template -o html --math src/pydrex/ tests/*.py
+    pdoc -t docs/template -o html --math pydrex tests
 
 which will output the html documentation into a folder called `html`.
-The homepage will be `html/pydrex.html`.
+The homepage will be `html/index.html`.
+See also the provided [GitHub actions workflow](.github/workflows/docs.yml).
