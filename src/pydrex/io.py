@@ -2,10 +2,95 @@
 import configparser
 import pathlib
 import runpy
+import collections as c
+import functools as ft
+import csv
 
 import numpy as np
+import frontmatter as fm
 
 import pydrex.exceptions as _err
+
+
+SCSV_TYPEMAP = {
+    "string": str,
+    "integer": int,
+    "float": float,
+    "boolean": bool,
+    "complex": complex,
+}
+"""Mapping of supported SCSV field types to corresponding Python types."""
+
+
+def _validate_scsv_schema(schema):
+    format_ok = (
+        "delimiter" in schema
+        and "missing" in schema
+        and "fields" in schema
+        and len(schema["fields"]) > 0
+    )
+    if not format_ok:
+        return False
+    for name in schema["fields"]:
+        if not name.isidentifier():
+            return False
+    for coltype in schema["type"]:
+        if coltype not in SCSV_TYPEMAP.keys():
+            return False
+
+
+def _parse_scsv_cell(func, data, missingstr=None, fillval=None):
+    if data.strip() == missingstr:
+        if fillval == "NaN":
+            return np.nan
+        return func(fillval)
+    return func(data.strip())
+
+
+def read_scsv(file):
+    """Read data from an SCSV file.
+
+    SCSV files are our custom CSV files with a YAML header.
+    The header is used for data attribution and metadata,
+    as well as a column type spec.
+    There is no official spec for SCSV files at the moment
+    but they should follow the format of existing  SCSV files in the `data/` folder
+    of the source repository.
+    For supported cell types, see `SCSV_TYPEMAP`.
+
+    """
+    with open(file) as fileref:
+        metadata, content = fm.parse(fileref.read())
+        schema = metadata["schema"]
+        if not _validate_scsv_schema(schema):
+            raise _err.SCSVError(f"unable to parse SCSV schema from '{file}'")
+        reader = csv.reader(content.splitlines(), delimiter=schema["delimiter"])
+
+        schema_colnames = [d["name"] for d in schema["fields"]]
+        header_colnames = [s.strip() for s in next(reader)]
+        if not schema_colnames == header_colnames:
+            raise _err.SCSVError(
+                f"field names specified in schema must match CSV column headers in '{file}'."
+                + " You've supplied schema fields:\n{schema_colnames}\nCSV header:\n{header_colnames}"
+            )
+
+        Columns = c.namedtuple("Columns", schema_colnames)
+        coltypes = [SCSV_TYPEMAP[d["type"]] for d in schema["fields"]]
+        missingstr = schema["missing"]
+        fillvals = [d.get("fill", "") for d in schema["fields"]]
+        return Columns._make(
+            [
+                tuple(
+                    map(
+                        ft.partial(
+                            _parse_scsv_cell, f, missingstr=missingstr, fillval=fill
+                        ),
+                        x,
+                    )
+                )
+                for f, fill, x in zip(coltypes, fillvals, zip(*list(reader)))
+            ]
+        )
 
 
 def parse_params(file):

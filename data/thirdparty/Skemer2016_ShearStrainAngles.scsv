@@ -1,0 +1,137 @@
+---
+# Data kindly provided by Philip Skemer, Washington University in St Louis, USA.
+# Dataset was modified to include missing sample_id and M_index values for Hansen 2014 data.
+# This data records angles between the [100] peak and the shear direction
+# for olivine polycrystals from both naturally and experimentally deformed samples
+# in simple shear. The M_index values also record CPO strength in some samples.
+# A large portion of the data was obtained by digitisation of published figures.
+# For more details, see https://dx.doi.org/10.1016/j.tecto.2015.12.003
+# The following studies are also referenced:
+# Z&K := Zhang & Karato, 1995, https://doi.org/10.1038/375774a0
+# Bystricky 2000 := Bystricky et al., 2000, https://doi.org/10.1126/science.290.5496.1564
+# Warren 2008 := Warren et al., 2008, https://doi.org/10.1016/j.epsl.2008.03.063
+# Skemer 2011 := Skemer et al., 2011, https://doi.org/10.1144/sp360.12
+# Webber 2010 := Webber et al., 2010, https://doi.org/10.1016/j.tecto.2010.04.001
+# Katayama 2004 := Katayama et al., 2004, https://doi.org/10.1130/g20805.1
+# Skemer 2010 := Skemer et al., 2010, https://doi.org/10.1093/petrology/egp057
+# Jung 2006 := Jung et al., 2006, https://doi.org/10.1016/j.tecto.2006.02.011
+# Hansen 2014 := Hansen et al., 2014, https://doi.org/10.1016/j.epsl.2013.11.009
+# H&W 2015 := Hansen & Warren, 2015, https://doi.org/10.1002/2014JB011584
+
+schema:
+  delimiter: ','
+  missing: '-'
+  fields:
+    - name: study
+      type: string
+    - name: sample_id
+      type: string
+    - name: shear_strain
+      type: integer
+      fill: 999999
+      unit: percent
+    - name: angle
+      type: float
+      fill: NaN
+      unit: degree
+    - name: fabric
+      type: string
+    - name: M_index
+      type: float
+      fill: NaN
+---
+study, sample_id, shear_strain, angle, fabric, M_index
+Z&K 1200 C, PI-148, 17, 43, A, -
+Z&K 1200 C, PI-150, 30, 37, A, -
+Z&K 1200 C, PI-154, 45, 38, A, -
+Z&K 1200 C, PI-158, 65, 24, A, -
+Z&K 1200 C, PI-284, 110, 20, A, 0.09
+Z&K 1300 C, MIT-5, 11, 36, A, -
+Z&K 1300 C, MIT-20, 7, 28, A, -
+Z&K 1300 C, MIT-6, 65, 18, A, -
+Z&K 1300 C, MIT-21, 58, 10, A, -
+Z&K 1300 C, MIT-17, 100, 5, A, -
+Z&K 1300 C, MIT-18, 115, 10, A, -
+Z&K 1300 C, MIT-19, 150, 0, A, -
+Bystricky 2000, -, 50, 0, D, 0.05
+Bystricky 2000, -, 200, 0, D, -
+Bystricky 2000, -, 400, 0, D, -
+Bystricky 2000, -, 500, 0, D, 0.17
+Warren 2008, 3923J01, 0, 62, A, 0.08
+Warren 2008, 3923J11, 65, 37, A, 0.12
+Warren 2008, 3923J13, 118, 49, A, 0.16
+Warren 2008, 3923J14, 131, 61, A, 0.2
+Warren 2008, 3924J06, 258, 4, A, 0.17
+Warren 2008, 3924J09a, 386, 11, A, 0.06
+Warren 2008, 3924J09b, 386, 0, A, 0.13
+Warren 2008, 3924J08, 525, 1, A, 0.14
+Warren 2008, 3924J10, 168, 33, A, 0.16
+Skemer 2011, PIP-20, 120, 55, A, -
+Skemer 2011, PIP-21, 180, 53, A, -
+Skemer 2011, PT-484, 350, 45, A, -
+Webber 2010, -, 0, 55, A, -
+Webber 2010, -, 25, 35, A, -
+Webber 2010, -, 100, 47, A, -
+Webber 2010, -, 130, 29, A, -
+Webber 2010, -, 168, 37, A, -
+Webber 2010, -, 330, 47, A, -
+Webber 2010, -, 330, 45, A, -
+Katayama 2004, GA10, 60, -49, E, 0.17
+Katayama 2004, GA38, 60, -26, E, -
+Katayama 2004, GA23, 80, -10, E, -
+Katayama 2004, GA12, 120, -35, E, 0.28
+Katayama 2004, GA45, 260, -10, E, -
+Katayama 2004, GA25, 630, -15, E, 0.44
+Skemer 2010, 3925G08, 60, -52, E, 0.03
+Skemer 2010, 3925G05, 150, -30, E, 0.1
+Skemer 2010, 3925G02, 1000, -14, E, 0.47
+Skemer 2010, 3925G01, 1000, -11, E, 0.37
+Skemer 2010, PT-248_4, 290, 0, D, 0.36
+Jung 2006, JK43, 120, 26, A, 0.06
+Jung 2006, JK21B, 400, 15, B, 0.21
+Jung 2006, JK26, 100, 27, C, 0.21
+Jung 2006, JK11, 110, 25, C, 0.23
+Jung 2006, JK18, 120, 16, C, 0.27
+Jung 2006, JK23, 400, 36, C, 0.1
+Hansen 2014, PT0535, 0, -71, D, 0.01
+Hansen 2014, PT0248_1, 30, -78, D, 0.06
+Hansen 2014, -, 50, 71, D, 0.05
+Hansen 2014, PT0655, 100, 29, D, 0.06
+Hansen 2014, PT0248_2, 100, 39, D, 0.06
+Hansen 2014, PI-284, 110, 24, D, 0.09
+Hansen 2014, PT0248_3, 210, 12, D, 0.2
+Hansen 2014, PT0503_5, 270, 7.3, D, 0.26
+Hansen 2014, PT0248_4, 290, -3.7, D, 0.36
+Hansen 2014, PT0248_5, 390, -1.3, D, 0.35
+Hansen 2014, PT0503_4, 390, -6.1, D, 0.34
+Hansen 2014, PT0640, 400, 0.4, D, 0.36
+Hansen 2014, PT0503_3, 490, -8.6, D, 0.45
+Hansen 2014, -, 500, 5.4, A, 0.17
+Hansen 2014, PT0494, 590, 0.6, A, 0.4
+Hansen 2014, PT0538, 680, -5.5, A, 0.46
+Hansen 2014, PT0503_2, 680, -4.3, A, 0.46
+Hansen 2014, PT0541, 760, -8.4, A, 0.44
+Hansen 2014, PT0503_1, 820, -1.9, A, 0.35
+Hansen 2014, PT0633, 870, -0.9, A, 0.39
+Hansen 2014, PT0552, 880, -8.9, A, 0.4
+Hansen 2014, PT0505, 1020, 2.8, A, 0.69
+Hansen 2014, PT0651, 1060, -2, A, 0.55
+Hansen 2014, PT0499, 1090, -1.5, A, 0.61
+Hansen 2014, PT619, 1420, -4.1, A, 0.51
+Hansen 2014, PT0484, 1870, -5.8, A, 0.51
+H&W 2015, 3923J06, 32, 48, A, 0.08
+H&W 2015, 3923J07, 32, 51, A, 0.2
+H&W 2015, 3923J09, 81, 44, A, 0.16
+H&W 2015, 3923J08, 81, 35, A, 0.12
+H&W 2015, 3923J13, 118, 35, A, 0.12
+H&W 2015, 3923J12, 118, 40, A, 0.17
+H&W 2015, 3924J06, 258, 1, A, 0.18
+H&W 2015, 3924J05, 258, 15, A, 0.13
+H&W 2015, JP13-D07, 286, 25, A, 0.15
+H&W 2015, JP13-D06, 286, 28, A, 0.09
+H&W 2015, 3924J03a, 337, 28, A, 0.19
+H&W 2015, 3924J03b, 337, 39, A, 0.27
+H&W 2015, 3924J09a, 386, 1, A, 0.12
+H&W 2015, 3924J09b, 386, 8, A, 0.18
+H&W 2015, 3924J08, 525, 4, A, 0.14
+H&W 2015, 3924J07, 525, 11, A, 0.26
