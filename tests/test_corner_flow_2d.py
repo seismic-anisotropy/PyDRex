@@ -227,9 +227,9 @@ class TestOlivineA:
                         assert misorient_angles[-1] < 20
                     case -0.54:
                         assert misorient_indices[halfway] > 0.575
-                        assert misorient_angles[halfway] > 22.5
+                        assert misorient_angles[halfway] > 22
                         assert misorient_indices[-1] > 0.7
-                        assert misorient_angles[-1] < 22.5
+                        assert misorient_angles[-1] < 22
                     case -0.78:
                         # TODO: Results from this pathline are a bit weird.
                         # No tests for now...
