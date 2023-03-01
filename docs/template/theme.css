@@ -1,0 +1,62 @@
+@media (prefers-color-scheme: light) {
+  :root {
+      --pdoc-background: #fff;
+  }
+  .pdoc {
+      --text: #212529;
+      --muted: #6c757d;
+      --link: #3660a5;
+      --link-hover: #1659c5;
+      --code: #f8f8f8;
+      --active: #fff598;
+      --accent: #eee;
+      --accent2: #c1c1c1;
+      --nav-hover: rgba(255, 255, 255, 0.5);
+      --name: #0066BB;
+      --def: #008800;
+      --annotation: #007020;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+      --pdoc-background: #212529;
+  }
+  .pdoc {
+      --text: #f7f7f7;
+      --muted: #9d9d9d;
+      --link: #58a6ff;
+      --link-hover: #3989ff;
+      --code: #333;
+      --active: #555;
+      --accent: #343434;
+      --accent2: #555;
+      --nav-hover: rgba(0, 0, 0, 0.1);
+      --name: #77C1FF;
+      --def: #0cdd0c;
+      --annotation: #00c037;
+  }
+}
+
+.homediv { padding-top: 56px; max-width: 1080px; }
+
+.button {
+    background-color: var(--muted);
+    color: var(--pdoc-background);
+    border: none;
+    padding: 16px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: bold;
+    font-size: 20px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    width: 48%;
+}
+
+.button:hover {
+    background-color: var(--text);
+    color: var(--active);
+}

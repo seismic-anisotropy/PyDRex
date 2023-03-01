@@ -1,6 +1,8 @@
 """PyDRex: Dynamic CPO calculations for olivine-enstatite polycrystal aggregates,
 <https://github.com/Patol75/PyDRex>.
 
+.. warning:: This module is currently broken.
+
 Parallel execution is achieved through multiprocessing. For distributed-memory
 (multi-node) multiprocessing enable either Ray or Charm4Py. Charm4py requires an MPI
 library (e.g. openmpi), and the program should be executed using `mpirun`.

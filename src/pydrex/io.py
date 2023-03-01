@@ -1,4 +1,4 @@
-"""PyDRex: Input/Output functions and helpers."""
+"""> PyDRex: Input/Output functions and helpers."""
 import configparser
 import pathlib
 import runpy

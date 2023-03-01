@@ -1,4 +1,4 @@
-"""PyDRex: Tests for VTK readers and helpers."""
+"""> PyDRex: Tests for VTK readers and helpers."""
 import numpy as np
 
 from pydrex import vtk_helpers as _vtk

@@ -1,0 +1,28 @@
+{% extends "default/index.html.jinja2" %}
+
+{% block title %}PyDRex: Welcome{% endblock %}
+
+{% block nav %}
+    {# <img src="https://pdoc.dev/logo.svg" class="logo" alt="project logo"/> #}
+    <h4>PyDRex</h4>
+    <br>
+    <input type="search" placeholder="Search..." role="searchbox" aria-label="search" pattern=".+" required>
+{% endblock %}
+
+{% block content %}
+    <main class="pdoc homediv">
+
+    {% filter to_html %}
+# Welcome to PyDRex!
+
+> This is the documentation website for [PyDRex](https://github.com/Patol75/PyDRex),
+a Python implementation of the D-ReX model for kinematic texture simulations.
+Use the links below to browse the API documentation or the tests and examples:
+    {% endfilter %}
+
+    <blockquote><a href="pydrex.html"><button class="button">API Documentation</button></a>
+    <a href="tests.html"><button class="button">Tests & Examples</button></a></blockquote>
+
+    </main>
+    {% include "search.html.jinja2" %}
+{% endblock %}

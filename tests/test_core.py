@@ -1,12 +1,9 @@
-"""PyDRex: tests for core D-Rex routines."""
+"""> PyDRex: tests for core D-Rex routines."""
 import numpy as np
 from scipy.spatial.transform import Rotation
 
 import pydrex.core as _core
 import pydrex.minerals as _minerals
-
-# def test_update_strain():
-#    ...
 
 
 class TestSimpleShearSingleGrains:
@@ -44,7 +41,7 @@ class TestSimpleShearSingleGrains:
             strain_rate=nondim_strain_rate,
             velocity_gradient=nondim_velocity_gradient,
             stress_exponent=3.5,
-            dislocation_exponent=1.5,
+            deformation_exponent=1.5,
             nucleation_efficiency=5,
             gbm_mobility=125,
             volume_fraction=1.0,
@@ -84,7 +81,7 @@ class TestSimpleShearSingleGrains:
             strain_rate=nondim_strain_rate,
             velocity_gradient=nondim_velocity_gradient,
             stress_exponent=3.5,
-            dislocation_exponent=1.5,
+            deformation_exponent=1.5,
             nucleation_efficiency=5,
             gbm_mobility=125,
             volume_fraction=1.0,
@@ -124,7 +121,7 @@ class TestSimpleShearSingleGrains:
             strain_rate=nondim_strain_rate,
             velocity_gradient=nondim_velocity_gradient,
             stress_exponent=3.5,
-            dislocation_exponent=1.5,
+            deformation_exponent=1.5,
             nucleation_efficiency=5,
             gbm_mobility=125,
             volume_fraction=1.0,
@@ -164,7 +161,7 @@ class TestSimpleShearSingleGrains:
             strain_rate=nondim_strain_rate,
             velocity_gradient=nondim_velocity_gradient,
             stress_exponent=3.5,
-            dislocation_exponent=1.5,
+            deformation_exponent=1.5,
             nucleation_efficiency=5,
             gbm_mobility=125,
             volume_fraction=1.0,
@@ -204,7 +201,7 @@ class TestSimpleShearSingleGrains:
             strain_rate=nondim_strain_rate,
             velocity_gradient=nondim_velocity_gradient,
             stress_exponent=3.5,
-            dislocation_exponent=1.5,
+            deformation_exponent=1.5,
             nucleation_efficiency=5,
             gbm_mobility=125,
             volume_fraction=1.0,
@@ -244,7 +241,7 @@ class TestSimpleShearSingleGrains:
             strain_rate=nondim_strain_rate,
             velocity_gradient=nondim_velocity_gradient,
             stress_exponent=3.5,
-            dislocation_exponent=1.5,
+            deformation_exponent=1.5,
             nucleation_efficiency=5,
             gbm_mobility=125,
             volume_fraction=1.0,
@@ -284,7 +281,7 @@ class TestSimpleShearSingleGrains:
             strain_rate=nondim_strain_rate,
             velocity_gradient=nondim_velocity_gradient,
             stress_exponent=3.5,
-            dislocation_exponent=1.5,
+            deformation_exponent=1.5,
             nucleation_efficiency=5,
             gbm_mobility=125,
             volume_fraction=1.0,
@@ -324,7 +321,7 @@ class TestSimpleShearSingleGrains:
             strain_rate=nondim_strain_rate,
             velocity_gradient=nondim_velocity_gradient,
             stress_exponent=3.5,
-            dislocation_exponent=1.5,
+            deformation_exponent=1.5,
             nucleation_efficiency=5,
             gbm_mobility=125,
             volume_fraction=1.0,

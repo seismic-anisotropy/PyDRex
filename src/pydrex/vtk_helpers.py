@@ -1,4 +1,4 @@
-"""PyDRex: VTK wrappers and helper functions."""
+"""> PyDRex: VTK wrappers and helper functions."""
 import pathlib
 
 import numpy as np

@@ -1,4 +1,4 @@
-"""PyDRex: Visualisation helpers for tests/examples."""
+"""> PyDRex: Visualisation helpers for tests/examples."""
 import functools as ft
 import pathlib as pl
 
@@ -7,8 +7,8 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import linalg as la
 
-from pydrex import diagnostics as _diagnostics
 from pydrex import minerals as _minerals
+from pydrex import stats as _stats
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
@@ -351,7 +351,7 @@ def polefigures(datafile, step=1, postfix=None, savefile="polefigures.png"):
     """
     mineral = _minerals.Mineral.from_file(datafile, postfix=postfix)
     orientations_resampled = [
-        _diagnostics.resample_orientations(_orientations, _fractions)[0]
+        _stats.resample_orientations(_orientations, _fractions)[0]
         for _orientations, _fractions in zip(mineral.orientations, mineral.fractions)
     ]
     n_orientations = len(orientations_resampled)
@@ -446,7 +446,11 @@ def _schmidt_count(cos_dist, σ=None):
 def point_density(
     x_data, y_data, kernel=_kamb_count, σ=3, gridsize=(100, 100), weights=None
 ):
-    """Calculate point density of spherical data projected onto a circle."""
+    """Calculate point density of spherical data projected onto a circle.
+
+    .. warning:: This method is currently broken.
+
+    """
     if weights is None:
         weights = 1
 
