@@ -5,9 +5,7 @@ The stiffness matrices contain values of the elastic constants in GPa.
 Currently, stiffness matrices are provided for olivine and enstatite.
 
 The source of the values used here is unknown, but they are copied
-from the original DRex code:
-
-<http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz> [88K download]
+from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz> [88K download]
 
 """
 import numpy as np
@@ -22,6 +20,7 @@ OLIVINE = np.array(
         [0.0, 0.0, 0.0, 0.0, 0.0, 78.36],
     ]
 )
+"""Stiffness tensor for olivine."""
 
 ENSTATITE = np.array(
     [
@@ -33,3 +32,4 @@ ENSTATITE = np.array(
         [0.0, 0.0, 0.0, 0.0, 0.0, 80.1],
     ]
 )
+"""Stiffness tensor for enstatite."""
