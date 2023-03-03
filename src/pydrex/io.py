@@ -1,16 +1,15 @@
 """> PyDRex: Input/Output functions and helpers."""
+import collections as c
 import configparser
+import csv
+import functools as ft
 import pathlib
 import runpy
-import collections as c
-import functools as ft
-import csv
 
-import numpy as np
 import frontmatter as fm
+import numpy as np
 
 import pydrex.exceptions as _err
-
 
 SCSV_TYPEMAP = {
     "string": str,
