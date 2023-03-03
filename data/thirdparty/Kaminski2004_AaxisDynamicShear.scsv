@@ -1,0 +1,79 @@
+---
+# Digitized data from Figure 5 in Kaminski et al. 2004, https://doi.org/10.1111/j.1365-246x.2004.02308.x
+# This data records the evolution of the average a-axis of olivine
+# for a planar deformation that evolves from pure shear to simple shear.
+# The timescale is dimensionless due to scaling to the maximum strain rate.
+# The three data series correspond to three different values for the grain boundary sliding parameter:
+# X0 := no grain boundary sliding
+# X02 := grains smaller than 0.2 x their initial volume are subject to sliding
+# X04 := grains smaller than 0.4 x their initial volume are subject to sliding
+
+schema:
+  delimiter: ','
+  missing: '-',
+  fields:
+    - name: time
+      type: float
+    - name: meanA_X0
+      type: float
+      unit: degree
+    - name: meanA_X02
+      type: float
+      unit: degree
+    - name: meanA_X04
+      type: float
+      unit: degree
+---
+
+time,meanA_X0,meanA_X02,meanA_X04
+-0.0, -0.40, -0.54, -0.67
+ 0.1, -0.54, -0.54, -0.54
+ 0.2, -0.13, -0.27, -0.13
+ 0.3,  0.40,  0.13,  0.13
+ 0.4,  1.48,  0.94,  1.07
+ 0.5,  3.36,  2.82,  1.88
+ 0.6,  6.31,  5.37,  4.30
+ 0.7, 11.28,  9.53,  7.65
+ 0.8, 17.72, 14.77, 11.54
+ 0.9, 24.83, 20.40, 15.97
+ 1.0, 32.35, 26.58, 20.94
+ 1.1, 40.00, 32.89, 25.37
+ 1.2, 48.19, 39.73, 30.74
+ 1.3, 57.58, 47.25, 36.38
+ 1.4, 66.31, 53.69, 40.40
+ 1.5, 72.75, 58.66, 43.49
+ 1.6, 76.51, 60.81, 44.70
+ 1.7, 78.39, 60.81, 43.09
+ 1.8, 78.79, 59.73, 40.54
+ 1.9, 78.79, 58.52, 37.99
+ 2.0, 78.93, 58.12, 36.38
+ 2.1, 78.79, 56.64, 36.78
+ 2.2, 78.39, 54.09, 35.17
+ 2.3, 77.99, 53.69, 35.17
+ 2.4, 77.18, 55.57, 38.26
+ 2.5, 76.91, 57.05, 43.09
+ 2.6, 76.11, 58.66, 46.04
+ 2.7, 75.70, 60.54, 49.53
+ 2.8, 74.90, 60.81, 51.41
+ 2.9, 74.63, 61.21, 52.48
+ 3.0, 74.23, 61.21, 52.89
+ 3.1, 73.96, 61.61, 53.69
+ 3.2, 73.56, 61.48, 54.36
+ 3.3, 73.15, 61.61, 55.17
+ 3.4, 72.75, 61.61, 55.57
+ 3.5, 72.08, 61.61, 55.57
+ 3.6, 71.54, 61.21, 55.97
+ 3.7, 71.28, 61.21, 56.24
+ 3.8, 70.47, 61.07, 56.64
+ 3.9, 70.07, 60.81, 57.18
+ 4.0, 69.40, 60.81, 57.45
+ 4.1, 68.99, 60.54, 57.45
+ 4.2, 68.19, 60.00, 57.85
+ 4.3, 67.52, 59.60, 57.85
+ 4.4, 66.71, 59.33, 57.85
+ 4.5, 65.91, 58.52, 57.45
+ 4.6, 65.10, 58.12, 57.05
+ 4.7, 64.43, 57.85, 57.18
+ 4.8, 63.62, 57.45, 56.78
+ 4.9, 62.95, 57.05, 56.38
+ 5.0, 62.15, 57.05, 55.84
