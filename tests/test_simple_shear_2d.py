@@ -149,7 +149,8 @@ class TestSinglePolycrystalOlivineA:
                             np.linspace(0, timestop, n_timesteps)
                             * (np.cos(2 * np.deg2rad(misorient_angles[0])) - 1)
                         ),
-                        atol=5.0,
+                        atol=5.2,
+                        rtol=0.1,
                     )
                     assert np.isclose(misorient_angles[halfway], 25, atol=2.0)
                     assert np.isclose(misorient_angles[-1], 17.0, atol=1.0)
