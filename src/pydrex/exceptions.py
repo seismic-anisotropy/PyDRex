@@ -29,3 +29,16 @@ class IterationError(Error):
     def __init__(self, message):  # pylint: disable=super-init-not-called
         # TODO: Add data attribute? Timestep?
         self.message = message
+
+
+class SCSVError(Error):
+    """Exception raised for errors in SCSV file I/O.
+
+    Attributes:
+    - message — explanation of the error
+
+    """
+
+    def __init__(self, message):  # pylint: disable=super-init-not-called
+        # TODO: Add line number?
+        self.message = message
