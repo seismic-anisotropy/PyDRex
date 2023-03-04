@@ -50,6 +50,12 @@
 
         <h2>API Documentation</h2>
             <ul class="memberlist">
+            <li>
+                    <a class="variable" href="#OLIVINE">OLIVINE</a>
+            </li>
+            <li>
+                    <a class="variable" href="#ENSTATITE">ENSTATITE</a>
+            </li>
     </ul>
 
 
@@ -75,9 +81,7 @@ The stiffness matrices contain values of the elastic constants in GPa.
 Currently, stiffness matrices are provided for olivine and enstatite.</p>
 
 <p>The source of the values used here is unknown, but they are copied
-from the original DRex code:</p>
-
-<p><a href="http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz">http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz</a> [88K download]</p>
+from the original DRex code: <a href="http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz">http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz</a> [88K download]</p>
 </div>
 
                         <input id="mod-stiffness-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
@@ -91,38 +95,78 @@ from the original DRex code:</p>
 </span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="sd">Currently, stiffness matrices are provided for olivine and enstatite.</span>
 </span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a>
 </span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="sd">The source of the values used here is unknown, but they are copied</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="sd">from the original DRex code:</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="sd">from the original DRex code: &lt;http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz&gt; [88K download]</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="sd">&lt;http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz&gt; [88K download]</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>
-</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a>
-</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="n">OLIVINE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a>    <span class="p">[</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a>        <span class="p">[</span><span class="mf">320.71</span><span class="p">,</span> <span class="mf">69.84</span><span class="p">,</span> <span class="mf">71.22</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a>        <span class="p">[</span><span class="mf">69.84</span><span class="p">,</span> <span class="mf">197.25</span><span class="p">,</span> <span class="mf">74.8</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a>        <span class="p">[</span><span class="mf">71.22</span><span class="p">,</span> <span class="mf">74.8</span><span class="p">,</span> <span class="mf">234.32</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">63.77</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">77.67</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">78.36</span><span class="p">],</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a>    <span class="p">]</span>
-</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a><span class="p">)</span>
-</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a>
-</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a><span class="n">ENSTATITE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a>    <span class="p">[</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>        <span class="p">[</span><span class="mf">236.9</span><span class="p">,</span> <span class="mf">79.6</span><span class="p">,</span> <span class="mf">63.2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a>        <span class="p">[</span><span class="mf">79.6</span><span class="p">,</span> <span class="mf">180.5</span><span class="p">,</span> <span class="mf">56.8</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>        <span class="p">[</span><span class="mf">63.2</span><span class="p">,</span> <span class="mf">56.8</span><span class="p">,</span> <span class="mf">230.4</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">84.3</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">79.4</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">80.1</span><span class="p">],</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>    <span class="p">]</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a><span class="p">)</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>
+</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="n">OLIVINE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a>    <span class="p">[</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a>        <span class="p">[</span><span class="mf">320.71</span><span class="p">,</span> <span class="mf">69.84</span><span class="p">,</span> <span class="mf">71.22</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a>        <span class="p">[</span><span class="mf">69.84</span><span class="p">,</span> <span class="mf">197.25</span><span class="p">,</span> <span class="mf">74.8</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a>        <span class="p">[</span><span class="mf">71.22</span><span class="p">,</span> <span class="mf">74.8</span><span class="p">,</span> <span class="mf">234.32</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">63.77</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">77.67</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">78.36</span><span class="p">],</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a>    <span class="p">]</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="p">)</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a><span class="sd">&quot;&quot;&quot;Stiffness tensor for olivine.&quot;&quot;&quot;</span>
+</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a>
+</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a><span class="n">ENSTATITE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>    <span class="p">[</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a>        <span class="p">[</span><span class="mf">236.9</span><span class="p">,</span> <span class="mf">79.6</span><span class="p">,</span> <span class="mf">63.2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>        <span class="p">[</span><span class="mf">79.6</span><span class="p">,</span> <span class="mf">180.5</span><span class="p">,</span> <span class="mf">56.8</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a>        <span class="p">[</span><span class="mf">63.2</span><span class="p">,</span> <span class="mf">56.8</span><span class="p">,</span> <span class="mf">230.4</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">84.3</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">79.4</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>        <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">80.1</span><span class="p">],</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>    <span class="p">]</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a><span class="p">)</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a><span class="sd">&quot;&quot;&quot;Stiffness tensor for enstatite.&quot;&quot;&quot;</span>
 </span></pre></div>
 
 
             </section>
+                <section id="OLIVINE">
+                    <div class="attr variable">
+            <span class="name">OLIVINE</span>        =
+<input id="OLIVINE-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+            <label class="view-value-button pdoc-button" for="OLIVINE-view-value"></label><span class="default_value">array([[3.2071e+02, 6.984e+01, 7.122e+01, 0.e+00, 0.e+00, 0.e+00],
+       [6.984e+01, 1.9725e+02, 7.48e+01, 0.e+00, 0.e+00, 0.e+00],
+       [7.122e+01, 7.48e+01, 2.3432e+02, 0.e+00, 0.e+00, 0.e+00],
+       [0.e+00, 0.e+00, 0.e+00, 6.377e+01, 0.e+00, 0.e+00],
+       [0.e+00, 0.e+00, 0.e+00, 0.e+00, 7.767e+01, 0.e+00],
+       [0.e+00, 0.e+00, 0.e+00, 0.e+00, 0.e+00, 7.836e+01]])</span>
+
+        
+    </div>
+    <a class="headerlink" href="#OLIVINE"></a>
+    
+            <div class="docstring"><p>Stiffness tensor for olivine.</p>
+</div>
+
+
+                </section>
+                <section id="ENSTATITE">
+                    <div class="attr variable">
+            <span class="name">ENSTATITE</span>        =
+<input id="ENSTATITE-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+            <label class="view-value-button pdoc-button" for="ENSTATITE-view-value"></label><span class="default_value">array([[2.369e+02, 7.96e+01, 6.32e+01, 0.e+00, 0.e+00, 0.e+00],
+       [7.96e+01, 1.805e+02, 5.68e+01, 0.e+00, 0.e+00, 0.e+00],
+       [6.32e+01, 5.68e+01, 2.304e+02, 0.e+00, 0.e+00, 0.e+00],
+       [0.e+00, 0.e+00, 0.e+00, 8.43e+01, 0.e+00, 0.e+00],
+       [0.e+00, 0.e+00, 0.e+00, 0.e+00, 7.94e+01, 0.e+00],
+       [0.e+00, 0.e+00, 0.e+00, 0.e+00, 0.e+00, 8.01e+01]])</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ENSTATITE"></a>
+    
+            <div class="docstring"><p>Stiffness tensor for enstatite.</p>
+</div>
+
+
+                </section>
     </main>
 <script>
     function escapeHTML(html) {
