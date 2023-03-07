@@ -67,8 +67,8 @@ def outdir(request):
 @pytest.fixture
 def params_Fraters2021():
     return {
-        "stress_exponent": 3.5,
-        "deformation_exponent": 1.5,
+        "stress_exponent": 1.5,
+        "deformation_exponent": 3.5,
         "gbm_mobility": 125,
         "gbs_threshold": 0.3,
         "nucleation_efficiency": 5,
@@ -81,8 +81,8 @@ def params_Fraters2021():
 @pytest.fixture
 def params_Kaminski2001_fig5_solid():
     return {
-        "stress_exponent": 3.5,
-        "deformation_exponent": 1.5,
+        "stress_exponent": 1.5,
+        "deformation_exponent": 3.5,
         "gbm_mobility": 0,
         "gbs_threshold": 0,
         "nucleation_efficiency": 5,
@@ -94,8 +94,8 @@ def params_Kaminski2001_fig5_solid():
 @pytest.fixture
 def params_Kaminski2001_fig5_shortdash():
     return {
-        "stress_exponent": 3.5,
-        "deformation_exponent": 1.5,
+        "stress_exponent": 1.5,
+        "deformation_exponent": 3.5,
         "gbm_mobility": 50,
         "gbs_threshold": 0,
         "nucleation_efficiency": 5,
@@ -107,8 +107,8 @@ def params_Kaminski2001_fig5_shortdash():
 @pytest.fixture
 def params_Kaminski2001_fig5_longdash():
     return {
-        "stress_exponent": 3.5,
-        "deformation_exponent": 1.5,
+        "stress_exponent": 1.5,
+        "deformation_exponent": 3.5,
         "gbm_mobility": 200,
         "gbs_threshold": 0,
         "nucleation_efficiency": 5,
@@ -120,8 +120,8 @@ def params_Kaminski2001_fig5_longdash():
 @pytest.fixture
 def params_Kaminski2004_fig4_triangles():
     return {
-        "stress_exponent": 3.5,
-        "deformation_exponent": 1.5,
+        "stress_exponent": 1.5,
+        "deformation_exponent": 3.5,
         "gbm_mobility": 125,
         "gbs_threshold": 0.4,
         "nucleation_efficiency": 5,
@@ -133,8 +133,8 @@ def params_Kaminski2004_fig4_triangles():
 @pytest.fixture
 def params_Kaminski2004_fig4_squares():
     return {
-        "stress_exponent": 3.5,
-        "deformation_exponent": 1.5,
+        "stress_exponent": 1.5,
+        "deformation_exponent": 3.5,
         "gbm_mobility": 125,
         "gbs_threshold": 0.2,
         "nucleation_efficiency": 5,
@@ -146,8 +146,8 @@ def params_Kaminski2004_fig4_squares():
 @pytest.fixture
 def params_Kaminski2004_fig4_circles():
     return {
-        "stress_exponent": 3.5,
-        "deformation_exponent": 1.5,
+        "stress_exponent": 1.5,
+        "deformation_exponent": 3.5,
         "gbm_mobility": 125,
         "gbs_threshold": 0,
         "nucleation_efficiency": 5,
@@ -159,8 +159,8 @@ def params_Kaminski2004_fig4_circles():
 @pytest.fixture
 def params_Hedjazian2017():
     return {
-        "stress_exponent": 3.5,
-        "deformation_exponent": 1.5,
+        "stress_exponent": 1.5,
+        "deformation_exponent": 3.5,
         "gbm_mobility": 10,
         "gbs_threshold": 0.2,  # TODO: Check again, Chris used 0.3?
         "nucleation_efficiency": 5,

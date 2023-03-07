@@ -41,14 +41,11 @@ def derivatives(
     - `fabric` (int) — ordinal number of the fabric type, see `pydrex.fabric`
     - `n_grains` (int) — number of "grains" i.e. discrete volume segments
     - `orientations` (array) — `n_grains`x3x3 orientations (direction cosines)
-    - `fractions` (array) — volume fractions of the "grains" relative to aggregate
-                            volume
+    - `fractions` (array) — volume fractions of the "grains" relative to aggregate volume
     - `strain_rate` (array) — 3x3 dimensionless macroscopic strain-rate tensor
-    - `velocity_gradient` (array) — 3x3 dimensionless macroscopic velocity gradient
-                                    tensor
-    - `stress_exponent` (float) — value of `n` for `shear_stress ∝ |strain_rate|^(1/n)`
-    - `deformation_exponent` (float) — value of `p` for
-                                       `dislocation_density ∝ shear_stress^p`
+    - `velocity_gradient` (array) — 3x3 dimensionless macroscopic velocity gradient tensor
+    - `stress_exponent` (float) — value of `p` for `dislocation_density ∝ shear_stress^p`
+    - `deformation_exponent` (float) — value of `n` for `shear_stress ∝ |deformation_rate|^(1/n)`
     - `nucleation_efficiency` (float) — parameter controlling grain nucleation
     - `gmb_mobility` (float) — grain boundary mobility parameter
     - `volume_fraction` (float) — volume fraction of the mineral phase relative to
@@ -102,11 +99,13 @@ def _get_rotation_and_strain(
     - `orientation` (array) — 3x3 orientation matrix (direction cosines)
     - `strain_rate` (array) — 3x3 dimensionless strain rate matrix
     - `velocity_gradient` (array) — 3x3 dimensionless velocity gradient matrix
+    - `stress_exponent` (float) — value of `p` for `dislocation_density ∝ shear_stress^p`
+    - `deformation_exponent` (float) — value of `n` for `shear_stress ∝ |deformation_rate|^(1/n)`
     - `nucleation_efficiency (float) — parameter controlling grain nucleation
 
     Note that "new" grains are assumed to rotate with their parent.
 
-    WARNING: Raises zero-division errors if the vorticity is zero.
+    .. warning:: Raises zero-division errors if the vorticity is zero.
 
     Returns a tuple with the rotation rate of the crystalline axes
     with respect to the principal strain axes and strain energy of the grain.
@@ -120,7 +119,7 @@ def _get_rotation_and_strain(
             slip_invariants,
             slip_indices,
             crss,
-            stress_exponent,
+            deformation_exponent,
         )
     elif phase == _minerals.MineralPhase.enstatite:
         slip_indices = np.argsort(1 / crss)
@@ -222,7 +221,7 @@ def _get_slip_rate_softest(deformation_rate, velocity_gradient):
 
 
 @nb.njit(fastmath=True)
-def _get_slip_rates_olivine(invariants, slip_indices, crss, stress_exponent):
+def _get_slip_rates_olivine(invariants, slip_indices, crss, deformation_exponent):
     """Calculate relative slip rates of the active slip systems for olivine.
 
     Args:
@@ -230,8 +229,7 @@ def _get_slip_rates_olivine(invariants, slip_indices, crss, stress_exponent):
     - `slip_indices` (array) — indices that sort the CRSS by increasing slip-rate
                                activity
     - `crss` (array) — reference resolved shear stresses (CRSS), see `pydrex.fabric`
-    - `stress_exponent` (float) — exponent for the stress dependence of dislocation
-                                  density
+    - `deformation_exponent` (float) — value of `n` for `shear_stress ∝ |deformation_rate|^(1/n)`
 
     """
     i_inac, i_min, i_int, i_max = slip_indices
@@ -243,8 +241,8 @@ def _get_slip_rates_olivine(invariants, slip_indices, crss, stress_exponent):
     ratio_int = prefactor * invariants[i_int] / crss[i_int]
     slip_rates = np.empty(4)
     slip_rates[i_inac] = 0  # Hardest system is completely inactive in olivine.
-    slip_rates[i_min] = ratio_min * np.abs(ratio_min) ** (stress_exponent - 1)
-    slip_rates[i_int] = ratio_int * np.abs(ratio_int) ** (stress_exponent - 1)
+    slip_rates[i_min] = ratio_min * np.abs(ratio_min) ** (deformation_exponent - 1)
+    slip_rates[i_int] = ratio_int * np.abs(ratio_int) ** (deformation_exponent - 1)
     slip_rates[i_max] = 1
     return slip_rates
 
@@ -331,9 +329,8 @@ def _get_strain_energy_olivine(
     - `slip_indices` (array) — indices that sort the CRSS by increasing slip-rate
                                activity
     - `slip_rate_softest` (float) — slip rate on the softest (most active) slip system
-    - `stress_exponent` (float) — value of `n` for `shear_stress ∝ |strain_rate|^(1/n)`
-    - `deformation_exponent` (float) — value of `p` for
-                                       `dislocation_density ∝ shear_stress^p`
+    - `stress_exponent` (float) — value of `p` for `dislocation_density ∝ shear_stress^p`
+    - `deformation_exponent` (float) — value of `n` for `shear_stress ∝ |deformation_rate|^(1/n)`
     - `nucleation_efficiency` (float) — parameter controlling grain nucleation
 
     Note that "new" grains are assumed to rotate with their parent.
@@ -344,11 +341,10 @@ def _get_strain_energy_olivine(
     # See eq. 16 Fraters 2021.
     # NOTE: Mistake in eq. 11, Kaminski 2004: spurious division by strain rate scale.
     for i in slip_indices[1:]:
-        # TODO: Verify crss[i] == τ_0 / τ^sv
-        dislocation_density = crss[i] ** (
+        dislocation_density = (1 / crss[i]) ** (
             deformation_exponent - stress_exponent
         ) * np.abs(slip_rates[i] * slip_rate_softest) ** (
-            deformation_exponent / stress_exponent
+            stress_exponent / deformation_exponent
         )
         # Dimensionless strain energy for this grain, see eq. 14, Fraters 2021.
         strain_energy += dislocation_density * np.exp(
@@ -370,19 +366,17 @@ def _get_strain_energy_enstatite(
 
     Args:
     - `crss` (array) — reference resolved shear stresses (CRSS), see `pydrex.fabric`
-    - `slip_indices` (array) — indices that sort the CRSS by increasing slip-rate
-                               activity
+    - `slip_indices` (array) — indices that sort the CRSS by increasing slip-rate activity
     - `slip_rate_softest` (float) — slip rate on the softest (most active) slip system
-    - `stress_exponent` (float) — value of `n` for `shear_stress ∝ |strain_rate|^(1/n)`
-    - `deformation_exponent` (float) — value of `p` for
-                                       `dislocation_density ∝ shear_stress^p`
+    - `stress_exponent` (float) — value of `p` for `dislocation_density ∝ shear_stress^p`
+    - `deformation_exponent` (float) — value of `n` for `shear_stress ∝ |deformation_rate|^(1/n)`
     - `nucleation_efficiency` (float) — parameter controlling grain nucleation
 
     """
     weight_factor = slip_rate_softest / crss[slip_indices[-1]] ** stress_exponent
-    dislocation_density = crss[slip_indices[-1]] ** (
+    dislocation_density = (1 / crss[slip_indices[-1]]) ** (
         deformation_exponent - stress_exponent
-    ) * np.abs(weight_factor) ** (deformation_exponent / stress_exponent)
+    ) * np.abs(weight_factor) ** (stress_exponent / deformation_exponent)
     # Dimensionless strain energy for this grain, see eq. 14, Fraters 2021.
     return dislocation_density * np.exp(
         -nucleation_efficiency * dislocation_density**2
