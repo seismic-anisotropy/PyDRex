@@ -27,6 +27,7 @@ from pydrex import logger as _log
 @unique
 class OlivineFabric(IntEnum):
     """Enumeration type for olivine fabrics A-E."""
+
     A = 0
     B = 1
     C = 2
@@ -37,6 +38,7 @@ class OlivineFabric(IntEnum):
 @unique
 class EnstatiteFabric(IntEnum):
     """Enumeration type with a single member A which is the only enstatite fabric."""
+
     A = 0  # Just to make it consistent.
 
 

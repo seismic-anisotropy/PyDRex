@@ -3,8 +3,8 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 from pydrex import core as _core
-from pydrex import minerals as _minerals
 from pydrex import logger as _log
+from pydrex import minerals as _minerals
 
 
 class TestSimpleShearSingleAType:
