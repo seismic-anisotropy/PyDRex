@@ -46,7 +46,7 @@ class TestSimpleShearSingleAType:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
-        _log.debug("calculated re-orientation rate:\n", orientations_diff)
+        _log.debug("calculated re-orientation rate:\n%s", orientations_diff)
         target_orientations_diff = np.array(
             [
                 [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
@@ -54,9 +54,9 @@ class TestSimpleShearSingleAType:
                 [0, 0, 0],
             ]
         )
-        _log.debug("target re-orientation rate:\n", target_orientations_diff)
+        _log.debug("target re-orientation rate:\n%s", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
-        _log.debug("calculated grain volume change:\n", fractions_diff)
+        _log.debug("calculated grain volume change:\n%s", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_initN10Z(self):
@@ -95,7 +95,7 @@ class TestSimpleShearSingleAType:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
-        _log.debug("calculated re-orientation rate:\n", orientations_diff)
+        _log.debug("calculated re-orientation rate:\n%s", orientations_diff)
         target_orientations_diff = np.array(
             [
                 [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
@@ -103,9 +103,9 @@ class TestSimpleShearSingleAType:
                 [0, 0, 0],
             ]
         )
-        _log.debug("target re-orientation rate:\n", target_orientations_diff)
+        _log.debug("target re-orientation rate:\n%s", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
-        _log.debug("calculated grain volume changes:\n", fractions_diff)
+        _log.debug("calculated grain volume changes:\n%s", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_initP45Z(self):
@@ -144,7 +144,7 @@ class TestSimpleShearSingleAType:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
-        _log.debug("calculated re-orientation rate:\n", orientations_diff)
+        _log.debug("calculated re-orientation rate:\n%s", orientations_diff)
         target_orientations_diff = np.array(
             [
                 [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
@@ -152,9 +152,9 @@ class TestSimpleShearSingleAType:
                 [0, 0, 0],
             ]
         )
-        _log.debug("target re-orientation rate:\n", target_orientations_diff)
+        _log.debug("target re-orientation rate:\n%s", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
-        _log.debug("calculated grain volume changes:\n", fractions_diff)
+        _log.debug("calculated grain volume changes:\n%s", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_initP90Z(self):
@@ -193,7 +193,7 @@ class TestSimpleShearSingleAType:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
-        _log.debug("calculated re-orientation rate:\n", orientations_diff)
+        _log.debug("calculated re-orientation rate:\n%s", orientations_diff)
         target_orientations_diff = np.array(
             [
                 [sinθ * (1 + cos2θ), cosθ * (1 + cos2θ), 0],
@@ -201,9 +201,9 @@ class TestSimpleShearSingleAType:
                 [0, 0, 0],
             ]
         )
-        _log.debug("target re-orientation rate:\n", target_orientations_diff)
+        _log.debug("target re-orientation rate:\n%s", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
-        _log.debug("calculated grain volume changes:\n", fractions_diff)
+        _log.debug("calculated grain volume changes:\n%s", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_initP10Y(self):
@@ -242,7 +242,7 @@ class TestSimpleShearSingleAType:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
-        _log.debug("calculated re-orientation rate:\n", orientations_diff)
+        _log.debug("calculated re-orientation rate:\n%s", orientations_diff)
         target_orientations_diff = np.array(
             [
                 [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
@@ -250,9 +250,9 @@ class TestSimpleShearSingleAType:
                 [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
             ]
         )
-        _log.debug("target re-orientation rate:\n", target_orientations_diff)
+        _log.debug("target re-orientation rate:\n%s", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
-        _log.debug("calculated grain volume changes:\n", fractions_diff)
+        _log.debug("calculated grain volume changes:\n%s", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_initN10Y(self):
@@ -291,7 +291,7 @@ class TestSimpleShearSingleAType:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
-        _log.debug("calculated re-orientation rate:\n", orientations_diff)
+        _log.debug("calculated re-orientation rate:\n%s", orientations_diff)
         target_orientations_diff = np.array(
             [
                 [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
@@ -299,9 +299,9 @@ class TestSimpleShearSingleAType:
                 [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
             ]
         )
-        _log.debug("target re-orientation rate:\n", target_orientations_diff)
+        _log.debug("target re-orientation rate:\n%s", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
-        _log.debug("calculated grain volume changes:\n", fractions_diff)
+        _log.debug("calculated grain volume changes:\n%s", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_initP45Y(self):
@@ -340,7 +340,7 @@ class TestSimpleShearSingleAType:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
-        _log.debug("calculated re-orientation rate:\n", orientations_diff)
+        _log.debug("calculated re-orientation rate:\n%s", orientations_diff)
         target_orientations_diff = np.array(
             [
                 [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
@@ -348,9 +348,9 @@ class TestSimpleShearSingleAType:
                 [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
             ]
         )
-        _log.debug("target re-orientation rate:\n", target_orientations_diff)
+        _log.debug("target re-orientation rate:\n%s", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
-        _log.debug("calculated grain volume changes:\n", fractions_diff)
+        _log.debug("calculated grain volume changes:\n%s", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_initP90Y(self):
@@ -389,7 +389,7 @@ class TestSimpleShearSingleAType:
         cosθ = np.cos(θ)
         cos2θ = np.cos(2 * θ)
         sinθ = np.sin(θ)
-        _log.debug("calculated re-orientation rate:\n", orientations_diff)
+        _log.debug("calculated re-orientation rate:\n%s", orientations_diff)
         target_orientations_diff = np.array(
             [
                 [sinθ * (1 - cos2θ), 0, cosθ * (cos2θ - 1)],
@@ -397,7 +397,7 @@ class TestSimpleShearSingleAType:
                 [cosθ * (1 - cos2θ), 0, sinθ * (1 - cos2θ)],
             ]
         )
-        _log.debug("target re-orientation rate:\n", target_orientations_diff)
+        _log.debug("target re-orientation rate:\n%s", target_orientations_diff)
         assert np.allclose(orientations_diff, target_orientations_diff)
-        _log.debug("calculated grain volume changes:\n", fractions_diff)
+        _log.debug("calculated grain volume changes:\n%s", fractions_diff)
         assert np.isclose(np.sum(fractions_diff), 0.0)
