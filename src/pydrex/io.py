@@ -1,4 +1,5 @@
 """> PyDRex: Input/Output functions and helpers."""
+import os
 import collections as c
 import configparser
 import csv
@@ -90,6 +91,81 @@ def read_scsv(file):
                 for f, fill, x in zip(coltypes, fillvals, zip(*list(reader)))
             ]
         )
+
+
+def write_scsv_header(stream, schema, comments=None):
+    """Write YAML header to an SCSV stream.
+
+    SCSV files are our custom CSV files with a YAML header.
+    The header is used for data attribution and metadata,
+    as well as a column type spec.
+    There is no official spec for SCSV files at the moment
+    but they should follow the format of existing  SCSV files in the `data/` folder
+    of the source repository.
+    For supported cell types, see `SCSV_TYPEMAP`.
+
+    Args:
+    - `stream` — open output stream (e.g. file handle) where data should be written
+    - `schema` — SCSV schema dictionary, with 'delimiter', 'missing' and 'fields' keys
+    - `comments` (optional) — array of comments to be written above the schema, each on
+      a new line with an '#' prefix
+
+    """
+    if not _validate_scsv_schema(schema):
+        raise _err.SCSVError("refusing to write invalid schema to stream")
+
+    stream.write("---" + os.linesep)
+    if comments is not None:
+        for comment in comments:
+            stream.write("# " + comment + os.linesep)
+    stream.write("schema:" + os.linesep)
+    delimiter = schema["delimiter"]
+    missing = schema["missing"]
+    stream.write(f"  delimiter: '{delimiter}'{os.linesep}")
+    stream.write(f"  missing: '{missing}'{os.linesep}")
+    stream.write("  fields:" + os.linesep)
+
+    for field in schema["fields"]:
+        name = field["name"]
+        kind = field["type"]
+        stream.write(f"    - name: {name}{os.linesep}")
+        stream.write(f"      type: {kind}{os.linesep}")
+        if "unit" in field:
+            unit = field["unit"]
+            stream.write(f"      unit: {unit}{os.linesep}")
+        if "fill" in field:
+            fill = field["fill"]
+            stream.write(f"      fill: {fill}{os.linesep}")
+    stream.write("---" + os.linesep)
+
+
+def save_scsv(file, schema, data, **kwargs):
+    """Save data to SCSV file.
+
+    SCSV files are our custom CSV files with a YAML header.
+    The header is used for data attribution and metadata,
+    as well as a column type spec.
+    There is no official spec for SCSV files at the moment
+    but they should follow the format of existing  SCSV files in the `data/` folder
+    of the source repository.
+    For supported cell types, see `SCSV_TYPEMAP`.
+
+    Args:
+    - `file` — path to the file where the data should be written
+    - `schema` — SCSV schema dictionary, with 'delimiter', 'missing' and 'fields' keys
+    - `data` — data arrays (columns) of equal length
+
+    Optional keyword arguments are passed to `write_scsv_header`.
+
+    """
+    with open(file, mode="w") as stream:
+        write_scsv_header(stream, schema, **kwargs)
+        delim = schema["delimiter"]
+        stream.write(
+            delim.join([field["name"] for field in schema["fields"]]) + os.linesep
+        )
+        for col in zip(*data):
+            stream.write(delim.join([str(d) for d in col]) + os.linesep)
 
 
 def parse_params(file):
