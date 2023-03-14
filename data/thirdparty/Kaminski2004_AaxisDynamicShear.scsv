@@ -10,7 +10,7 @@
 
 schema:
   delimiter: ','
-  missing: '-',
+  missing: '-'
   fields:
     - name: time
       type: float

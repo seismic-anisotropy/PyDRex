@@ -30,12 +30,12 @@ def _validate_scsv_schema(schema):
     )
     if not format_ok:
         return False
-    for name in schema["fields"]:
-        if not name.isidentifier():
+    for field in schema["fields"]:
+        if not field["name"].isidentifier():
             return False
-    for coltype in schema["type"]:
-        if coltype not in SCSV_TYPEMAP.keys():
+        if not field["type"] in SCSV_TYPEMAP.keys():
             return False
+    return True
 
 
 def _parse_scsv_cell(func, data, missingstr=None, fillval=None):
@@ -70,7 +70,7 @@ def read_scsv(file):
         if not schema_colnames == header_colnames:
             raise _err.SCSVError(
                 f"field names specified in schema must match CSV column headers in '{file}'."
-                + " You've supplied schema fields:\n{schema_colnames}\nCSV header:\n{header_colnames}"
+                + f" You've supplied schema fields:\n{schema_colnames}\nCSV header:\n{header_colnames}"
             )
 
         Columns = c.namedtuple("Columns", schema_colnames)
