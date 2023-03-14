@@ -82,7 +82,6 @@ def get_crss(phase, fabric):
     raise ValueError("phase must be a valid `MineralPhase`")
 
 
-@nb.njit
 def get_primary_axis(fabric):
     """Get primary slip axis name for the given olivine `fabric`."""
     match fabric:
