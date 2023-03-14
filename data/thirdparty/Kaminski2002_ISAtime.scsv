@@ -6,7 +6,7 @@
 
 schema:
   delimiter: ','
-  missing: '-',
+  missing: '-'
   fields:
     - name: time_ISA
       type: float
