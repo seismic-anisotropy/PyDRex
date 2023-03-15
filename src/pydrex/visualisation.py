@@ -9,6 +9,7 @@ from scipy import linalg as la
 from pydrex import io as _io
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
+from pydrex import logger as _log
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
@@ -339,17 +340,37 @@ def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
     return stereograph_xvals, stereograph_yvals
 
 
-def polefigures(datafile, step=1, postfix=None, savefile="polefigures.png"):
+def polefigures(
+    datafile,
+    i_range=None,
+    postfix=None,
+    savefile="polefigures.png",
+    **kwargs,
+):
     """Plot pole figures for CPO data.
 
     The data is read from fields ending with the optional `postfix` in the NPZ file
-    `datafile`. Pole figures are plotted at every `step` number of timesteps.
+    `datafile`. Use `i_range` to specify the indices of the timesteps to be plotted,
+    which can be any valid Python range object, e.g. `range(0, 12, 2)` with a step of 2.
+    By default (`i_range=None`), a maximum of 25 timesteps are plotted.
+    If the number would exceed this, a warning is printed,
+    which signals the complete number of timesteps found in the file.
+
+    Any additional keyword arguments are passed to `poles`.
+
+    See also: `pydrex.minerals.Mineral.save`.
 
     """
     mineral = _minerals.Mineral.from_file(datafile, postfix=postfix)
+    if i_range is None:
+        i_range = range(0, len(mineral.orientations))
+        if len(i_range) > 25:
+            _log.warning("truncating to 25 timesteps (out of %s total)", len(i_range))
+            i_range = range(0, 25)
+
     orientations_resampled = [
-        _stats.resample_orientations(_orientations, _fractions)[0]
-        for _orientations, _fractions in zip(mineral.orientations, mineral.fractions)
+        _stats.resample_orientations(mineral.orientations[i], mineral.fractions[i])[0]
+        for i in np.arange(i_range.start, i_range.stop, i_range.step, dtype=int)
     ]
     n_orientations = len(orientations_resampled)
     fig = plt.figure(figsize=(n_orientations, 4), dpi=600)
@@ -363,16 +384,17 @@ def polefigures(datafile, step=1, postfix=None, savefile="polefigures.png"):
     for n, orientations in enumerate(orientations_resampled):
         ax100 = fig100.add_subplot(1, n_orientations, n + 1)
         set_polefig_axis(ax100)
-        ax100.scatter(*poles(orientations), s=0.3, alpha=0.33, zorder=11)
-        # ax100.contourf(*point_density(*poles(orientations)))
-
+        ax100.scatter(*poles(orientations, **kwargs), s=0.3, alpha=0.33, zorder=11)
         ax010 = fig010.add_subplot(1, n_orientations, n + 1)
         set_polefig_axis(ax010)
-        ax010.scatter(*poles(orientations, hkl=[0, 1, 0]), s=0.3, alpha=0.33, zorder=11)
-
+        ax010.scatter(
+            *poles(orientations, hkl=[0, 1, 0], **kwargs), s=0.3, alpha=0.33, zorder=11
+        )
         ax001 = fig001.add_subplot(1, n_orientations, n + 1)
         set_polefig_axis(ax001)
-        ax001.scatter(*poles(orientations, hkl=[0, 0, 1]), s=0.3, alpha=0.33, zorder=11)
+        ax001.scatter(
+            *poles(orientations, hkl=[0, 0, 1], **kwargs), s=0.3, alpha=0.33, zorder=11
+        )
 
     fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
 
