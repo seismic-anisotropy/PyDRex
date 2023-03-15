@@ -168,6 +168,9 @@ class TestOlivineA:
                 z_vals.append(z_exit)
 
                 _log.info("final deformation gradient:\n%s", deformation_gradient)
+                if outdir is not None:
+                    mineral.save(f"{outdir}/{test_id}.npz", _io.stringify(z_exit))
+
                 assert (
                     n_timesteps
                     == len(mineral.orientations)
