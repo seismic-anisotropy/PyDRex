@@ -3,7 +3,7 @@
 **Acronyms:**
 - CRSS = Critical Resolved Shear Stress,
     i.e. threshold stress required to initiate slip on a slip system,
-    normalised to the stress required to initiate slip on the softes slip system
+    normalised to the stress required to initiate slip on the softest slip system
 
 """
 import io
