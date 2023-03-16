@@ -1,8 +1,9 @@
-"""> PyDRex: Lagrangian data structures and fabric/CRSS selection.
+"""> PyDRex: Lagrangian data structures and mineral fabric definitions.
 
-Acronyms:
+**Acronyms:**
 - CRSS = Critical Resolved Shear Stress,
-    i.e. components of stress acting on each slip system in the grain reference frame
+    i.e. threshold stress required to initiate slip on a slip system,
+    normalised to the stress required to initiate slip on the softest slip system
 
 """
 import io
@@ -25,6 +26,8 @@ from pydrex import logger as _log
 
 @unique
 class OlivineFabric(IntEnum):
+    """Enumeration type for olivine fabrics A-E."""
+
     A = 0
     B = 1
     C = 2
@@ -34,6 +37,8 @@ class OlivineFabric(IntEnum):
 
 @unique
 class EnstatiteFabric(IntEnum):
+    """Enumeration type with a single member A which is the only enstatite fabric."""
+
     A = 0  # Just to make it consistent.
 
 
@@ -54,8 +59,8 @@ class MineralPhase(IntEnum):
 def get_crss(phase, fabric):
     """Get Critical Resolved Shear Stress for the mineral `phase` and `fabric`.
 
-    Returns an array of the components of stress acting on each slip system
-    in the grain-local reference frame.
+    Returns an array of the normalised threshold stresses required to activate slip
+    on each slip system.
 
     """
     if phase == MineralPhase.olivine:
@@ -392,11 +397,11 @@ class Mineral:
         """Save CPO data for all stored timesteps to a `numpy` NPZ file.
 
         If `postfix` is not `None`, the data is appended to the NPZ file
-        in fields ending with "_`postfix`".
+        in fields ending with "`_postfix`".
 
         Raises a `ValueError` if the data shapes are not compatible.
 
-        See also: `numpy.savez`.
+        See also: `numpy.savez`, `Mineral.load`, `Mineral.from_file`.
 
         """
         if len(self.fractions) != len(self.orientations):
@@ -442,9 +447,9 @@ class Mineral:
     def load(self, filename, postfix=None):
         """Load CPO data from a `numpy` NPZ file.
 
-        If `postfix` is not `None`, data is read from fields ending with "_`postfix`".
+        If `postfix` is not `None`, data is read from fields ending with "`_postfix`".
 
-        See also: `Mineral.save`.
+        See also: `Mineral.save`, `Mineral.from_file`.
 
         """
         if not filename.endswith(".npz"):
@@ -471,9 +476,9 @@ class Mineral:
     def from_file(cls, filename, postfix=None):
         """Construct a `Mineral` instance using data from a `numpy` NPZ file.
 
-        If `postfix` is not `None`, data is read from fields ending with "_`postfix`".
+        If `postfix` is not `None`, data is read from fields ending with “`_postfix`”.
 
-        See also: `Mineral.save`.
+        See also: `Mineral.save`, `Mineral.load`.
 
         """
         if not filename.endswith(".npz"):
