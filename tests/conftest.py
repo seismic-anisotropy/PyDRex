@@ -7,6 +7,7 @@ from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
 from numpy import random as rn
 
 from pydrex import logger as _log
+from pydrex import io as _io
 
 matplotlib.use("Agg")  # Stop matplotlib from looking for $DISPLAY in env.
 _log.quiet_aliens()  # Stop imported modules from spamming the logs.
@@ -178,12 +179,12 @@ def vtkfiles_2d_corner_flow():
 
 @pytest.fixture
 def scsvfiles_thirdparty():
-    return pl.Path(__file__).parent / ".." / "data" / "thirdparty"
+    return _io.resolve_path(pl.Path(__file__).parent / ".." / "data" / "thirdparty")
 
 
 @pytest.fixture
 def data_specs():
-    return pl.Path(__file__).parent / ".." / "data" / "specs"
+    return _io.resolve_path(pl.Path(__file__).parent / ".." / "data" / "specs")
 
 
 @pytest.fixture

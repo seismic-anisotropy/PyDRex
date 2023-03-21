@@ -43,7 +43,7 @@ def read_scsv(file):
     See also `save_scsv`, `read_scsv_header`.
 
     """
-    with open(_resolve_path(file)) as fileref:
+    with open(resolve_path(file)) as fileref:
         metadata, content = fm.parse(fileref.read())
         schema = metadata["schema"]
         if not _validate_scsv_schema(schema):
@@ -132,7 +132,7 @@ def save_scsv(file, schema, data, **kwargs):
     Optional keyword arguments are passed to `write_scsv_header`. See also `read_scsv`.
 
     """
-    with open(_resolve_path(file), mode="w") as stream:
+    with open(resolve_path(file), mode="w") as stream:
         write_scsv_header(stream, schema, **kwargs)
         writer = csv.writer(stream, delimiter=schema["delimiter"])
         writer.writerow([field["name"] for field in schema["fields"]])
@@ -163,14 +163,14 @@ def save_scsv(file, schema, data, **kwargs):
 def parse_params(file):
     """Parse an INI file containing PyDRex parameters."""
     config = configparser.ConfigParser()
-    configpath = _resolve_path(file)
+    configpath = resolve_path(file)
     config.read(configpath)
 
     geometry = config["Geometry"]
     output = config["Output"]
     params = config["Parameters"]
 
-    mesh = read_mesh(_resolve_path(geometry.get("meshfile"), configpath.parent))
+    mesh = read_mesh(resolve_path(geometry.get("meshfile"), configpath.parent))
     olivine_fraction = params.getfloat("olivine_fraction")
     enstatite_fraction = params.getfloat("enstatite_fraction", 1.0 - olivine_fraction)
 
@@ -225,16 +225,24 @@ def parse_params(file):
 
 
 def read_mesh(meshfile, *args, **kwargs):
-    """Wrapper of `meshio.read`."""
+    """Wrapper of `meshio.read`, see <https://github.com/nschloe/meshio>."""
     return meshio.read(meshfile, *args, **kwargs)
 
 
-def _resolve_path(path, refdir=None):
+def resolve_path(path, refdir=None):
+    """Resolve relative paths and create parent directories if necessary.
+
+    Relative paths are interpreted with respect to the current working directory,
+    i.e. the directory from whith the current Python process was executed,
+    unless a specific reference directory is provided with `refdir`.
+
+    """
     cwd = pathlib.Path.cwd()
     if refdir is None:
         _path = cwd / path
     else:
-        _path = cwd / refdir / path
+        _path = refdir / path
+    _path.parent.mkdir(parents=True, exist_ok=True)
     return _path.resolve()
 
 
