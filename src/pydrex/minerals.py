@@ -7,7 +7,6 @@
 
 """
 import io
-import pathlib as pl
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
 from zipfile import ZipFile

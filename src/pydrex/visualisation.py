@@ -1,6 +1,5 @@
 """> PyDRex: Visualisation helpers for tests/examples."""
 import functools as ft
-import pathlib as pl
 
 import numpy as np
 from matplotlib import pyplot as plt
