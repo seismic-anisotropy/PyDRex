@@ -98,7 +98,7 @@ def simple_shear_stationary_2d(
     if labels is not None:
         ax_mean.legend()
 
-    fig.savefig(_io.resolve_path(), bbox_inches="tight")
+    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
 
 
 def _lag_2d_corner_flow(θ):
@@ -274,7 +274,7 @@ def corner_flow_2d(
     if labels is not None:
         ax_mean.legend()
 
-    fig.savefig(_io.resolve_path(), bbox_inches="tight")
+    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
 
 
 def set_polefig_axis(ax, ref_axes="xz"):
@@ -371,7 +371,7 @@ def polefigures(datafile, step=1, postfix=None, savefile="polefigures.png"):
         set_polefig_axis(ax001)
         ax001.scatter(*poles(orientations, hkl=[0, 0, 1]), s=0.3, alpha=0.33, zorder=11)
 
-    fig.savefig(_io.resolve_path(), bbox_inches="tight")
+    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
 
 
 # TODO: The contouring stuff below is mostly copied/adapted from mplstereonet, but I
