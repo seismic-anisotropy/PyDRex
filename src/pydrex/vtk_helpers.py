@@ -11,7 +11,7 @@ def get_output(filename):
     Only supports modern vtk formats, i.e. .vtu and .pvtu files.
 
     """
-    input_path = _io._resolve_path(filename)
+    input_path = _io.resolve_path(filename)
     if input_path.suffix == ".vtu":
         reader = vtkXMLUnstructuredGridReader()
     elif input_path.suffix == ".pvtu":
