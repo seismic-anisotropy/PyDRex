@@ -3,13 +3,13 @@
 # The SCSV format is a plain text format intended for small data files.
 # A YAML header with a data schema and optional comments is added to a standard CSV file.
 # This idea was inspired by CSVY (http://csvy.org/) but does not aim to be compatible with that format.
-# A single SCSV file can store exactly one dataset.
+# A single SCSV file can store exactly one, flat dataset.
 # The file encoding must be UTF-8.
 
 # The YAML header must obey the following structure:
-schema:
+schema:  # The delimiter and missing string definitions must be enclosed in quotes, e.g. ','.
   delimiter: ','  # A single character delimiter.
-  missing: '-'  # An arbitrary-length string denoting missing data.
+  missing: '-'  # An arbitrary-length string denoting missing data (must not contain the delimiter).
   fields:  # Inline comments are supported in the YAML section.
     - name: first_column  # Column names must be valid Python identifiers as per `str.isidentifier()`.
       type: string  # Valid types are 'string', 'integer', 'float', 'boolean' or 'complex' (number).
@@ -17,7 +17,7 @@ schema:
       unit: percent  # Arbitrary, optional string describing the data units, currently not parsed.
     - name: second_column  # Type and fill value are also optional, defaults are 'string' and "".
     - name: third_column
-      type: integer  # Type of fill value must match the specified type. Use 'NaN' for floats and complex numbers.
+      type: integer  # Type of fill value must match the specified type, unless using 'NaN', see below.
       fill: 999999  # Boolean columns cannot have missing values, use a string column instead.
     - name: float_column
       type: float
@@ -26,10 +26,13 @@ schema:
       type: boolean
     - name: complex_column
       type: complex
-      fill: NaN  # Parsers should fill these with (NaN + 0j)
+      fill: NaN  # Parsers should fill these with (NaN + 0j).
 
 # The fields defined in the YAML schema must match the names in the header row of the CSV data.
 # Double quotes can be used to prevent splitting a string value that contains the delimiter.
+# The fill value for floats and complex numbers can additionaly be 'NaN',
+# which should be interpreted as the floating point NaN (e.g. numpy.nan) or as
+# the complex value with NaN for the real component and 0 for the imaginary component.
 ---
 first_column, second_column, third_column, float_column, bool_column, complex_column
 s1, A, -, 1.1, 1, 0.1
