@@ -12,20 +12,18 @@ the `data/` folder of the source repository. For supported cell types, see
 `SCSV_TYPEMAP`.
 
 """
-import os
 import collections as c
 import configparser
 import csv
 import functools as ft
+import os
 import pathlib
 
 import frontmatter as fm
-import numpy as np
 import meshio
-
+import numpy as np
 
 import pydrex.exceptions as _err
-
 
 SCSV_TYPEMAP = {
     "string": str,
