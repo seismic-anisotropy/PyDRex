@@ -171,8 +171,19 @@ def params_Hedjazian2017():
 
 @pytest.fixture
 def vtkfiles_2d_corner_flow():
+    # TODO: Change data fixtures to point to directories.
     datadir = pl.Path(__file__).parent / ".." / "data" / "vtu"
     return (datadir / "corner2d_2cmyr_5e5x1e5.vtu",)
+
+
+@pytest.fixture
+def scsvfiles_thirdparty():
+    return pl.Path(__file__).parent / ".." / "data" / "thirdparty"
+
+
+@pytest.fixture
+def data_specs():
+    return pl.Path(__file__).parent / ".." / "data" / "specs"
 
 
 @pytest.fixture

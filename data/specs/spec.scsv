@@ -1,0 +1,37 @@
+---
+# SCSV specification (complete example).
+# The SCSV format is a plain text format intended for small data files.
+# A YAML header with a data schema and optional comments is added to a standard CSV file.
+# This idea was inspired by CSVY (http://csvy.org/) but does not aim to be compatible with that format.
+# A single SCSV file can store exactly one dataset.
+# The file encoding must be UTF-8.
+
+# The YAML header must obey the following structure:
+schema:
+  delimiter: ','  # A single character delimiter.
+  missing: '-'  # An arbitrary-length string denoting missing data.
+  fields:  # Inline comments are supported in the YAML section.
+    - name: first_column  # Column names must be valid Python identifiers as per `str.isidentifier()`.
+      type: string  # Valid types are 'string', 'integer', 'float', 'boolean' or 'complex' (number).
+      fill: "MISSING"  # Fill value for missing data, replacement for the 'missing' string.
+      unit: percent  # Arbitrary, optional string describing the data units, currently not parsed.
+    - name: second_column  # Type and fill value are also optional, defaults are 'string' and "".
+    - name: third_column
+      type: integer  # Type of fill value must match the specified type. Use 'NaN' for floats and complex numbers.
+      fill: 999999  # Boolean columns cannot have missing values, use a string column instead.
+    - name: float_column
+      type: float
+      fill: NaN
+    - name: bool_column
+      type: boolean
+    - name: complex_column
+      type: complex
+      fill: NaN  # Parsers should fill these with (NaN + 0j)
+
+# The fields defined in the YAML schema must match the names in the header row of the CSV data.
+# Double quotes can be used to prevent splitting a string value that contains the delimiter.
+---
+first_column, second_column, third_column, float_column, bool_column, complex_column
+s1, A, -, 1.1, 1, 0.1
+-, "B, b", 10, -, False, -
+s3, -, 1, 1., true, 1+j
