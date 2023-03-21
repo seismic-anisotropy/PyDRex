@@ -7,9 +7,9 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import linalg as la
 
+from pydrex import io as _io
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
-from pydrex import io as _io
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True

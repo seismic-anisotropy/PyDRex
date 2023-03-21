@@ -1,10 +1,10 @@
 """> PyDRex: tests for the SCSV plain text file format."""
 import tempfile
 
-from pydrex import io as _io
 import numpy as np
 from numpy import testing as nt
 
+from pydrex import io as _io
 from pydrex import logger as _log
 
 

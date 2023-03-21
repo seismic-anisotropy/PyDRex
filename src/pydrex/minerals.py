@@ -21,8 +21,8 @@ from scipy.spatial.transform import Rotation
 from pydrex import core as _core
 from pydrex import deformation_mechanism as _defmech
 from pydrex import exceptions as _err
-from pydrex import logger as _log
 from pydrex import io as _io
+from pydrex import logger as _log
 
 
 @unique
