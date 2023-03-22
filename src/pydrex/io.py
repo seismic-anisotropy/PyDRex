@@ -135,7 +135,9 @@ def save_scsv(file, schema, data, **kwargs):
     """
     with open(resolve_path(file), mode="w") as stream:
         write_scsv_header(stream, schema, **kwargs)
-        writer = csv.writer(stream, delimiter=schema["delimiter"])
+        writer = csv.writer(
+            stream, delimiter=schema["delimiter"], lineterminator=os.linesep
+        )
         writer.writerow([field["name"] for field in schema["fields"]])
         fills = [field.get("fill", _SCSV_DEFAULT_FILL) for field in schema["fields"]]
         types = [
