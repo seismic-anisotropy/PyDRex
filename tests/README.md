@@ -18,9 +18,6 @@ If `outdir` is a directory path (string):
   (the default is `logging.DEBUG` which implies the most verbose output),
 - figures can be saved by (implementing and) calling a helper from `pydrex.visualisation`, and
 - data dumps can be saved to `outdir`, e.g. in `.npz` format (see the `Mineral.save` method)
-In all cases, saving to `outdir` should handle creation of parent directories,
-using the `pathlib` module:
-
-```
-pathlib.Path(f"{outdir}/some.file").parent.mkdir(parents=True, exist_ok=True)
-```
+In all cases, saving to `outdir` should handle creation of parent directories.
+To handle this as well as relative paths, we provide `pydrex.io.resolve_path`,
+which is a thin wrapper around some `pathlib` methods.

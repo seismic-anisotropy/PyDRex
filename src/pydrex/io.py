@@ -1,12 +1,26 @@
-"""> PyDRex: Input/Output functions and helpers."""
+"""> PyDRex: Mesh, configuration and supporting data Input/Output functions.
+
+PyDRex can read/write three kinds of plain text files:
+- PyDRex configuration files, which specify simulation parameters and initial conditions
+- 'SCSV' files, CSV files with YAML frontmatter for (small) scientific datasets
+- Mesh files via `meshio`, to set up final mineral positions in steady flows.
+
+SCSV files are our custom CSV files with a YAML header. The header is used for data
+attribution and metadata, as well as a column type spec. There is no official spec for
+SCSV files at the moment but they should follow the format of existing  SCSV files in
+the `data/` folder of the source repository. For supported cell types, see
+`SCSV_TYPEMAP`.
+
+"""
 import collections as c
 import configparser
 import csv
 import functools as ft
+import os
 import pathlib
-import runpy
 
 import frontmatter as fm
+import meshio
 import numpy as np
 
 import pydrex.exceptions as _err
@@ -20,50 +34,23 @@ SCSV_TYPEMAP = {
 }
 """Mapping of supported SCSV field types to corresponding Python types."""
 
-
-def _validate_scsv_schema(schema):
-    format_ok = (
-        "delimiter" in schema
-        and "missing" in schema
-        and "fields" in schema
-        and len(schema["fields"]) > 0
-    )
-    if not format_ok:
-        return False
-    for field in schema["fields"]:
-        if not field["name"].isidentifier():
-            return False
-        if not field["type"] in SCSV_TYPEMAP.keys():
-            return False
-    return True
-
-
-def _parse_scsv_cell(func, data, missingstr=None, fillval=None):
-    if data.strip() == missingstr:
-        if fillval == "NaN":
-            return np.nan
-        return func(fillval)
-    return func(data.strip())
+_SCSV_DEFAULT_TYPE = "string"
 
 
 def read_scsv(file):
     """Read data from an SCSV file.
 
-    SCSV files are our custom CSV files with a YAML header.
-    The header is used for data attribution and metadata,
-    as well as a column type spec.
-    There is no official spec for SCSV files at the moment
-    but they should follow the format of existing  SCSV files in the `data/` folder
-    of the source repository.
-    For supported cell types, see `SCSV_TYPEMAP`.
+    See also `save_scsv`, `read_scsv_header`.
 
     """
-    with open(file) as fileref:
+    with open(resolve_path(file)) as fileref:
         metadata, content = fm.parse(fileref.read())
         schema = metadata["schema"]
         if not _validate_scsv_schema(schema):
             raise _err.SCSVError(f"unable to parse SCSV schema from '{file}'")
-        reader = csv.reader(content.splitlines(), delimiter=schema["delimiter"])
+        reader = csv.reader(
+            content.splitlines(), delimiter=schema["delimiter"], skipinitialspace=True
+        )
 
         schema_colnames = [d["name"] for d in schema["fields"]]
         header_colnames = [s.strip() for s in next(reader)]
@@ -74,7 +61,9 @@ def read_scsv(file):
             )
 
         Columns = c.namedtuple("Columns", schema_colnames)
-        coltypes = [SCSV_TYPEMAP[d["type"]] for d in schema["fields"]]
+        coltypes = [
+            SCSV_TYPEMAP[d.get("type", _SCSV_DEFAULT_TYPE)] for d in schema["fields"]
+        ]
         missingstr = schema["missing"]
         fillvals = [d.get("fill", "") for d in schema["fields"]]
         return Columns._make(
@@ -92,17 +81,96 @@ def read_scsv(file):
         )
 
 
+def write_scsv_header(stream, schema, comments=None):
+    """Write YAML header to an SCSV stream.
+
+    Args:
+    - `stream` — open output stream (e.g. file handle) where data should be written
+    - `schema` — SCSV schema dictionary, with 'delimiter', 'missing' and 'fields' keys
+    - `comments` (optional) — array of comments to be written above the schema, each on
+      a new line with an '#' prefix
+
+    See also `read_scsv`, `save_scsv`.
+
+    """
+    if not _validate_scsv_schema(schema):
+        raise _err.SCSVError("refusing to write invalid schema to stream")
+
+    stream.write("---" + os.linesep)
+    if comments is not None:
+        for comment in comments:
+            stream.write("# " + comment + os.linesep)
+    stream.write("schema:" + os.linesep)
+    delimiter = schema["delimiter"]
+    missing = schema["missing"]
+    stream.write(f"  delimiter: '{delimiter}'{os.linesep}")
+    stream.write(f"  missing: '{missing}'{os.linesep}")
+    stream.write("  fields:" + os.linesep)
+
+    for field in schema["fields"]:
+        name = field["name"]
+        kind = field.get("type", _SCSV_DEFAULT_TYPE)
+        stream.write(f"    - name: {name}{os.linesep}")
+        stream.write(f"      type: {kind}{os.linesep}")
+        if "unit" in field:
+            unit = field["unit"]
+            stream.write(f"      unit: {unit}{os.linesep}")
+        if "fill" in field:
+            fill = field["fill"]
+            stream.write(f"      fill: {fill}{os.linesep}")
+    stream.write("---" + os.linesep)
+
+
+def save_scsv(file, schema, data, **kwargs):
+    """Save data to SCSV file.
+
+    Args:
+    - `file` — path to the file where the data should be written
+    - `schema` — SCSV schema dictionary, with 'delimiter', 'missing' and 'fields' keys
+    - `data` — data arrays (columns) of equal length
+
+    Optional keyword arguments are passed to `write_scsv_header`. See also `read_scsv`.
+
+    """
+    with open(resolve_path(file), mode="w") as stream:
+        write_scsv_header(stream, schema, **kwargs)
+        writer = csv.writer(stream, delimiter=schema["delimiter"])
+        writer.writerow([field["name"] for field in schema["fields"]])
+        fills = [field.get("fill", "") for field in schema["fields"]]
+        types = [
+            SCSV_TYPEMAP[field.get("type", _SCSV_DEFAULT_TYPE)]
+            for field in schema["fields"]
+        ]
+        for col in zip(*data):
+            row = []
+            for d, t, f in zip(col, types, fills):
+                if t == bool:
+                    row.append(d)
+                elif t in (float, complex):
+                    if np.isnan(d) and np.isnan(t(f)):
+                        row.append(schema["missing"])
+                    elif d == t(f):
+                        row.append(schema["missing"])
+                    else:
+                        row.append(d)
+                elif t in (int, str) and d == t(f):
+                    row.append(schema["missing"])
+                else:
+                    row.append(d)
+            writer.writerow(row)
+
+
 def parse_params(file):
     """Parse an INI file containing PyDRex parameters."""
     config = configparser.ConfigParser()
-    configpath = _resolve_path(file)
+    configpath = resolve_path(file)
     config.read(configpath)
 
     geometry = config["Geometry"]
     output = config["Output"]
     params = config["Parameters"]
 
-    mesh = read_mesh(_resolve_path(geometry.get("meshfile"), configpath.parent))
+    mesh = read_mesh(resolve_path(geometry.get("meshfile"), configpath.parent))
     olivine_fraction = params.getfloat("olivine_fraction")
     enstatite_fraction = params.getfloat("enstatite_fraction", 1.0 - olivine_fraction)
 
@@ -156,96 +224,55 @@ def parse_params(file):
     )
 
 
-def _resolve_path(path, refdir=None):
+def read_mesh(meshfile, *args, **kwargs):
+    """Wrapper of `meshio.read`, see <https://github.com/nschloe/meshio>."""
+    return meshio.read(meshfile, *args, **kwargs)
+
+
+def resolve_path(path, refdir=None):
+    """Resolve relative paths and create parent directories if necessary.
+
+    Relative paths are interpreted with respect to the current working directory,
+    i.e. the directory from whith the current Python process was executed,
+    unless a specific reference directory is provided with `refdir`.
+
+    """
     cwd = pathlib.Path.cwd()
     if refdir is None:
         _path = cwd / path
     else:
-        _path = cwd / refdir / path
-    if _path.is_file():
-        return _path.resolve()
-    raise OSError(f"file '{_path}' does not exist")
+        _path = refdir / path
+    _path.parent.mkdir(parents=True, exist_ok=True)
+    return _path.resolve()
 
 
-def read_mesh(meshfile):
-    """Read mesh from `meshfile` into numpy arrays.
-
-    Supported formats:
-    - Python script that assigns grid coordinates (2D Numpy array, see `create_mesh`)
-
-    """
-    if meshfile.suffix == ".py":
-        return create_mesh(runpy.run_path(meshfile)["gridcoords"])
-
-    # TODO: Other mesh formats
-    # - MFEM <https://mfem.org/mesh-format-v1.0/#mfem-mesh-v10>
-    # - GMSH <https://gitlab.onelab.info/gmsh/gmsh>
-    # Use meshio? <https://github.com/nschloe/meshio>
-
-    raise _err.MeshError(
-        f"unable to read '{meshfile}'."
-        + " The header is corrupted, or the format is not supported."
+def _validate_scsv_schema(schema):
+    format_ok = (
+        "delimiter" in schema
+        and "missing" in schema
+        and "fields" in schema
+        and len(schema["fields"]) > 0
     )
+    if not format_ok:
+        return False
+    for field in schema["fields"]:
+        if not field["name"].isidentifier():
+            return False
+        if not field.get("type", _SCSV_DEFAULT_TYPE) in SCSV_TYPEMAP.keys():
+            return False
+    return True
 
 
-def create_mesh(gridcoords):
-    """Create mesh for input/output or visualisation.
-
-    Only supports rectangular grids for now.
-
-    Args:
-        `gridcoords` (array) — 2D NumPy array of the X, [Y,] Z coordinates
-
-    """
-    dimension = len(gridcoords)
-    if dimension not in (2, 3):
-        raise _err.MeshError(
-            "mesh dimension must be 2 or 3."
-            + f" You've supplied a dimension of {dimension}."
-        )
-    return dict(
-        zip(
-            [
-                "dimension",
-                "gridnodes",
-                "gridcoords",
-                "gridsteps",
-                "gridmin",
-                "gridmax",
-            ],
-            [
-                dimension,
-                [arr.size for arr in gridcoords],
-                gridcoords,
-                _get_steps(gridcoords),
-                [arr.min() for arr in gridcoords],
-                [arr.max() for arr in gridcoords],
-            ],
-        )
-    )
+def _parse_scsv_bool(x):
+    """Parse boolean from string, for SCSV files."""
+    return str(x).lower() in ("yes", "true", "t", "1")
 
 
-def _get_steps(a):
-    """Get forward difference of 2D array `a`, with repeated last elements.
-
-    The repeated last elements ensure that output and input arrays have equal shape.
-
-    Examples:
-
-    >>> _get_steps(np.array([1, 2, 3, 4, 5]))
-    array([[1, 1, 1, 1, 1]])
-
-    >>> _get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10]]))
-    array([[1, 1, 1, 1, 1],
-           [2, 3, 3, 1, 1]])
-
-    >>> _get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10], [1, 0, 0, 0, np.inf]]))
-    array([[ 1.,  1.,  1.,  1.,  1.],
-           [ 2.,  3.,  3.,  1.,  1.],
-           [-1.,  0.,  0., inf, nan]])
-
-    """
-    a2 = np.atleast_2d(a)
-    return np.diff(
-        a2, append=np.reshape(a2[:, -1] + (a2[:, -1] - a2[:, -2]), (a2.shape[0], 1))
-    )
+def _parse_scsv_cell(func, data, missingstr=None, fillval=None):
+    if data.strip() == missingstr:
+        if fillval == "NaN":
+            return func(np.nan)
+        return func(fillval)
+    elif func == bool:
+        return _parse_scsv_bool(data)
+    return func(data.strip())

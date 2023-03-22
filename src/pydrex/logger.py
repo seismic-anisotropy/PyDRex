@@ -31,9 +31,10 @@ with _log.logfile_enable("my_log_file.log"):
 import contextlib as cl
 import functools as ft
 import logging
-import pathlib as pl
 
 import numpy as np
+
+from pydrex import io as _io
 
 np.set_printoptions(
     formatter={"float_kind": np.format_float_scientific},
@@ -75,8 +76,7 @@ LOGGER.addHandler(LOGGER_CONSOLE)
 @cl.contextmanager
 def logfile_enable(path, level=logging.DEBUG):
     """Enable logging to a file at `path` with given `level`."""
-    pl.Path(path).parent.mkdir(parents=True, exist_ok=True)
-    logger_file = logging.FileHandler(path, mode="w")
+    logger_file = logging.FileHandler(_io.resolve_path(path), mode="w")
     logger_file.setFormatter(
         logging.Formatter(
             "%(levelname)s [%(asctime)s] %(name)s: %(message)s",

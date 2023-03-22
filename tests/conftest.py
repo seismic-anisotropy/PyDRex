@@ -6,6 +6,7 @@ import pytest
 from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
 from numpy import random as rn
 
+from pydrex import io as _io
 from pydrex import logger as _log
 
 matplotlib.use("Agg")  # Stop matplotlib from looking for $DISPLAY in env.
@@ -171,8 +172,19 @@ def params_Hedjazian2017():
 
 @pytest.fixture
 def vtkfiles_2d_corner_flow():
+    # TODO: Change data fixtures to point to directories.
     datadir = pl.Path(__file__).parent / ".." / "data" / "vtu"
     return (datadir / "corner2d_2cmyr_5e5x1e5.vtu",)
+
+
+@pytest.fixture
+def scsvfiles_thirdparty():
+    return _io.resolve_path(pl.Path(__file__).parent / ".." / "data" / "thirdparty")
+
+
+@pytest.fixture
+def data_specs():
+    return _io.resolve_path(pl.Path(__file__).parent / ".." / "data" / "specs")
 
 
 @pytest.fixture

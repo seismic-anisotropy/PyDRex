@@ -1,12 +1,12 @@
 """> PyDRex: Visualisation helpers for tests/examples."""
 import functools as ft
-import pathlib as pl
 
 import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import linalg as la
 
+from pydrex import io as _io
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
 
@@ -41,12 +41,6 @@ def _get_marker_and_label(data, seq_index, markers, labels=None):
     if labels is not None:
         label = labels[int(seq_index / (len(data) / len(labels)))]
     return marker, label
-
-
-def _savefig_deep(fig, path):
-    """Saves a `plt.Figure` to `path`, creating necessary parent directories."""
-    pl.Path(path).parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(path, bbox_inches="tight")
 
 
 @check_marker_seq
@@ -104,7 +98,7 @@ def simple_shear_stationary_2d(
     if labels is not None:
         ax_mean.legend()
 
-    _savefig_deep(fig, savefile)
+    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
 
 
 def _lag_2d_corner_flow(θ):
@@ -280,7 +274,7 @@ def corner_flow_2d(
     if labels is not None:
         ax_mean.legend()
 
-    _savefig_deep(fig, savefile)
+    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
 
 
 def set_polefig_axis(ax, ref_axes="xz"):
@@ -377,7 +371,7 @@ def polefigures(datafile, step=1, postfix=None, savefile="polefigures.png"):
         set_polefig_axis(ax001)
         ax001.scatter(*poles(orientations, hkl=[0, 0, 1]), s=0.3, alpha=0.33, zorder=11)
 
-    _savefig_deep(fig, savefile)
+    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
 
 
 # TODO: The contouring stuff below is mostly copied/adapted from mplstereonet, but I

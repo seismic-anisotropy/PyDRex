@@ -7,7 +7,6 @@
 
 """
 import io
-import pathlib as pl
 from dataclasses import dataclass, field
 from enum import IntEnum, unique
 from zipfile import ZipFile
@@ -21,6 +20,7 @@ from scipy.spatial.transform import Rotation
 from pydrex import core as _core
 from pydrex import deformation_mechanism as _defmech
 from pydrex import exceptions as _err
+from pydrex import io as _io
 from pydrex import logger as _log
 
 
@@ -419,9 +419,8 @@ class Mineral:
                 "fractions": np.stack(self.fractions),
                 "orientations": np.stack(self.orientations),
             }
-            path = pl.Path(filename)
-            # Create parent directories if needed.
-            path.parent.mkdir(parents=True, exist_ok=True)
+            # Create parent directories, resolve relative paths.
+            _io.resolve_path(filename)
             # Append to file, requires postfix (unique name).
             if postfix is not None:
                 archive = ZipFile(filename, mode="a", allowZip64=True)
