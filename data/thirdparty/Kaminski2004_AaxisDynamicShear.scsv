@@ -14,14 +14,18 @@ schema:
   fields:
     - name: time
       type: float
+      fill: NaN
     - name: meanA_X0
       type: float
+      fill: NaN
       unit: degree
     - name: meanA_X02
       type: float
+      fill: NaN
       unit: degree
     - name: meanA_X04
       type: float
+      fill: NaN
       unit: degree
 ---
 
