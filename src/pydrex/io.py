@@ -35,6 +35,7 @@ SCSV_TYPEMAP = {
 """Mapping of supported SCSV field types to corresponding Python types."""
 
 _SCSV_DEFAULT_TYPE = "string"
+_SCSV_DEFAULT_FILL = ""
 
 
 def read_scsv(file):
@@ -65,7 +66,7 @@ def read_scsv(file):
             SCSV_TYPEMAP[d.get("type", _SCSV_DEFAULT_TYPE)] for d in schema["fields"]
         ]
         missingstr = schema["missing"]
-        fillvals = [d.get("fill", "") for d in schema["fields"]]
+        fillvals = [d.get("fill", _SCSV_DEFAULT_FILL) for d in schema["fields"]]
         return Columns._make(
             [
                 tuple(
@@ -136,7 +137,7 @@ def save_scsv(file, schema, data, **kwargs):
         write_scsv_header(stream, schema, **kwargs)
         writer = csv.writer(stream, delimiter=schema["delimiter"])
         writer.writerow([field["name"] for field in schema["fields"]])
-        fills = [field.get("fill", "") for field in schema["fields"]]
+        fills = [field.get("fill", _SCSV_DEFAULT_FILL) for field in schema["fields"]]
         types = [
             SCSV_TYPEMAP[field.get("type", _SCSV_DEFAULT_TYPE)]
             for field in schema["fields"]
@@ -252,6 +253,8 @@ def _validate_scsv_schema(schema):
         and "missing" in schema
         and "fields" in schema
         and len(schema["fields"]) > 0
+        and schema["delimiter"] != schema["missing"]
+        and schema["delimiter"] not in schema["missing"]
     )
     if not format_ok:
         return False
@@ -259,6 +262,11 @@ def _validate_scsv_schema(schema):
         if not field["name"].isidentifier():
             return False
         if not field.get("type", _SCSV_DEFAULT_TYPE) in SCSV_TYPEMAP.keys():
+            return False
+        if (
+            field.get("type", _SCSV_DEFAULT_TYPE) not in (_SCSV_DEFAULT_TYPE, "boolean")
+            and "fill" not in field
+        ):
             return False
     return True
 

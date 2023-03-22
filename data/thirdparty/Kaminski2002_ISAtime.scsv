@@ -10,8 +10,10 @@ schema:
   fields:
     - name: time_ISA
       type: float
+      fill: NaN
     - name: vorticity
       type: float
+      fill: NaN
 ---
 time_ISA, vorticity
 2.48, 0.05
