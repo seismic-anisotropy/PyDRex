@@ -189,4 +189,5 @@ def data_specs():
 
 @pytest.fixture
 def rng():
-    return rn.default_rng()
+    """A seeded RNG for tests to have (more) reproducible results."""
+    return rn.default_rng(seed=8816)
