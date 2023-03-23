@@ -300,7 +300,7 @@ class Mineral:
                 time_start,
                 _velocity_gradient.flatten(),
             )
-            max_step = integration_time
+            # max_step = integration_time
         else:
             _velocity_gradient = velocity_gradient
             time_start = 0
@@ -310,7 +310,7 @@ class Mineral:
                 time_end - time_start,
                 _velocity_gradient.flatten(),
             )
-            max_step = time_end - time_start
+            # max_step = time_end - time_start
 
         strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
         strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
@@ -336,19 +336,14 @@ class Mineral:
                 )
             ),
             time_end,
-            # first_step=max_step / 4,  # TODO: Move divisor to config?
-            max_step=max_step,
-            # atol=np.inf,  # FIXME: Different solver or smart way to set tolerance.
+            # first_step=max_step / 4,
+            # max_step=max_step,
+            rtol=1e-6,
         )
         message = solver.step()
         if message is not None and solver.status == "failed":
             raise _err.IterationError(message)
-        _log.debug(
-            "%s step_size=%e (max_step=%e)",
-            solver.__class__.__qualname__,
-            solver.step_size,
-            solver.max_step,
-        )
+        _log.debug("%s step_size=%e", solver.__class__.__qualname__, solver.step_size)
 
         deformation_gradient, orientations, fractions = extract_vars(solver.y)
         orientations, fractions = apply_gbs(orientations, fractions, config)
@@ -377,10 +372,7 @@ class Mineral:
             if message is not None and solver.status == "failed":
                 raise _err.IterationError(message)
             _log.debug(
-                "%s step_size=%e (max_step=%e)",
-                solver.__class__.__qualname__,
-                solver.step_size,
-                solver.max_step,
+                "%s step_size=%e", solver.__class__.__qualname__, solver.step_size
             )
 
             deformation_gradient, orientations, fractions = extract_vars(solver.y)
