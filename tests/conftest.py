@@ -60,7 +60,7 @@ def pytest_addoption(parser):
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def outdir(request):
     return request.config.getoption("--outdir")
 
