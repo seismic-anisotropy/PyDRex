@@ -54,6 +54,7 @@ from pydrex import minerals as _minerals
 from pydrex import pathlines as _pathlines
 from pydrex import stats as _stats
 from pydrex import visualisation as _vis
+from pydrex import io as _io
 
 
 @nb.njit
@@ -75,16 +76,16 @@ def get_velocity_gradient(x, z, plate_velocity):
 class TestOlivineA:
     """Tests for pure A-type olivine polycrystals in 2D corner flows."""
 
-    def test_corner_pathline_prescribed_init_isotropic(
+    def test_corner_prescribed_init_isotropic(
         self,
         params_Kaminski2001_fig5_shortdash,
         rng,
         stringify,
         outdir,
     ):
-        """Test CPO evolution during integration along a pathline.
+        """Test CPO evolution in prescribed 2D corner flow.
 
-        Initial condition: random orientations in all 4 `Mineral`s.
+        Initial condition: random orientations and uniform volumes in all `Mineral`s.
 
         Plate velocity: 2 cm/yr
 
@@ -96,13 +97,15 @@ class TestOlivineA:
         n_grains = 1000  # NOTE: Changes affect texture strength and tolerances.
         orientations_init = Rotation.random(n_grains, random_state=rng).as_matrix()
         n_timesteps = 20  # Number of places along the pathline to compute CPO.
+        z_ends = (-0.1, -0.3, -0.54, -0.78)  # Z-values at the end of each pathline.
+        test_id = "corner_olivineA_prescribed"  # Unique string ID of this test.
 
         # Optional plotting and logging setup.
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(
-                f"{outdir}/corner_olivineA_pathline_prescribed.log"
-            )
+            optional_logging = _log.logfile_enable(f"{outdir}/{test_id}.log")
+            npzpath = pl.Path(f"{outdir}/{test_id}.npz")
+            npzpath.unlink(missing_ok=True)  # missing_ok: Python 3.8
             labels = []
             angles = []
             indices = []
@@ -126,7 +129,7 @@ class TestOlivineA:
             return np.reshape(velocity_gradient, (1, *velocity_gradient.shape))
 
         with optional_logging:
-            for z_exit in (-0.1, -0.3, -0.54, -0.78):
+            for z_exit in z_ends:
                 mineral = _minerals.Mineral(
                     _minerals.MineralPhase.olivine,
                     _minerals.OlivineFabric.A,
@@ -156,7 +159,7 @@ class TestOlivineA:
                         integration_time=time_end - time_start,
                         pathline=(time_start, time_end, get_position),
                     )
-                    x_current, _, z_current = get_position(time_end)
+                    x_current, _, z_current = get_position(time_start)
                     x_vals.append(x_current)
                     z_vals.append(z_current)
 
@@ -200,9 +203,7 @@ class TestOlivineA:
                     bingham_vectors[idx] = direction_mean
 
                 if outdir is not None:
-                    path = pl.Path(f"{outdir}/corner_olivineA_pathline_prescribed.npz")
-                    path.unlink(missing_ok=True)  # missing_ok: Python 3.8
-                    mineral.save(path, postfix=stringify(z_exit))
+                    mineral.save(npzpath, postfix=stringify(z_exit))
                     labels.append(rf"$z_{{f}}$ = {z_exit}")
                     angles.append(misorient_angles)
                     indices.append(misorient_indices)
@@ -245,9 +246,33 @@ class TestOlivineA:
                 directions,
                 timestamps,
                 xlabel=f"x ⇀ ({plate_velocity:.2e} m/s)",
-                savefile=f"{outdir}/corner_olivineA_pathline_prescribed.png",
+                savefile=f"{outdir}/{test_id}.png",
                 markers=("o", "v", "s", "p"),
                 labels=labels,
                 xlims=(0, domain_width + 0.25),
                 zlims=(-domain_height, 0),
             )
+
+            scsv_schema = {
+                "delimiter": ",",
+                "missing": "-",
+                "fields": [
+                    {
+                        "name": f"t_{stringify(e)}",
+                        "type": "float",
+                        "fill": "NaN",
+                        "unit": "seconds",
+                    }
+                    for e in z_ends
+                ]
+                + [
+                    {"name": f"x_{stringify(e)}", "type": "float", "fill": "NaN"}
+                    for e in z_ends
+                ]
+                + [
+                    {"name": f"z_{stringify(e)}", "type": "float", "fill": "NaN"}
+                    for e in z_ends
+                ],
+            }
+            scsv_data = list(it.chain.from_iterable(zip(timestamps, x_paths, z_paths)))
+            _io.save_scsv(f"{outdir}/{test_id}.scsv", scsv_schema, scsv_data)
