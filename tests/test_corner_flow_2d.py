@@ -41,6 +41,7 @@ See also Fig. 5 in [Kaminski & Ribe, 2002](https://doi.org/10.1029/2001GC000222)
 """
 import contextlib as cl
 import itertools as it
+import pathlib as pl
 
 import numba as nb
 import numpy as np
@@ -78,6 +79,7 @@ class TestOlivineA:
         self,
         params_Kaminski2001_fig5_shortdash,
         rng,
+        stringify,
         outdir,
     ):
         """Test CPO evolution during integration along a pathline.
@@ -198,10 +200,9 @@ class TestOlivineA:
                     bingham_vectors[idx] = direction_mean
 
                 if outdir is not None:
-                    mineral.save(
-                        f"{outdir}/corner_olivineA_pathline_prescribed.npz",
-                        str(z_exit).replace(".", "d"),
-                    )
+                    path = pl.Path(f"{outdir}/corner_olivineA_pathline_prescribed.npz")
+                    path.unlink(missing_ok=True)  # missing_ok: Python 3.8
+                    mineral.save(path, postfix=stringify(z_exit))
                     labels.append(rf"$z_{{f}}$ = {z_exit}")
                     angles.append(misorient_angles)
                     indices.append(misorient_indices)

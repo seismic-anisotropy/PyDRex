@@ -171,10 +171,16 @@ def params_Hedjazian2017():
 
 
 @pytest.fixture
-def vtkfiles_2d_corner_flow():
-    # TODO: Change data fixtures to point to directories.
-    datadir = pl.Path(__file__).parent / ".." / "data" / "vtu"
-    return (datadir / "corner2d_2cmyr_5e5x1e5.vtu",)
+def steady_flow_models():
+    return pl.Path(__file__).parent / ".." / "data" / "steadyflow"
+
+
+@pytest.fixture
+def stringify():
+    """Return a function that produces safe strings for use in filenames, etc."""
+    return lambda x: "".join(
+        filter(lambda s: str.isidentifier(s) or str.isdecimal(s), str(x))
+    )
 
 
 @pytest.fixture
