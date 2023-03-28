@@ -338,6 +338,7 @@ class Mineral:
             time_end,
             # first_step=max_step / 4,
             # max_step=max_step,
+            atol=1e-99,
             rtol=1e-6,
         )
         message = solver.step()
