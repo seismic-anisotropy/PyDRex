@@ -23,6 +23,7 @@ import scipy.special as sp
 from scipy.spatial.transform import Rotation
 
 from pydrex import stats as _st
+from pydrex import logger as _log
 
 
 def bingham_average(orientations, axis="a"):
@@ -112,6 +113,7 @@ def misorientation_index(orientations, bins=None, system=(2, 4)):
         it.combinations(Rotation.from_matrix(orientations).as_quat(), 2)
     ):
         combinations[i] = list(e)
+    _log.debug("Largest array size: %s GB", combinations.nbytes / 1e9)
 
     misorientations_data = misorientation_angles(combinations)
     θmax = _st._max_misorientation(system)
