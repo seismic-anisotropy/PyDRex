@@ -106,7 +106,7 @@ class TestSinglePolycrystalOlivineA:
                     params,
                     deformation_gradient,
                     velocity_gradient,
-                    integration_time=timestep * timescale,
+                    pathline=(time, time + timestep * timescale, np.zeros(2))
                 )
                 time += timestep * timescale
 
@@ -269,7 +269,8 @@ class TestSinglePolycrystalOlivineA:
                         params,
                         deformation_gradient,
                         velocity_gradient,
-                        integration_time=timestep * timescale,
+                        pathline=(time, time + timestep * timescale, np.zeros(2)),
+                        # atol=1e-99,
                     )
                     time += timestep * timescale
 

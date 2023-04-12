@@ -64,7 +64,7 @@ def get_pathline(
         _ivp_func,
         [0, -100e6 * 365.25 * 8.64e4],
         point,
-        method="LSODA",
+        method="RK45",
         first_step=1e10,
         max_step=np.inf,
         # max_step=1e6,

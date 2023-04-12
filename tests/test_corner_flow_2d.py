@@ -159,7 +159,6 @@ class TestOlivineA:
                         params_Kaminski2001_fig5_shortdash,
                         deformation_gradient,
                         _get_velocity_gradient,
-                        integration_time=time_end - time_start,
                         pathline=(time_start, time_end, get_position),
                     )
                     x_current, _, z_current = get_position(time_start)
