@@ -4,8 +4,8 @@ import numpy as np
 from pydrex import vtk_helpers as _vtk
 
 
-def test_vtk_2d_array_shapes(vtkfiles_2d_corner_flow):
-    for file in vtkfiles_2d_corner_flow:
+def test_vtk_2d_array_shapes(steady_flow_models):
+    for file in steady_flow_models.glob("*.vtu"):
         vtk_output = _vtk.get_output(file)
         data = vtk_output.GetPointData()
         coords = _vtk.read_coord_array(vtk_output, skip_empty=True)

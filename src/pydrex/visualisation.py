@@ -125,6 +125,7 @@ def corner_flow_2d(
     zlims=None,
     cpo_threshold=0.33,
     Π_levels=(0.1, 0.5, 1, 2, 3),
+    tick_formatter=lambda x, pos: f"{x/1e3:.1f} km",
 ):
     """Plot diagnostics for prescribed path 2D corner flow tests."""
     fig = plt.figure(figsize=(12, 8), dpi=300)
@@ -135,6 +136,8 @@ def corner_flow_2d(
     ax_domain.xaxis.set_ticks_position("top")
     ax_domain.xaxis.set_label_position("top")
     ax_domain.set_aspect("equal")
+    ax_domain.xaxis.set_major_formatter(tick_formatter)
+    ax_domain.yaxis.set_major_formatter(tick_formatter)
     ax_strength = fig.add_subplot(grid[1, 0])
     ax_strength.set_ylabel("Texture strength (M-index)")
     ax_strength.set_xlabel("Time (s)")
