@@ -96,7 +96,10 @@
                     <a class="function" href="#params_Hedjazian2017">params_Hedjazian2017</a>
             </li>
             <li>
-                    <a class="function" href="#vtkfiles_2d_corner_flow">vtkfiles_2d_corner_flow</a>
+                    <a class="function" href="#steady_flow_models">steady_flow_models</a>
+            </li>
+            <li>
+                    <a class="function" href="#stringify">stringify</a>
             </li>
             <li>
                     <a class="function" href="#scsvfiles_thirdparty">scsvfiles_thirdparty</a>
@@ -194,7 +197,7 @@
 </span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>    <span class="p">)</span>
 </span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>
 </span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>
-</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
 </span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
 </span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--outdir&quot;</span><span class="p">)</span>
 </span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>
@@ -305,25 +308,32 @@
 </span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a>
 </span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a>
 </span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a><span class="k">def</span> <span class="nf">vtkfiles_2d_corner_flow</span><span class="p">():</span>
-</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a>    <span class="c1"># TODO: Change data fixtures to point to directories.</span>
-</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a>    <span class="n">datadir</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;vtu&quot;</span>
-</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a>    <span class="k">return</span> <span class="p">(</span><span class="n">datadir</span> <span class="o">/</span> <span class="s2">&quot;corner2d_2cmyr_5e5x1e5.vtu&quot;</span><span class="p">,)</span>
-</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a>
-</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a>
-</span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a><span class="k">def</span> <span class="nf">scsvfiles_thirdparty</span><span class="p">():</span>
-</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">resolve_path</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;thirdparty&quot;</span><span class="p">)</span>
-</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>
+</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a><span class="k">def</span> <span class="nf">steady_flow_models</span><span class="p">():</span>
+</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;steadyflow&quot;</span>
+</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a>
+</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a>
+</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a><span class="k">def</span> <span class="nf">stringify</span><span class="p">():</span>
+</span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a function that produces safe strings for use in filenames, etc.&quot;&quot;&quot;</span>
+</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a>    <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a>        <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">str</span><span class="o">.</span><span class="n">isdecimal</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>    <span class="p">)</span>
 </span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a>
-</span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a><span class="k">def</span> <span class="nf">data_specs</span><span class="p">():</span>
-</span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">resolve_path</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;specs&quot;</span><span class="p">)</span>
-</span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a>
+</span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a>
+</span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a><span class="k">def</span> <span class="nf">scsvfiles_thirdparty</span><span class="p">():</span>
+</span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">resolve_path</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;thirdparty&quot;</span><span class="p">)</span>
 </span><span id="L-189"><a href="#L-189"><span class="linenos">189</span></a>
-</span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a><span class="k">def</span> <span class="nf">rng</span><span class="p">():</span>
-</span><span id="L-192"><a href="#L-192"><span class="linenos">192</span></a>    <span class="k">return</span> <span class="n">rn</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+</span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a>
+</span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="L-192"><a href="#L-192"><span class="linenos">192</span></a><span class="k">def</span> <span class="nf">data_specs</span><span class="p">():</span>
+</span><span id="L-193"><a href="#L-193"><span class="linenos">193</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">resolve_path</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;specs&quot;</span><span class="p">)</span>
+</span><span id="L-194"><a href="#L-194"><span class="linenos">194</span></a>
+</span><span id="L-195"><a href="#L-195"><span class="linenos">195</span></a>
+</span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a><span class="k">def</span> <span class="nf">rng</span><span class="p">():</span>
+</span><span id="L-198"><a href="#L-198"><span class="linenos">198</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A seeded RNG for tests to have (more) reproducible results.&quot;&quot;&quot;</span>
+</span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a>    <span class="k">return</span> <span class="n">rn</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">8816</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -493,7 +503,7 @@ create a single one for the entire test session here.</p>
                 <section id="outdir">
                             <input id="outdir-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
-                    <div class="decorator">@pytest.fixture</div>
+                    <div class="decorator">@pytest.fixture(scope=&#39;session&#39;)</div>
 
         <span class="def">def</span>
         <span class="name">outdir</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">request</span></span><span class="return-annotation">):</span></span>
@@ -502,7 +512,7 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#outdir"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="outdir-64"><a href="#outdir-64"><span class="linenos">64</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="outdir-64"><a href="#outdir-64"><span class="linenos">64</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
 </span><span id="outdir-65"><a href="#outdir-65"><span class="linenos">65</span></a><span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
 </span><span id="outdir-66"><a href="#outdir-66"><span class="linenos">66</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--outdir&quot;</span><span class="p">)</span>
 </span></pre></div>
@@ -744,27 +754,51 @@ create a single one for the entire test session here.</p>
     
 
                 </section>
-                <section id="vtkfiles_2d_corner_flow">
-                            <input id="vtkfiles_2d_corner_flow-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+                <section id="steady_flow_models">
+                            <input id="steady_flow_models-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
                     <div class="decorator">@pytest.fixture</div>
 
         <span class="def">def</span>
-        <span class="name">vtkfiles_2d_corner_flow</span><span class="signature pdoc-code condensed">(<span class="return-annotation">):</span></span>
+        <span class="name">steady_flow_models</span><span class="signature pdoc-code condensed">(<span class="return-annotation">):</span></span>
 
-                <label class="view-source-button" for="vtkfiles_2d_corner_flow-view-source"><span>View Source</span></label>
+                <label class="view-source-button" for="steady_flow_models-view-source"><span>View Source</span></label>
 
     </div>
-    <a class="headerlink" href="#vtkfiles_2d_corner_flow"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="vtkfiles_2d_corner_flow-174"><a href="#vtkfiles_2d_corner_flow-174"><span class="linenos">174</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="vtkfiles_2d_corner_flow-175"><a href="#vtkfiles_2d_corner_flow-175"><span class="linenos">175</span></a><span class="k">def</span> <span class="nf">vtkfiles_2d_corner_flow</span><span class="p">():</span>
-</span><span id="vtkfiles_2d_corner_flow-176"><a href="#vtkfiles_2d_corner_flow-176"><span class="linenos">176</span></a>    <span class="c1"># TODO: Change data fixtures to point to directories.</span>
-</span><span id="vtkfiles_2d_corner_flow-177"><a href="#vtkfiles_2d_corner_flow-177"><span class="linenos">177</span></a>    <span class="n">datadir</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;vtu&quot;</span>
-</span><span id="vtkfiles_2d_corner_flow-178"><a href="#vtkfiles_2d_corner_flow-178"><span class="linenos">178</span></a>    <span class="k">return</span> <span class="p">(</span><span class="n">datadir</span> <span class="o">/</span> <span class="s2">&quot;corner2d_2cmyr_5e5x1e5.vtu&quot;</span><span class="p">,)</span>
+    <a class="headerlink" href="#steady_flow_models"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="steady_flow_models-174"><a href="#steady_flow_models-174"><span class="linenos">174</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="steady_flow_models-175"><a href="#steady_flow_models-175"><span class="linenos">175</span></a><span class="k">def</span> <span class="nf">steady_flow_models</span><span class="p">():</span>
+</span><span id="steady_flow_models-176"><a href="#steady_flow_models-176"><span class="linenos">176</span></a>    <span class="k">return</span> <span class="n">pl</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;steadyflow&quot;</span>
 </span></pre></div>
 
 
     
+
+                </section>
+                <section id="stringify">
+                            <input id="stringify-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+                    <div class="decorator">@pytest.fixture</div>
+
+        <span class="def">def</span>
+        <span class="name">stringify</span><span class="signature pdoc-code condensed">(<span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="stringify-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#stringify"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="stringify-179"><a href="#stringify-179"><span class="linenos">179</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="stringify-180"><a href="#stringify-180"><span class="linenos">180</span></a><span class="k">def</span> <span class="nf">stringify</span><span class="p">():</span>
+</span><span id="stringify-181"><a href="#stringify-181"><span class="linenos">181</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a function that produces safe strings for use in filenames, etc.&quot;&quot;&quot;</span>
+</span><span id="stringify-182"><a href="#stringify-182"><span class="linenos">182</span></a>    <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+</span><span id="stringify-183"><a href="#stringify-183"><span class="linenos">183</span></a>        <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="o">.</span><span class="n">isidentifier</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">str</span><span class="o">.</span><span class="n">isdecimal</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+</span><span id="stringify-184"><a href="#stringify-184"><span class="linenos">184</span></a>    <span class="p">)</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Return a function that produces safe strings for use in filenames, etc.</p>
+</div>
+
 
                 </section>
                 <section id="scsvfiles_thirdparty">
@@ -779,9 +813,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#scsvfiles_thirdparty"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="scsvfiles_thirdparty-181"><a href="#scsvfiles_thirdparty-181"><span class="linenos">181</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="scsvfiles_thirdparty-182"><a href="#scsvfiles_thirdparty-182"><span class="linenos">182</span></a><span class="k">def</span> <span class="nf">scsvfiles_thirdparty</span><span class="p">():</span>
-</span><span id="scsvfiles_thirdparty-183"><a href="#scsvfiles_thirdparty-183"><span class="linenos">183</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">resolve_path</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;thirdparty&quot;</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="scsvfiles_thirdparty-187"><a href="#scsvfiles_thirdparty-187"><span class="linenos">187</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="scsvfiles_thirdparty-188"><a href="#scsvfiles_thirdparty-188"><span class="linenos">188</span></a><span class="k">def</span> <span class="nf">scsvfiles_thirdparty</span><span class="p">():</span>
+</span><span id="scsvfiles_thirdparty-189"><a href="#scsvfiles_thirdparty-189"><span class="linenos">189</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">resolve_path</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;thirdparty&quot;</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -800,9 +834,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#data_specs"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="data_specs-186"><a href="#data_specs-186"><span class="linenos">186</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="data_specs-187"><a href="#data_specs-187"><span class="linenos">187</span></a><span class="k">def</span> <span class="nf">data_specs</span><span class="p">():</span>
-</span><span id="data_specs-188"><a href="#data_specs-188"><span class="linenos">188</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">resolve_path</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;specs&quot;</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="data_specs-192"><a href="#data_specs-192"><span class="linenos">192</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="data_specs-193"><a href="#data_specs-193"><span class="linenos">193</span></a><span class="k">def</span> <span class="nf">data_specs</span><span class="p">():</span>
+</span><span id="data_specs-194"><a href="#data_specs-194"><span class="linenos">194</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">resolve_path</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;specs&quot;</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -821,13 +855,16 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#rng"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="rng-191"><a href="#rng-191"><span class="linenos">191</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="rng-192"><a href="#rng-192"><span class="linenos">192</span></a><span class="k">def</span> <span class="nf">rng</span><span class="p">():</span>
-</span><span id="rng-193"><a href="#rng-193"><span class="linenos">193</span></a>    <span class="k">return</span> <span class="n">rn</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="rng-197"><a href="#rng-197"><span class="linenos">197</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="rng-198"><a href="#rng-198"><span class="linenos">198</span></a><span class="k">def</span> <span class="nf">rng</span><span class="p">():</span>
+</span><span id="rng-199"><a href="#rng-199"><span class="linenos">199</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A seeded RNG for tests to have (more) reproducible results.&quot;&quot;&quot;</span>
+</span><span id="rng-200"><a href="#rng-200"><span class="linenos">200</span></a>    <span class="k">return</span> <span class="n">rn</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">8816</span><span class="p">)</span>
 </span></pre></div>
 
 
-    
+            <div class="docstring"><p>A seeded RNG for tests to have (more) reproducible results.</p>
+</div>
+
 
                 </section>
     </main>

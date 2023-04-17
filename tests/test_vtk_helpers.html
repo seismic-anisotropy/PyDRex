@@ -84,8 +84,8 @@
 </span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="kn">from</span> <span class="nn">pydrex</span> <span class="kn">import</span> <span class="n">vtk_helpers</span> <span class="k">as</span> <span class="n">_vtk</span>
 </span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a>
 </span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a>
-</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="k">def</span> <span class="nf">test_vtk_2d_array_shapes</span><span class="p">(</span><span class="n">vtkfiles_2d_corner_flow</span><span class="p">):</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a>    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">vtkfiles_2d_corner_flow</span><span class="p">:</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="k">def</span> <span class="nf">test_vtk_2d_array_shapes</span><span class="p">(</span><span class="n">steady_flow_models</span><span class="p">):</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a>    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">steady_flow_models</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.vtu&quot;</span><span class="p">):</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a>        <span class="n">vtk_output</span> <span class="o">=</span> <span class="n">_vtk</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a>        <span class="n">data</span> <span class="o">=</span> <span class="n">vtk_output</span><span class="o">.</span><span class="n">GetPointData</span><span class="p">()</span>
 </span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>        <span class="n">coords</span> <span class="o">=</span> <span class="n">_vtk</span><span class="o">.</span><span class="n">read_coord_array</span><span class="p">(</span><span class="n">vtk_output</span><span class="p">,</span> <span class="n">skip_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -110,14 +110,14 @@
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">test_vtk_2d_array_shapes</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">vtkfiles_2d_corner_flow</span></span><span class="return-annotation">):</span></span>
+        <span class="name">test_vtk_2d_array_shapes</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">steady_flow_models</span></span><span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="test_vtk_2d_array_shapes-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#test_vtk_2d_array_shapes"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="test_vtk_2d_array_shapes-8"><a href="#test_vtk_2d_array_shapes-8"><span class="linenos"> 8</span></a><span class="k">def</span> <span class="nf">test_vtk_2d_array_shapes</span><span class="p">(</span><span class="n">vtkfiles_2d_corner_flow</span><span class="p">):</span>
-</span><span id="test_vtk_2d_array_shapes-9"><a href="#test_vtk_2d_array_shapes-9"><span class="linenos"> 9</span></a>    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">vtkfiles_2d_corner_flow</span><span class="p">:</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="test_vtk_2d_array_shapes-8"><a href="#test_vtk_2d_array_shapes-8"><span class="linenos"> 8</span></a><span class="k">def</span> <span class="nf">test_vtk_2d_array_shapes</span><span class="p">(</span><span class="n">steady_flow_models</span><span class="p">):</span>
+</span><span id="test_vtk_2d_array_shapes-9"><a href="#test_vtk_2d_array_shapes-9"><span class="linenos"> 9</span></a>    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">steady_flow_models</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.vtu&quot;</span><span class="p">):</span>
 </span><span id="test_vtk_2d_array_shapes-10"><a href="#test_vtk_2d_array_shapes-10"><span class="linenos">10</span></a>        <span class="n">vtk_output</span> <span class="o">=</span> <span class="n">_vtk</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 </span><span id="test_vtk_2d_array_shapes-11"><a href="#test_vtk_2d_array_shapes-11"><span class="linenos">11</span></a>        <span class="n">data</span> <span class="o">=</span> <span class="n">vtk_output</span><span class="o">.</span><span class="n">GetPointData</span><span class="p">()</span>
 </span><span id="test_vtk_2d_array_shapes-12"><a href="#test_vtk_2d_array_shapes-12"><span class="linenos">12</span></a>        <span class="n">coords</span> <span class="o">=</span> <span class="n">_vtk</span><span class="o">.</span><span class="n">read_coord_array</span><span class="p">(</span><span class="n">vtk_output</span><span class="p">,</span> <span class="n">skip_empty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
