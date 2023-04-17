@@ -22,8 +22,8 @@ import scipy.linalg as la
 import scipy.special as sp
 from scipy.spatial.transform import Rotation
 
-from pydrex import stats as _st
 from pydrex import logger as _log
+from pydrex import stats as _st
 
 
 def bingham_average(orientations, axis="a"):

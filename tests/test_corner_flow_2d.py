@@ -39,10 +39,10 @@ $$
 See also Fig. 5 in [Kaminski & Ribe, 2002](https://doi.org/10.1029/2001GC000222).
 
 """
-import time
 import contextlib as cl
 import itertools as it
 import pathlib as pl
+import time
 
 import numba as nb
 import numpy as np
