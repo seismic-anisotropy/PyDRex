@@ -290,13 +290,6 @@ def schmidt_count(cos_dist, axial=None):
     return count, (cos_dist.size * radius)
 
 
-"""Kernel functions that return an un-summed distribution and a normalization factor.
-
-Supported kernel functions are based on the discussion in
-[Vollmer 1995](https://doi.org/10.1016/0098-3004(94)00058-3).
-Kamb methods accept the parameter `σ` (default: 3) to control the degree of smoothing.
-
-"""
 SPHERICAL_COUNTING_KERNELS = {
     kamb_count,
     schmidt_count,
@@ -304,6 +297,13 @@ SPHERICAL_COUNTING_KERNELS = {
     linear_inverse_kamb,
     square_inverse_kamb,
 }
+"""Kernel functions that return an un-summed distribution and a normalization factor.
+
+Supported kernel functions are based on the discussion in
+[Vollmer 1995](https://doi.org/10.1016/0098-3004(94)00058-3).
+Kamb methods accept the parameter `σ` (default: 3) to control the degree of smoothing.
+
+"""
 
 
 def check_marker_seq(func):
