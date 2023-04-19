@@ -203,6 +203,8 @@ def point_density(
     Any additional keyword arguments are passed to the kernel function.
 
     """
+    if kernel not in SPHERICAL_COUNTING_KERNELS:
+        raise ValueError(f"kernel '{kernel}' is not supported")
     weights = np.asarray(weights, dtype=np.float64)
 
     # Generate a regular grid of "counters" to measure on.
