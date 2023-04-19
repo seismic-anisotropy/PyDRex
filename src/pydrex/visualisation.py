@@ -2,6 +2,7 @@
 import functools as ft
 
 import numpy as np
+import numba as nb
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import linalg as la
@@ -327,17 +328,42 @@ def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
     # )
 
     # Lambert equal-area projection, in Cartesian coords from 3D to the circle.
-    # TODO: Find a good reference or derive the equations to check.
-    # This stuff just comes from wikipedia:
-    # https://en.wikipedia.org/wiki/Lambert_azimuthal_equal-area_projection#cite_ref-borradaile2003_6-0
-    # Also from the implementation of Fraters & Billen 2021.
-    stereograph_xvals = _directions[:, axes_map[ref_axes[0]]] / (
-        1 + np.abs(directions[:, axes_map[upward_axes]])
-    )
-    stereograph_yvals = _directions[:, axes_map[ref_axes[1]]] / (
-        1 + np.abs(directions[:, axes_map[upward_axes]])
-    )
-    return stereograph_xvals, stereograph_yvals
+    xvals = _directions[:, axes_map[upward_axes]]
+    yvals = _directions[:, axes_map[ref_axes[0]]]
+    zvals = _directions[:, axes_map[ref_axes[1]]]
+    return lambert_equal_area(xvals, yvals, zvals)
+
+
+def lambert_equal_area(xvals, yvals, zvals):
+    """Project points from a 3D sphere onto a 2D circle.
+
+    Project points from a 3D sphere, given in Cartesian coordinates,
+    to points on a 2D circle using the Lambert equal area azimuthal projection.
+    Returns arrays of the X and Y coordinates in the unit circle.
+
+    """
+
+    # Sign of sin(x) defines the sign of the square root.
+    @nb.njit()
+    def _sgn_sin(xs):
+        out = np.empty_like(xs)
+        for i, x in enumerate(xs):
+            if 0 < x < np.pi:
+                out[i] = 1
+            elif -np.pi < x < 0:
+                out[i] = -1
+            else:
+                out[i] = 0
+        return out
+
+    # FIXME: Deal with xvals[i] == -1 (zero div.)
+    # Mardia & Jupp 2009 (Directional Statistics), eq. 9.1.1,
+    # The equation is given in spherical coordinates, [cosθ, sinθcosφ, sinθsinφ].
+    # Also, they project onto a disk of radius 2, which in Cartesian would be:
+    #   _sgn_sin(np.arccos(xvals) / 2) * 2 / np.sqrt(2) * 1 / np.sqrt(1 + xvals)
+    # But that is silly, and we will use a disk of radius 1, as Euler intended.
+    prefactor = _sgn_sin(np.arccos(xvals)) / np.sqrt(2) * 1 / np.sqrt(1 + xvals)
+    return prefactor * yvals, prefactor * zvals
 
 
 def polefigures(
