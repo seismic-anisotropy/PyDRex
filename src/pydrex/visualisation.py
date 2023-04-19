@@ -22,10 +22,12 @@ def polefigures(
     datafile,
     i_range=None,
     postfix=None,
+    density=False,
+    ref_axes="xz",
     savefile="polefigures.png",
     **kwargs,
 ):
-    """Plot pole figures for CPO data.
+    """Plot [100], [010] and [001] pole figures for CPO data.
 
     The data is read from fields ending with the optional `postfix` in the NPZ file
     `datafile`. Use `i_range` to specify the indices of the timesteps to be plotted,
@@ -34,9 +36,10 @@ def polefigures(
     If the number would exceed this, a warning is printed,
     which signals the complete number of timesteps found in the file.
 
-    Any additional keyword arguments are passed to `poles`.
+    Use `density=True` to plot contoured pole figures instead of raw points.
+    In this case, any additional keyword arguments are passed to `point_density`.
 
-    See also: `pydrex.minerals.Mineral.save`.
+    See also: `pydrex.minerals.Mineral.save`, `pydrex.axes.PoleFigureAxes.polefigure`.
 
     """
     mineral = _minerals.Mineral.from_file(datafile, postfix=postfix)
@@ -61,19 +64,18 @@ def polefigures(
     fig001 = fig.add_subfigure(grid[2, :], frameon=False)
     fig001.suptitle("[001]")
     for n, orientations in enumerate(orientations_resampled):
-        ax100 = fig100.add_subplot(1, n_orientations, n + 1)
-        set_polefig_axis(ax100)
-        ax100.scatter(*poles(orientations, **kwargs), s=0.3, alpha=0.33, zorder=11)
-        ax010 = fig010.add_subplot(1, n_orientations, n + 1)
-        set_polefig_axis(ax010)
-        ax010.scatter(
-            *poles(orientations, hkl=[0, 1, 0], **kwargs), s=0.3, alpha=0.33, zorder=11
+        ax100 = fig100.add_subplot(
+            1, n_orientations, n + 1, projection="pydrex.polefigure"
         )
-        ax001 = fig001.add_subplot(1, n_orientations, n + 1)
-        set_polefig_axis(ax001)
-        ax001.scatter(
-            *poles(orientations, hkl=[0, 0, 1], **kwargs), s=0.3, alpha=0.33, zorder=11
+        ax100.polefigure(orientations, hkl=[1, 0, 0])
+        ax010 = fig010.add_subplot(
+            1, n_orientations, n + 1, projection="pydrex.polefigure"
         )
+        ax010.polefigure(orientations, hkl=[0, 1, 0])
+        ax001 = fig001.add_subplot(
+            1, n_orientations, n + 1, projection="pydrex.polefigure"
+        )
+        ax001.polefigure(orientations, hkl=[0, 0, 1])
 
     fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
 
@@ -140,23 +142,6 @@ def point_density(
     return x_counters, y_counters, _apply_mask(np.reshape(totals, x_counters.shape))
 
 
-def set_polefig_axis(ax, ref_axes="xz"):
-    # NOTE: We could subclass matplotlib's Axes like Joe does in mplstereonet,
-    # but this turns out to be a lot of effort for not much gain...
-    ax.set_axis_off()
-    ax.set_xlim((-1.1, 1.1))
-    ax.set_ylim((-1.1, 1.1))
-    ax.set_aspect("equal")
-    _circle_points = np.linspace(0, np.pi * 2, 100)
-    ax.plot(np.cos(_circle_points), np.sin(_circle_points), linewidth=1, color="k")
-    ax.axhline(0, color="k", alpha=0.5)
-    ax.text(1.05, 0.5, ref_axes[0], verticalalignment="center", transform=ax.transAxes)
-    ax.axvline(0, color="k", alpha=0.5)
-    ax.text(
-        0.5, 1.05, ref_axes[1], horizontalalignment="center", transform=ax.transAxes
-    )
-
-
 def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
     """Calculate stereographic poles from 3D orientation matrices.
 
@@ -167,7 +152,7 @@ def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
     e.g. "xz" (default), and the third letter in the set "xyz" is used
     as the upward pointing axis for the Lambert equal area projection.
 
-    See also: `lambert_equal_area`, `set_polefig_axis`.
+    See also: `lambert_equal_area`.
 
     """
     upward_axes = next((set("xyz") - set(ref_axes)).__iter__())
