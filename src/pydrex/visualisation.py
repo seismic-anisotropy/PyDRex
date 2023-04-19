@@ -1,16 +1,18 @@
 """> PyDRex: Visualisation functions for texture data and test outputs."""
 import functools as ft
 
-import numpy as np
+import matplotlib as mpl
 import numba as nb
+import numpy as np
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import linalg as la
 
 from pydrex import io as _io
+from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
-from pydrex import logger as _log
+from pydrex import axes as _axes
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
@@ -49,6 +51,7 @@ def polefigures(
         for i in np.arange(i_range.start, i_range.stop, i_range.step, dtype=int)
     ]
     n_orientations = len(orientations_resampled)
+
     fig = plt.figure(figsize=(n_orientations, 4), dpi=600)
     grid = fig.add_gridspec(3, n_orientations, hspace=0, wspace=0.2)
     fig100 = fig.add_subfigure(grid[0, :], frameon=False)
@@ -347,7 +350,7 @@ def simple_shear_stationary_2d(
     grid = fig.add_gridspec(2, 1, hspace=0.05)
     ax_mean = fig.add_subplot(grid[0])
     ax_mean.set_ylabel("Mean angle ∈ [0, 90]°")
-    ax_mean.axhline(0, color="k")
+    ax_mean.axhline(0, color=mpl.rcParams["axes.edgecolor"])
     ax_mean.tick_params(labelbottom=False)
     ax_strength = fig.add_subplot(grid[1], sharex=ax_mean)
     ax_strength.set_ylabel("Texture strength (M-index)")
@@ -470,7 +473,7 @@ def corner_flow_2d(
             misorient_angles[corner_step],
             marker,
             markersize=5,
-            color="k",
+            color=mpl.rcParams["axes.edgecolor"],
             zorder=11,
             alpha=0.33,
         )
@@ -479,7 +482,7 @@ def corner_flow_2d(
             misorient_indices[corner_step],
             marker,
             markersize=5,
-            color="k",
+            color=mpl.rcParams["axes.edgecolor"],
             zorder=11,
             alpha=0.33,
         )
@@ -523,7 +526,7 @@ def corner_flow_2d(
             z_series[corner_step],
             marker,
             markersize=5,
-            color="k",
+            color=mpl.rcParams["axes.edgecolor"],
             zorder=11,
         )
         if xlims is not None:
@@ -562,7 +565,9 @@ def corner_flow_2d(
     plt.rcParams["axes.grid"] = True
 
     # Lines to show texture threshold and shear direction.
-    ax_strength.axhline(cpo_threshold, color="k", linestyle="--")
+    ax_strength.axhline(
+        cpo_threshold, color=mpl.rcParams["axes.edgecolor"], linestyle="--"
+    )
     if labels is not None:
         ax_mean.legend()
 
