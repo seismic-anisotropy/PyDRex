@@ -4,6 +4,7 @@ import matplotlib.axes as mplax
 import matplotlib as mpl
 from matplotlib.projections import register_projection
 
+from pydrex import stats as _stats
 from pydrex import visualisation as _vis
 
 
@@ -68,7 +69,7 @@ class PoleFigureAxes(mplax.Axes):
 
         if density:
             self.contourf(
-                *_vis.point_density(
+                *_stats.point_density(
                     *_vis.poles(data, hkl=hkl, ref_axes=ref_axes), **density_kwargs
                 ),
                 **kwargs,

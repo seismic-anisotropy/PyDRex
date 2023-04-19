@@ -21,7 +21,7 @@ plt.rcParams["axes.grid"] = True
 if "pydrex.polefigure" not in mproj.get_projection_names():
     _log.warning(
         "failed to find pydrex.polefigure projection; it should be registered in %s",
-        _axes
+        _axes,
     )
 
 
@@ -44,7 +44,8 @@ def polefigures(
     which signals the complete number of timesteps found in the file.
 
     Use `density=True` to plot contoured pole figures instead of raw points.
-    In this case, any additional keyword arguments are passed to `point_density`.
+    In this case, any additional keyword arguments are passed to
+    `pydrex.stats.point_density`.
 
     See also: `pydrex.minerals.Mineral.save`, `pydrex.axes.PoleFigureAxes.polefigure`.
 
@@ -74,79 +75,23 @@ def polefigures(
         ax100 = fig100.add_subplot(
             1, n_orientations, n + 1, projection="pydrex.polefigure"
         )
-        ax100.polefigure(orientations, hkl=[1, 0, 0])
+        ax100.polefigure(
+            orientations, hkl=[1, 0, 0], density=density, density_kwargs=kwargs
+        )
         ax010 = fig010.add_subplot(
             1, n_orientations, n + 1, projection="pydrex.polefigure"
         )
-        ax010.polefigure(orientations, hkl=[0, 1, 0])
+        ax010.polefigure(
+            orientations, hkl=[0, 1, 0], density=density, density_kwargs=kwargs
+        )
         ax001 = fig001.add_subplot(
             1, n_orientations, n + 1, projection="pydrex.polefigure"
         )
-        ax001.polefigure(orientations, hkl=[0, 0, 1])
+        ax001.polefigure(
+            orientations, hkl=[0, 0, 1], density=density, density_kwargs=kwargs
+        )
 
     fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
-
-
-def point_density(
-    x_data, y_data, axial=True, gridsteps=100, weights=1, kernel="kamb_count", **kwargs
-):
-    """Calculate point density of spherical directions projected onto a circle.
-
-    Calculate the density of points on a unit radius disk.
-    Counting on a regular grid as well as smoothing is performed
-    using the specified `kernel` in preparation for contour plotting.
-    The data is assumed to be either axial or vectorial spherical directions
-    projected onto the disk using an equal-area azimuthal transformation.
-    The `x_data` and `y_data` values should normally come from `poles`.
-
-    Args:
-    - `x_data` (array) — data point coordinates on the first ℝ² axis
-    - `y_data` (array) — data point coordinates on the second ℝ² axis
-    - `axial` (bool, optional) — toggle axial or vectorial interpretation of the data
-    - `gridstep` (int, optional) — number of steps along a diameter of the counting grid
-    - `weights` (int|float|array, optional) — weights to apply to smoothed density
-        values; either a fixed scaling or individual pre-normalised weights in an array
-        matching the shape of `x_data` and `y_data`
-    - `kernel` (string) — name of smoothing function, see `SPHERICAL_COUNTING_KERNELS`
-
-    Any additional keyword arguments are passed to the kernel function.
-
-    """
-    weights = np.asarray(weights, dtype=np.float64)
-
-    # Generate a regular grid of "counters" to measure on.
-    x_counters, y_counters = np.mgrid[-1 : 1 : gridsteps * 1j, -1 : 1 : gridsteps * 1j]
-    # Mask to remove any counters beyond the unit circle.
-    mask = np.zeros(x_counters.shape, bool) | (
-        np.sqrt(x_counters**2 + y_counters**2) > 1
-    )
-
-    def _apply_mask(a):
-        return np.ma.array(a, mask=mask, fill_value=np.nan)
-
-    x_counters = _apply_mask(x_counters)
-    y_counters = _apply_mask(y_counters)
-
-    # Basically, we can't model this as a convolution as we're not in Cartesian space,
-    # so we have to iterate through and call the kernel function at each "counter".
-    data = np.column_stack([x_data, y_data])
-    counters = np.column_stack([x_counters.ravel(), y_counters.ravel()])
-    totals = np.zeros(counters.shape[0])
-    for i, counter in enumerate(counters):
-        if axial:
-            cos_dist = np.abs(np.dot(counter, data.transpose()))
-        else:
-            cos_dist = np.dot(counter, data.transpose())
-        density, scale = kernel(cos_dist, axial=axial, **kwargs)
-        density *= weights
-        totals[i] = (density.sum() - 0.5) / scale
-
-    # Traditionally, the negative values
-    # (while valid, as they represent areas with less than expected point-density)
-    # are not returned.
-    # TODO: Make this a kwarg option.
-    totals[totals < 0] = 0
-    return x_counters, y_counters, _apply_mask(np.reshape(totals, x_counters.shape))
 
 
 def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
@@ -216,86 +161,6 @@ def lambert_equal_area(xvals, yvals, zvals):
     # But that is silly, and we will use a disk of radius 1, as Euler intended.
     prefactor = _sgn_sin(np.arccos(xvals)) / np.sqrt(2) * 1 / np.sqrt(1 + xvals)
     return prefactor * yvals, prefactor * zvals
-
-
-def _kamb_radius(n, σ, axial):
-    """Radius of kernel for Kamb-style smoothing."""
-    r = σ**2 / (float(n) + σ**2)
-    if axial is True:
-        return 1 - r
-    return 1 - 2 * r
-
-
-def _kamb_units(n, radius):
-    """Normalization function for Kamb-style counting."""
-    return np.sqrt(n * radius * (1 - radius))
-
-
-def exponential_kamb(cos_dist, σ=3, axial=True):
-    """Kernel function from Vollmer 1995 for exponential smoothing."""
-    n = float(cos_dist.size)
-    if axial:
-        f = 2 * (1.0 + n / σ**2)
-        units = np.sqrt(n * (f / 2.0 - 1) / f**2)
-    else:
-        f = 1 + n / σ**2
-        units = np.sqrt(n * (f - 1) / (4 * f**2))
-
-    count = np.exp(f * (cos_dist - 1))
-    return count, units
-
-
-def linear_inverse_kamb(cos_dist, σ=3, axial=True):
-    """Kernel function from Vollmer 1995 for linear smoothing."""
-    n = float(cos_dist.size)
-    radius = _kamb_radius(n, σ, axial=axial)
-    f = 2 / (1 - radius)
-    cos_dist = cos_dist[cos_dist >= radius]
-    count = f * (cos_dist - radius)
-    return count, _kamb_units(n, radius)
-
-
-def square_inverse_kamb(cos_dist, σ=3, axial=True):
-    """Kernel function from Vollmer 1995 for inverse square smoothing."""
-    n = float(cos_dist.size)
-    radius = _kamb_radius(n, σ, axial=axial)
-    f = 3 / (1 - radius) ** 2
-    cos_dist = cos_dist[cos_dist >= radius]
-    count = f * (cos_dist - radius) ** 2
-    return count, _kamb_units(n, radius)
-
-
-def kamb_count(cos_dist, σ=3, axial=True):
-    """Original Kamb 1959 kernel function (raw count within radius)."""
-    n = float(cos_dist.size)
-    dist = _kamb_radius(n, σ, axial=axial)
-    count = (cos_dist >= dist).astype(float)
-    return count, _kamb_units(n, dist)
-
-
-def schmidt_count(cos_dist, axial=None):
-    """Schmidt (a.k.a. 1%) counting kernel function."""
-    radius = 0.01
-    count = ((1 - cos_dist) <= radius).astype(float)
-    # To offset the count.sum() - 0.5 required for the kamb methods...
-    count = 0.5 / count.size + count
-    return count, (cos_dist.size * radius)
-
-
-SPHERICAL_COUNTING_KERNELS = {
-    kamb_count,
-    schmidt_count,
-    exponential_kamb,
-    linear_inverse_kamb,
-    square_inverse_kamb,
-}
-"""Kernel functions that return an un-summed distribution and a normalization factor.
-
-Supported kernel functions are based on the discussion in
-[Vollmer 1995](https://doi.org/10.1016/0098-3004(94)00058-3).
-Kamb methods accept the parameter `σ` (default: 3) to control the degree of smoothing.
-
-"""
 
 
 def check_marker_seq(func):
