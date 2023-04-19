@@ -1,4 +1,4 @@
-"""> PyDRex: Visualisation helpers for tests/examples."""
+"""> PyDRex: Visualisation functions for texture data and test outputs."""
 import functools as ft
 
 import numpy as np
@@ -14,6 +14,293 @@ from pydrex import logger as _log
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
+
+
+def polefigures(
+    datafile,
+    i_range=None,
+    postfix=None,
+    savefile="polefigures.png",
+    **kwargs,
+):
+    """Plot pole figures for CPO data.
+
+    The data is read from fields ending with the optional `postfix` in the NPZ file
+    `datafile`. Use `i_range` to specify the indices of the timesteps to be plotted,
+    which can be any valid Python range object, e.g. `range(0, 12, 2)` with a step of 2.
+    By default (`i_range=None`), a maximum of 25 timesteps are plotted.
+    If the number would exceed this, a warning is printed,
+    which signals the complete number of timesteps found in the file.
+
+    Any additional keyword arguments are passed to `poles`.
+
+    See also: `pydrex.minerals.Mineral.save`.
+
+    """
+    mineral = _minerals.Mineral.from_file(datafile, postfix=postfix)
+    if i_range is None:
+        i_range = range(0, len(mineral.orientations))
+        if len(i_range) > 25:
+            _log.warning("truncating to 25 timesteps (out of %s total)", len(i_range))
+            i_range = range(0, 25)
+
+    orientations_resampled = [
+        _stats.resample_orientations(mineral.orientations[i], mineral.fractions[i])[0]
+        for i in np.arange(i_range.start, i_range.stop, i_range.step, dtype=int)
+    ]
+    n_orientations = len(orientations_resampled)
+    fig = plt.figure(figsize=(n_orientations, 4), dpi=600)
+    grid = fig.add_gridspec(3, n_orientations, hspace=0, wspace=0.2)
+    fig100 = fig.add_subfigure(grid[0, :], frameon=False)
+    fig100.suptitle("[100]")
+    fig010 = fig.add_subfigure(grid[1, :], frameon=False)
+    fig010.suptitle("[010]")
+    fig001 = fig.add_subfigure(grid[2, :], frameon=False)
+    fig001.suptitle("[001]")
+    for n, orientations in enumerate(orientations_resampled):
+        ax100 = fig100.add_subplot(1, n_orientations, n + 1)
+        set_polefig_axis(ax100)
+        ax100.scatter(*poles(orientations, **kwargs), s=0.3, alpha=0.33, zorder=11)
+        ax010 = fig010.add_subplot(1, n_orientations, n + 1)
+        set_polefig_axis(ax010)
+        ax010.scatter(
+            *poles(orientations, hkl=[0, 1, 0], **kwargs), s=0.3, alpha=0.33, zorder=11
+        )
+        ax001 = fig001.add_subplot(1, n_orientations, n + 1)
+        set_polefig_axis(ax001)
+        ax001.scatter(
+            *poles(orientations, hkl=[0, 0, 1], **kwargs), s=0.3, alpha=0.33, zorder=11
+        )
+
+    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
+
+
+def point_density(
+    x_data, y_data, axial=True, gridsteps=100, weights=1, kernel="kamb_count", **kwargs
+):
+    """Calculate point density of spherical directions projected onto a circle.
+
+    Calculate the density of points on a unit radius disk.
+    Counting on a regular grid as well as smoothing is performed
+    using the specified `kernel` in preparation for contour plotting.
+    The data is assumed to be either axial or vectorial spherical directions
+    projected onto the disk using an equal-area azimuthal transformation.
+    The `x_data` and `y_data` values should normally come from `poles`.
+
+    Args:
+    - `x_data` (array) — data point coordinates on the first ℝ² axis
+    - `y_data` (array) — data point coordinates on the second ℝ² axis
+    - `axial` (bool, optional) — toggle axial or vectorial interpretation of the data
+    - `gridstep` (int, optional) — number of steps along a diameter of the counting grid
+    - `weights` (int|float|array, optional) — weights to apply to smoothed density
+        values; either a fixed scaling or individual pre-normalised weights in an array
+        matching the shape of `x_data` and `y_data`
+    - `kernel` (string) — name of smoothing function, see `SPHERICAL_COUNTING_KERNELS`
+
+    Any additional keyword arguments are passed to the kernel function.
+
+    """
+    weights = np.asarray(weights, dtype=np.float64)
+
+    # Generate a regular grid of "counters" to measure on.
+    x_counters, y_counters = np.mgrid[-1 : 1 : gridsteps * 1j, -1 : 1 : gridsteps * 1j]
+    # Mask to remove any counters beyond the unit circle.
+    mask = np.zeros(x_counters.shape, bool) | (
+        np.sqrt(x_counters**2 + y_counters**2) > 1
+    )
+
+    def _apply_mask(a):
+        return np.ma.array(a, mask=mask, fill_value=np.nan)
+
+    x_counters = _apply_mask(x_counters)
+    y_counters = _apply_mask(y_counters)
+
+    # Basically, we can't model this as a convolution as we're not in Cartesian space,
+    # so we have to iterate through and call the kernel function at each "counter".
+    data = np.column_stack([x_data, y_data])
+    counters = np.column_stack([x_counters.ravel(), y_counters.ravel()])
+    totals = np.zeros(counters.shape[0])
+    for i, counter in enumerate(counters):
+        if axial:
+            cos_dist = np.abs(np.dot(counter, data.transpose()))
+        else:
+            cos_dist = np.dot(counter, data.transpose())
+        density, scale = kernel(cos_dist, axial=axial, **kwargs)
+        density *= weights
+        totals[i] = (density.sum() - 0.5) / scale
+
+    # Traditionally, the negative values
+    # (while valid, as they represent areas with less than expected point-density)
+    # are not returned.
+    # TODO: Make this a kwarg option.
+    totals[totals < 0] = 0
+    return x_counters, y_counters, _apply_mask(np.reshape(totals, x_counters.shape))
+
+
+def set_polefig_axis(ax, ref_axes="xz"):
+    # NOTE: We could subclass matplotlib's Axes like Joe does in mplstereonet,
+    # but this turns out to be a lot of effort for not much gain...
+    ax.set_axis_off()
+    ax.set_xlim((-1.1, 1.1))
+    ax.set_ylim((-1.1, 1.1))
+    ax.set_aspect("equal")
+    _circle_points = np.linspace(0, np.pi * 2, 100)
+    ax.plot(np.cos(_circle_points), np.sin(_circle_points), linewidth=1, color="k")
+    ax.axhline(0, color="k", alpha=0.5)
+    ax.text(1.05, 0.5, ref_axes[0], verticalalignment="center", transform=ax.transAxes)
+    ax.axvline(0, color="k", alpha=0.5)
+    ax.text(
+        0.5, 1.05, ref_axes[1], horizontalalignment="center", transform=ax.transAxes
+    )
+
+
+def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
+    """Calculate stereographic poles from 3D orientation matrices.
+
+    Expects `orientations` to be an array with shape (N, 3, 3).
+    The optional arguments `ref_axes` and `hkl` can be used to specify
+    the stereograph axes and the crystallographic axis respectively.
+    The stereograph axes should be given as a string of two letters,
+    e.g. "xz" (default), and the third letter in the set "xyz" is used
+    as the upward pointing axis for the Lambert equal area projection.
+
+    See also: `lambert_equal_area`, `set_polefig_axis`.
+
+    """
+    upward_axes = next((set("xyz") - set(ref_axes)).__iter__())
+    axes_map = {"x": 0, "y": 1, "z": 2}
+    directions = np.tensordot(orientations.transpose([0, 2, 1]), hkl, axes=(2, 0))
+    directions_norm = la.norm(directions, axis=1)
+    directions[:, 0] /= directions_norm
+    directions[:, 1] /= directions_norm
+    directions[:, 2] /= directions_norm
+
+    _directions = directions
+    # NOTE: Use this to mask directions that point to the upper hemisphere.
+    # _directions = np.ma.mask_rows(
+    #     np.ma.masked_where(
+    #         np.zeros(directions.shape, bool) | (directions[:, 1] >= 0)[:, None],
+    #         directions,
+    #     )
+    # )
+
+    # Lambert equal-area projection, in Cartesian coords from 3D to the circle.
+    xvals = _directions[:, axes_map[upward_axes]]
+    yvals = _directions[:, axes_map[ref_axes[0]]]
+    zvals = _directions[:, axes_map[ref_axes[1]]]
+    return lambert_equal_area(xvals, yvals, zvals)
+
+
+def lambert_equal_area(xvals, yvals, zvals):
+    """Project points from a 3D sphere onto a 2D circle.
+
+    Project points from a 3D sphere, given in Cartesian coordinates,
+    to points on a 2D circle using the Lambert equal area azimuthal projection.
+    Returns arrays of the X and Y coordinates in the unit circle.
+
+    """
+
+    # Sign of sin(x) defines the sign of the square root.
+    @nb.njit()
+    def _sgn_sin(xs):
+        out = np.empty_like(xs)
+        for i, x in enumerate(xs):
+            if 0 < x < np.pi:
+                out[i] = 1
+            elif -np.pi < x < 0:
+                out[i] = -1
+            else:
+                out[i] = 0
+        return out
+
+    # FIXME: Deal with xvals[i] == -1 (zero div.)
+    # Mardia & Jupp 2009 (Directional Statistics), eq. 9.1.1,
+    # The equation is given in spherical coordinates, [cosθ, sinθcosφ, sinθsinφ].
+    # Also, they project onto a disk of radius 2, which in Cartesian would be:
+    #   _sgn_sin(np.arccos(xvals) / 2) * 2 / np.sqrt(2) * 1 / np.sqrt(1 + xvals)
+    # But that is silly, and we will use a disk of radius 1, as Euler intended.
+    prefactor = _sgn_sin(np.arccos(xvals)) / np.sqrt(2) * 1 / np.sqrt(1 + xvals)
+    return prefactor * yvals, prefactor * zvals
+
+
+def _kamb_radius(n, σ, axial):
+    """Radius of kernel for Kamb-style smoothing."""
+    r = σ**2 / (float(n) + σ**2)
+    if axial is True:
+        return 1 - r
+    return 1 - 2 * r
+
+
+def _kamb_units(n, radius):
+    """Normalization function for Kamb-style counting."""
+    return np.sqrt(n * radius * (1 - radius))
+
+
+def exponential_kamb(cos_dist, σ=3, axial=True):
+    """Kernel function from Vollmer 1995 for exponential smoothing."""
+    n = float(cos_dist.size)
+    if axial:
+        f = 2 * (1.0 + n / σ**2)
+        units = np.sqrt(n * (f / 2.0 - 1) / f**2)
+    else:
+        f = 1 + n / σ**2
+        units = np.sqrt(n * (f - 1) / (4 * f**2))
+
+    count = np.exp(f * (cos_dist - 1))
+    return count, units
+
+
+def linear_inverse_kamb(cos_dist, σ=3, axial=True):
+    """Kernel function from Vollmer 1995 for linear smoothing."""
+    n = float(cos_dist.size)
+    radius = _kamb_radius(n, σ, axial=axial)
+    f = 2 / (1 - radius)
+    cos_dist = cos_dist[cos_dist >= radius]
+    count = f * (cos_dist - radius)
+    return count, _kamb_units(n, radius)
+
+
+def square_inverse_kamb(cos_dist, σ=3, axial=True):
+    """Kernel function from Vollmer 1995 for inverse square smoothing."""
+    n = float(cos_dist.size)
+    radius = _kamb_radius(n, σ, axial=axial)
+    f = 3 / (1 - radius) ** 2
+    cos_dist = cos_dist[cos_dist >= radius]
+    count = f * (cos_dist - radius) ** 2
+    return count, _kamb_units(n, radius)
+
+
+def kamb_count(cos_dist, σ=3, axial=True):
+    """Original Kamb 1959 kernel function (raw count within radius)."""
+    n = float(cos_dist.size)
+    dist = _kamb_radius(n, σ, axial=axial)
+    count = (cos_dist >= dist).astype(float)
+    return count, _kamb_units(n, dist)
+
+
+def schmidt_count(cos_dist, axial=None):
+    """Schmidt (a.k.a. 1%) counting kernel function."""
+    radius = 0.01
+    count = ((1 - cos_dist) <= radius).astype(float)
+    # To offset the count.sum() - 0.5 required for the kamb methods...
+    count = 0.5 / count.size + count
+    return count, (cos_dist.size * radius)
+
+
+"""Kernel functions that return an un-summed distribution and a normalization factor.
+
+Supported kernel functions are based on the discussion in
+[Vollmer 1995](https://doi.org/10.1016/0098-3004(94)00058-3).
+Kamb methods accept the parameter `σ` (default: 3) to control the degree of smoothing.
+
+"""
+SPHERICAL_COUNTING_KERNELS = {
+    kamb_count,
+    schmidt_count,
+    exponential_kamb,
+    linear_inverse_kamb,
+    square_inverse_kamb,
+}
 
 
 def check_marker_seq(func):
@@ -280,256 +567,3 @@ def corner_flow_2d(
         ax_mean.legend()
 
     fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
-
-
-def set_polefig_axis(ax, ref_axes="xz"):
-    # NOTE: We could subclass matplotlib's Axes like Joe does in mplstereonet,
-    # but this turns out to be a lot of effort for not much gain...
-    ax.set_axis_off()
-    ax.set_xlim((-1.1, 1.1))
-    ax.set_ylim((-1.1, 1.1))
-    ax.set_aspect("equal")
-    _circle_points = np.linspace(0, np.pi * 2, 100)
-    ax.plot(np.cos(_circle_points), np.sin(_circle_points), linewidth=1, color="k")
-    ax.axhline(0, color="k", alpha=0.5)
-    ax.text(1.05, 0.5, ref_axes[0], verticalalignment="center", transform=ax.transAxes)
-    ax.axvline(0, color="k", alpha=0.5)
-    ax.text(
-        0.5, 1.05, ref_axes[1], horizontalalignment="center", transform=ax.transAxes
-    )
-
-
-def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
-    """Calculate stereographic poles from 3D orientation matrices.
-
-    Expects `orientations` to be an array with shape (N, 3, 3).
-    The optional arguments `ref_axes` and `hkl` can be used to specify
-    the stereograph axes and the crystallographic axis respectively.
-    The stereograph axes should be given as a string of two letters,
-    e.g. "xz" (default), and the third letter in the set "xyz" is used
-    as the upward pointing axis for the lower hemisphere Lambert equal area projection.
-
-    """
-    upward_axes = next((set("xyz") - set(ref_axes)).__iter__())
-    axes_map = {"x": 0, "y": 1, "z": 2}
-    directions = np.tensordot(orientations.transpose([0, 2, 1]), hkl, axes=(2, 0))
-    directions_norm = la.norm(directions, axis=1)
-    directions[:, 0] /= directions_norm
-    directions[:, 1] /= directions_norm
-    directions[:, 2] /= directions_norm
-
-    _directions = directions
-    # NOTE: Use this to mask directions that point to the upper hemisphere.
-    # _directions = np.ma.mask_rows(
-    #     np.ma.masked_where(
-    #         np.zeros(directions.shape, bool) | (directions[:, 1] >= 0)[:, None],
-    #         directions,
-    #     )
-    # )
-
-    # Lambert equal-area projection, in Cartesian coords from 3D to the circle.
-    xvals = _directions[:, axes_map[upward_axes]]
-    yvals = _directions[:, axes_map[ref_axes[0]]]
-    zvals = _directions[:, axes_map[ref_axes[1]]]
-    return lambert_equal_area(xvals, yvals, zvals)
-
-
-def lambert_equal_area(xvals, yvals, zvals):
-    """Project points from a 3D sphere onto a 2D circle.
-
-    Project points from a 3D sphere, given in Cartesian coordinates,
-    to points on a 2D circle using the Lambert equal area azimuthal projection.
-    Returns arrays of the X and Y coordinates in the unit circle.
-
-    """
-
-    # Sign of sin(x) defines the sign of the square root.
-    @nb.njit()
-    def _sgn_sin(xs):
-        out = np.empty_like(xs)
-        for i, x in enumerate(xs):
-            if 0 < x < np.pi:
-                out[i] = 1
-            elif -np.pi < x < 0:
-                out[i] = -1
-            else:
-                out[i] = 0
-        return out
-
-    # FIXME: Deal with xvals[i] == -1 (zero div.)
-    # Mardia & Jupp 2009 (Directional Statistics), eq. 9.1.1,
-    # The equation is given in spherical coordinates, [cosθ, sinθcosφ, sinθsinφ].
-    # Also, they project onto a disk of radius 2, which in Cartesian would be:
-    #   _sgn_sin(np.arccos(xvals) / 2) * 2 / np.sqrt(2) * 1 / np.sqrt(1 + xvals)
-    # But that is silly, and we will use a disk of radius 1, as Euler intended.
-    prefactor = _sgn_sin(np.arccos(xvals)) / np.sqrt(2) * 1 / np.sqrt(1 + xvals)
-    return prefactor * yvals, prefactor * zvals
-
-
-def polefigures(
-    datafile,
-    i_range=None,
-    postfix=None,
-    savefile="polefigures.png",
-    **kwargs,
-):
-    """Plot pole figures for CPO data.
-
-    The data is read from fields ending with the optional `postfix` in the NPZ file
-    `datafile`. Use `i_range` to specify the indices of the timesteps to be plotted,
-    which can be any valid Python range object, e.g. `range(0, 12, 2)` with a step of 2.
-    By default (`i_range=None`), a maximum of 25 timesteps are plotted.
-    If the number would exceed this, a warning is printed,
-    which signals the complete number of timesteps found in the file.
-
-    Any additional keyword arguments are passed to `poles`.
-
-    See also: `pydrex.minerals.Mineral.save`.
-
-    """
-    mineral = _minerals.Mineral.from_file(datafile, postfix=postfix)
-    if i_range is None:
-        i_range = range(0, len(mineral.orientations))
-        if len(i_range) > 25:
-            _log.warning("truncating to 25 timesteps (out of %s total)", len(i_range))
-            i_range = range(0, 25)
-
-    orientations_resampled = [
-        _stats.resample_orientations(mineral.orientations[i], mineral.fractions[i])[0]
-        for i in np.arange(i_range.start, i_range.stop, i_range.step, dtype=int)
-    ]
-    n_orientations = len(orientations_resampled)
-    fig = plt.figure(figsize=(n_orientations, 4), dpi=600)
-    grid = fig.add_gridspec(3, n_orientations, hspace=0, wspace=0.2)
-    fig100 = fig.add_subfigure(grid[0, :], frameon=False)
-    fig100.suptitle("[100]")
-    fig010 = fig.add_subfigure(grid[1, :], frameon=False)
-    fig010.suptitle("[010]")
-    fig001 = fig.add_subfigure(grid[2, :], frameon=False)
-    fig001.suptitle("[001]")
-    for n, orientations in enumerate(orientations_resampled):
-        ax100 = fig100.add_subplot(1, n_orientations, n + 1)
-        set_polefig_axis(ax100)
-        ax100.scatter(*poles(orientations, **kwargs), s=0.3, alpha=0.33, zorder=11)
-        ax010 = fig010.add_subplot(1, n_orientations, n + 1)
-        set_polefig_axis(ax010)
-        ax010.scatter(
-            *poles(orientations, hkl=[0, 1, 0], **kwargs), s=0.3, alpha=0.33, zorder=11
-        )
-        ax001 = fig001.add_subplot(1, n_orientations, n + 1)
-        set_polefig_axis(ax001)
-        ax001.scatter(
-            *poles(orientations, hkl=[0, 0, 1], **kwargs), s=0.3, alpha=0.33, zorder=11
-        )
-
-    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
-
-
-# TODO: The contouring stuff below is mostly copied/adapted from mplstereonet, but I
-# don't really know what I'm doing and it doesn't work yet.
-
-
-def _kamb_radius(n, σ):
-    """Radius of kernel for Kamb-style smoothing."""
-    a = σ**2 / (float(n) + σ**2)
-    return 1 - a
-
-
-def _kamb_units(n, radius):
-    """Normalization function for Kamb-style counting."""
-    return np.sqrt(n * radius * (1 - radius))
-
-
-# All of the following kernel functions return an _unsummed_ distribution and
-# a normalization factor
-def _exponential_kamb(cos_dist, σ=3):
-    """Kernel function from Vollmer for exponential smoothing."""
-    n = float(cos_dist.size)
-    f = 2 * (1.0 + n / σ**2)
-    count = np.exp(f * (cos_dist - 1))
-    units = np.sqrt(n * (f / 2.0 - 1) / f**2)
-    return count, units
-
-
-def _linear_inverse_kamb(cos_dist, σ=3):
-    """Kernel function from Vollmer for linear smoothing."""
-    n = float(cos_dist.size)
-    radius = _kamb_radius(n, σ)
-    f = 2 / (1 - radius)
-    cos_dist = cos_dist[cos_dist >= radius]
-    count = f * (cos_dist - radius)
-    return count, _kamb_units(n, radius)
-
-
-def _square_inverse_kamb(cos_dist, σ=3):
-    """Kernel function from Vollemer for inverse square smoothing."""
-    n = float(cos_dist.size)
-    radius = _kamb_radius(n, σ)
-    f = 3 / (1 - radius) ** 2
-    cos_dist = cos_dist[cos_dist >= radius]
-    count = f * (cos_dist - radius) ** 2
-    return count, _kamb_units(n, radius)
-
-
-def _kamb_count(cos_dist, σ=3):
-    """Original Kamb kernel function (raw count within radius)."""
-    n = float(cos_dist.size)
-    dist = _kamb_radius(n, σ)
-    count = (cos_dist >= dist).astype(float)
-    return count, _kamb_units(n, dist)
-
-
-def _schmidt_count(cos_dist, σ=None):
-    """Schmidt (a.k.a. 1%) counting kernel function."""
-    radius = 0.01
-    count = ((1 - cos_dist) <= radius).astype(float)
-    # To offset the count.sum() - 0.5 required for the kamb methods...
-    count = 0.5 / count.size + count
-    return count, (cos_dist.size * radius)
-
-
-def point_density(
-    x_data, y_data, kernel=_kamb_count, σ=3, gridsize=(100, 100), weights=None
-):
-    """Calculate point density of spherical data projected onto a circle.
-
-    .. warning:: This method is currently broken.
-
-    """
-    if weights is None:
-        weights = 1
-
-    weights = np.asarray(weights, dtype=np.float64)
-    weights /= weights.sum()  # TODO: mplstereonet uses .mean()?
-
-    # Generate a regular grid of "counters" to measure on.
-    x_counters, y_counters = np.mgrid[
-        -1 : 1 : gridsize[0] * 1j, -1 : 1 : gridsize[1] * 1j
-    ]
-    # Mask to remove any counters beyond the unit circle.
-    mask = np.zeros(x_counters.shape, bool) | (
-        np.sqrt(x_counters**2 + y_counters**2) > 1
-    )
-    x_counters = np.ma.array(x_counters, mask=mask, fill_value=np.nan)
-    y_counters = np.ma.array(y_counters, mask=mask, fill_value=np.nan)
-
-    # Basically, we can't model this as a convolution as we're not in Cartesian
-    # space, so we have to iterate through and call the kernel function at
-    # each "counter".
-    data = np.vstack([x_data, y_data])
-    totals = np.zeros(x_counters.shape, dtype=np.float64)
-    for i in range(x_counters.shape[0]):
-        for j in range(x_counters.shape[1]):
-            cos_dist = np.abs(
-                np.dot(np.array([x_counters[i, j], y_counters[i, j]]), data)
-            )
-            density, scale = kernel(cos_dist, σ)
-            density *= weights
-            totals[i, j] = (density.sum() - 0.5) / scale
-
-    # Traditionally, the negative values (while valid, as they represent areas
-    # with less than expected point-density) are not returned.
-    # totals[totals < 0] = 0
-    # print(np.nanmax(totals))
-    # print(np.nanmin(totals))
-    return x_counters, y_counters, totals
