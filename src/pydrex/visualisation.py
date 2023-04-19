@@ -5,6 +5,7 @@ import matplotlib as mpl
 import numba as nb
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib import projections as mproj
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy import linalg as la
 
@@ -16,6 +17,12 @@ from pydrex import axes as _axes
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
+# Make sure we have the required matplotlib "projections" (really just Axes subclasses).
+if "pydrex.polefigure" not in mproj.get_projection_names():
+    _log.warning(
+        "failed to find pydrex.polefigure projection; it should be registered in %s",
+        _axes
+    )
 
 
 def polefigures(
