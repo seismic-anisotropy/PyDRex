@@ -4,8 +4,9 @@ import numpy as np
 from pydrex import minerals as _minerals
 from pydrex import stiffness as _stiffness
 from pydrex import tensors as _tensors
+from pydrex import polefigures as _pf
 
-_RNG = np.random.default_rng()
+_RNG = np.random.default_rng(seed=8845)
 
 
 def average_stiffness(minerals, config):
@@ -179,69 +180,63 @@ def _max_misorientation(system):
 
 
 def point_density(
-    x_data, y_data, axial=True, gridsteps=100, weights=1, kernel="kamb_count", **kwargs
+    x_data,
+    y_data,
+    z_data,
+    axial=True,
+    gridsteps=151,
+    weights=1,
+    kernel="kamb_count",
+    **kwargs,
 ):
-    """Calculate point density of spherical directions projected onto a circle.
-
-    Calculate the density of points on a unit radius disk.
-    Counting on a regular grid as well as smoothing is performed
-    using the specified `kernel` in preparation for contour plotting.
-    The data is assumed to be either axial or vectorial spherical directions
-    projected onto the disk using an equal-area azimuthal transformation.
-    The `x_data` and `y_data` values should normally come from `poles`.
-
-    Args:
-    - `x_data` (array) — data point coordinates on the first ℝ² axis
-    - `y_data` (array) — data point coordinates on the second ℝ² axis
-    - `axial` (bool, optional) — toggle axial or vectorial interpretation of the data
-    - `gridstep` (int, optional) — number of steps along a diameter of the counting grid
-    - `weights` (int|float|array, optional) — weights to apply to smoothed density
-        values; either a fixed scaling or individual pre-normalised weights in an array
-        matching the shape of `x_data` and `y_data`
-    - `kernel` (string) — name of smoothing function, see `SPHERICAL_COUNTING_KERNELS`
-
-    Any additional keyword arguments are passed to the kernel function.
-
-    """
     if kernel not in SPHERICAL_COUNTING_KERNELS:
         raise ValueError(f"kernel '{kernel}' is not supported")
     weights = np.asarray(weights, dtype=np.float64)
 
-    # Generate a regular grid of "counters" to measure on.
-    x_counters, y_counters = np.mgrid[-1 : 1 : gridsteps * 1j, -1 : 1 : gridsteps * 1j]
-    # Mask to remove any counters beyond the unit circle.
-    mask = np.zeros(x_counters.shape, bool) | (
-        np.sqrt(x_counters**2 + y_counters**2) > 1
-    )
+    # Create a grid of counters on the disk by transforming a square grid.
+    # Using the Shirley & Chiu 1997 projection ensures good area preservation.
+    # It's a bit more satisfactory than the manual method of Robin 1985.
+    # x_grid, y_grid = np.mgrid[-1 : 1 : gridsteps * 1j, -1 : 1 : gridsteps * 1j]
+    # x_counters, y_counters = _pf.shirley_concentric_squaredisk(
+    #     x_grid.ravel(), y_grid.ravel()
+    # )
 
-    def _apply_mask(a):
-        return np.ma.array(a, mask=mask, fill_value=np.nan)
+    θ_grid, φ_grid = np.mgrid[
+        0 : np.pi : gridsteps * 1j, 0 : 2 * np.pi : gridsteps * 1j
+    ]
+    θ_counters = θ_grid.ravel()
+    φ_counters = φ_grid.ravel()
+    x_counters = np.sin(θ_counters) * np.cos(φ_counters)
+    y_counters = np.sin(θ_counters) * np.sin(φ_counters)
+    z_counters = np.cos(θ_counters)
 
-    x_counters = _apply_mask(x_counters)
-    y_counters = _apply_mask(y_counters)
-
-    # Basically, we can't model this as a convolution as we're not in Cartesian space,
+    # Basically, we can't model this as a convolution as we're not in Euclidean space,
     # so we have to iterate through and call the kernel function at each "counter".
-    data = np.column_stack([x_data, y_data])
-    counters = np.column_stack([x_counters.ravel(), y_counters.ravel()])
-    totals = np.zeros(counters.shape[0])
+    data = np.column_stack([x_data, y_data, z_data])
+    counters = np.column_stack([x_counters, y_counters, z_counters])
+    totals = np.empty(counters.shape[0])
     for i, counter in enumerate(counters):
+        products = np.dot(data, counter)
         if axial:
-            cos_dist = np.abs(np.dot(counter, data.transpose()))
-        else:
-            cos_dist = np.dot(counter, data.transpose())
+            products = np.abs(products)
         density, scale = SPHERICAL_COUNTING_KERNELS[kernel](
-            cos_dist, axial=axial, **kwargs
+            products, axial=axial, **kwargs
         )
         density *= weights
         totals[i] = (density.sum() - 0.5) / scale
 
-    # Traditionally, the negative values
-    # (while valid, as they represent areas with less than expected point-density)
-    # are not returned.
-    # TODO: Make this a kwarg option.
+    print(totals.min(), totals.mean(), totals.max())
+
+    X_counters, Y_counters = _pf.lambert_equal_area(x_counters, y_counters, z_counters)
+
+    # Normalise to mean, which estimates the density for a "uniform" distribution.
+    totals /= totals.mean()
     totals[totals < 0] = 0
-    return x_counters, y_counters, _apply_mask(np.reshape(totals, x_counters.shape))
+    return (
+        np.reshape(X_counters, θ_grid.shape),
+        np.reshape(Y_counters, θ_grid.shape),
+        np.reshape(totals, θ_grid.shape),
+    )
 
 
 def _kamb_radius(n, σ, axial):

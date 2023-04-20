@@ -5,7 +5,7 @@ import matplotlib as mpl
 from matplotlib.projections import register_projection
 
 from pydrex import stats as _stats
-from pydrex import visualisation as _vis
+from pydrex import polefigures as _pf
 
 
 class PoleFigureAxes(mplax.Axes):
@@ -28,14 +28,12 @@ class PoleFigureAxes(mplax.Axes):
 
         """
         self.set_axis_off()
-        self.set_xlim((-1.1, 1.1))
-        self.set_ylim((-1.1, 1.1))
         self.set_aspect("equal")
         _circle_points = np.linspace(0, np.pi * 2, 100)
         self.plot(
             np.cos(_circle_points),
             np.sin(_circle_points),
-            linewidth=1,
+            linewidth=0.2,
             color=mpl.rcParams["axes.edgecolor"],
         )
         self.axhline(0, color=mpl.rcParams["grid.color"], alpha=0.5)
@@ -68,23 +66,26 @@ class PoleFigureAxes(mplax.Axes):
         self._prep_polefig_axis(ref_axes=ref_axes)
 
         if density:
-            self.contourf(
+            self.pcolormesh(
                 *_stats.point_density(
-                    *_vis.poles(data, hkl=hkl, ref_axes=ref_axes), **density_kwargs
+                    *_pf.poles(data, hkl=hkl, ref_axes=ref_axes), **density_kwargs
                 ),
                 **kwargs,
             )
-        else:
-            size = kwargs.pop("s", 0.3)
-            alpha = kwargs.pop("alpha", 0.33)
-            zorder = kwargs.pop("zorder", 11)
-            self.scatter(
-                *_vis.poles(data, hkl=hkl, ref_axes=ref_axes),
-                s=size,
-                alpha=alpha,
-                zorder=zorder,
-                **kwargs,
-            )
+        # size = kwargs.pop("s", 0.3)
+        # alpha = kwargs.pop("alpha", 0.33)
+        # zorder = kwargs.pop("zorder", 11)
+        # self.scatter(
+        #     *_pf.lambert_equal_area(
+        #         *_pf.poles(data, hkl=hkl, ref_axes=ref_axes),
+        #     ),
+        #     s=size,
+        #     c="k",
+        #     marker=",",
+        #     alpha=alpha,
+        #     zorder=zorder,
+        #     **kwargs,
+        # )
 
 
 register_projection(PoleFigureAxes)

@@ -1,4 +1,4 @@
-"""> PyDRex: Visualisation functions for texture data and test outputs."""
+"""> PyDRex: Visualisation functions for test outputs and examples."""
 import functools as ft
 
 import matplotlib as mpl
@@ -6,7 +6,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import projections as mproj
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from scipy import linalg as la
 
 from pydrex import io as _io
 from pydrex import logger as _log
@@ -91,70 +90,6 @@ def polefigures(
         )
 
     fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
-
-
-def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
-    """Calculate stereographic poles from 3D orientation matrices.
-
-    Expects `orientations` to be an array with shape (N, 3, 3).
-    The optional arguments `ref_axes` and `hkl` can be used to specify
-    the stereograph axes and the crystallographic axis respectively.
-    The stereograph axes should be given as a string of two letters,
-    e.g. "xz" (default), and the third letter in the set "xyz" is used
-    as the 'northward' pointing axis for the Lambert equal area projection.
-
-    See also: `lambert_equal_area`.
-
-    """
-    upward_axes = next((set("xyz") - set(ref_axes)).__iter__())
-    axes_map = {"x": 0, "y": 1, "z": 2}
-    directions = np.tensordot(orientations.transpose([0, 2, 1]), hkl, axes=(2, 0))
-    directions_norm = la.norm(directions, axis=1)
-    directions[:, 0] /= directions_norm
-    directions[:, 1] /= directions_norm
-    directions[:, 2] /= directions_norm
-
-    zvals = directions[:, axes_map[upward_axes]]
-    yvals = directions[:, axes_map[ref_axes[1]]]
-    xvals = directions[:, axes_map[ref_axes[0]]]
-    return lambert_equal_area(xvals, yvals, zvals)
-
-
-def lambert_equal_area(xvals, yvals, zvals):
-    """Project axial data from a 3D sphere onto a 2D disk.
-
-    Project points from a 3D sphere, given in Cartesian coordinates,
-    to points on a 2D disk using a Lambert equal area azimuthal projection.
-    Returns arrays of the X and Y coordinates in the unit disk.
-
-    This implementation first maps all points onto the same hemisphere,
-    and then projects that hemisphere onto the disk.
-
-    """
-    # One reference for the equation is Mardia & Jupp 2009 (Directional Statistics),
-    # where it appears as eq. 9.1.1 in spherical coordinates,
-    #   [sinθcosφ, sinθsinφ, cosθ].
-    # They project onto a disk of radius 2, but this is not necessary
-    # if we are only projecting poionts from one hemisphere.
-
-    # First we move all points into the upper hemisphere.
-    # See e.g. page 186 of Snyder 1987 (Map Projections— A Working Manual).
-    # This is done by taking θ' = π - θ where θ is the colatitude (inclination).
-    # Equivalently, in Cartesian coords we just take abs of the z values.
-    zvals = abs(zvals)
-    # When x and y are both 0, we would have a zero-division.
-    # These points are always projected onto [0, 0] (the centre of the disk).
-    condition = np.logical_and(np.abs(xvals) < 1e-16, np.abs(yvals) < 1e-16)
-    x_masked = np.ma.masked_where(condition, xvals)
-    y_masked = np.ma.masked_where(condition, yvals)
-    x_masked.fill_value = np.nan
-    y_masked.fill_value = np.nan
-    # The equations in Mardia & Jupp 2009 and Snyder 1987 both project the hemisphere
-    # onto a disk of radius sqrt(2), so we drop the sqrt(2) factor that appears
-    # after converting to Cartesian coords to get a radius of 1.
-    prefactor = np.sqrt((1 - zvals) / (x_masked**2 + y_masked**2))
-    prefactor.fill_value = 0.0
-    return prefactor.filled() * xvals, prefactor.filled() * yvals
 
 
 def check_marker_seq(func):
