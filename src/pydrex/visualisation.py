@@ -2,7 +2,6 @@
 import functools as ft
 
 import matplotlib as mpl
-import numba as nb
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import projections as mproj
@@ -102,7 +101,7 @@ def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
     the stereograph axes and the crystallographic axis respectively.
     The stereograph axes should be given as a string of two letters,
     e.g. "xz" (default), and the third letter in the set "xyz" is used
-    as the upward pointing axis for the Lambert equal area projection.
+    as the 'northward' pointing axis for the Lambert equal area projection.
 
     See also: `lambert_equal_area`.
 
@@ -115,52 +114,47 @@ def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
     directions[:, 1] /= directions_norm
     directions[:, 2] /= directions_norm
 
-    _directions = directions
-    # NOTE: Use this to mask directions that point to the upper hemisphere.
-    # _directions = np.ma.mask_rows(
-    #     np.ma.masked_where(
-    #         np.zeros(directions.shape, bool) | (directions[:, 1] >= 0)[:, None],
-    #         directions,
-    #     )
-    # )
-
-    # Lambert equal-area projection, in Cartesian coords from 3D to the circle.
-    xvals = _directions[:, axes_map[upward_axes]]
-    yvals = _directions[:, axes_map[ref_axes[0]]]
-    zvals = _directions[:, axes_map[ref_axes[1]]]
+    zvals = directions[:, axes_map[upward_axes]]
+    yvals = directions[:, axes_map[ref_axes[1]]]
+    xvals = directions[:, axes_map[ref_axes[0]]]
     return lambert_equal_area(xvals, yvals, zvals)
 
 
 def lambert_equal_area(xvals, yvals, zvals):
-    """Project points from a 3D sphere onto a 2D circle.
+    """Project axial data from a 3D sphere onto a 2D disk.
 
     Project points from a 3D sphere, given in Cartesian coordinates,
-    to points on a 2D circle using the Lambert equal area azimuthal projection.
-    Returns arrays of the X and Y coordinates in the unit circle.
+    to points on a 2D disk using a Lambert equal area azimuthal projection.
+    Returns arrays of the X and Y coordinates in the unit disk.
+
+    This implementation first maps all points onto the same hemisphere,
+    and then projects that hemisphere onto the disk.
 
     """
+    # One reference for the equation is Mardia & Jupp 2009 (Directional Statistics),
+    # where it appears as eq. 9.1.1 in spherical coordinates,
+    #   [sinθcosφ, sinθsinφ, cosθ].
+    # They project onto a disk of radius 2, but this is not necessary
+    # if we are only projecting poionts from one hemisphere.
 
-    # Sign of sin(x) defines the sign of the square root.
-    @nb.njit()
-    def _sgn_sin(xs):
-        out = np.empty_like(xs)
-        for i, x in enumerate(xs):
-            if 0 < x < np.pi:
-                out[i] = 1
-            elif -np.pi < x < 0:
-                out[i] = -1
-            else:
-                out[i] = 0
-        return out
-
-    # FIXME: Deal with xvals[i] == -1 (zero div.)
-    # Mardia & Jupp 2009 (Directional Statistics), eq. 9.1.1,
-    # The equation is given in spherical coordinates, [cosθ, sinθcosφ, sinθsinφ].
-    # Also, they project onto a disk of radius 2, which in Cartesian would be:
-    #   _sgn_sin(np.arccos(xvals) / 2) * 2 / np.sqrt(2) * 1 / np.sqrt(1 + xvals)
-    # But that is silly, and we will use a disk of radius 1, as Euler intended.
-    prefactor = _sgn_sin(np.arccos(xvals)) / np.sqrt(2) * 1 / np.sqrt(1 + xvals)
-    return prefactor * yvals, prefactor * zvals
+    # First we move all points into the upper hemisphere.
+    # See e.g. page 186 of Snyder 1987 (Map Projections— A Working Manual).
+    # This is done by taking θ' = π - θ where θ is the colatitude (inclination).
+    # Equivalently, in Cartesian coords we just take abs of the z values.
+    zvals = abs(zvals)
+    # When x and y are both 0, we would have a zero-division.
+    # These points are always projected onto [0, 0] (the centre of the disk).
+    condition = np.logical_and(np.abs(xvals) < 1e-16, np.abs(yvals) < 1e-16)
+    x_masked = np.ma.masked_where(condition, xvals)
+    y_masked = np.ma.masked_where(condition, yvals)
+    x_masked.fill_value = np.nan
+    y_masked.fill_value = np.nan
+    # The equations in Mardia & Jupp 2009 and Snyder 1987 both project the hemisphere
+    # onto a disk of radius sqrt(2), so we drop the sqrt(2) factor that appears
+    # after converting to Cartesian coords to get a radius of 1.
+    prefactor = np.sqrt((1 - zvals) / (x_masked**2 + y_masked**2))
+    prefactor.fill_value = 0.0
+    return prefactor.filled() * xvals, prefactor.filled() * yvals
 
 
 def check_marker_seq(func):
