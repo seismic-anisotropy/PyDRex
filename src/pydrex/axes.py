@@ -13,8 +13,9 @@ class PoleFigureAxes(mplax.Axes):
 
     Thin matplotlib Axes wrapper for crystallographic pole figures.
 
-    .. note:: Projections are not performed automatically using default methods like
-        `scatter` or `plot`. To actually plot the pole figures, use `polefigure` method.
+    .. note::
+        Projections are not performed automatically using default methods like
+        `scatter` or `plot`. To actually plot the pole figures, use `polefigure`.
 
     """
 
@@ -59,7 +60,22 @@ class PoleFigureAxes(mplax.Axes):
         density_kwargs=None,
         **kwargs
     ):
-        """Plot pole figure of crystallographic texture."""
+        """Plot pole figure of crystallographic texture.
+
+        Args:
+        - `data` (array) — Nx3x3 array of orientation matrices
+        - `density` (bool, optional) — plot contoured pole figures, False by default
+        - `ref_axes` (string, optional) — letters specifying the horizontal and vertical
+          axes of the pole figure, and respective labels
+        - `hkl` (array, optional) — crystallographic axis (one of the slip
+          directions of olivine, i.e. [1, 0, 0], [0, 1, 0] or [0, 0, 1])
+        - `density_kwargs` (dict, optional) — keyword arguments to pass to
+          `pydrex.stats.point_density` if `density=True`
+
+        Any additional keyword arguments are passed to either `pcolormesh` if
+        `density=True` or `scatter` if `density=False`
+
+        """
         if density_kwargs is None:
             density_kwargs = {}
 
@@ -72,20 +88,21 @@ class PoleFigureAxes(mplax.Axes):
                 ),
                 **kwargs,
             )
-        # size = kwargs.pop("s", 0.3)
-        # alpha = kwargs.pop("alpha", 0.33)
-        # zorder = kwargs.pop("zorder", 11)
-        # self.scatter(
-        #     *_pf.lambert_equal_area(
-        #         *_pf.poles(data, hkl=hkl, ref_axes=ref_axes),
-        #     ),
-        #     s=size,
-        #     c="k",
-        #     marker=",",
-        #     alpha=alpha,
-        #     zorder=zorder,
-        #     **kwargs,
-        # )
+        else:
+            size = kwargs.pop("s", 0.3)
+            alpha = kwargs.pop("alpha", 0.33)
+            zorder = kwargs.pop("zorder", 11)
+            self.scatter(
+                *_pf.lambert_equal_area(
+                    *_pf.poles(data, hkl=hkl, ref_axes=ref_axes),
+                ),
+                s=size,
+                c="k",
+                marker=",",
+                alpha=alpha,
+                zorder=zorder,
+                **kwargs,
+            )
 
 
 register_projection(PoleFigureAxes)
