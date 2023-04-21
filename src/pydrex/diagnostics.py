@@ -19,7 +19,10 @@ import itertools as it
 
 import numpy as np
 import scipy.linalg as la
+import scipy.special as sp
+from scipy.spatial.transform import Rotation
 
+from pydrex import logger as _log
 from pydrex import stats as _st
 
 
@@ -105,9 +108,14 @@ def misorientation_index(orientations, bins=None, system=(2, 4)):
 
     """
     # Compute and bin misorientation angles from orientation data.
-    misorientations_data = misorientation_angles(
-        np.array(list(it.combinations(orientations, 2)))
-    )
+    combinations = np.empty((sp.comb(len(orientations), 2, exact=True), 2, 4))
+    for i, e in enumerate(
+        it.combinations(Rotation.from_matrix(orientations).as_quat(), 2)
+    ):
+        combinations[i] = list(e)
+    _log.debug("Largest array size: %s GB", combinations.nbytes / 1e9)
+
+    misorientations_data = misorientation_angles(combinations)
     θmax = _st._max_misorientation(system)
     misorientations_count, bin_edges = np.histogram(
         misorientations_data, bins=θmax, range=(0, θmax), density=True
@@ -145,30 +153,26 @@ def coaxial_index(orientations, axis1="b", axis2="a"):
 
 
 def misorientation_angles(combinations):
-    """Calculate the misorientation angles for pairs of rotation matrices.
+    """Calculate the misorientation angles for pairs of rotation quaternions.
 
     Calculate the angular distance between the rotations `combinations[:, 0]`
-    and `combinations[:, 1]`, which are expected to be 3x3 passive (alias)
-    rotation matrices.
+    and `combinations[:, 1]`, which are expected to be 1x4 passive (alias)
+    rotation quaternions.
 
-    See also <http://boris-belousov.net/2016/12/01/quat-dist/>.
+    Uses ~25% less memory than the same operation with rotation matrices.
+
+    See also:
+    - <https://math.stackexchange.com/questions/90081/quaternion-distance>
+    - <https://link.springer.com/article/10.1007/s10851-009-0161-2>
+
 
     """
-    return np.rad2deg(
+    return 2 * np.rad2deg(
         np.arccos(
-            np.clip(
-                (
-                    np.trace(
-                        combinations[:, 0]
-                        @ np.transpose(combinations[:, 1], axes=[0, 2, 1]),
-                        axis1=1,
-                        axis2=2,
-                    )
-                    - 1.0
+            np.abs(
+                np.clip(
+                    np.sum(combinations[:, 0] * combinations[:, 1], axis=1), -1.0, 1.0
                 )
-                / 2,
-                -1.0,
-                1.0,
             )
         )
     )

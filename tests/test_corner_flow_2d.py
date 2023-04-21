@@ -42,6 +42,7 @@ See also Fig. 5 in [Kaminski & Ribe, 2002](https://doi.org/10.1029/2001GC000222)
 import contextlib as cl
 import itertools as it
 import pathlib as pl
+import time
 
 import numba as nb
 import numpy as np
@@ -132,6 +133,7 @@ class TestOlivineA:
             return np.reshape(velocity_gradient, (1, *velocity_gradient.shape))
 
         with optional_logging:
+            _begin = time.perf_counter()
             for z_exit in z_ends:
                 mineral = _minerals.Mineral(
                     _minerals.MineralPhase.olivine,
@@ -203,6 +205,10 @@ class TestOlivineA:
                         orientations_resampled
                     )
                     bingham_vectors[idx] = direction_mean
+
+                _log.debug(
+                    "Total walltime: %s minutes", (time.perf_counter() - _begin) / 60
+                )
 
                 if outdir is not None:
                     mineral.save(npzpath, postfix=stringify(z_exit))
