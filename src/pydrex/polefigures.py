@@ -1,10 +1,12 @@
 """PyDRex: Functions for creating crystallographic pole figures.
 
-This module exists because pole figures are more complicated than they seem.
-FOr now, only limited types of pole figures are properly supported.
-Eventually, inverse pole figures or related helper functions may be added here.
+.. note::
+    This module contains pole figure implementation functions
+    that are generally used via the higher level interface in `pydrex.visualisation`.
 
-The high level visualisation functions can be found in `pydrex.visualisation`.
+This module exists because pole figures are more complicated than they seem.
+For now, only limited types of pole figures are properly supported.
+Eventually, inverse pole figures or related helper functions may be added here.
 
 """
 import numpy as np
@@ -12,26 +14,29 @@ from scipy import linalg as la
 
 
 def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
-    """Calculate stereographic poles from 3D orientation matrices.
+    """Extract 3D vectors of crystallographic directions from orientation matrices.
 
     Expects `orientations` to be an array with shape (N, 3, 3).
-    The optional arguments `ref_axes` and `hkl` can be used to specify
-    the stereograph axes and the crystallographic axis respectively.
-    The stereograph axes should be given as a string of two letters,
-    e.g. "xz" (default), and the third letter in the set "xyz" is used
-    as the 'northward' pointing axis for the Lambert equal area projection.
-
-    See also: `lambert_equal_area`.
+    The optional arguments `ref_axes` and `hkl` can be used to change
+    the global reference axes and the crystallographic direction respectively.
+    The reference axes should be given as a string of two letters,
+    e.g. "xz" (default), which specify the second and third axes
+    of the global right-handed reference frame. The third letter in the set "xyz"
+    determines the first axis. The `ref_axes` will therefore become the
+    horizontal and vertical axes of pole figures used to plot the directions.
 
     """
     upward_axes = next((set("xyz") - set(ref_axes)).__iter__())
     axes_map = {"x": 0, "y": 1, "z": 2}
+
+    # Get directions in the right-handed frame.
     directions = np.tensordot(orientations.transpose([0, 2, 1]), hkl, axes=(2, 0))
     directions_norm = la.norm(directions, axis=1)
     directions[:, 0] /= directions_norm
     directions[:, 1] /= directions_norm
     directions[:, 2] /= directions_norm
 
+    # Rotate into the chosen reference frame.
     zvals = directions[:, axes_map[upward_axes]]
     yvals = directions[:, axes_map[ref_axes[1]]]
     xvals = directions[:, axes_map[ref_axes[0]]]
@@ -52,8 +57,6 @@ def lambert_equal_area(xvals, yvals, zvals):
     # One reference for the equation is Mardia & Jupp 2009 (Directional Statistics),
     # where it appears as eq. 9.1.1 in spherical coordinates,
     #   [sinθcosφ, sinθsinφ, cosθ].
-    # They project onto a disk of radius 2, but this is not necessary
-    # if we are only projecting poionts from one hemisphere.
 
     # First we move all points into the upper hemisphere.
     # See e.g. page 186 of Snyder 1987 (Map Projections— A Working Manual).
@@ -84,6 +87,34 @@ def shirley_concentric_squaredisk(xvals, yvals):
     The concentric method of Shirley & Chiu 1997 is optimised to preserve area.
     See also: <http://marc-b-reynolds.github.io/math/2017/01/08/SquareDisc.html>.
 
+    This can be used to set up uniform grids on a disk, e.g.
+
+    >>> a = [x / 5.0 for x in range(-5, 6)]
+    >>> x = [[x] * len(a) for x in a]
+    >>> y = [a for _ in a]
+    >>> x_flat = [j for i in x for j in i]
+    >>> y_flat = [j for i in y for j in i]
+    >>> x_disk, y_disk = shirley_concentric_squaredisk(x_flat, y_flat)
+    >>> r = x_disk**2 + y_disk**2
+    >>> r
+    array([1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ,
+           1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ,
+           1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ,
+           1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ,
+           1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ,
+           1.  , 0.64, 0.36, 0.16, 0.04, 0.  , 0.04, 0.16, 0.36, 0.64, 1.  ,
+           1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ,
+           1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ,
+           1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ,
+           1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ,
+           1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ])
+    >>> from math import atan2
+    >>> θ = [atan2(y, x) for y, x in zip(y_disk, x_disk)]
+    >>> max(θ)
+    3.141592653589793
+    >>> min(θ)
+    -2.9845130209101467
+
     """
     def _shirley_concentric_squaredisc_xgty(xvals, yvals):
         ratios = yvals / (xvals + 1e-12)
@@ -97,7 +128,7 @@ def shirley_concentric_squaredisk(xvals, yvals):
         np.repeat(np.atleast_2d(np.abs(xvals) >= np.abs(yvals)), 2, axis=0).transpose(),
         np.repeat(np.atleast_2d(np.abs(xvals) < np.abs(yvals)), 2, axis=0).transpose(),
     ]
-    x_counters, y_counters = np.piecewise(
+    x_disk, y_disk = np.piecewise(
         np.column_stack([xvals, yvals]),
         conditions,
         [
@@ -109,4 +140,4 @@ def shirley_concentric_squaredisk(xvals, yvals):
             ).ravel(),
         ],
     ).transpose()
-    return x_counters, y_counters
+    return x_disk, y_disk
