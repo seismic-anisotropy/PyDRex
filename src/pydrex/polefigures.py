@@ -50,6 +50,9 @@ def lambert_equal_area(xvals, yvals, zvals):
     and then projects that hemisphere onto the disk.
 
     """
+    xvals = np.atleast_1d(xvals).astype(float)
+    yvals = np.atleast_1d(yvals).astype(float)
+    zvals = np.atleast_1d(zvals).astype(float)
     # One reference for the equation is Mardia & Jupp 2009 (Directional Statistics),
     # where it appears as eq. 9.1.1 in spherical coordinates,
     #   [sinθcosφ, sinθsinφ, cosθ].
@@ -71,9 +74,6 @@ def lambert_equal_area(xvals, yvals, zvals):
     # after converting to Cartesian coords to get a radius of 1.
     prefactor = np.sqrt((1 - zvals) / (x_masked**2 + y_masked**2))
     prefactor.fill_value = 0.0
-    assert np.any(xvals > 0)
-    assert np.any(yvals > 0)
-    assert np.any(xvals != yvals)
     return prefactor.filled() * xvals, prefactor.filled() * yvals
 
 
@@ -120,6 +120,8 @@ def shirley_concentric_squaredisk(xvals, yvals):
         ratios = xvals / (yvals + 1e-12)
         return yvals * np.sin(np.pi / 4 * ratios), yvals * np.cos(np.pi / 4 * ratios)
 
+    xvals = np.atleast_1d(xvals).astype(float)
+    yvals = np.atleast_1d(yvals).astype(float)
     conditions = [
         np.repeat(np.atleast_2d(np.abs(xvals) >= np.abs(yvals)), 2, axis=0).transpose(),
         np.repeat(np.atleast_2d(np.abs(xvals) < np.abs(yvals)), 2, axis=0).transpose(),
