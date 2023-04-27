@@ -170,9 +170,14 @@ def params_Hedjazian2017():
     }
 
 
-@pytest.fixture
-def steady_flow_models():
-    return pl.Path(__file__).parent / ".." / "data" / "steadyflow"
+@pytest.fixture(params=[[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+def hkl(request):
+    return request.param
+
+
+@pytest.fixture(params=["xz", "yz", "xy"])
+def ref_axes(request):
+    return request.param
 
 
 @pytest.fixture
@@ -181,6 +186,16 @@ def stringify():
     return lambda x: "".join(
         filter(lambda s: str.isidentifier(s) or str.isdecimal(s), str(x))
     )
+
+
+@pytest.fixture
+def steady_flow_models():
+    return _io.resolve_path(pl.Path(__file__).parent / ".." / "data" / "steadyflow")
+
+
+@pytest.fixture
+def example_outputs():
+    return _io.resolve_path(pl.Path(__file__).parent / ".." / "data" / "outputs")
 
 
 @pytest.fixture
