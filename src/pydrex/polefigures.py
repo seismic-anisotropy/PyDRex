@@ -1,12 +1,8 @@
-"""PyDRex: Functions for creating crystallographic pole figures.
+"""> PyDRex: Functions for creating crystallographic pole figures.
 
 .. note::
     This module contains pole figure implementation functions
     that are generally used via the higher level interface in `pydrex.visualisation`.
-
-This module exists because pole figures are more complicated than they seem.
-For now, only limited types of pole figures are properly supported.
-Eventually, inverse pole figures or related helper functions may be added here.
 
 """
 import numpy as np
@@ -46,7 +42,7 @@ def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
 def lambert_equal_area(xvals, yvals, zvals):
     """Project axial data from a 3D sphere onto a 2D disk.
 
-    Project points from a 3D sphere, given in Cartesian coordinates,
+    Project points from a 3D sphere of radius 1, given in Cartesian coordinates,
     to points on a 2D disk using a Lambert equal area azimuthal projection.
     Returns arrays of the X and Y coordinates in the unit disk.
 

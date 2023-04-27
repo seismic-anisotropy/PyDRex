@@ -1,4 +1,4 @@
-"""PyDRex: Custom Matplotlib Axes subclasses."""
+"""> PyDRex: Custom Matplotlib Axes subclasses."""
 import numpy as np
 import matplotlib.axes as mplax
 import matplotlib as mpl
