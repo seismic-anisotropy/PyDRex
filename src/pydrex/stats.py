@@ -189,6 +189,23 @@ def point_density(
     axial=True,
     **kwargs,
 ):
+    """Estimate point density of orientation data on the unit sphere.
+
+    Estimates the density of orientations on the unit sphere by counting the input data
+    that falls within small areas around a uniform grid of spherical counting locations.
+    The input data is expected in cartesian coordinates, and the contouring is performed
+    using kernel functions defined in [Vollmer 1995](https://doi.org/10.1016/0098-3004(94)00058-3).
+    The following optional parameters control the contouring method:
+    - `gridsteps` (int) — the number of steps, i.e. resolution of the spherical counting grid
+    - `weights` (array) — auxiliary weights for each data point
+    - `kernel` (string) — the name of the kernel function to use, see `SPHERICAL_COUNTING_KERNELS`
+    - `axial` (bool) — toggle axial versions of the kernel functions
+        (for crystallographic data this should normally be kept as `True`)
+
+    Any other keyword arguments are passed to the kernel function calls.
+    Most kernels accept a parameter `σ` to control the degree of smoothing.
+
+    """
     if kernel not in SPHERICAL_COUNTING_KERNELS:
         raise ValueError(f"kernel '{kernel}' is not supported")
     weights = np.asarray(weights, dtype=np.float64)
