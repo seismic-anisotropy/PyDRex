@@ -183,8 +183,7 @@ def point_density(
     x_data,
     y_data,
     z_data,
-    axial=True,
-    gridsteps=151,
+    gridsteps=101,
     weights=1,
     kernel="kamb_count",
     **kwargs,
@@ -194,25 +193,29 @@ def point_density(
     weights = np.asarray(weights, dtype=np.float64)
 
     # Create a grid of counters on the disk by transforming a square grid.
-    # Using the Shirley & Chiu 1997 projection ensures good area preservation.
+    # Using the Shirley & Chiu 1997 projection ensures good area sampling.
     # It's a bit more satisfactory than the manual method of Robin 1985.
-    # x_grid, y_grid = np.mgrid[-1 : 1 : gridsteps * 1j, -1 : 1 : gridsteps * 1j]
-    # x_counters, y_counters = _pf.shirley_concentric_squaredisk(
-    #     x_grid.ravel(), y_grid.ravel()
-    # )
+    x_grid, y_grid = np.mgrid[-1 : 1 : gridsteps * 1j, -1 : 1 : gridsteps * 1j]
+    x_counters, y_counters = _pf.shirley_concentric_squaredisk(
+        x_grid.ravel(), y_grid.ravel()
+    )
+    # TODO: Support non-axial data?
+    # For this we would need to have a counting grid on the sphere that covers both
+    # hemispheres, so just back-projecting the Shirley grid from below onto a single
+    # hemisphere won't work, we could maybe stack two of them?
+    # Project the second one by doing z = -1 - (x**2 + y**2)
+    # However, the counters around the equator would be doubled so the second grid would
+    # need to be one ring smaller.
+    axial = True
 
-    θ_grid, φ_grid = np.mgrid[
-        0 : np.pi : gridsteps * 1j, 0 : 2 * np.pi : gridsteps * 1j
-    ]
-    θ_counters = θ_grid.ravel()
-    φ_counters = φ_grid.ravel()
-    x_counters = np.sin(θ_counters) * np.cos(φ_counters)
-    y_counters = np.sin(θ_counters) * np.sin(φ_counters)
-    z_counters = np.cos(θ_counters)
+    # Add z-values to project the sampling onto the hemisphere.
+    z_counters = 1 - (x_counters**2 + y_counters**2)
+    # z_counters2 = -1 - (x_counters2**2 + y_counters2**2)
 
     # Basically, we can't model this as a convolution as we're not in Euclidean space,
     # so we have to iterate through and call the kernel function at each "counter".
-    data = np.column_stack([x_data, y_data, z_data])
+    # TODO: Remove abs() here, that assumes axial=True.
+    data = np.column_stack([x_data, y_data, np.abs(z_data)])
     counters = np.column_stack([x_counters, y_counters, z_counters])
     totals = np.empty(counters.shape[0])
     for i, counter in enumerate(counters):
@@ -225,17 +228,16 @@ def point_density(
         density *= weights
         totals[i] = (density.sum() - 0.5) / scale
 
-    print(totals.min(), totals.mean(), totals.max())
-
     X_counters, Y_counters = _pf.lambert_equal_area(x_counters, y_counters, z_counters)
 
     # Normalise to mean, which estimates the density for a "uniform" distribution.
     totals /= totals.mean()
     totals[totals < 0] = 0
+    print(totals.min(), totals.mean(), totals.max())
     return (
-        np.reshape(X_counters, θ_grid.shape),
-        np.reshape(Y_counters, θ_grid.shape),
-        np.reshape(totals, θ_grid.shape),
+        np.reshape(X_counters, x_grid.shape),
+        np.reshape(Y_counters, x_grid.shape),
+        np.reshape(totals, x_grid.shape),
     )
 
 

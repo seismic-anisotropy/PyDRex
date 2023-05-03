@@ -34,7 +34,7 @@ class PoleFigureAxes(mplax.Axes):
         self.plot(
             np.cos(_circle_points),
             np.sin(_circle_points),
-            linewidth=0.2,
+            linewidth=0.25,
             color=mpl.rcParams["axes.edgecolor"],
         )
         self.axhline(0, color=mpl.rcParams["grid.color"], alpha=0.5)
@@ -82,25 +82,34 @@ class PoleFigureAxes(mplax.Axes):
         self._prep_polefig_axis(ref_axes=ref_axes)
 
         if density:
-            self.pcolormesh(
-                *_stats.point_density(
-                    *_pf.poles(data, hkl=hkl, ref_axes=ref_axes), **density_kwargs
-                ),
-                **kwargs,
-            )
-        else:
-            size = kwargs.pop("s", 0.3)
-            alpha = kwargs.pop("alpha", 0.33)
-            zorder = kwargs.pop("zorder", 11)
             self.scatter(
                 *_pf.lambert_equal_area(
                     *_pf.poles(data, hkl=hkl, ref_axes=ref_axes),
                 ),
-                s=size,
-                c="k",
-                marker=",",
-                alpha=alpha,
-                zorder=zorder,
+                s=kwargs.pop("s", 1),
+                c=kwargs.pop("c", mpl.rcParams["axes.edgecolor"]),
+                marker=kwargs.pop("marker", "."),
+                alpha=kwargs.pop("alpha", 0.33),
+                zorder=kwargs.pop("zorder", 11),
+                **kwargs,
+            )
+            return self.contourf(
+                *_stats.point_density(
+                    *_pf.poles(data, hkl=hkl, ref_axes=ref_axes), **density_kwargs
+                ),
+                levels=np.linspace(2.5, 7.5, 10),
+                extend="both",
+            )
+        else:
+            return self.scatter(
+                *_pf.lambert_equal_area(
+                    *_pf.poles(data, hkl=hkl, ref_axes=ref_axes),
+                ),
+                s=kwargs.pop("s", 1),
+                c=kwargs.pop("c", mpl.rcParams["axes.edgecolor"]),
+                marker=kwargs.pop("marker", "."),
+                alpha=kwargs.pop("alpha", 0.33),
+                zorder=kwargs.pop("zorder", 11),
                 **kwargs,
             )
 
