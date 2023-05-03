@@ -185,7 +185,7 @@ def point_density(
     z_data,
     gridsteps=101,
     weights=1,
-    kernel="kamb_count",
+    kernel="linear_inverse_kamb",
     axial=True,
     **kwargs,
 ):
