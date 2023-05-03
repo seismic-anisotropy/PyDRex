@@ -239,7 +239,7 @@ def point_density(
     # Normalise to mean, which estimates the density for a "uniform" distribution.
     totals /= totals.mean()
     totals[totals < 0] = 0
-    print(totals.min(), totals.mean(), totals.max())
+    # print(totals.min(), totals.mean(), totals.max())
     return (
         np.reshape(X_counters, ρ_grid.shape),
         np.reshape(Y_counters, ρ_grid.shape),

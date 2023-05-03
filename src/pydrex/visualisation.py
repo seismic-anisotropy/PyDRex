@@ -1,7 +1,6 @@
 """> PyDRex: Visualisation functions for test outputs and examples."""
 import functools as ft
 
-import matplotlib as mpl
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import projections as mproj
@@ -15,6 +14,8 @@ from pydrex import axes as _axes
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
+# Always use constrained layout by default (modern version of tight layout).
+plt.rcParams["figure.constrained_layout.use"] = True
 # Make sure we have the required matplotlib "projections" (really just Axes subclasses).
 if "pydrex.polefigure" not in mproj.get_projection_names():
     _log.warning(
@@ -63,33 +64,49 @@ def polefigures(
 
     fig = plt.figure(figsize=(n_orientations, 4), dpi=600)
     grid = fig.add_gridspec(3, n_orientations, hspace=0, wspace=0.2)
-    fig100 = fig.add_subfigure(grid[0, :], frameon=False)
-    fig100.suptitle("[100]")
-    fig010 = fig.add_subfigure(grid[1, :], frameon=False)
-    fig010.suptitle("[010]")
-    fig001 = fig.add_subfigure(grid[2, :], frameon=False)
-    fig001.suptitle("[001]")
+    fig100 = fig.add_subfigure(
+        grid[0, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
+    )
+    fig100.suptitle("[100]", fontsize="small")
+    fig010 = fig.add_subfigure(
+        grid[1, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
+    )
+    fig010.suptitle("[010]", fontsize="small")
+    fig001 = fig.add_subfigure(
+        grid[2, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
+    )
+    fig001.suptitle("[001]", fontsize="small")
     for n, orientations in enumerate(orientations_resampled):
         ax100 = fig100.add_subplot(
             1, n_orientations, n + 1, projection="pydrex.polefigure"
         )
-        ax100.polefigure(
+        pf100 = ax100.polefigure(
             orientations, hkl=[1, 0, 0], density=density, density_kwargs=kwargs
         )
         ax010 = fig010.add_subplot(
             1, n_orientations, n + 1, projection="pydrex.polefigure"
         )
-        ax010.polefigure(
+        pf010 = ax010.polefigure(
             orientations, hkl=[0, 1, 0], density=density, density_kwargs=kwargs
         )
         ax001 = fig001.add_subplot(
             1, n_orientations, n + 1, projection="pydrex.polefigure"
         )
-        ax001.polefigure(
+        pf001 = ax001.polefigure(
             orientations, hkl=[0, 0, 1], density=density, density_kwargs=kwargs
         )
+        if density:
+            for ax, pf in zip((ax100, ax010, ax001), (pf100, pf010, pf001)):
+                cbar = fig.colorbar(
+                    pf,
+                    ax=ax,
+                    fraction=0.05,
+                    location="bottom",
+                    orientation="horizontal",
+                )
+                cbar.ax.tick_params(axis="x", labelsize="xx-small")
 
-    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
+    fig.savefig(_io.resolve_path(savefile))
 
 
 def check_marker_seq(func):
@@ -136,7 +153,7 @@ def simple_shear_stationary_2d(
     grid = fig.add_gridspec(2, 1, hspace=0.05)
     ax_mean = fig.add_subplot(grid[0])
     ax_mean.set_ylabel("Mean angle ∈ [0, 90]°")
-    ax_mean.axhline(0, color=mpl.rcParams["axes.edgecolor"])
+    ax_mean.axhline(0, color=plt.rcParams["axes.edgecolor"])
     ax_mean.tick_params(labelbottom=False)
     ax_strength = fig.add_subplot(grid[1], sharex=ax_mean)
     ax_strength.set_ylabel("Texture strength (M-index)")
@@ -176,7 +193,7 @@ def simple_shear_stationary_2d(
     if labels is not None:
         ax_mean.legend()
 
-    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
+    fig.savefig(_io.resolve_path(savefile))
 
 
 def _lag_2d_corner_flow(θ):
@@ -259,7 +276,7 @@ def corner_flow_2d(
             misorient_angles[corner_step],
             marker,
             markersize=5,
-            color=mpl.rcParams["axes.edgecolor"],
+            color=plt.rcParams["axes.edgecolor"],
             zorder=11,
             alpha=0.33,
         )
@@ -268,7 +285,7 @@ def corner_flow_2d(
             misorient_indices[corner_step],
             marker,
             markersize=5,
-            color=mpl.rcParams["axes.edgecolor"],
+            color=plt.rcParams["axes.edgecolor"],
             zorder=11,
             alpha=0.33,
         )
@@ -312,7 +329,7 @@ def corner_flow_2d(
             z_series[corner_step],
             marker,
             markersize=5,
-            color=mpl.rcParams["axes.edgecolor"],
+            color=plt.rcParams["axes.edgecolor"],
             zorder=11,
         )
         if xlims is not None:
@@ -352,9 +369,9 @@ def corner_flow_2d(
 
     # Lines to show texture threshold and shear direction.
     ax_strength.axhline(
-        cpo_threshold, color=mpl.rcParams["axes.edgecolor"], linestyle="--"
+        cpo_threshold, color=plt.rcParams["axes.edgecolor"], linestyle="--"
     )
     if labels is not None:
         ax_mean.legend()
 
-    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
+    fig.savefig(_io.resolve_path(savefile))

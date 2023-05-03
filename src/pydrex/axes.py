@@ -39,16 +39,22 @@ class PoleFigureAxes(mplax.Axes):
         )
         self.axhline(0, color=mpl.rcParams["grid.color"], alpha=0.5)
         self.text(
-            1.05, 0.5, ref_axes[0], verticalalignment="center", transform=self.transAxes
+            1.0,
+            0.4,
+            ref_axes[0],
+            verticalalignment="center",
+            transform=self.transAxes,
+            fontsize="x-small",
         )
         self.axvline(0, color=mpl.rcParams["grid.color"], alpha=0.5)
 
         self.text(
-            0.5,
-            1.05,
+            0.6,
+            1.0,
             ref_axes[1],
             horizontalalignment="center",
             transform=self.transAxes,
+            fontsize="x-small",
         )
 
     def polefigure(
