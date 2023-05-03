@@ -1,10 +1,10 @@
 """> PyDRex: Statistical methods for orientation and elasticity data."""
 import numpy as np
 
+from pydrex import geometry as _geo
 from pydrex import minerals as _minerals
 from pydrex import stiffness as _stiffness
 from pydrex import tensors as _tensors
-from pydrex import geometry as _geo
 
 _RNG = np.random.default_rng(seed=8845)
 

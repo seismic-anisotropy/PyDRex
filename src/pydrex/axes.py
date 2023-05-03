@@ -1,11 +1,11 @@
 """> PyDRex: Custom Matplotlib Axes subclasses."""
-import numpy as np
-import matplotlib.axes as mplax
 import matplotlib as mpl
+import matplotlib.axes as mplax
+import numpy as np
 from matplotlib.projections import register_projection
 
-from pydrex import stats as _stats
 from pydrex import geometry as _geo
+from pydrex import stats as _stats
 
 
 class PoleFigureAxes(mplax.Axes):

@@ -2,15 +2,15 @@
 import functools as ft
 
 import numpy as np
-from matplotlib import pyplot as plt
 from matplotlib import projections as mproj
+from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+from pydrex import axes as _axes
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
-from pydrex import axes as _axes
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
