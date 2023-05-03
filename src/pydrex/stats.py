@@ -4,7 +4,7 @@ import numpy as np
 from pydrex import minerals as _minerals
 from pydrex import stiffness as _stiffness
 from pydrex import tensors as _tensors
-from pydrex import polefigures as _pf
+from pydrex import geometry as _geo
 
 _RNG = np.random.default_rng(seed=8845)
 
@@ -186,36 +186,25 @@ def point_density(
     gridsteps=101,
     weights=1,
     kernel="kamb_count",
+    axial=True,
     **kwargs,
 ):
     if kernel not in SPHERICAL_COUNTING_KERNELS:
         raise ValueError(f"kernel '{kernel}' is not supported")
     weights = np.asarray(weights, dtype=np.float64)
 
-    # Create a grid of counters on the disk by transforming a square grid.
-    # Using the Shirley & Chiu 1997 projection ensures good area sampling.
-    # It's a bit more satisfactory than the manual method of Robin 1985.
-    x_grid, y_grid = np.mgrid[-1 : 1 : gridsteps * 1j, -1 : 1 : gridsteps * 1j]
-    x_counters, y_counters = _pf.shirley_concentric_squaredisk(
-        x_grid.ravel(), y_grid.ravel()
+    # Create a grid of counters on a cylinder.
+    ρ_grid, h_grid = np.mgrid[-np.pi : np.pi : gridsteps * 1j, -1 : 1 : gridsteps * 1j]
+    # Project onto the sphere using the equal-area projection with centre at (0, 0).
+    λ_grid = ρ_grid
+    ϕ_grid = np.arcsin(h_grid)
+    x_counters, y_counters, z_counters = _geo.to_cartesian(
+        np.pi / 2 - λ_grid.ravel(), np.pi / 2 - ϕ_grid.ravel()
     )
-    # TODO: Support non-axial data?
-    # For this we would need to have a counting grid on the sphere that covers both
-    # hemispheres, so just back-projecting the Shirley grid from below onto a single
-    # hemisphere won't work, we could maybe stack two of them?
-    # Project the second one by doing z = -1 - (x**2 + y**2)
-    # However, the counters around the equator would be doubled so the second grid would
-    # need to be one ring smaller.
-    axial = True
-
-    # Add z-values to project the sampling onto the hemisphere.
-    z_counters = 1 - (x_counters**2 + y_counters**2)
-    # z_counters2 = -1 - (x_counters2**2 + y_counters2**2)
 
     # Basically, we can't model this as a convolution as we're not in Euclidean space,
     # so we have to iterate through and call the kernel function at each "counter".
-    # TODO: Remove abs() here, that assumes axial=True.
-    data = np.column_stack([x_data, y_data, np.abs(z_data)])
+    data = np.column_stack([x_data, y_data, z_data])
     counters = np.column_stack([x_counters, y_counters, z_counters])
     totals = np.empty(counters.shape[0])
     for i, counter in enumerate(counters):
@@ -228,16 +217,16 @@ def point_density(
         density *= weights
         totals[i] = (density.sum() - 0.5) / scale
 
-    X_counters, Y_counters = _pf.lambert_equal_area(x_counters, y_counters, z_counters)
+    X_counters, Y_counters = _geo.lambert_equal_area(x_counters, y_counters, z_counters)
 
     # Normalise to mean, which estimates the density for a "uniform" distribution.
     totals /= totals.mean()
     totals[totals < 0] = 0
     print(totals.min(), totals.mean(), totals.max())
     return (
-        np.reshape(X_counters, x_grid.shape),
-        np.reshape(Y_counters, x_grid.shape),
-        np.reshape(totals, x_grid.shape),
+        np.reshape(X_counters, ρ_grid.shape),
+        np.reshape(Y_counters, ρ_grid.shape),
+        np.reshape(totals, ρ_grid.shape),
     )
 
 
@@ -254,7 +243,7 @@ def _kamb_units(n, radius):
     return np.sqrt(n * radius * (1 - radius))
 
 
-def exponential_kamb(cos_dist, σ=3, axial=True):
+def exponential_kamb(cos_dist, σ=10, axial=True):
     """Kernel function from Vollmer 1995 for exponential smoothing."""
     n = float(cos_dist.size)
     if axial:
@@ -268,7 +257,7 @@ def exponential_kamb(cos_dist, σ=3, axial=True):
     return count, units
 
 
-def linear_inverse_kamb(cos_dist, σ=3, axial=True):
+def linear_inverse_kamb(cos_dist, σ=10, axial=True):
     """Kernel function from Vollmer 1995 for linear smoothing."""
     n = float(cos_dist.size)
     radius = _kamb_radius(n, σ, axial=axial)
@@ -278,7 +267,7 @@ def linear_inverse_kamb(cos_dist, σ=3, axial=True):
     return count, _kamb_units(n, radius)
 
 
-def square_inverse_kamb(cos_dist, σ=3, axial=True):
+def square_inverse_kamb(cos_dist, σ=10, axial=True):
     """Kernel function from Vollmer 1995 for inverse square smoothing."""
     n = float(cos_dist.size)
     radius = _kamb_radius(n, σ, axial=axial)
@@ -288,7 +277,7 @@ def square_inverse_kamb(cos_dist, σ=3, axial=True):
     return count, _kamb_units(n, radius)
 
 
-def kamb_count(cos_dist, σ=3, axial=True):
+def kamb_count(cos_dist, σ=10, axial=True):
     """Original Kamb 1959 kernel function (raw count within radius)."""
     n = float(cos_dist.size)
     dist = _kamb_radius(n, σ, axial=axial)
@@ -316,6 +305,7 @@ SPHERICAL_COUNTING_KERNELS = {
 
 Supported kernel functions are based on the discussion in
 [Vollmer 1995](https://doi.org/10.1016/0098-3004(94)00058-3).
-Kamb methods accept the parameter `σ` (default: 3) to control the degree of smoothing.
+Kamb methods accept the parameter `σ` (default: 10) to control the degree of smoothing.
+Values lower than 3 and higher than 20 are not recommended.
 
 """

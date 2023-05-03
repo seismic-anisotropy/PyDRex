@@ -36,7 +36,7 @@ def polefigures(
 
     The data is read from fields ending with the optional `postfix` in the NPZ file
     `datafile`. Use `i_range` to specify the indices of the timesteps to be plotted,
-    which can be any valid Python range object, e.g. `range(0, 12, 2)` with a step of 2.
+    which can be any valid Python range object, e.g. `range(0, 12, 2)` for a step of 2.
     By default (`i_range=None`), a maximum of 25 timesteps are plotted.
     If the number would exceed this, a warning is printed,
     which signals the complete number of timesteps found in the file.

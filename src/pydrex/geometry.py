@@ -1,12 +1,40 @@
-"""> PyDRex: Functions for creating crystallographic pole figures.
-
-.. note::
-    This module contains pole figure implementation functions
-    that are generally used via the higher level interface in `pydrex.visualisation`.
-
-"""
+"""> PyDRex: Functions for geometric coordinate conversions and projections."""
 import numpy as np
 from scipy import linalg as la
+
+
+def to_cartesian(ϕ, θ, r=1):
+    """Convert spherical to cartesian coordinates in ℝ³.
+
+    Spherical coordinate convention:
+    - ϕ is the longitude (“azimuth”) ∈ (0, π]
+    - θ is the colatitude (“inclination”) ∈ (0, 2π]
+
+    By default, a radius of `r = 1` is used for the sphere.
+    Returns a tuple containing arrays of x, y, and z values.
+
+    """
+    ϕ = np.atleast_1d(ϕ).astype(float)
+    θ = np.atleast_1d(θ).astype(float)
+    r = np.atleast_1d(r).astype(float)
+    return (r * np.sin(θ) * np.cos(ϕ), r * np.sin(θ) * np.sin(ϕ), r * np.cos(θ))
+
+
+def to_spherical(x, y, z):
+    """Convert cartesian coordinates in ℝ³ to spherical coordinates.
+
+    Spherical coordinate convention:
+    - ϕ is the longitude (“azimuth”) ∈ (0, π]
+    - θ is the colatitude (“inclination”) ∈ (0, 2π]
+
+    Returns a tuple containing arrays of ϕ and θ values.
+
+    """
+    x = np.atleast_1d(x).astype(float)
+    y = np.atleast_1d(y).astype(float)
+    z = np.atleast_1d(z).astype(float)
+    r = np.sqrt(x**2 + y**2 + z**2)
+    return (r, np.arccos(z / r), np.sign(y) * np.arccos(x / np.sqrt(x**2 + y**2)))
 
 
 def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
@@ -112,6 +140,7 @@ def shirley_concentric_squaredisk(xvals, yvals):
     -2.9845130209101467
 
     """
+
     def _shirley_concentric_squaredisc_xgty(xvals, yvals):
         ratios = yvals / (xvals + 1e-12)
         return xvals * np.cos(np.pi / 4 * ratios), xvals * np.sin(np.pi / 4 * ratios)

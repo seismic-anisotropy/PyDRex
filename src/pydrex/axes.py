@@ -5,7 +5,7 @@ import matplotlib as mpl
 from matplotlib.projections import register_projection
 
 from pydrex import stats as _stats
-from pydrex import polefigures as _pf
+from pydrex import geometry as _geo
 
 
 class PoleFigureAxes(mplax.Axes):
@@ -72,7 +72,7 @@ class PoleFigureAxes(mplax.Axes):
         - `density_kwargs` (dict, optional) — keyword arguments to pass to
           `pydrex.stats.point_density` if `density=True`
 
-        Any additional keyword arguments are passed to either `pcolormesh` if
+        Any additional keyword arguments are passed to either `tripcolor` if
         `density=True` or `scatter` if `density=False`
 
         """
@@ -82,28 +82,20 @@ class PoleFigureAxes(mplax.Axes):
         self._prep_polefig_axis(ref_axes=ref_axes)
 
         if density:
-            self.scatter(
-                *_pf.lambert_equal_area(
-                    *_pf.poles(data, hkl=hkl, ref_axes=ref_axes),
-                ),
-                s=kwargs.pop("s", 1),
-                c=kwargs.pop("c", mpl.rcParams["axes.edgecolor"]),
-                marker=kwargs.pop("marker", "."),
-                alpha=kwargs.pop("alpha", 0.33),
-                zorder=kwargs.pop("zorder", 11),
-                **kwargs,
+            x, y, z = _stats.point_density(
+                *_geo.poles(data, hkl=hkl, ref_axes=ref_axes), **density_kwargs
             )
-            return self.contourf(
-                *_stats.point_density(
-                    *_pf.poles(data, hkl=hkl, ref_axes=ref_axes), **density_kwargs
-                ),
-                levels=np.linspace(2.5, 7.5, 10),
-                extend="both",
+            return self.tripcolor(
+                x.ravel(),
+                y.ravel(),
+                z.ravel(),
+                shading=kwargs.pop("shading", "gouraud"),
+                **kwargs,
             )
         else:
             return self.scatter(
-                *_pf.lambert_equal_area(
-                    *_pf.poles(data, hkl=hkl, ref_axes=ref_axes),
+                *_geo.lambert_equal_area(
+                    *_geo.poles(data, hkl=hkl, ref_axes=ref_axes),
                 ),
                 s=kwargs.pop("s", 1),
                 c=kwargs.pop("c", mpl.rcParams["axes.edgecolor"]),
