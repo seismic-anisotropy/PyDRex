@@ -63,17 +63,28 @@ def polefigures(
     n_orientations = len(orientations_resampled)
 
     fig = plt.figure(figsize=(n_orientations, 4), dpi=600)
-    grid = fig.add_gridspec(3, n_orientations, hspace=0, wspace=0.2)
+    grid = fig.add_gridspec(
+        4, n_orientations, height_ratios=((1, 3, 3, 3)), hspace=0, wspace=0.2
+    )
+    fig_time = fig.add_subfigure(grid[0, :])
+    fig_time.suptitle("index along pathline", x=0.5, y=0.85, fontsize="small")
+    ax_time = fig_time.add_subplot(111)
+    ax_time.set_frame_on(False)
+    ax_time.grid(False)
+    ax_time.yaxis.set_visible(False)
+    ax_time.xaxis.set_tick_params(labelsize="x-small", length=0)
+    ax_time.set_xticks(list(i_range))
+    ax_time.set_xlim((-i_range.step / 2, i_range.stop - i_range.step / 2))
     fig100 = fig.add_subfigure(
-        grid[0, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
+        grid[1, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
     )
     fig100.suptitle("[100]", fontsize="small")
     fig010 = fig.add_subfigure(
-        grid[1, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
+        grid[2, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
     )
     fig010.suptitle("[010]", fontsize="small")
     fig001 = fig.add_subfigure(
-        grid[2, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
+        grid[3, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
     )
     fig001.suptitle("[001]", fontsize="small")
     for n, orientations in enumerate(orientations_resampled):
@@ -104,7 +115,7 @@ def polefigures(
                     location="bottom",
                     orientation="horizontal",
                 )
-                cbar.ax.tick_params(axis="x", labelsize="xx-small")
+                cbar.ax.xaxis.set_tick_params(labelsize="xx-small")
 
     fig.savefig(_io.resolve_path(savefile))
 
