@@ -196,7 +196,8 @@ def point_density(
     The input data is expected in cartesian coordinates, and the contouring is performed
     using kernel functions defined in [Vollmer 1995](https://doi.org/10.1016/0098-3004(94)00058-3).
     The following optional parameters control the contouring method:
-    - `gridsteps` (int) — the number of steps, i.e. resolution of the spherical counting grid
+    - `gridsteps` (int) — the number of steps, i.e. number of points along a diameter of
+        the spherical counting grid
     - `weights` (array) — auxiliary weights for each data point
     - `kernel` (string) — the name of the kernel function to use, see `SPHERICAL_COUNTING_KERNELS`
     - `axial` (bool) — toggle axial versions of the kernel functions

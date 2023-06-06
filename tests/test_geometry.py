@@ -22,9 +22,7 @@ def test_poles_example(example_outputs, stringify, hkl, ref_axes):
 
 def test_lambert_equal_area(rng):
     """Test Lambert equal area projection."""
-    a = [x / 5.0 for x in range(-5, 6)]
-    x = [[x] * len(a) for x in a]
-    y = [a for _ in a]
+    x, y = np.mgrid[-1:1:11j, -1:1:11j]
     x_flat = [j for i in x for j in i]
     y_flat = [j for i in y for j in i]
     # Uniform samples on the unit disk, this is tested in the Shirley doctest example.

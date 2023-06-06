@@ -7,8 +7,8 @@ def to_cartesian(ϕ, θ, r=1):
     """Convert spherical to cartesian coordinates in ℝ³.
 
     Spherical coordinate convention:
-    - ϕ is the longitude (“azimuth”) ∈ (0, π]
-    - θ is the colatitude (“inclination”) ∈ (0, 2π]
+    - ϕ is the longitude (“azimuth”) ∈ [0, 2π)
+    - θ is the colatitude (“inclination”) ∈ [0, π)
 
     By default, a radius of `r = 1` is used for the sphere.
     Returns a tuple containing arrays of x, y, and z values.
@@ -24,17 +24,17 @@ def to_spherical(x, y, z):
     """Convert cartesian coordinates in ℝ³ to spherical coordinates.
 
     Spherical coordinate convention:
-    - ϕ is the longitude (“azimuth”) ∈ (0, π]
-    - θ is the colatitude (“inclination”) ∈ (0, 2π]
+    - ϕ is the longitude (“azimuth”) ∈ [0, 2π)
+    - θ is the colatitude (“inclination”) ∈ [0, π)
 
-    Returns a tuple containing arrays of ϕ and θ values.
+    Returns a tuple containing arrays of r, ϕ and θ values.
 
     """
     x = np.atleast_1d(x).astype(float)
     y = np.atleast_1d(y).astype(float)
     z = np.atleast_1d(z).astype(float)
     r = np.sqrt(x**2 + y**2 + z**2)
-    return (r, np.arccos(z / r), np.sign(y) * np.arccos(x / np.sqrt(x**2 + y**2)))
+    return (r, np.arctan2(y, x), np.sign(y) * np.arccos(x / np.sqrt(x**2 + y**2)))
 
 
 def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
@@ -50,15 +50,13 @@ def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
     horizontal and vertical axes of pole figures used to plot the directions.
 
     """
-    upward_axes = next((set("xyz") - set(ref_axes)).__iter__())
+    upward_axes = (set("xyz") - set(ref_axes)).pop()
     axes_map = {"x": 0, "y": 1, "z": 2}
 
     # Get directions in the right-handed frame.
     directions = np.tensordot(orientations.transpose([0, 2, 1]), hkl, axes=(2, 0))
     directions_norm = la.norm(directions, axis=1)
-    directions[:, 0] /= directions_norm
-    directions[:, 1] /= directions_norm
-    directions[:, 2] /= directions_norm
+    directions /= directions_norm.reshape(-1, 1)
 
     # Rotate into the chosen reference frame.
     zvals = directions[:, axes_map[upward_axes]]
