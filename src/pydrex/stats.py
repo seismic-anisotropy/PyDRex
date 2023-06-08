@@ -1,11 +1,12 @@
 """> PyDRex: Statistical methods for orientation and elasticity data."""
 import numpy as np
 
+from pydrex import geometry as _geo
 from pydrex import minerals as _minerals
 from pydrex import stiffness as _stiffness
 from pydrex import tensors as _tensors
 
-_RNG = np.random.default_rng()
+_RNG = np.random.default_rng(seed=8845)
 
 
 def average_stiffness(minerals, config):
@@ -176,3 +177,153 @@ def _max_misorientation(system):
         case _:
             raise ValueError(f"incorrect system values (M, N) = {system}")
     return max_θ
+
+
+def point_density(
+    x_data,
+    y_data,
+    z_data,
+    gridsteps=101,
+    weights=1,
+    kernel="linear_inverse_kamb",
+    axial=True,
+    **kwargs,
+):
+    """Estimate point density of orientation data on the unit sphere.
+
+    Estimates the density of orientations on the unit sphere by counting the input data
+    that falls within small areas around a uniform grid of spherical counting locations.
+    The input data is expected in cartesian coordinates, and the contouring is performed
+    using kernel functions defined in [Vollmer 1995](https://doi.org/10.1016/0098-3004(94)00058-3).
+    The following optional parameters control the contouring method:
+    - `gridsteps` (int) — the number of steps, i.e. number of points along a diameter of
+        the spherical counting grid
+    - `weights` (array) — auxiliary weights for each data point
+    - `kernel` (string) — the name of the kernel function to use, see `SPHERICAL_COUNTING_KERNELS`
+    - `axial` (bool) — toggle axial versions of the kernel functions
+        (for crystallographic data this should normally be kept as `True`)
+
+    Any other keyword arguments are passed to the kernel function calls.
+    Most kernels accept a parameter `σ` to control the degree of smoothing.
+
+    """
+    if kernel not in SPHERICAL_COUNTING_KERNELS:
+        raise ValueError(f"kernel '{kernel}' is not supported")
+    weights = np.asarray(weights, dtype=np.float64)
+
+    # Create a grid of counters on a cylinder.
+    ρ_grid, h_grid = np.mgrid[-np.pi : np.pi : gridsteps * 1j, -1 : 1 : gridsteps * 1j]
+    # Project onto the sphere using the equal-area projection with centre at (0, 0).
+    λ_grid = ρ_grid
+    ϕ_grid = np.arcsin(h_grid)
+    x_counters, y_counters, z_counters = _geo.to_cartesian(
+        np.pi / 2 - λ_grid.ravel(), np.pi / 2 - ϕ_grid.ravel()
+    )
+
+    # Basically, we can't model this as a convolution as we're not in Euclidean space,
+    # so we have to iterate through and call the kernel function at each "counter".
+    data = np.column_stack([x_data, y_data, z_data])
+    counters = np.column_stack([x_counters, y_counters, z_counters])
+    totals = np.empty(counters.shape[0])
+    for i, counter in enumerate(counters):
+        products = np.dot(data, counter)
+        if axial:
+            products = np.abs(products)
+        density, scale = SPHERICAL_COUNTING_KERNELS[kernel](
+            products, axial=axial, **kwargs
+        )
+        density *= weights
+        totals[i] = (density.sum() - 0.5) / scale
+
+    X_counters, Y_counters = _geo.lambert_equal_area(x_counters, y_counters, z_counters)
+
+    # Normalise to mean, which estimates the density for a "uniform" distribution.
+    totals /= totals.mean()
+    totals[totals < 0] = 0
+    # print(totals.min(), totals.mean(), totals.max())
+    return (
+        np.reshape(X_counters, ρ_grid.shape),
+        np.reshape(Y_counters, ρ_grid.shape),
+        np.reshape(totals, ρ_grid.shape),
+    )
+
+
+def _kamb_radius(n, σ, axial):
+    """Radius of kernel for Kamb-style smoothing."""
+    r = σ**2 / (float(n) + σ**2)
+    if axial is True:
+        return 1 - r
+    return 1 - 2 * r
+
+
+def _kamb_units(n, radius):
+    """Normalization function for Kamb-style counting."""
+    return np.sqrt(n * radius * (1 - radius))
+
+
+def exponential_kamb(cos_dist, σ=10, axial=True):
+    """Kernel function from Vollmer 1995 for exponential smoothing."""
+    n = float(cos_dist.size)
+    if axial:
+        f = 2 * (1.0 + n / σ**2)
+        units = np.sqrt(n * (f / 2.0 - 1) / f**2)
+    else:
+        f = 1 + n / σ**2
+        units = np.sqrt(n * (f - 1) / (4 * f**2))
+
+    count = np.exp(f * (cos_dist - 1))
+    return count, units
+
+
+def linear_inverse_kamb(cos_dist, σ=10, axial=True):
+    """Kernel function from Vollmer 1995 for linear smoothing."""
+    n = float(cos_dist.size)
+    radius = _kamb_radius(n, σ, axial=axial)
+    f = 2 / (1 - radius)
+    cos_dist = cos_dist[cos_dist >= radius]
+    count = f * (cos_dist - radius)
+    return count, _kamb_units(n, radius)
+
+
+def square_inverse_kamb(cos_dist, σ=10, axial=True):
+    """Kernel function from Vollmer 1995 for inverse square smoothing."""
+    n = float(cos_dist.size)
+    radius = _kamb_radius(n, σ, axial=axial)
+    f = 3 / (1 - radius) ** 2
+    cos_dist = cos_dist[cos_dist >= radius]
+    count = f * (cos_dist - radius) ** 2
+    return count, _kamb_units(n, radius)
+
+
+def kamb_count(cos_dist, σ=10, axial=True):
+    """Original Kamb 1959 kernel function (raw count within radius)."""
+    n = float(cos_dist.size)
+    dist = _kamb_radius(n, σ, axial=axial)
+    count = (cos_dist >= dist).astype(float)
+    return count, _kamb_units(n, dist)
+
+
+def schmidt_count(cos_dist, axial=None):
+    """Schmidt (a.k.a. 1%) counting kernel function."""
+    radius = 0.01
+    count = ((1 - cos_dist) <= radius).astype(float)
+    # To offset the count.sum() - 0.5 required for the kamb methods...
+    count = 0.5 / count.size + count
+    return count, (cos_dist.size * radius)
+
+
+SPHERICAL_COUNTING_KERNELS = {
+    "kamb_count": kamb_count,
+    "schmidt_count": schmidt_count,
+    "exponential_kamb": exponential_kamb,
+    "linear_inverse_kamb": linear_inverse_kamb,
+    "square_inverse_kamb": square_inverse_kamb,
+}
+"""Kernel functions that return an un-summed distribution and a normalization factor.
+
+Supported kernel functions are based on the discussion in
+[Vollmer 1995](https://doi.org/10.1016/0098-3004(94)00058-3).
+Kamb methods accept the parameter `σ` (default: 10) to control the degree of smoothing.
+Values lower than 3 and higher than 20 are not recommended.
+
+"""

@@ -1,17 +1,130 @@
-"""> PyDRex: Visualisation helpers for tests/examples."""
+"""> PyDRex: Visualisation functions for test outputs and examples."""
 import functools as ft
 
 import numpy as np
+from matplotlib import projections as mproj
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from scipy import linalg as la
 
+from pydrex import axes as _axes
 from pydrex import io as _io
+from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
+# Always use constrained layout by default (modern version of tight layout).
+plt.rcParams["figure.constrained_layout.use"] = True
+# Make sure we have the required matplotlib "projections" (really just Axes subclasses).
+if "pydrex.polefigure" not in mproj.get_projection_names():
+    _log.warning(
+        "failed to find pydrex.polefigure projection; it should be registered in %s",
+        _axes,
+    )
+
+
+def polefigures(
+    datafile,
+    i_range=None,
+    postfix=None,
+    density=False,
+    ref_axes="xz",
+    savefile="polefigures.png",
+    **kwargs,
+):
+    """Plot [100], [010] and [001] pole figures for CPO data.
+
+    The data is read from fields ending with the optional `postfix` in the NPZ file
+    `datafile`. Use `i_range` to specify the indices of the timesteps to be plotted,
+    which can be any valid Python range object, e.g. `range(0, 12, 2)` for a step of 2.
+    By default (`i_range=None`), a maximum of 25 timesteps are plotted.
+    If the number would exceed this, a warning is printed,
+    which signals the complete number of timesteps found in the file.
+
+    Use `density=True` to plot contoured pole figures instead of raw points.
+    In this case, any additional keyword arguments are passed to
+    `pydrex.stats.point_density`.
+
+    See also: `pydrex.minerals.Mineral.save`, `pydrex.axes.PoleFigureAxes.polefigure`.
+
+    """
+    mineral = _minerals.Mineral.from_file(datafile, postfix=postfix)
+    if i_range is None:
+        i_range = range(0, len(mineral.orientations))
+        if len(i_range) > 25:
+            _log.warning("truncating to 25 timesteps (out of %s total)", len(i_range))
+            i_range = range(0, 25)
+
+    orientations_resampled = [
+        _stats.resample_orientations(mineral.orientations[i], mineral.fractions[i])[0]
+        for i in np.arange(i_range.start, i_range.stop, i_range.step, dtype=int)
+    ]
+    n_orientations = len(orientations_resampled)
+
+    fig = plt.figure(figsize=(n_orientations, 4), dpi=600)
+
+    if len(i_range) == 1:
+        grid = fig.add_gridspec(3, n_orientations, hspace=0, wspace=0.2)
+        first_row = 0
+    else:
+        grid = fig.add_gridspec(
+            4, n_orientations, height_ratios=((1, 3, 3, 3)), hspace=0, wspace=0.2
+        )
+        fig_time = fig.add_subfigure(grid[0, :])
+        first_row = 1
+        fig_time.suptitle("index along pathline", x=0.5, y=0.85, fontsize="small")
+        ax_time = fig_time.add_subplot(111)
+        ax_time.set_frame_on(False)
+        ax_time.grid(False)
+        ax_time.yaxis.set_visible(False)
+        ax_time.xaxis.set_tick_params(labelsize="x-small", length=0)
+        ax_time.set_xticks(list(i_range))
+        ax_time.set_xlim((-i_range.step / 2, i_range.stop - i_range.step / 2))
+
+    fig100 = fig.add_subfigure(
+        grid[first_row, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
+    )
+    fig100.suptitle("[100]", fontsize="small")
+    fig010 = fig.add_subfigure(
+        grid[first_row + 1, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
+    )
+    fig010.suptitle("[010]", fontsize="small")
+    fig001 = fig.add_subfigure(
+        grid[first_row + 2, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
+    )
+    fig001.suptitle("[001]", fontsize="small")
+    for n, orientations in enumerate(orientations_resampled):
+        ax100 = fig100.add_subplot(
+            1, n_orientations, n + 1, projection="pydrex.polefigure"
+        )
+        pf100 = ax100.polefigure(
+            orientations, hkl=[1, 0, 0], density=density, density_kwargs=kwargs
+        )
+        ax010 = fig010.add_subplot(
+            1, n_orientations, n + 1, projection="pydrex.polefigure"
+        )
+        pf010 = ax010.polefigure(
+            orientations, hkl=[0, 1, 0], density=density, density_kwargs=kwargs
+        )
+        ax001 = fig001.add_subplot(
+            1, n_orientations, n + 1, projection="pydrex.polefigure"
+        )
+        pf001 = ax001.polefigure(
+            orientations, hkl=[0, 0, 1], density=density, density_kwargs=kwargs
+        )
+        if density:
+            for ax, pf in zip((ax100, ax010, ax001), (pf100, pf010, pf001)):
+                cbar = fig.colorbar(
+                    pf,
+                    ax=ax,
+                    fraction=0.05,
+                    location="bottom",
+                    orientation="horizontal",
+                )
+                cbar.ax.xaxis.set_tick_params(labelsize="xx-small")
+
+    fig.savefig(_io.resolve_path(savefile))
 
 
 def check_marker_seq(func):
@@ -58,7 +171,7 @@ def simple_shear_stationary_2d(
     grid = fig.add_gridspec(2, 1, hspace=0.05)
     ax_mean = fig.add_subplot(grid[0])
     ax_mean.set_ylabel("Mean angle ∈ [0, 90]°")
-    ax_mean.axhline(0, color="k")
+    ax_mean.axhline(0, color=plt.rcParams["axes.edgecolor"])
     ax_mean.tick_params(labelbottom=False)
     ax_strength = fig.add_subplot(grid[1], sharex=ax_mean)
     ax_strength.set_ylabel("Texture strength (M-index)")
@@ -98,7 +211,7 @@ def simple_shear_stationary_2d(
     if labels is not None:
         ax_mean.legend()
 
-    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
+    fig.savefig(_io.resolve_path(savefile))
 
 
 def _lag_2d_corner_flow(θ):
@@ -181,7 +294,7 @@ def corner_flow_2d(
             misorient_angles[corner_step],
             marker,
             markersize=5,
-            color="k",
+            color=plt.rcParams["axes.edgecolor"],
             zorder=11,
             alpha=0.33,
         )
@@ -190,7 +303,7 @@ def corner_flow_2d(
             misorient_indices[corner_step],
             marker,
             markersize=5,
-            color="k",
+            color=plt.rcParams["axes.edgecolor"],
             zorder=11,
             alpha=0.33,
         )
@@ -234,7 +347,7 @@ def corner_flow_2d(
             z_series[corner_step],
             marker,
             markersize=5,
-            color="k",
+            color=plt.rcParams["axes.edgecolor"],
             zorder=11,
         )
         if xlims is not None:
@@ -273,215 +386,10 @@ def corner_flow_2d(
     plt.rcParams["axes.grid"] = True
 
     # Lines to show texture threshold and shear direction.
-    ax_strength.axhline(cpo_threshold, color="k", linestyle="--")
+    ax_strength.axhline(
+        cpo_threshold, color=plt.rcParams["axes.edgecolor"], linestyle="--"
+    )
     if labels is not None:
         ax_mean.legend()
 
-    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
-
-
-def set_polefig_axis(ax, ref_axes="xz"):
-    # NOTE: We could subclass matplotlib's Axes like Joe does in mplstereonet,
-    # but this turns out to be a lot of effort for not much gain...
-    ax.set_axis_off()
-    ax.set_xlim((-1.1, 1.1))
-    ax.set_ylim((-1.1, 1.1))
-    ax.set_aspect("equal")
-    _circle_points = np.linspace(0, np.pi * 2, 100)
-    ax.plot(np.cos(_circle_points), np.sin(_circle_points), linewidth=1, color="k")
-    ax.axhline(0, color="k", alpha=0.5)
-    ax.text(1.05, 0.5, ref_axes[0], verticalalignment="center", transform=ax.transAxes)
-    ax.axvline(0, color="k", alpha=0.5)
-    ax.text(
-        0.5, 1.05, ref_axes[1], horizontalalignment="center", transform=ax.transAxes
-    )
-
-
-def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
-    """Calculate stereographic poles from 3D orientation matrices.
-
-    Expects `orientations` to be an array with shape (N, 3, 3).
-    The optional arguments `ref_axes` and `hkl` can be used to specify
-    the stereograph axes and the crystallographic axis respectively.
-    The stereograph axes should be given as a string of two letters,
-    e.g. "xz" (default), and the third letter in the set "xyz" is used
-    as the upward pointing axis for the lower hemisphere Lambert equal area projection.
-
-    """
-    upward_axes = next((set("xyz") - set(ref_axes)).__iter__())
-    axes_map = {"x": 0, "y": 1, "z": 2}
-    directions = np.tensordot(orientations.transpose([0, 2, 1]), hkl, axes=(2, 0))
-    directions_norm = la.norm(directions, axis=1)
-    directions[:, 0] /= directions_norm
-    directions[:, 1] /= directions_norm
-    directions[:, 2] /= directions_norm
-
-    _directions = directions
-    # NOTE: Use this to mask directions that point to the upper hemisphere.
-    # _directions = np.ma.mask_rows(
-    #     np.ma.masked_where(
-    #         np.zeros(directions.shape, bool) | (directions[:, 1] >= 0)[:, None],
-    #         directions,
-    #     )
-    # )
-
-    # Lambert equal-area projection, in Cartesian coords from 3D to the circle.
-    # TODO: Find a good reference or derive the equations to check.
-    # This stuff just comes from wikipedia:
-    # https://en.wikipedia.org/wiki/Lambert_azimuthal_equal-area_projection#cite_ref-borradaile2003_6-0
-    # Also from the implementation of Fraters & Billen 2021.
-    stereograph_xvals = _directions[:, axes_map[ref_axes[0]]] / (
-        1 + np.abs(directions[:, axes_map[upward_axes]])
-    )
-    stereograph_yvals = _directions[:, axes_map[ref_axes[1]]] / (
-        1 + np.abs(directions[:, axes_map[upward_axes]])
-    )
-    return stereograph_xvals, stereograph_yvals
-
-
-def polefigures(datafile, step=1, postfix=None, savefile="polefigures.png"):
-    """Plot pole figures for CPO data.
-
-    The data is read from fields ending with the optional `postfix` in the NPZ file
-    `datafile`. Pole figures are plotted at every `step` number of timesteps.
-
-    """
-    mineral = _minerals.Mineral.from_file(datafile, postfix=postfix)
-    orientations_resampled = [
-        _stats.resample_orientations(_orientations, _fractions)[0]
-        for _orientations, _fractions in zip(mineral.orientations, mineral.fractions)
-    ]
-    n_orientations = len(orientations_resampled)
-    fig = plt.figure(figsize=(n_orientations, 4), dpi=600)
-    grid = fig.add_gridspec(3, n_orientations, hspace=0, wspace=0.2)
-    fig100 = fig.add_subfigure(grid[0, :], frameon=False)
-    fig100.suptitle("[100]")
-    fig010 = fig.add_subfigure(grid[1, :], frameon=False)
-    fig010.suptitle("[010]")
-    fig001 = fig.add_subfigure(grid[2, :], frameon=False)
-    fig001.suptitle("[001]")
-    for n, orientations in enumerate(orientations_resampled):
-        ax100 = fig100.add_subplot(1, n_orientations, n + 1)
-        set_polefig_axis(ax100)
-        ax100.scatter(*poles(orientations), s=0.3, alpha=0.33, zorder=11)
-        # ax100.contourf(*point_density(*poles(orientations)))
-
-        ax010 = fig010.add_subplot(1, n_orientations, n + 1)
-        set_polefig_axis(ax010)
-        ax010.scatter(*poles(orientations, hkl=[0, 1, 0]), s=0.3, alpha=0.33, zorder=11)
-
-        ax001 = fig001.add_subplot(1, n_orientations, n + 1)
-        set_polefig_axis(ax001)
-        ax001.scatter(*poles(orientations, hkl=[0, 0, 1]), s=0.3, alpha=0.33, zorder=11)
-
-    fig.savefig(_io.resolve_path(savefile), bbox_inches="tight")
-
-
-# TODO: The contouring stuff below is mostly copied/adapted from mplstereonet, but I
-# don't really know what I'm doing and it doesn't work yet.
-
-
-def _kamb_radius(n, σ):
-    """Radius of kernel for Kamb-style smoothing."""
-    a = σ**2 / (float(n) + σ**2)
-    return 1 - a
-
-
-def _kamb_units(n, radius):
-    """Normalization function for Kamb-style counting."""
-    return np.sqrt(n * radius * (1 - radius))
-
-
-# All of the following kernel functions return an _unsummed_ distribution and
-# a normalization factor
-def _exponential_kamb(cos_dist, σ=3):
-    """Kernel function from Vollmer for exponential smoothing."""
-    n = float(cos_dist.size)
-    f = 2 * (1.0 + n / σ**2)
-    count = np.exp(f * (cos_dist - 1))
-    units = np.sqrt(n * (f / 2.0 - 1) / f**2)
-    return count, units
-
-
-def _linear_inverse_kamb(cos_dist, σ=3):
-    """Kernel function from Vollmer for linear smoothing."""
-    n = float(cos_dist.size)
-    radius = _kamb_radius(n, σ)
-    f = 2 / (1 - radius)
-    cos_dist = cos_dist[cos_dist >= radius]
-    count = f * (cos_dist - radius)
-    return count, _kamb_units(n, radius)
-
-
-def _square_inverse_kamb(cos_dist, σ=3):
-    """Kernel function from Vollemer for inverse square smoothing."""
-    n = float(cos_dist.size)
-    radius = _kamb_radius(n, σ)
-    f = 3 / (1 - radius) ** 2
-    cos_dist = cos_dist[cos_dist >= radius]
-    count = f * (cos_dist - radius) ** 2
-    return count, _kamb_units(n, radius)
-
-
-def _kamb_count(cos_dist, σ=3):
-    """Original Kamb kernel function (raw count within radius)."""
-    n = float(cos_dist.size)
-    dist = _kamb_radius(n, σ)
-    count = (cos_dist >= dist).astype(float)
-    return count, _kamb_units(n, dist)
-
-
-def _schmidt_count(cos_dist, σ=None):
-    """Schmidt (a.k.a. 1%) counting kernel function."""
-    radius = 0.01
-    count = ((1 - cos_dist) <= radius).astype(float)
-    # To offset the count.sum() - 0.5 required for the kamb methods...
-    count = 0.5 / count.size + count
-    return count, (cos_dist.size * radius)
-
-
-def point_density(
-    x_data, y_data, kernel=_kamb_count, σ=3, gridsize=(100, 100), weights=None
-):
-    """Calculate point density of spherical data projected onto a circle.
-
-    .. warning:: This method is currently broken.
-
-    """
-    if weights is None:
-        weights = 1
-
-    weights = np.asarray(weights, dtype=np.float64)
-    weights /= weights.sum()  # TODO: mplstereonet uses .mean()?
-
-    # Generate a regular grid of "counters" to measure on.
-    x_counters, y_counters = np.mgrid[
-        -1 : 1 : gridsize[0] * 1j, -1 : 1 : gridsize[1] * 1j
-    ]
-    # Mask to remove any counters beyond the unit circle.
-    mask = np.zeros(x_counters.shape, bool) | (
-        np.sqrt(x_counters**2 + y_counters**2) > 1
-    )
-    x_counters = np.ma.array(x_counters, mask=mask, fill_value=np.nan)
-    y_counters = np.ma.array(y_counters, mask=mask, fill_value=np.nan)
-
-    # Basically, we can't model this as a convolution as we're not in Cartesian
-    # space, so we have to iterate through and call the kernel function at
-    # each "counter".
-    data = np.vstack([x_data, y_data])
-    totals = np.zeros(x_counters.shape, dtype=np.float64)
-    for i in range(x_counters.shape[0]):
-        for j in range(x_counters.shape[1]):
-            cos_dist = np.abs(
-                np.dot(np.array([x_counters[i, j], y_counters[i, j]]), data)
-            )
-            density, scale = kernel(cos_dist, σ)
-            density *= weights
-            totals[i, j] = (density.sum() - 0.5) / scale
-
-    # Traditionally, the negative values (while valid, as they represent areas
-    # with less than expected point-density) are not returned.
-    # totals[totals < 0] = 0
-    # print(np.nanmax(totals))
-    # print(np.nanmin(totals))
-    return x_counters, y_counters, totals
+    fig.savefig(_io.resolve_path(savefile))
