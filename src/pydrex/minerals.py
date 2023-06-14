@@ -55,12 +55,74 @@ class MineralPhase(IntEnum):
     enstatite = 1
 
 
+OLIVINE_STIFFNESS = np.array(
+    [
+        [320.71, 69.84, 71.22, 0.0, 0.0, 0.0],
+        [69.84, 197.25, 74.8, 0.0, 0.0, 0.0],
+        [71.22, 74.8, 234.32, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 63.77, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 77.67, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 78.36],
+    ]
+)
+"""Stiffness tensor for olivine, with units of GPa.
+
+The source of the values used here is unknown, but they are copied
+from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz> [88K download]
+
+"""
+
+
+ENSTATITE_STIFFNESS = np.array(
+    [
+        [236.9, 79.6, 63.2, 0.0, 0.0, 0.0],
+        [79.6, 180.5, 56.8, 0.0, 0.0, 0.0],
+        [63.2, 56.8, 230.4, 0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 84.3, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 79.4, 0.0],
+        [0.0, 0.0, 0.0, 0.0, 0.0, 80.1],
+    ]
+)
+"""Stiffness tensor for enstatite, with units of GPa.
+
+The source of the values used here is unknown, but they are copied
+from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz> [88K download]
+
+"""
+
+
+OLIVINE_PRIMARY_AXIS = {
+    OlivineFabric.A: "a",
+    OlivineFabric.B: "c",
+    OlivineFabric.C: "c",
+    OlivineFabric.D: "a",
+    OlivineFabric.E: "a",
+}
+"""Primary slip axis name for for the given olivine `fabric`."""
+
+
+OLIVINE_SLIP_SYSTEMS = (
+    ([0, 1, 0], [1, 0, 0]),
+    ([0, 0, 1], [1, 0, 0]),
+    ([0, 1, 0], [0, 0, 1]),
+    ([1, 0, 0], [0, 0, 1]),
+)
+"""Slip systems for olivine in conventional order.
+
+Tuples contain the slip plane normal and slip direction vectors.
+The order of slip systems returned matches the order of critical shear stresses
+returned by `get_crss`.
+
+"""
+
+
 @nb.njit
 def get_crss(phase, fabric):
     """Get Critical Resolved Shear Stress for the mineral `phase` and `fabric`.
 
-    Returns an array of the normalised threshold stresses required to activate slip
-    on each slip system.
+    Returns an array of the normalised threshold stresses required to activate slip on
+    each slip system. Slip systems are ordered according to the convention used for
+    `OLIVINE_SLIP_SYSTEMS`.
 
     """
     if phase == MineralPhase.olivine:
@@ -82,22 +144,6 @@ def get_crss(phase, fabric):
             return np.array([np.inf, np.inf, np.inf, 1])
         raise ValueError("fabric must be a valid `EnstatiteFabric`")
     raise ValueError("phase must be a valid `MineralPhase`")
-
-
-def get_primary_axis(fabric):
-    """Get primary slip axis name for the given olivine `fabric`."""
-    match fabric:
-        case OlivineFabric.A:
-            return "a"
-        case OlivineFabric.B:
-            return "c"
-        case OlivineFabric.C:
-            return "c"
-        case OlivineFabric.D:
-            return "a"
-        case OlivineFabric.E:
-            return "a"
-    raise ValueError(f"fabric must be a valid `OlivineFabric`, not {fabric}")
 
 
 @dataclass

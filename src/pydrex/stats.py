@@ -3,7 +3,6 @@ import numpy as np
 
 from pydrex import geometry as _geo
 from pydrex import minerals as _minerals
-from pydrex import stiffness as _stiffness
 from pydrex import tensors as _tensors
 
 _RNG = np.random.default_rng(seed=8845)
@@ -23,10 +22,12 @@ def average_stiffness(minerals, config):
     elastic_tensors = []
     for phase in _minerals.MineralPhase:
         if phase == _minerals.MineralPhase.olivine:
-            elastic_tensors.append(_tensors.Voigt_to_elastic_tensor(_stiffness.OLIVINE))
+            elastic_tensors.append(
+                _tensors.Voigt_to_elastic_tensor(_minerals.OLIVINE_STIFFNESS)
+            )
         elif phase == _minerals.MineralPhase.enstatite:
             elastic_tensors.append(
-                _tensors.Voigt_to_elastic_tensor(_stiffness.ENSTATITE)
+                _tensors.Voigt_to_elastic_tensor(_minerals.ENSTATITE_STIFFNESS)
             )
 
     average_tensor = np.zeros((3, 3, 3, 3))
