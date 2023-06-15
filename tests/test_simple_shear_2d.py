@@ -120,7 +120,7 @@ class TestSinglePolycrystalOlivineA:
                 )
                 direction_mean = _diagnostics.bingham_average(
                     orientations_resampled,
-                    axis=_minerals.get_primary_axis(mineral.fabric),
+                    axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
                 )
                 misorient_angles[idx] = _diagnostics.smallest_angle(
                     direction_mean, [0, 1, 0]
@@ -284,7 +284,7 @@ class TestSinglePolycrystalOlivineA:
                     )
                     direction_mean = _diagnostics.bingham_average(
                         orientations_resampled,
-                        axis=_minerals.get_primary_axis(mineral.fabric),
+                        axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
                     )
                     misorient_angles[idx] = _diagnostics.smallest_angle(
                         direction_mean, [1, 0, 0]
