@@ -360,7 +360,7 @@ class Mineral:
         if not callable(get_velocity_gradient):
             raise ValueError(
                 "unable to evaluate velocity gradient callable."
-                + " You must provide a callable with signature f(x,t)"
+                + " You must provide a callable with signature f(x)"
                 + " that returns a 3x3 matrix."
             )
         if not callable(get_position):
