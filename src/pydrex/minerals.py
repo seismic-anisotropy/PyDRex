@@ -236,7 +236,7 @@ class Mineral:
         self,
         config,
         deformation_gradient,
-        velocity_gradient,
+        get_velocity_gradient,
         pathline,
         **kwargs,
     ):
@@ -248,15 +248,13 @@ class Mineral:
         Args:
         - `config` (dict) — PyDRex configuration dictionary
         - `deformation_gradient` (array) — 3x3 initial deformation gradient tensor
-        - `velocity_gradient` (array or function) — 3x3 velocity gradient matrix,
-          or an interpolator that returns the 3x3 matrix when evaluated at a point
-          along the provided pathline
+        - `get_velocity_gradient` (function) — callable with signature f(x) that returns
+          a 3x3 velocity gradient matrix at position x (vector)
         - `pathline` (tuple) — tuple consisting of:
-            1. the time at which to start the CPO integration
-            2. the time at which to stop the CPO integration
-            3. either an explicit position vector for stationary particles,
-               or a callable that accepts a time value and returns the position of
-               the mineral at any time between the provided start and end times
+            1. the time at which to start the CPO integration (t_start)
+            2. the time at which to stop the CPO integration (t_end)
+            3. callable with signature f(t) that returns the position of the mineral at
+                time t ∈ [t_start, t_end]
 
         Any additional (optional) keyword arguments are passed to
         `scipy.integrate.LSODA`.
@@ -270,11 +268,11 @@ class Mineral:
 
         def extract_vars(y):
             # TODO: Check if we can avoid .copy() here.
-            deformation_gradient = y[:9].copy().reshape(3, 3)
+            deformation_gradient = y[:9].copy().reshape((3, 3))
             orientations = (
                 y[9 : self.n_grains * 9 + 9]
                 .copy()
-                .reshape(self.n_grains, 3, 3)
+                .reshape((self.n_grains, 3, 3))
                 .clip(-1, 1)
             )
             # TODO: Check if we can avoid .copy() here.
@@ -284,8 +282,19 @@ class Mineral:
             fractions /= fractions.sum()
             return deformation_gradient, orientations, fractions
 
-        def eval_rhs(t, y, velocity_gradient, strain_rate, strain_rate_max):
+        def eval_rhs(t, y):
             """Evaluate right hand side of the D-Rex PDE."""
+            position = get_position(t)
+            velocity_gradient = get_velocity_gradient(position)
+            _log.debug(
+                "calculating CPO at %s (t=%e) with velocity gradient %s",
+                position,
+                t,
+                velocity_gradient.flatten(),
+            )
+
+            strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
+            strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
             deformation_gradient, orientations, fractions = extract_vars(y)
             # Uses nondimensional values of strain rate and velocity gradient.
             orientations_diff, fractions_diff = _core.derivatives(
@@ -331,21 +340,8 @@ class Mineral:
             )
             return orientations, fractions
 
-        def perform_step(solver, velocity_gradient, position, time):
+        def perform_step(solver):
             """Perform SciPy solver step and appropriate processing."""
-            _log.info(
-                "calculating CPO at %s (t=%e) with velocity gradient %s",
-                position,
-                time,
-                velocity_gradient.flatten(),
-            )
-
-            strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
-            strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
-
-            solver._fun = lambda t, y: eval_rhs(
-                t, y, velocity_gradient, strain_rate, strain_rate_max
-            )
             message = solver.step()
             if message is not None and solver.status == "failed":
                 raise _err.IterationError(message)
@@ -356,23 +352,22 @@ class Mineral:
             deformation_gradient, orientations, fractions = extract_vars(solver.y)
             orientations, fractions = apply_gbs(orientations, fractions, config)
             solver.y[9:] = np.hstack((orientations.flatten(), fractions))
-            return strain_rate_max, deformation_gradient
 
         # ===== Initialise and run the solver using the above callables =====
 
-        time_start, time_end, position = pathline
-        if callable(velocity_gradient):
-            if not callable(position):
-                raise ValueError(
-                    "unable to evaluate velocity gradient callable."
-                    + " You must provide a position callable in `pathline`"
-                    + " to use a velocity gradient callable."
-                )
-            _position_start = position(time_start)
-            _velocity_gradient = velocity_gradient(np.atleast_2d(_position_start))[0]
-        else:
-            _velocity_gradient = velocity_gradient
-            _position_start = position
+        time_start, time_end, get_position = pathline
+        if not callable(get_velocity_gradient):
+            raise ValueError(
+                "unable to evaluate velocity gradient callable."
+                + " You must provide a callable with signature f(x,t)"
+                + " that returns a 3x3 matrix."
+            )
+        if not callable(get_position):
+            raise ValueError(
+                "unable to evaluate position callable."
+                + " You must provide a callable with signature f(t)"
+                + " that returns a 3-component array."
+            )
 
         if self.phase == MineralPhase.olivine:
             volume_fraction = config["olivine_fraction"]
@@ -380,9 +375,6 @@ class Mineral:
             volume_fraction = config["enstatite_fraction"]
         else:
             assert False  # Should never happen.
-
-        strain_rate = (_velocity_gradient + _velocity_gradient.transpose()) / 2
-        strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
 
         y_start = np.hstack(
             (
@@ -392,9 +384,7 @@ class Mineral:
             )
         )
         solver = LSODA(
-            lambda t, y: eval_rhs(
-                t, y, _velocity_gradient, strain_rate, strain_rate_max
-            ),
+            eval_rhs,
             time_start,
             y_start,
             time_end,
@@ -402,17 +392,9 @@ class Mineral:
             rtol=kwargs.pop("rtol", 1e-6),
             **kwargs,
         )
-        perform_step(solver, _velocity_gradient, _position_start, time_start)
-
+        perform_step(solver)
         while solver.status == "running":
-            if callable(velocity_gradient):
-                _position = position(solver.t)
-                _velocity_gradient = velocity_gradient(np.atleast_2d(_position))[0]
-            else:
-                _velocity_gradient = velocity_gradient
-                _position = position
-
-            perform_step(solver, _velocity_gradient, _position, solver.t)
+            perform_step(solver)
 
         # Extract final values for this simulation step, append to storage.
         deformation_gradient, orientations, fractions = extract_vars(solver.y.squeeze())
