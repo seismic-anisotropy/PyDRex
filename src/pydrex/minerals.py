@@ -284,6 +284,7 @@ class Mineral:
 
         def eval_rhs(t, y):
             """Evaluate right hand side of the D-Rex PDE."""
+            # assert not np.any(np.isnan(y)), y[np.isnan(y)].shape
             position = get_position(t)
             velocity_gradient = get_velocity_gradient(position)
             _log.debug(
@@ -390,6 +391,8 @@ class Mineral:
             time_end,
             atol=kwargs.pop("atol", np.abs(y_start * 1e-6) + 1e-12),
             rtol=kwargs.pop("rtol", 1e-6),
+            first_step=kwargs.pop("first_step", np.abs(time_end - time_start) * 1e-1),
+            # max_step=kwargs.pop("max_step", np.abs(time_end - time_start)),
             **kwargs,
         )
         perform_step(solver)
