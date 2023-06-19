@@ -103,4 +103,5 @@ def rotate(tensor, rotation):
 
 def __run_doctests():
     import doctest
+
     return doctest.testmod()
