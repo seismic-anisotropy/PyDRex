@@ -121,16 +121,14 @@ class TestOlivineA:
         # Callables used to prescribe the macroscopic fields.
         @nb.njit
         def _get_velocity(point):
-            x, _, z = point[0]  # Expects a 2D array for the coords.
-            # Return with an extra dimension of shape 1, like scipy RBF.
-            return np.atleast_2d(get_velocity(x, z, plate_velocity))
+            x, _, z = np.asarray(point)
+            return get_velocity(x, z, plate_velocity)
 
         @nb.njit
         def _get_velocity_gradient(point):
-            x, _, z = point[0]  # Expects a 2D array for the coords.
+            x, _, z = np.asarray(point)
             # Return with an extra dimension of shape 1, like scipy RBF.
-            velocity_gradient = get_velocity_gradient(x, z, plate_velocity)
-            return np.reshape(velocity_gradient, (1, *velocity_gradient.shape))
+            return get_velocity_gradient(x, z, plate_velocity)
 
         with optional_logging:
             _begin = time.perf_counter()
