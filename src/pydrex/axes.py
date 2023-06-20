@@ -64,7 +64,7 @@ class PoleFigureAxes(mplax.Axes):
         ref_axes="xz",
         hkl=[1, 0, 0],
         density_kwargs=None,
-        **kwargs
+        **kwargs,
     ):
         """Plot pole figure of crystallographic texture.
 

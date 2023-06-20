@@ -1,15 +1,61 @@
-# Boilerplate for modern (PEP517, PEP518) build systems.
-# The setup.cfg metadata may eventually migrate over here, see:
-# https://github.com/pypa/setuptools/issues/1688
-# https://www.python.org/dev/peps/pep-0621/
-# https://snarky.ca/what-the-heck-is-pyproject-toml/
+# Use modern (PEP621, PEP660) setuptools build system.
+# PEP 660 editable installs: <https://github.com/pypa/setuptools/blob/main/CHANGES.rst#v6400>.
+# Python 3.11 support: <https://github.com/pypa/setuptools_scm/blob/main/CHANGELOG.rst#v710>.
 [build-system]
-requires = ["setuptools >= 42", "wheel", "setuptools_scm[toml]>=3.4"]
+requires = ["setuptools >= 64", "setuptools_scm[toml]>=7.1"]
 build-backend = "setuptools.build_meta"
 
 # Automatically use the version number from vcs (e.g. git) tags,
 # <https://github.com/pypa/setuptools_scm>.
 [tool.setuptools_scm]
+
+# Docs: <https://packaging.python.org/en/latest/specifications/declaring-project-metadata/>.
+# Example: <https://packaging.python.org/en/latest/specifications/declaring-project-metadata/#example>.
+[project]
+name = "pydrex"
+dynamic = ["version"]  # Managed by setuptools_scm.
+description = "Dynamic CPO calculations for olivine-enstatite polycrystal aggregates"
+readme = "README.md"
+requires-python = ">=3.11"  # We use tomllib: <https://docs.python.org/3/library/tomllib.html>.
+license = {file = "LICENSE"}
+authors = [
+    {name = "Thomas Duvernay", email = "td75013@hotmail.fr"},
+    {name = "Leon Bilton", email = "adigitoleo@dissimulo.com"},
+    {name = "Chris Mathews"},
+]
+keywords = ["CPO", "LPO", "olivine", "deformation", "anisotropy", "crystallography"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Development Status :: 2 - Pre-Alpha",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+]
+
+dependencies = [
+    "numpy >= 1.8",  # <https://numpy.org/doc/stable/reference/generated/numpy.linalg.eigvalsh.html>
+    "numba >= 0.5",  # <https://numba.pydata.org/numba-doc/latest/release-notes.html#version-0-50-0-jun-10-2020>
+    "scipy >= 1.2",  # <https://github.com/scipy/scipy/pull/9176>
+    "python-frontmatter",  # For YAML headers of plaintext datafiles.
+    "vtk",  # TODO: Remove in favour of meshio when interpolators are fixed.
+    "meshio",  # For reading VTK and other meshes.
+]
+
+[project.optional-dependencies]
+test = ["pytest", "matplotlib"]
+doc = ["pdoc"]
+dev = ["pytest", "matplotlib", "pdoc", "flake8", "black", "h5py", "isort", "ipython"]
+
+[project.urls]
+repository = "https://github.com/Patol75/PyDRex/"
+documentation = "https://patol75.github.io/PyDRex/"
+
+[project.scripts]
+pydrex = "pydrex.run:main"
+
+# Use src/<package> layout to keep things clean.
+[tool.setuptools.packages.find]
+where = ["src"]
 
 # Some global pytest configuration settings, avoids having an extra pytest.ini file.
 [tool.pytest.ini_options]

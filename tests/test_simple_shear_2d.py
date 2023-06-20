@@ -23,6 +23,9 @@ from pydrex import visualisation as _vis
 class TestSinglePolycrystalOlivineA:
     """Tests for a single A-type olivine polycrystal in 2D simple shear."""
 
+    def get_position(self, t):
+        return np.zeros(3)
+
     def test_shearYZ_initQ1(
         self,
         params_Kaminski2001_fig5_solid,  # GBM = 0
@@ -48,10 +51,13 @@ class TestSinglePolycrystalOlivineA:
 
         """
         strain_rate_scale = 2e-5
-        velocity_gradient = np.zeros((3, 3))
-        velocity_gradient[1, 2] = strain_rate_scale
         timescale = 1 / (strain_rate_scale / 2)
         n_grains = 1000
+
+        def get_velocity_gradient(x):
+            Δv = np.zeros((3, 3))
+            Δv[1, 2] = strain_rate_scale
+            return Δv
 
         # Initial orientations with a-axis in first quadrant of the YZ plane,
         # and c-axis along the +X direction (important!)
@@ -105,8 +111,8 @@ class TestSinglePolycrystalOlivineA:
                 deformation_gradient = mineral.update_orientations(
                     params,
                     deformation_gradient,
-                    velocity_gradient,
-                    pathline=(time, time + timestep * timescale, np.zeros(2)),
+                    get_velocity_gradient,
+                    pathline=(time, time + timestep * timescale, self.get_position),
                 )
                 time += timestep * timescale
 
@@ -206,10 +212,13 @@ class TestSinglePolycrystalOlivineA:
 
         """
         strain_rate_scale = 2e-5
-        velocity_gradient = np.zeros((3, 3))
-        velocity_gradient[0, 2] = strain_rate_scale
         timescale = 1 / (strain_rate_scale / 2)
         n_grains = 1000
+
+        def get_velocity_gradient(x):
+            Δv = np.zeros((3, 3))
+            Δv[0, 2] = strain_rate_scale
+            return Δv
 
         # Initial orientations with a-axis in first quadrant of the XZ plane,
         # and c-axis along the -Y direction (important!)
@@ -268,8 +277,8 @@ class TestSinglePolycrystalOlivineA:
                     deformation_gradient = mineral.update_orientations(
                         params,
                         deformation_gradient,
-                        velocity_gradient,
-                        pathline=(time, time + timestep * timescale, np.zeros(2)),
+                        get_velocity_gradient,
+                        pathline=(time, time + timestep * timescale, self.get_position),
                         # atol=1e-99,
                     )
                     time += timestep * timescale

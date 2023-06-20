@@ -12,13 +12,27 @@ PERMUTATION_SYMBOL = np.array(
 
 
 def upper_tri_to_symmetric(arr):
-    """Create symmetric array using upper triangle of input array."""
+    """Create symmetric array using upper triangle of input array.
+
+    >>> import numpy as np
+    >>> upper_tri_to_symmetric(np.array([
+    >>>         [ 1.,  2.,  3.,  4.],
+    >>>         [ 0.,  5.,  6.,  7.],
+    >>>         [ 0.,  0.,  8.,  9.],
+    >>>         [ 9.,  0.,  0., 10.]
+    >>> ]))
+    array([[ 1.,  2.,  3.,  4.],
+           [ 2.,  5.,  6.,  7.],
+           [ 3.,  6.,  8.,  9.],
+           [ 4.,  7.,  9., 10.]])
+
+    """
     # <https://stackoverflow.com/questions/58718365/fast-way-to-convert-upper-triangular-matrix-into-symmetric-matrix>
     upper_tri = np.triu(arr)
     return np.where(upper_tri, upper_tri, upper_tri.transpose())
 
 
-def Voigt_to_elastic_tensor(matrix):
+def voigt_to_elastic_tensor(matrix):
     """Create 4-th order elastic tensor from an equivalent Voigt matrix."""
     tensor = np.empty((3, 3, 3, 3))
     for p in range(3):
@@ -33,7 +47,7 @@ def Voigt_to_elastic_tensor(matrix):
     return tensor
 
 
-def elastic_tensor_to_Voigt(tensor):
+def elastic_tensor_to_voigt(tensor):
     """Create a 6x6 Voigt matrix from an equivalent 4-th order elastic tensor."""
     matrix = np.zeros((6, 6))
     matrix_indices = np.zeros((6, 6))
@@ -51,7 +65,7 @@ def elastic_tensor_to_Voigt(tensor):
     return (matrix + matrix.transpose()) / 2
 
 
-def Voigt_matrix_to_vector(matrix):
+def voigt_matrix_to_vector(matrix):
     """Create the 21-component Voigt vector equivalent to the 6x6 Voigt matrix."""
     vector = np.zeros(21)
     for i in range(3):
@@ -85,3 +99,9 @@ def rotate(tensor, rotation):
                                         * tensor[a, b, c, d]
                                     )
     return rotated_tensor
+
+
+def __run_doctests():
+    import doctest
+
+    return doctest.testmod()
