@@ -74,9 +74,9 @@ LOGGER.addHandler(LOGGER_CONSOLE)
 
 
 @cl.contextmanager
-def logfile_enable(path, level=logging.DEBUG):
+def logfile_enable(path, level=logging.DEBUG, mode="w"):
     """Enable logging to a file at `path` with given `level`."""
-    logger_file = logging.FileHandler(_io.resolve_path(path), mode="w")
+    logger_file = logging.FileHandler(_io.resolve_path(path), mode=mode)
     logger_file.setFormatter(
         logging.Formatter(
             "%(levelname)s [%(asctime)s] %(name)s: %(message)s",
