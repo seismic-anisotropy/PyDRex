@@ -1,8 +1,8 @@
 """> PyDRex: Tests for VTK readers and helpers."""
 import numpy as np
 
-from pydrex import vtk_helpers as _vtk
 from pydrex import io as _io
+from pydrex import vtk_helpers as _vtk
 
 
 def test_vtk_2d_array_shapes():

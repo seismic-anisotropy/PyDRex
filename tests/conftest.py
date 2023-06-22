@@ -4,8 +4,8 @@ import pytest
 from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
 from numpy import random as rn
 
-from pydrex import mock as _mock
 from pydrex import logger as _log
+from pydrex import mock as _mock
 
 matplotlib.use("Agg")  # Stop matplotlib from looking for $DISPLAY in env.
 _log.quiet_aliens()  # Stop imported modules from spamming the logs.
