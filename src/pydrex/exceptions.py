@@ -40,5 +40,4 @@ class SCSVError(Error):
     """
 
     def __init__(self, message):  # pylint: disable=super-init-not-called
-        # TODO: Add line number?
         self.message = message

@@ -23,7 +23,8 @@ import frontmatter as fm
 import meshio
 import numpy as np
 
-import pydrex.exceptions as _err
+from pydrex import exceptions as _err
+from pydrex import logger as _log
 
 SCSV_TYPEMAP = {
     "string": str,
@@ -48,7 +49,10 @@ def read_scsv(file):
         metadata, content = fm.parse(fileref.read())
         schema = metadata["schema"]
         if not _validate_scsv_schema(schema):
-            raise _err.SCSVError(f"unable to parse SCSV schema from '{file}'")
+            raise _err.SCSVError(
+                f"unable to parse SCSV schema from '{file}'."
+                + " Check logging output for details."
+            )
         reader = csv.reader(
             content.splitlines(), delimiter=schema["delimiter"], skipinitialspace=True
         )
@@ -259,16 +263,28 @@ def _validate_scsv_schema(schema):
         and schema["delimiter"] not in schema["missing"]
     )
     if not format_ok:
+        _log.error(
+            "invalid format for SCSV schema: %s"
+            + "\nMust contain: 'delimiter', 'missing', 'fields'"
+            + "\nMust contain at least one field."
+            + "\nMust contain compatible 'missing' and 'delimiter' values.",
+            schema,
+        )
         return False
     for field in schema["fields"]:
         if not field["name"].isidentifier():
+            _log.error(
+                "SCSV field name '%s' is not a valid Python identifier", field["name"]
+            )
             return False
         if not field.get("type", _SCSV_DEFAULT_TYPE) in SCSV_TYPEMAP.keys():
+            _log.error("unsupported SCSV field type: '%s'", field["type"])
             return False
         if (
             field.get("type", _SCSV_DEFAULT_TYPE) not in (_SCSV_DEFAULT_TYPE, "boolean")
             and "fill" not in field
         ):
+            _log.error("SCSV field of type '%s' requires a fill value", field["type"])
             return False
     return True
 
