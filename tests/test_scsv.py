@@ -67,9 +67,9 @@ def test_validate_schema():
         _io.save_scsv(temp.name, schema_long_delimiter, [[0.1]])
 
 
-def test_read_specfile(data_specs):
+def test_read_specfile():
     """Test SCSV spec file parsing."""
-    data = _io.read_scsv(data_specs / "spec.scsv")
+    data = _io.read_scsv(_io.data("specs") / "spec.scsv")
     assert data._fields == (
         "first_column",
         "second_column",
@@ -159,8 +159,8 @@ def test_save_specfile(outdir):
     nt.assert_equal(raw_read, raw_read_alt)
 
 
-def test_read_Kaminski2002(scsvfiles_thirdparty):
-    data = _io.read_scsv(scsvfiles_thirdparty / "Kaminski2002_ISAtime.scsv")
+def test_read_Kaminski2002():
+    data = _io.read_scsv(_io.data("thirdparty") / "Kaminski2002_ISAtime.scsv")
     assert data._fields == ("time_ISA", "vorticity")
     # fmt: off
     nt.assert_equal(
@@ -180,8 +180,8 @@ def test_read_Kaminski2002(scsvfiles_thirdparty):
     # fmt: on
 
 
-def test_read_Kaminski2004(scsvfiles_thirdparty):
-    data = _io.read_scsv(scsvfiles_thirdparty / "Kaminski2004_AaxisDynamicShear.scsv")
+def test_read_Kaminski2004():
+    data = _io.read_scsv(_io.data("thirdparty") / "Kaminski2004_AaxisDynamicShear.scsv")
     assert data._fields == ("time", "meanA_X0", "meanA_X02", "meanA_X04")
     # fmt: off
     nt.assert_equal(
@@ -207,8 +207,8 @@ def test_read_Kaminski2004(scsvfiles_thirdparty):
     # fmt: on
 
 
-def test_read_Skemer2016(scsvfiles_thirdparty):
-    data = _io.read_scsv(scsvfiles_thirdparty / "Skemer2016_ShearStrainAngles.scsv")
+def test_read_Skemer2016():
+    data = _io.read_scsv(_io.data("thirdparty") / "Skemer2016_ShearStrainAngles.scsv")
     assert data._fields == (
         "study",
         "sample_id",

@@ -53,6 +53,11 @@ documentation = "https://patol75.github.io/PyDRex/"
 [project.scripts]
 pydrex = "pydrex.run:main"
 
+# Make setuptools include datafiles in wheels/packages.
+# Data files must be inside the package directory.
+[tool.setuptools]
+include-package-data = true
+
 # Use src/<package> layout to keep things clean.
 [tool.setuptools.packages.find]
 where = ["src"]

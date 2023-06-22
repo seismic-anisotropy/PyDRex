@@ -82,7 +82,6 @@ class TestOlivineA:
         self,
         params_Kaminski2001_fig5_shortdash,
         rng,
-        stringify,
         outdir,
     ):
         """Test CPO evolution in prescribed 2D corner flow.
@@ -209,7 +208,7 @@ class TestOlivineA:
                 )
 
                 if outdir is not None:
-                    mineral.save(npzpath, postfix=stringify(z_exit))
+                    mineral.save(npzpath, postfix=_io.stringify(z_exit))
                     labels.append(rf"$z_{{f}}$ = {z_exit/1e3:.1f} km")
                     angles.append(misorient_angles)
                     indices.append(misorient_indices)
@@ -360,7 +359,7 @@ class TestOlivineA:
                 "missing": "-",
                 "fields": [
                     {
-                        "name": f"t_{stringify(e)}",
+                        "name": f"t_{_io.stringify(e)}",
                         "type": "float",
                         "fill": "NaN",
                         "unit": "seconds",
@@ -368,11 +367,11 @@ class TestOlivineA:
                     for e in z_ends
                 ]
                 + [
-                    {"name": f"x_{stringify(e)}", "type": "float", "fill": "NaN"}
+                    {"name": f"x_{_io.stringify(e)}", "type": "float", "fill": "NaN"}
                     for e in z_ends
                 ]
                 + [
-                    {"name": f"z_{stringify(e)}", "type": "float", "fill": "NaN"}
+                    {"name": f"z_{_io.stringify(e)}", "type": "float", "fill": "NaN"}
                     for e in z_ends
                 ],
             }

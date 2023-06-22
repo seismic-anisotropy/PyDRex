@@ -1,12 +1,10 @@
 """> Configuration and fixtures for PyDRex tests."""
-import pathlib as pl
-
 import matplotlib
 import pytest
 from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
 from numpy import random as rn
 
-from pydrex import io as _io
+from pydrex import mock as _mock
 from pydrex import logger as _log
 
 matplotlib.use("Agg")  # Stop matplotlib from looking for $DISPLAY in env.
@@ -67,107 +65,42 @@ def outdir(request):
 
 @pytest.fixture
 def params_Fraters2021():
-    return {
-        "stress_exponent": 1.5,
-        "deformation_exponent": 3.5,
-        "gbm_mobility": 125,
-        "gbs_threshold": 0.3,
-        "nucleation_efficiency": 5,
-        "minerals": ("olivine", "enstatite"),
-        "olivine_fraction": 0.7,
-        "enstatite_fraction": 0.3,
-    }
+    return _mock.PARAMS_FRATERS2021
 
 
 @pytest.fixture
 def params_Kaminski2001_fig5_solid():
-    return {
-        "stress_exponent": 1.5,
-        "deformation_exponent": 3.5,
-        "gbm_mobility": 0,
-        "gbs_threshold": 0,
-        "nucleation_efficiency": 5,
-        "minerals": ("olivine",),
-        "olivine_fraction": 1,
-    }
+    return _mock.PARAMS_KAMINSKI2001_FIG5_SOLID
 
 
 @pytest.fixture
 def params_Kaminski2001_fig5_shortdash():
-    return {
-        "stress_exponent": 1.5,
-        "deformation_exponent": 3.5,
-        "gbm_mobility": 50,
-        "gbs_threshold": 0,
-        "nucleation_efficiency": 5,
-        "minerals": ("olivine",),
-        "olivine_fraction": 1,
-    }
+    return _mock.PARAMS_KAMINSKI2001_FIG5_SHORTDASH
 
 
 @pytest.fixture
 def params_Kaminski2001_fig5_longdash():
-    return {
-        "stress_exponent": 1.5,
-        "deformation_exponent": 3.5,
-        "gbm_mobility": 200,
-        "gbs_threshold": 0,
-        "nucleation_efficiency": 5,
-        "minerals": ("olivine",),
-        "olivine_fraction": 1,
-    }
+    return _mock.PARAMS_KAMINSKI2001_FIG5_LONGDASH
 
 
 @pytest.fixture
 def params_Kaminski2004_fig4_triangles():
-    return {
-        "stress_exponent": 1.5,
-        "deformation_exponent": 3.5,
-        "gbm_mobility": 125,
-        "gbs_threshold": 0.4,
-        "nucleation_efficiency": 5,
-        "minerals": ("olivine",),
-        "olivine_fraction": 1.0,
-    }
+    return _mock.PARAMS_KAMINSKI2004_FIG4_TRIANGLES
 
 
 @pytest.fixture
 def params_Kaminski2004_fig4_squares():
-    return {
-        "stress_exponent": 1.5,
-        "deformation_exponent": 3.5,
-        "gbm_mobility": 125,
-        "gbs_threshold": 0.2,
-        "nucleation_efficiency": 5,
-        "minerals": ("olivine",),
-        "olivine_fraction": 1.0,
-    }
+    return _mock.PARAMS_KAMINSKI2004_FIG4_SQUARES
 
 
 @pytest.fixture
 def params_Kaminski2004_fig4_circles():
-    return {
-        "stress_exponent": 1.5,
-        "deformation_exponent": 3.5,
-        "gbm_mobility": 125,
-        "gbs_threshold": 0,
-        "nucleation_efficiency": 5,
-        "minerals": ("olivine",),
-        "olivine_fraction": 1.0,
-    }
+    return _mock.PARAMS_KAMINSKI2004_FIG4_CIRCLES
 
 
 @pytest.fixture
 def params_Hedjazian2017():
-    return {
-        "stress_exponent": 1.5,
-        "deformation_exponent": 3.5,
-        "gbm_mobility": 10,
-        "gbs_threshold": 0.2,  # TODO: Check again, Chris used 0.3?
-        "nucleation_efficiency": 5,
-        "olivine_fraction": 0.7,
-        "enstatite_fraction": 0.3,
-    }
+    return _mock.PARAMS_HEDJAZIAN2017
 
 
 @pytest.fixture(params=[[1, 0, 0], [0, 1, 0], [0, 0, 1]])
@@ -178,34 +111,6 @@ def hkl(request):
 @pytest.fixture(params=["xz", "yz", "xy"])
 def ref_axes(request):
     return request.param
-
-
-@pytest.fixture
-def stringify():
-    """Return a function that produces safe strings for use in filenames, etc."""
-    return lambda x: "".join(
-        filter(lambda s: str.isidentifier(s) or str.isdecimal(s), str(x))
-    )
-
-
-@pytest.fixture
-def steady_flow_models():
-    return _io.resolve_path(pl.Path(__file__).parent / ".." / "data" / "steadyflow")
-
-
-@pytest.fixture
-def example_outputs():
-    return _io.resolve_path(pl.Path(__file__).parent / ".." / "data" / "outputs")
-
-
-@pytest.fixture
-def scsvfiles_thirdparty():
-    return _io.resolve_path(pl.Path(__file__).parent / ".." / "data" / "thirdparty")
-
-
-@pytest.fixture
-def data_specs():
-    return _io.resolve_path(pl.Path(__file__).parent / ".." / "data" / "specs")
 
 
 @pytest.fixture
