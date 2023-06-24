@@ -162,9 +162,9 @@
 </span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>        <span class="n">_io</span><span class="o">.</span><span class="n">save_scsv</span><span class="p">(</span><span class="n">temp</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">schema_long_delimiter</span><span class="p">,</span> <span class="p">[[</span><span class="mf">0.1</span><span class="p">]])</span>
 </span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>
 </span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>
-</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a><span class="k">def</span> <span class="nf">test_read_specfile</span><span class="p">(</span><span class="n">data_specs</span><span class="p">):</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a><span class="k">def</span> <span class="nf">test_read_specfile</span><span class="p">():</span>
 </span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test SCSV spec file parsing.&quot;&quot;&quot;</span>
-</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">data_specs</span> <span class="o">/</span> <span class="s2">&quot;spec.scsv&quot;</span><span class="p">)</span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;specs&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;spec.scsv&quot;</span><span class="p">)</span>
 </span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>    <span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">_fields</span> <span class="o">==</span> <span class="p">(</span>
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>        <span class="s2">&quot;first_column&quot;</span><span class="p">,</span>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>        <span class="s2">&quot;second_column&quot;</span><span class="p">,</span>
@@ -254,8 +254,8 @@
 </span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a>    <span class="n">nt</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span><span class="n">raw_read</span><span class="p">,</span> <span class="n">raw_read_alt</span><span class="p">)</span>
 </span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a>
 </span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a>
-</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a><span class="k">def</span> <span class="nf">test_read_Kaminski2002</span><span class="p">(</span><span class="n">scsvfiles_thirdparty</span><span class="p">):</span>
-</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">scsvfiles_thirdparty</span> <span class="o">/</span> <span class="s2">&quot;Kaminski2002_ISAtime.scsv&quot;</span><span class="p">)</span>
+</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a><span class="k">def</span> <span class="nf">test_read_Kaminski2002</span><span class="p">():</span>
+</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;thirdparty&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Kaminski2002_ISAtime.scsv&quot;</span><span class="p">)</span>
 </span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a>    <span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">_fields</span> <span class="o">==</span> <span class="p">(</span><span class="s2">&quot;time_ISA&quot;</span><span class="p">,</span> <span class="s2">&quot;vorticity&quot;</span><span class="p">)</span>
 </span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a>    <span class="c1"># fmt: off</span>
 </span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a>    <span class="n">nt</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span>
@@ -275,8 +275,8 @@
 </span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a>    <span class="c1"># fmt: on</span>
 </span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a>
 </span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a>
-</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a><span class="k">def</span> <span class="nf">test_read_Kaminski2004</span><span class="p">(</span><span class="n">scsvfiles_thirdparty</span><span class="p">):</span>
-</span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">scsvfiles_thirdparty</span> <span class="o">/</span> <span class="s2">&quot;Kaminski2004_AaxisDynamicShear.scsv&quot;</span><span class="p">)</span>
+</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a><span class="k">def</span> <span class="nf">test_read_Kaminski2004</span><span class="p">():</span>
+</span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;thirdparty&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Kaminski2004_AaxisDynamicShear.scsv&quot;</span><span class="p">)</span>
 </span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a>    <span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">_fields</span> <span class="o">==</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;meanA_X0&quot;</span><span class="p">,</span> <span class="s2">&quot;meanA_X02&quot;</span><span class="p">,</span> <span class="s2">&quot;meanA_X04&quot;</span><span class="p">)</span>
 </span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a>    <span class="c1"># fmt: off</span>
 </span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a>    <span class="n">nt</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span>
@@ -302,8 +302,8 @@
 </span><span id="L-207"><a href="#L-207"><span class="linenos">207</span></a>    <span class="c1"># fmt: on</span>
 </span><span id="L-208"><a href="#L-208"><span class="linenos">208</span></a>
 </span><span id="L-209"><a href="#L-209"><span class="linenos">209</span></a>
-</span><span id="L-210"><a href="#L-210"><span class="linenos">210</span></a><span class="k">def</span> <span class="nf">test_read_Skemer2016</span><span class="p">(</span><span class="n">scsvfiles_thirdparty</span><span class="p">):</span>
-</span><span id="L-211"><a href="#L-211"><span class="linenos">211</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">scsvfiles_thirdparty</span> <span class="o">/</span> <span class="s2">&quot;Skemer2016_ShearStrainAngles.scsv&quot;</span><span class="p">)</span>
+</span><span id="L-210"><a href="#L-210"><span class="linenos">210</span></a><span class="k">def</span> <span class="nf">test_read_Skemer2016</span><span class="p">():</span>
+</span><span id="L-211"><a href="#L-211"><span class="linenos">211</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;thirdparty&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Skemer2016_ShearStrainAngles.scsv&quot;</span><span class="p">)</span>
 </span><span id="L-212"><a href="#L-212"><span class="linenos">212</span></a>    <span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">_fields</span> <span class="o">==</span> <span class="p">(</span>
 </span><span id="L-213"><a href="#L-213"><span class="linenos">213</span></a>        <span class="s2">&quot;study&quot;</span><span class="p">,</span>
 </span><span id="L-214"><a href="#L-214"><span class="linenos">214</span></a>        <span class="s2">&quot;sample_id&quot;</span><span class="p">,</span>
@@ -495,15 +495,15 @@
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">test_read_specfile</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">data_specs</span></span><span class="return-annotation">):</span></span>
+        <span class="name">test_read_specfile</span><span class="signature pdoc-code condensed">(<span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="test_read_specfile-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#test_read_specfile"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="test_read_specfile-71"><a href="#test_read_specfile-71"><span class="linenos">71</span></a><span class="k">def</span> <span class="nf">test_read_specfile</span><span class="p">(</span><span class="n">data_specs</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="test_read_specfile-71"><a href="#test_read_specfile-71"><span class="linenos">71</span></a><span class="k">def</span> <span class="nf">test_read_specfile</span><span class="p">():</span>
 </span><span id="test_read_specfile-72"><a href="#test_read_specfile-72"><span class="linenos">72</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test SCSV spec file parsing.&quot;&quot;&quot;</span>
-</span><span id="test_read_specfile-73"><a href="#test_read_specfile-73"><span class="linenos">73</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">data_specs</span> <span class="o">/</span> <span class="s2">&quot;spec.scsv&quot;</span><span class="p">)</span>
+</span><span id="test_read_specfile-73"><a href="#test_read_specfile-73"><span class="linenos">73</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;specs&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;spec.scsv&quot;</span><span class="p">)</span>
 </span><span id="test_read_specfile-74"><a href="#test_read_specfile-74"><span class="linenos">74</span></a>    <span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">_fields</span> <span class="o">==</span> <span class="p">(</span>
 </span><span id="test_read_specfile-75"><a href="#test_read_specfile-75"><span class="linenos">75</span></a>        <span class="s2">&quot;first_column&quot;</span><span class="p">,</span>
 </span><span id="test_read_specfile-76"><a href="#test_read_specfile-76"><span class="linenos">76</span></a>        <span class="s2">&quot;second_column&quot;</span><span class="p">,</span>
@@ -621,14 +621,14 @@
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">test_read_Kaminski2002</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">scsvfiles_thirdparty</span></span><span class="return-annotation">):</span></span>
+        <span class="name">test_read_Kaminski2002</span><span class="signature pdoc-code condensed">(<span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="test_read_Kaminski2002-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#test_read_Kaminski2002"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="test_read_Kaminski2002-163"><a href="#test_read_Kaminski2002-163"><span class="linenos">163</span></a><span class="k">def</span> <span class="nf">test_read_Kaminski2002</span><span class="p">(</span><span class="n">scsvfiles_thirdparty</span><span class="p">):</span>
-</span><span id="test_read_Kaminski2002-164"><a href="#test_read_Kaminski2002-164"><span class="linenos">164</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">scsvfiles_thirdparty</span> <span class="o">/</span> <span class="s2">&quot;Kaminski2002_ISAtime.scsv&quot;</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="test_read_Kaminski2002-163"><a href="#test_read_Kaminski2002-163"><span class="linenos">163</span></a><span class="k">def</span> <span class="nf">test_read_Kaminski2002</span><span class="p">():</span>
+</span><span id="test_read_Kaminski2002-164"><a href="#test_read_Kaminski2002-164"><span class="linenos">164</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;thirdparty&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Kaminski2002_ISAtime.scsv&quot;</span><span class="p">)</span>
 </span><span id="test_read_Kaminski2002-165"><a href="#test_read_Kaminski2002-165"><span class="linenos">165</span></a>    <span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">_fields</span> <span class="o">==</span> <span class="p">(</span><span class="s2">&quot;time_ISA&quot;</span><span class="p">,</span> <span class="s2">&quot;vorticity&quot;</span><span class="p">)</span>
 </span><span id="test_read_Kaminski2002-166"><a href="#test_read_Kaminski2002-166"><span class="linenos">166</span></a>    <span class="c1"># fmt: off</span>
 </span><span id="test_read_Kaminski2002-167"><a href="#test_read_Kaminski2002-167"><span class="linenos">167</span></a>    <span class="n">nt</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span>
@@ -657,14 +657,14 @@
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">test_read_Kaminski2004</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">scsvfiles_thirdparty</span></span><span class="return-annotation">):</span></span>
+        <span class="name">test_read_Kaminski2004</span><span class="signature pdoc-code condensed">(<span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="test_read_Kaminski2004-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#test_read_Kaminski2004"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="test_read_Kaminski2004-184"><a href="#test_read_Kaminski2004-184"><span class="linenos">184</span></a><span class="k">def</span> <span class="nf">test_read_Kaminski2004</span><span class="p">(</span><span class="n">scsvfiles_thirdparty</span><span class="p">):</span>
-</span><span id="test_read_Kaminski2004-185"><a href="#test_read_Kaminski2004-185"><span class="linenos">185</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">scsvfiles_thirdparty</span> <span class="o">/</span> <span class="s2">&quot;Kaminski2004_AaxisDynamicShear.scsv&quot;</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="test_read_Kaminski2004-184"><a href="#test_read_Kaminski2004-184"><span class="linenos">184</span></a><span class="k">def</span> <span class="nf">test_read_Kaminski2004</span><span class="p">():</span>
+</span><span id="test_read_Kaminski2004-185"><a href="#test_read_Kaminski2004-185"><span class="linenos">185</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;thirdparty&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Kaminski2004_AaxisDynamicShear.scsv&quot;</span><span class="p">)</span>
 </span><span id="test_read_Kaminski2004-186"><a href="#test_read_Kaminski2004-186"><span class="linenos">186</span></a>    <span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">_fields</span> <span class="o">==</span> <span class="p">(</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="s2">&quot;meanA_X0&quot;</span><span class="p">,</span> <span class="s2">&quot;meanA_X02&quot;</span><span class="p">,</span> <span class="s2">&quot;meanA_X04&quot;</span><span class="p">)</span>
 </span><span id="test_read_Kaminski2004-187"><a href="#test_read_Kaminski2004-187"><span class="linenos">187</span></a>    <span class="c1"># fmt: off</span>
 </span><span id="test_read_Kaminski2004-188"><a href="#test_read_Kaminski2004-188"><span class="linenos">188</span></a>    <span class="n">nt</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span>
@@ -699,14 +699,14 @@
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">test_read_Skemer2016</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">scsvfiles_thirdparty</span></span><span class="return-annotation">):</span></span>
+        <span class="name">test_read_Skemer2016</span><span class="signature pdoc-code condensed">(<span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="test_read_Skemer2016-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#test_read_Skemer2016"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="test_read_Skemer2016-211"><a href="#test_read_Skemer2016-211"><span class="linenos">211</span></a><span class="k">def</span> <span class="nf">test_read_Skemer2016</span><span class="p">(</span><span class="n">scsvfiles_thirdparty</span><span class="p">):</span>
-</span><span id="test_read_Skemer2016-212"><a href="#test_read_Skemer2016-212"><span class="linenos">212</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">scsvfiles_thirdparty</span> <span class="o">/</span> <span class="s2">&quot;Skemer2016_ShearStrainAngles.scsv&quot;</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="test_read_Skemer2016-211"><a href="#test_read_Skemer2016-211"><span class="linenos">211</span></a><span class="k">def</span> <span class="nf">test_read_Skemer2016</span><span class="p">():</span>
+</span><span id="test_read_Skemer2016-212"><a href="#test_read_Skemer2016-212"><span class="linenos">212</span></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;thirdparty&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;Skemer2016_ShearStrainAngles.scsv&quot;</span><span class="p">)</span>
 </span><span id="test_read_Skemer2016-213"><a href="#test_read_Skemer2016-213"><span class="linenos">213</span></a>    <span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">_fields</span> <span class="o">==</span> <span class="p">(</span>
 </span><span id="test_read_Skemer2016-214"><a href="#test_read_Skemer2016-214"><span class="linenos">214</span></a>        <span class="s2">&quot;study&quot;</span><span class="p">,</span>
 </span><span id="test_read_Skemer2016-215"><a href="#test_read_Skemer2016-215"><span class="linenos">215</span></a>        <span class="s2">&quot;sample_id&quot;</span><span class="p">,</span>
