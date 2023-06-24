@@ -2,14 +2,20 @@
 import numpy as np
 
 from pydrex import geometry as _geo
+from pydrex import io as _io
 
 
-def test_poles_example(example_outputs, stringify, hkl, ref_axes):
+def test_poles_example(hkl, ref_axes):
     """Test poles (directions of crystallographic axes) of example data."""
     ref_data = np.load(
-        example_outputs / f"example_CPO_poles_{stringify(hkl)}{ref_axes}.npz"
+        _io.resolve_path(
+            _io.data("outputs")
+            / f"example_CPO_poles_{_io.stringify(hkl)}{ref_axes}.npz"
+        )
     )
-    resampled_data = np.load(example_outputs / "example_CPO_resampled.npz")
+    resampled_data = np.load(
+        _io.resolve_path(_io.data("outputs") / "example_CPO_resampled.npz")
+    )
     xvals, yvals, zvals = _geo.poles(
         resampled_data["orientations"],
         hkl=hkl,

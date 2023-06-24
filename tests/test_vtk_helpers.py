@@ -1,11 +1,12 @@
 """> PyDRex: Tests for VTK readers and helpers."""
 import numpy as np
 
+from pydrex import io as _io
 from pydrex import vtk_helpers as _vtk
 
 
-def test_vtk_2d_array_shapes(steady_flow_models):
-    for file in steady_flow_models.glob("*.vtu"):
+def test_vtk_2d_array_shapes():
+    for file in _io.resolve_path(_io.data("steadyflow")).glob("*.vtu"):
         vtk_output = _vtk.get_output(file)
         data = vtk_output.GetPointData()
         coords = _vtk.read_coord_array(vtk_output, skip_empty=True)

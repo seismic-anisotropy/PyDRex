@@ -18,6 +18,7 @@ import csv
 import functools as ft
 import os
 import pathlib
+from importlib.resources import files
 
 import frontmatter as fm
 import meshio
@@ -302,3 +303,13 @@ def _parse_scsv_cell(func, data, missingstr=None, fillval=None):
     elif func == bool:
         return _parse_scsv_bool(data)
     return func(data.strip())
+
+
+def stringify(s):
+    """Return a cleaned version of a string for use in filenames, etc."""
+    return "".join(filter(lambda c: str.isidentifier(c) or str.isdecimal(c), str(s)))
+
+
+def data(folder):
+    """Get resolved path to a pydrex data folder."""
+    return resolve_path(files("pydrex.data") / folder)
