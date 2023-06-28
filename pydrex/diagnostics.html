@@ -54,6 +54,9 @@
                     <a class="function" href="#bingham_average">bingham_average</a>
             </li>
             <li>
+                    <a class="function" href="#finite_strain">finite_strain</a>
+            </li>
+            <li>
                     <a class="function" href="#symmetry">symmetry</a>
             </li>
             <li>
@@ -85,7 +88,7 @@
 <a href="./../pydrex.html">pydrex</a><wbr>.diagnostics    </h1>
 
                         <div class="docstring"><blockquote>
-  <p>PyDRex: Methods to calculate texture diagnostics.</p>
+  <p>PyDRex: Methods to calculate texture and strain diagnostics.</p>
 </blockquote>
 
 <div class="pdoc-alert pdoc-alert-note">
@@ -110,7 +113,7 @@ grain axis and the j-th external axis (in the global Eulerian frame).</p>
 
                         <label class="view-source-button" for="mod-diagnostics-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sa">r</span><span class="sd">&quot;&quot;&quot;&gt; PyDRex: Methods to calculate texture diagnostics.</span>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sa">r</span><span class="sd">&quot;&quot;&quot;&gt; PyDRex: Methods to calculate texture and strain diagnostics.</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a>
 </span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="sd">.. note::</span>
 </span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="sd">    Calculations expect orientation matrices $a$ to represent passive</span>
@@ -168,140 +171,157 @@ grain axis and the j-th external axis (in the global Eulerian frame).</p>
 </span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>    <span class="k">return</span> <span class="n">mean_vector</span> <span class="o">/</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">mean_vector</span><span class="p">)</span>
 </span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>
 </span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>
-</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a><span class="k">def</span> <span class="nf">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">):</span>
-</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute texture symmetry eigenvalue diagnostics from olivine orientation matrices.</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a><span class="k">def</span> <span class="nf">finite_strain</span><span class="p">(</span><span class="n">deformation_gradient</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract measures of finite strain from the deformation gradient.</span>
 </span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>
-</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a><span class="sd">    Compute Point, Girdle and Random symmetry diagnostics</span>
-</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="sd">    for ternary texture classification.</span>
-</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="sd">    Returns the tuple (P, G, R) where</span>
-</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">    $$</span>
-</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="sd">    \begin{align\*}</span>
-</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="sd">    P &amp;= (λ_{1} - λ_{2}) / N \cr</span>
-</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="sd">    G &amp;= 2 (λ_{2} - λ_{3}) / N \cr</span>
-</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a><span class="sd">    R &amp;= 3 λ_{3} / N</span>
-</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a><span class="sd">    \end{align\*}</span>
-</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a><span class="sd">    $$</span>
-</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="sd">    with $N$ the sum of the eigenvalues $λ_{1} ≥ λ_{2} ≥ λ_{3}$</span>
-</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="sd">    of the scatter (inertia) matrix.</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a><span class="sd">    Extracts the vector defining the axis of maximum extension (longest semiaxis of the</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="sd">    finite strain ellipsoid) and the largest principal strain value from the 3x3</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="sd">    deformation gradient tensor.</span>
+</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>    <span class="c1"># Get eigenvalues and eigenvectors of the left stretch (Cauchy-Green) tensor.</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>    <span class="n">B_λ</span><span class="p">,</span> <span class="n">B_v</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>        <span class="n">deformation_gradient</span> <span class="o">@</span> <span class="n">deformation_gradient</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>        <span class="n">driver</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;driver&quot;</span><span class="p">,</span> <span class="s2">&quot;ev&quot;</span><span class="p">),</span>
+</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>    <span class="p">)</span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>    <span class="c1"># Stretch ratio is sqrt(λ) - 1, the (-1) is so that undeformed strain is 0 not 1.</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">B_λ</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">B_v</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>
-</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="sd">    See e.g. [Vollmer 1990](https://doi.org/10.1130/0016-7606(1990)102%3C0786:AAOEMT%3E2.3.CO;2).</span>
-</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>
-</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>    <span class="k">match</span> <span class="n">axis</span><span class="p">:</span>
-</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>        <span class="k">case</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span>
-</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>        <span class="k">case</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span>
-</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">1</span>
-</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>        <span class="k">case</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span>
-</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">2</span>
-</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;axis must be &#39;a&#39;, &#39;b&#39;, or &#39;c&#39;, not </span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>
-</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>    <span class="n">scatter</span> <span class="o">=</span> <span class="n">_st</span><span class="o">.</span><span class="n">_scatter_matrix</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
-</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>    <span class="c1"># SciPy uses lower triangular entries by default, no need for all components.</span>
-</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>    <span class="n">eigvals_descending</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">scatter</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>    <span class="n">sum_eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">eigvals_descending</span><span class="p">)</span>
-</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a>    <span class="k">return</span> <span class="p">(</span>
-</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>        <span class="p">(</span><span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
-</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>        <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
-</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>        <span class="mi">3</span> <span class="o">*</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
-</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>    <span class="p">)</span>
-</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>
-</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>
-</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="k">def</span> <span class="nf">misorientation_index</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)):</span>
-</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate M-index for polycrystal orientations.</span>
-</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>
-</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a><span class="sd">    The `bins` argument is passed to `numpy.histogram`.</span>
-</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a><span class="sd">    If left as `None`, 1° bins will be used as recommended by the reference paper.</span>
-</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a><span class="sd">    The symmetry system can be specified using the `system` argument.</span>
-</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a><span class="sd">    The default system is orthorhombic.</span>
-</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>
-</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="sd">    See [Skemer et al. 2005](https://doi.org/10.1016/j.tecto.2005.08.023).</span>
-</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>
-</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>    <span class="c1"># Compute and bin misorientation angles from orientation data.</span>
-</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>    <span class="n">combinations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">sp</span><span class="o">.</span><span class="n">comb</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">orientations</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
-</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
-</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>        <span class="n">it</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">Rotation</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span><span class="o">.</span><span class="n">as_quat</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span>
-</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>    <span class="p">):</span>
-</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>        <span class="n">combinations</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>    <span class="n">_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Largest array size: </span><span class="si">%s</span><span class="s2"> GB&quot;</span><span class="p">,</span> <span class="n">combinations</span><span class="o">.</span><span class="n">nbytes</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">)</span>
-</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>
-</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>    <span class="n">misorientations_data</span> <span class="o">=</span> <span class="n">misorientation_angles</span><span class="p">(</span><span class="n">combinations</span><span class="p">)</span>
-</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>    <span class="n">θmax</span> <span class="o">=</span> <span class="n">_st</span><span class="o">.</span><span class="n">_max_misorientation</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>    <span class="n">misorientations_count</span><span class="p">,</span> <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span>
-</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a>        <span class="n">misorientations_data</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">θmax</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">θmax</span><span class="p">),</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span>
-</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>    <span class="p">)</span>
+</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>
+</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="k">def</span> <span class="nf">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">):</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute texture symmetry eigenvalue diagnostics from olivine orientation matrices.</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>
+</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a><span class="sd">    Compute Point, Girdle and Random symmetry diagnostics</span>
+</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a><span class="sd">    for ternary texture classification.</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="sd">    Returns the tuple (P, G, R) where</span>
+</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="sd">    $$</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a><span class="sd">    \begin{align\*}</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a><span class="sd">    P &amp;= (λ_{1} - λ_{2}) / N \cr</span>
+</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">    G &amp;= 2 (λ_{2} - λ_{3}) / N \cr</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a><span class="sd">    R &amp;= 3 λ_{3} / N</span>
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">    \end{align\*}</span>
+</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="sd">    $$</span>
+</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a><span class="sd">    with $N$ the sum of the eigenvalues $λ_{1} ≥ λ_{2} ≥ λ_{3}$</span>
+</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a><span class="sd">    of the scatter (inertia) matrix.</span>
+</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">    See e.g. [Vollmer 1990](https://doi.org/10.1130/0016-7606(1990)102%3C0786:AAOEMT%3E2.3.CO;2).</span>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>
+</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>    <span class="k">match</span> <span class="n">axis</span><span class="p">:</span>
+</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>        <span class="k">case</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>        <span class="k">case</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span>
+</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>        <span class="k">case</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">2</span>
+</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;axis must be &#39;a&#39;, &#39;b&#39;, or &#39;c&#39;, not </span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>
+</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>    <span class="n">scatter</span> <span class="o">=</span> <span class="n">_st</span><span class="o">.</span><span class="n">_scatter_matrix</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
+</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>    <span class="c1"># SciPy uses lower triangular entries by default, no need for all components.</span>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>    <span class="n">eigvals_descending</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">scatter</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>    <span class="n">sum_eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">eigvals_descending</span><span class="p">)</span>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>    <span class="k">return</span> <span class="p">(</span>
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>        <span class="p">(</span><span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>        <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>        <span class="mi">3</span> <span class="o">*</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
+</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>    <span class="p">)</span>
+</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a><span class="k">def</span> <span class="nf">misorientation_index</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)):</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate M-index for polycrystal orientations.</span>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="sd">    The `bins` argument is passed to `numpy.histogram`.</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="sd">    If left as `None`, 1° bins will be used as recommended by the reference paper.</span>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="sd">    The symmetry system can be specified using the `system` argument.</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="sd">    The default system is orthorhombic.</span>
 </span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>
-</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>    <span class="c1"># Compute counts of theoretical misorientation for an isotropic aggregate,</span>
-</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>    <span class="c1"># using the same bins (Skemer 2005 recommend 1° bins).</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>    <span class="n">misorientations_theory</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>        <span class="p">[</span>
-</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>            <span class="n">_st</span><span class="o">.</span><span class="n">misorientations_random</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
-</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">misorientations_count</span><span class="p">))</span>
-</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>        <span class="p">]</span>
-</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>    <span class="p">)</span>
-</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>
-</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>    <span class="c1"># Equation 2 in Skemer 2005.</span>
-</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>    <span class="k">return</span> <span class="p">(</span><span class="n">θmax</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">misorientations_count</span><span class="p">)))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">misorientations_theory</span> <span class="o">-</span> <span class="n">misorientations_count</span><span class="p">)</span>
-</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>    <span class="p">)</span>
-</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>
-</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>
-</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="k">def</span> <span class="nf">coaxial_index</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis1</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">axis2</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">):</span>
-</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate coaxial “BA” index for a combination of two crystal axes.</span>
-</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>
-</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a><span class="sd">    The BA index of [Mainprice et al. 2015](https://doi.org/10.1144/SP409.8)</span>
-</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a><span class="sd">    is derived from the eigenvalue `symmetry` diagnostics and measures point vs girdle</span>
-</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a><span class="sd">    symmetry in the aggregate. $BA \in [0, 1]$ where $BA = 0$ corresponds to a perfect</span>
-</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a><span class="sd">    axial girdle texture and $BA = 1$ represents a point symmetry texture assuming that</span>
-</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a><span class="sd">    the random component $R$ is negligible. May be less susceptible to random</span>
-</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a><span class="sd">    fluctuations compared to the raw eigenvalue diagnostics.</span>
-</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a>
-</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a>    <span class="n">P1</span><span class="p">,</span> <span class="n">G1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis1</span><span class="p">)</span>
-</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a>    <span class="n">P2</span><span class="p">,</span> <span class="n">G2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis2</span><span class="p">)</span>
-</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">P1</span> <span class="o">/</span> <span class="p">(</span><span class="n">G1</span> <span class="o">+</span> <span class="n">P1</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="n">G2</span> <span class="o">/</span> <span class="p">(</span><span class="n">G2</span> <span class="o">+</span> <span class="n">P2</span><span class="p">)))</span>
-</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">    See [Skemer et al. 2005](https://doi.org/10.1016/j.tecto.2005.08.023).</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>    <span class="c1"># Compute and bin misorientation angles from orientation data.</span>
+</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>    <span class="n">combinations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">sp</span><span class="o">.</span><span class="n">comb</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">orientations</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>        <span class="n">it</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">Rotation</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span><span class="o">.</span><span class="n">as_quat</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>    <span class="p">):</span>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>        <span class="n">combinations</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>    <span class="n">_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Largest array size: </span><span class="si">%s</span><span class="s2"> GB&quot;</span><span class="p">,</span> <span class="n">combinations</span><span class="o">.</span><span class="n">nbytes</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">)</span>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>    <span class="n">misorientations_data</span> <span class="o">=</span> <span class="n">misorientation_angles</span><span class="p">(</span><span class="n">combinations</span><span class="p">)</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>    <span class="n">θmax</span> <span class="o">=</span> <span class="n">_st</span><span class="o">.</span><span class="n">_max_misorientation</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>    <span class="n">misorientations_count</span><span class="p">,</span> <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>        <span class="n">misorientations_data</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">θmax</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">θmax</span><span class="p">),</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>    <span class="p">)</span>
+</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>
+</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>    <span class="c1"># Compute counts of theoretical misorientation for an isotropic aggregate,</span>
+</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>    <span class="c1"># using the same bins (Skemer 2005 recommend 1° bins).</span>
+</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>    <span class="n">misorientations_theory</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>        <span class="p">[</span>
+</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>            <span class="n">_st</span><span class="o">.</span><span class="n">misorientations_random</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">misorientations_count</span><span class="p">))</span>
+</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a>        <span class="p">]</span>
+</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a>    <span class="p">)</span>
+</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>
+</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a>    <span class="c1"># Equation 2 in Skemer 2005.</span>
+</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a>    <span class="k">return</span> <span class="p">(</span><span class="n">θmax</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">misorientations_count</span><span class="p">)))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">misorientations_theory</span> <span class="o">-</span> <span class="n">misorientations_count</span><span class="p">)</span>
+</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>    <span class="p">)</span>
 </span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a>
-</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a><span class="k">def</span> <span class="nf">misorientation_angles</span><span class="p">(</span><span class="n">combinations</span><span class="p">):</span>
-</span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the misorientation angles for pairs of rotation quaternions.</span>
-</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a>
-</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="sd">    Calculate the angular distance between the rotations `combinations[:, 0]`</span>
-</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="sd">    and `combinations[:, 1]`, which are expected to be 1x4 passive (alias)</span>
-</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a><span class="sd">    rotation quaternions.</span>
-</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a>
-</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a><span class="sd">    Uses ~25% less memory than the same operation with rotation matrices.</span>
-</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a>
-</span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a><span class="sd">    See also:</span>
-</span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a><span class="sd">    - &lt;https://math.stackexchange.com/questions/90081/quaternion-distance&gt;</span>
-</span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a><span class="sd">    - &lt;https://link.springer.com/article/10.1007/s10851-009-0161-2&gt;</span>
-</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>
-</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a>
-</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a>    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
-</span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span>
-</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a>            <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
-</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a>                <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
-</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a>                    <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">combinations</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">combinations</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
-</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a>                <span class="p">)</span>
-</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a>            <span class="p">)</span>
-</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a>        <span class="p">)</span>
-</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a>    <span class="p">)</span>
-</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a>
+</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a>
+</span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a><span class="k">def</span> <span class="nf">coaxial_index</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis1</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">axis2</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">):</span>
+</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate coaxial “BA” index for a combination of two crystal axes.</span>
+</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a>
+</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="sd">    The BA index of [Mainprice et al. 2015](https://doi.org/10.1144/SP409.8)</span>
+</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a><span class="sd">    is derived from the eigenvalue `symmetry` diagnostics and measures point vs girdle</span>
+</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a><span class="sd">    symmetry in the aggregate. $BA \in [0, 1]$ where $BA = 0$ corresponds to a perfect</span>
+</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a><span class="sd">    axial girdle texture and $BA = 1$ represents a point symmetry texture assuming that</span>
+</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a><span class="sd">    the random component $R$ is negligible. May be less susceptible to random</span>
+</span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a><span class="sd">    fluctuations compared to the raw eigenvalue diagnostics.</span>
+</span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a>
+</span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>    <span class="n">P1</span><span class="p">,</span> <span class="n">G1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis1</span><span class="p">)</span>
+</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a>    <span class="n">P2</span><span class="p">,</span> <span class="n">G2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis2</span><span class="p">)</span>
+</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a>    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">P1</span> <span class="o">/</span> <span class="p">(</span><span class="n">G1</span> <span class="o">+</span> <span class="n">P1</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="n">G2</span> <span class="o">/</span> <span class="p">(</span><span class="n">G2</span> <span class="o">+</span> <span class="n">P2</span><span class="p">)))</span>
+</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a>
+</span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a>
+</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a><span class="k">def</span> <span class="nf">misorientation_angles</span><span class="p">(</span><span class="n">combinations</span><span class="p">):</span>
+</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the misorientation angles for pairs of rotation quaternions.</span>
+</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a>
+</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a><span class="sd">    Calculate the angular distance between the rotations `combinations[:, 0]`</span>
+</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a><span class="sd">    and `combinations[:, 1]`, which are expected to be 1x4 passive (alias)</span>
+</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a><span class="sd">    rotation quaternions.</span>
+</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a>
+</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a><span class="sd">    Uses ~25% less memory than the same operation with rotation matrices.</span>
 </span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a>
-</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a><span class="k">def</span> <span class="nf">smallest_angle</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
-</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get smallest angle between a unit `vector` and a bidirectional `axis`.</span>
-</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>
-</span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a><span class="sd">    The axis is specified using either of its two parallel unit vectors.</span>
+</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a><span class="sd">    See also:</span>
+</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a><span class="sd">    - &lt;https://math.stackexchange.com/questions/90081/quaternion-distance&gt;</span>
+</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a><span class="sd">    - &lt;https://link.springer.com/article/10.1007/s10851-009-0161-2&gt;</span>
+</span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a>
 </span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a>
 </span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a>    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
-</span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span> <span class="o">*</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">)))</span>
-</span><span id="L-189"><a href="#L-189"><span class="linenos">189</span></a>    <span class="p">)</span>
-</span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a>    <span class="k">if</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
-</span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a>        <span class="k">return</span> <span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span>
-</span><span id="L-192"><a href="#L-192"><span class="linenos">192</span></a>    <span class="k">return</span> <span class="n">angle</span>
+</span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a>    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
+</span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span>
+</span><span id="L-189"><a href="#L-189"><span class="linenos">189</span></a>            <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
+</span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a>                <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
+</span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a>                    <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">combinations</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">combinations</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+</span><span id="L-192"><a href="#L-192"><span class="linenos">192</span></a>                <span class="p">)</span>
+</span><span id="L-193"><a href="#L-193"><span class="linenos">193</span></a>            <span class="p">)</span>
+</span><span id="L-194"><a href="#L-194"><span class="linenos">194</span></a>        <span class="p">)</span>
+</span><span id="L-195"><a href="#L-195"><span class="linenos">195</span></a>    <span class="p">)</span>
+</span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a>
+</span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a>
+</span><span id="L-198"><a href="#L-198"><span class="linenos">198</span></a><span class="k">def</span> <span class="nf">smallest_angle</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+</span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get smallest angle between a unit `vector` and a bidirectional `axis`.</span>
+</span><span id="L-200"><a href="#L-200"><span class="linenos">200</span></a>
+</span><span id="L-201"><a href="#L-201"><span class="linenos">201</span></a><span class="sd">    The axis is specified using either of its two parallel unit vectors.</span>
+</span><span id="L-202"><a href="#L-202"><span class="linenos">202</span></a>
+</span><span id="L-203"><a href="#L-203"><span class="linenos">203</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-204"><a href="#L-204"><span class="linenos">204</span></a>    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
+</span><span id="L-205"><a href="#L-205"><span class="linenos">205</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span> <span class="o">*</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">)))</span>
+</span><span id="L-206"><a href="#L-206"><span class="linenos">206</span></a>    <span class="p">)</span>
+</span><span id="L-207"><a href="#L-207"><span class="linenos">207</span></a>    <span class="k">if</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
+</span><span id="L-208"><a href="#L-208"><span class="linenos">208</span></a>        <span class="k">return</span> <span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span>
+</span><span id="L-209"><a href="#L-209"><span class="linenos">209</span></a>    <span class="k">return</span> <span class="n">angle</span>
 </span></pre></div>
 
 
@@ -360,6 +380,44 @@ Valid axis specifiers are "a" for [100], "b" for [010] and "c" for [001].</p>
 
 
                 </section>
+                <section id="finite_strain">
+                            <input id="finite_strain-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">finite_strain</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">deformation_gradient</span>, </span><span class="param"><span class="o">**</span><span class="n">kwargs</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="finite_strain-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#finite_strain"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="finite_strain-60"><a href="#finite_strain-60"><span class="linenos">60</span></a><span class="k">def</span> <span class="nf">finite_strain</span><span class="p">(</span><span class="n">deformation_gradient</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="finite_strain-61"><a href="#finite_strain-61"><span class="linenos">61</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract measures of finite strain from the deformation gradient.</span>
+</span><span id="finite_strain-62"><a href="#finite_strain-62"><span class="linenos">62</span></a>
+</span><span id="finite_strain-63"><a href="#finite_strain-63"><span class="linenos">63</span></a><span class="sd">    Extracts the vector defining the axis of maximum extension (longest semiaxis of the</span>
+</span><span id="finite_strain-64"><a href="#finite_strain-64"><span class="linenos">64</span></a><span class="sd">    finite strain ellipsoid) and the largest principal strain value from the 3x3</span>
+</span><span id="finite_strain-65"><a href="#finite_strain-65"><span class="linenos">65</span></a><span class="sd">    deformation gradient tensor.</span>
+</span><span id="finite_strain-66"><a href="#finite_strain-66"><span class="linenos">66</span></a>
+</span><span id="finite_strain-67"><a href="#finite_strain-67"><span class="linenos">67</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="finite_strain-68"><a href="#finite_strain-68"><span class="linenos">68</span></a>    <span class="c1"># Get eigenvalues and eigenvectors of the left stretch (Cauchy-Green) tensor.</span>
+</span><span id="finite_strain-69"><a href="#finite_strain-69"><span class="linenos">69</span></a>    <span class="n">B_λ</span><span class="p">,</span> <span class="n">B_v</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span>
+</span><span id="finite_strain-70"><a href="#finite_strain-70"><span class="linenos">70</span></a>        <span class="n">deformation_gradient</span> <span class="o">@</span> <span class="n">deformation_gradient</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span>
+</span><span id="finite_strain-71"><a href="#finite_strain-71"><span class="linenos">71</span></a>        <span class="n">driver</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;driver&quot;</span><span class="p">,</span> <span class="s2">&quot;ev&quot;</span><span class="p">),</span>
+</span><span id="finite_strain-72"><a href="#finite_strain-72"><span class="linenos">72</span></a>    <span class="p">)</span>
+</span><span id="finite_strain-73"><a href="#finite_strain-73"><span class="linenos">73</span></a>    <span class="c1"># Stretch ratio is sqrt(λ) - 1, the (-1) is so that undeformed strain is 0 not 1.</span>
+</span><span id="finite_strain-74"><a href="#finite_strain-74"><span class="linenos">74</span></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">B_λ</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">B_v</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Extract measures of finite strain from the deformation gradient.</p>
+
+<p>Extracts the vector defining the axis of maximum extension (longest semiaxis of the
+finite strain ellipsoid) and the largest principal strain value from the 3x3
+deformation gradient tensor.</p>
+</div>
+
+
+                </section>
                 <section id="symmetry">
                             <input id="symmetry-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
@@ -371,44 +429,44 @@ Valid axis specifiers are "a" for [100], "b" for [010] and "c" for [001].</p>
 
     </div>
     <a class="headerlink" href="#symmetry"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="symmetry-60"><a href="#symmetry-60"><span class="linenos">60</span></a><span class="k">def</span> <span class="nf">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">):</span>
-</span><span id="symmetry-61"><a href="#symmetry-61"><span class="linenos">61</span></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute texture symmetry eigenvalue diagnostics from olivine orientation matrices.</span>
-</span><span id="symmetry-62"><a href="#symmetry-62"><span class="linenos">62</span></a>
-</span><span id="symmetry-63"><a href="#symmetry-63"><span class="linenos">63</span></a><span class="sd">    Compute Point, Girdle and Random symmetry diagnostics</span>
-</span><span id="symmetry-64"><a href="#symmetry-64"><span class="linenos">64</span></a><span class="sd">    for ternary texture classification.</span>
-</span><span id="symmetry-65"><a href="#symmetry-65"><span class="linenos">65</span></a><span class="sd">    Returns the tuple (P, G, R) where</span>
-</span><span id="symmetry-66"><a href="#symmetry-66"><span class="linenos">66</span></a><span class="sd">    $$</span>
-</span><span id="symmetry-67"><a href="#symmetry-67"><span class="linenos">67</span></a><span class="sd">    \begin{align\*}</span>
-</span><span id="symmetry-68"><a href="#symmetry-68"><span class="linenos">68</span></a><span class="sd">    P &amp;= (λ_{1} - λ_{2}) / N \cr</span>
-</span><span id="symmetry-69"><a href="#symmetry-69"><span class="linenos">69</span></a><span class="sd">    G &amp;= 2 (λ_{2} - λ_{3}) / N \cr</span>
-</span><span id="symmetry-70"><a href="#symmetry-70"><span class="linenos">70</span></a><span class="sd">    R &amp;= 3 λ_{3} / N</span>
-</span><span id="symmetry-71"><a href="#symmetry-71"><span class="linenos">71</span></a><span class="sd">    \end{align\*}</span>
-</span><span id="symmetry-72"><a href="#symmetry-72"><span class="linenos">72</span></a><span class="sd">    $$</span>
-</span><span id="symmetry-73"><a href="#symmetry-73"><span class="linenos">73</span></a><span class="sd">    with $N$ the sum of the eigenvalues $λ_{1} ≥ λ_{2} ≥ λ_{3}$</span>
-</span><span id="symmetry-74"><a href="#symmetry-74"><span class="linenos">74</span></a><span class="sd">    of the scatter (inertia) matrix.</span>
-</span><span id="symmetry-75"><a href="#symmetry-75"><span class="linenos">75</span></a>
-</span><span id="symmetry-76"><a href="#symmetry-76"><span class="linenos">76</span></a><span class="sd">    See e.g. [Vollmer 1990](https://doi.org/10.1130/0016-7606(1990)102%3C0786:AAOEMT%3E2.3.CO;2).</span>
-</span><span id="symmetry-77"><a href="#symmetry-77"><span class="linenos">77</span></a>
-</span><span id="symmetry-78"><a href="#symmetry-78"><span class="linenos">78</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="symmetry-79"><a href="#symmetry-79"><span class="linenos">79</span></a>    <span class="k">match</span> <span class="n">axis</span><span class="p">:</span>
-</span><span id="symmetry-80"><a href="#symmetry-80"><span class="linenos">80</span></a>        <span class="k">case</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span>
-</span><span id="symmetry-81"><a href="#symmetry-81"><span class="linenos">81</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span id="symmetry-82"><a href="#symmetry-82"><span class="linenos">82</span></a>        <span class="k">case</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span>
-</span><span id="symmetry-83"><a href="#symmetry-83"><span class="linenos">83</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">1</span>
-</span><span id="symmetry-84"><a href="#symmetry-84"><span class="linenos">84</span></a>        <span class="k">case</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span>
-</span><span id="symmetry-85"><a href="#symmetry-85"><span class="linenos">85</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">2</span>
-</span><span id="symmetry-86"><a href="#symmetry-86"><span class="linenos">86</span></a>        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-</span><span id="symmetry-87"><a href="#symmetry-87"><span class="linenos">87</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;axis must be &#39;a&#39;, &#39;b&#39;, or &#39;c&#39;, not </span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="symmetry-88"><a href="#symmetry-88"><span class="linenos">88</span></a>
-</span><span id="symmetry-89"><a href="#symmetry-89"><span class="linenos">89</span></a>    <span class="n">scatter</span> <span class="o">=</span> <span class="n">_st</span><span class="o">.</span><span class="n">_scatter_matrix</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
-</span><span id="symmetry-90"><a href="#symmetry-90"><span class="linenos">90</span></a>    <span class="c1"># SciPy uses lower triangular entries by default, no need for all components.</span>
-</span><span id="symmetry-91"><a href="#symmetry-91"><span class="linenos">91</span></a>    <span class="n">eigvals_descending</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">scatter</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-</span><span id="symmetry-92"><a href="#symmetry-92"><span class="linenos">92</span></a>    <span class="n">sum_eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">eigvals_descending</span><span class="p">)</span>
-</span><span id="symmetry-93"><a href="#symmetry-93"><span class="linenos">93</span></a>    <span class="k">return</span> <span class="p">(</span>
-</span><span id="symmetry-94"><a href="#symmetry-94"><span class="linenos">94</span></a>        <span class="p">(</span><span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
-</span><span id="symmetry-95"><a href="#symmetry-95"><span class="linenos">95</span></a>        <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
-</span><span id="symmetry-96"><a href="#symmetry-96"><span class="linenos">96</span></a>        <span class="mi">3</span> <span class="o">*</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
-</span><span id="symmetry-97"><a href="#symmetry-97"><span class="linenos">97</span></a>    <span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="symmetry-77"><a href="#symmetry-77"><span class="linenos"> 77</span></a><span class="k">def</span> <span class="nf">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">):</span>
+</span><span id="symmetry-78"><a href="#symmetry-78"><span class="linenos"> 78</span></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute texture symmetry eigenvalue diagnostics from olivine orientation matrices.</span>
+</span><span id="symmetry-79"><a href="#symmetry-79"><span class="linenos"> 79</span></a>
+</span><span id="symmetry-80"><a href="#symmetry-80"><span class="linenos"> 80</span></a><span class="sd">    Compute Point, Girdle and Random symmetry diagnostics</span>
+</span><span id="symmetry-81"><a href="#symmetry-81"><span class="linenos"> 81</span></a><span class="sd">    for ternary texture classification.</span>
+</span><span id="symmetry-82"><a href="#symmetry-82"><span class="linenos"> 82</span></a><span class="sd">    Returns the tuple (P, G, R) where</span>
+</span><span id="symmetry-83"><a href="#symmetry-83"><span class="linenos"> 83</span></a><span class="sd">    $$</span>
+</span><span id="symmetry-84"><a href="#symmetry-84"><span class="linenos"> 84</span></a><span class="sd">    \begin{align\*}</span>
+</span><span id="symmetry-85"><a href="#symmetry-85"><span class="linenos"> 85</span></a><span class="sd">    P &amp;= (λ_{1} - λ_{2}) / N \cr</span>
+</span><span id="symmetry-86"><a href="#symmetry-86"><span class="linenos"> 86</span></a><span class="sd">    G &amp;= 2 (λ_{2} - λ_{3}) / N \cr</span>
+</span><span id="symmetry-87"><a href="#symmetry-87"><span class="linenos"> 87</span></a><span class="sd">    R &amp;= 3 λ_{3} / N</span>
+</span><span id="symmetry-88"><a href="#symmetry-88"><span class="linenos"> 88</span></a><span class="sd">    \end{align\*}</span>
+</span><span id="symmetry-89"><a href="#symmetry-89"><span class="linenos"> 89</span></a><span class="sd">    $$</span>
+</span><span id="symmetry-90"><a href="#symmetry-90"><span class="linenos"> 90</span></a><span class="sd">    with $N$ the sum of the eigenvalues $λ_{1} ≥ λ_{2} ≥ λ_{3}$</span>
+</span><span id="symmetry-91"><a href="#symmetry-91"><span class="linenos"> 91</span></a><span class="sd">    of the scatter (inertia) matrix.</span>
+</span><span id="symmetry-92"><a href="#symmetry-92"><span class="linenos"> 92</span></a>
+</span><span id="symmetry-93"><a href="#symmetry-93"><span class="linenos"> 93</span></a><span class="sd">    See e.g. [Vollmer 1990](https://doi.org/10.1130/0016-7606(1990)102%3C0786:AAOEMT%3E2.3.CO;2).</span>
+</span><span id="symmetry-94"><a href="#symmetry-94"><span class="linenos"> 94</span></a>
+</span><span id="symmetry-95"><a href="#symmetry-95"><span class="linenos"> 95</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="symmetry-96"><a href="#symmetry-96"><span class="linenos"> 96</span></a>    <span class="k">match</span> <span class="n">axis</span><span class="p">:</span>
+</span><span id="symmetry-97"><a href="#symmetry-97"><span class="linenos"> 97</span></a>        <span class="k">case</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span>
+</span><span id="symmetry-98"><a href="#symmetry-98"><span class="linenos"> 98</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span id="symmetry-99"><a href="#symmetry-99"><span class="linenos"> 99</span></a>        <span class="k">case</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span>
+</span><span id="symmetry-100"><a href="#symmetry-100"><span class="linenos">100</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span id="symmetry-101"><a href="#symmetry-101"><span class="linenos">101</span></a>        <span class="k">case</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span>
+</span><span id="symmetry-102"><a href="#symmetry-102"><span class="linenos">102</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">2</span>
+</span><span id="symmetry-103"><a href="#symmetry-103"><span class="linenos">103</span></a>        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+</span><span id="symmetry-104"><a href="#symmetry-104"><span class="linenos">104</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;axis must be &#39;a&#39;, &#39;b&#39;, or &#39;c&#39;, not </span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="symmetry-105"><a href="#symmetry-105"><span class="linenos">105</span></a>
+</span><span id="symmetry-106"><a href="#symmetry-106"><span class="linenos">106</span></a>    <span class="n">scatter</span> <span class="o">=</span> <span class="n">_st</span><span class="o">.</span><span class="n">_scatter_matrix</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
+</span><span id="symmetry-107"><a href="#symmetry-107"><span class="linenos">107</span></a>    <span class="c1"># SciPy uses lower triangular entries by default, no need for all components.</span>
+</span><span id="symmetry-108"><a href="#symmetry-108"><span class="linenos">108</span></a>    <span class="n">eigvals_descending</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">scatter</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span id="symmetry-109"><a href="#symmetry-109"><span class="linenos">109</span></a>    <span class="n">sum_eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">eigvals_descending</span><span class="p">)</span>
+</span><span id="symmetry-110"><a href="#symmetry-110"><span class="linenos">110</span></a>    <span class="k">return</span> <span class="p">(</span>
+</span><span id="symmetry-111"><a href="#symmetry-111"><span class="linenos">111</span></a>        <span class="p">(</span><span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
+</span><span id="symmetry-112"><a href="#symmetry-112"><span class="linenos">112</span></a>        <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
+</span><span id="symmetry-113"><a href="#symmetry-113"><span class="linenos">113</span></a>        <span class="mi">3</span> <span class="o">*</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
+</span><span id="symmetry-114"><a href="#symmetry-114"><span class="linenos">114</span></a>    <span class="p">)</span>
 </span></pre></div>
 
 
@@ -443,44 +501,44 @@ of the scatter (inertia) matrix.</p>
 
     </div>
     <a class="headerlink" href="#misorientation_index"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="misorientation_index-100"><a href="#misorientation_index-100"><span class="linenos">100</span></a><span class="k">def</span> <span class="nf">misorientation_index</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)):</span>
-</span><span id="misorientation_index-101"><a href="#misorientation_index-101"><span class="linenos">101</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate M-index for polycrystal orientations.</span>
-</span><span id="misorientation_index-102"><a href="#misorientation_index-102"><span class="linenos">102</span></a>
-</span><span id="misorientation_index-103"><a href="#misorientation_index-103"><span class="linenos">103</span></a><span class="sd">    The `bins` argument is passed to `numpy.histogram`.</span>
-</span><span id="misorientation_index-104"><a href="#misorientation_index-104"><span class="linenos">104</span></a><span class="sd">    If left as `None`, 1° bins will be used as recommended by the reference paper.</span>
-</span><span id="misorientation_index-105"><a href="#misorientation_index-105"><span class="linenos">105</span></a><span class="sd">    The symmetry system can be specified using the `system` argument.</span>
-</span><span id="misorientation_index-106"><a href="#misorientation_index-106"><span class="linenos">106</span></a><span class="sd">    The default system is orthorhombic.</span>
-</span><span id="misorientation_index-107"><a href="#misorientation_index-107"><span class="linenos">107</span></a>
-</span><span id="misorientation_index-108"><a href="#misorientation_index-108"><span class="linenos">108</span></a><span class="sd">    See [Skemer et al. 2005](https://doi.org/10.1016/j.tecto.2005.08.023).</span>
-</span><span id="misorientation_index-109"><a href="#misorientation_index-109"><span class="linenos">109</span></a>
-</span><span id="misorientation_index-110"><a href="#misorientation_index-110"><span class="linenos">110</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="misorientation_index-111"><a href="#misorientation_index-111"><span class="linenos">111</span></a>    <span class="c1"># Compute and bin misorientation angles from orientation data.</span>
-</span><span id="misorientation_index-112"><a href="#misorientation_index-112"><span class="linenos">112</span></a>    <span class="n">combinations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">sp</span><span class="o">.</span><span class="n">comb</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">orientations</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
-</span><span id="misorientation_index-113"><a href="#misorientation_index-113"><span class="linenos">113</span></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
-</span><span id="misorientation_index-114"><a href="#misorientation_index-114"><span class="linenos">114</span></a>        <span class="n">it</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">Rotation</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span><span class="o">.</span><span class="n">as_quat</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span>
-</span><span id="misorientation_index-115"><a href="#misorientation_index-115"><span class="linenos">115</span></a>    <span class="p">):</span>
-</span><span id="misorientation_index-116"><a href="#misorientation_index-116"><span class="linenos">116</span></a>        <span class="n">combinations</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-</span><span id="misorientation_index-117"><a href="#misorientation_index-117"><span class="linenos">117</span></a>    <span class="n">_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Largest array size: </span><span class="si">%s</span><span class="s2"> GB&quot;</span><span class="p">,</span> <span class="n">combinations</span><span class="o">.</span><span class="n">nbytes</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">)</span>
-</span><span id="misorientation_index-118"><a href="#misorientation_index-118"><span class="linenos">118</span></a>
-</span><span id="misorientation_index-119"><a href="#misorientation_index-119"><span class="linenos">119</span></a>    <span class="n">misorientations_data</span> <span class="o">=</span> <span class="n">misorientation_angles</span><span class="p">(</span><span class="n">combinations</span><span class="p">)</span>
-</span><span id="misorientation_index-120"><a href="#misorientation_index-120"><span class="linenos">120</span></a>    <span class="n">θmax</span> <span class="o">=</span> <span class="n">_st</span><span class="o">.</span><span class="n">_max_misorientation</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
-</span><span id="misorientation_index-121"><a href="#misorientation_index-121"><span class="linenos">121</span></a>    <span class="n">misorientations_count</span><span class="p">,</span> <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span>
-</span><span id="misorientation_index-122"><a href="#misorientation_index-122"><span class="linenos">122</span></a>        <span class="n">misorientations_data</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">θmax</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">θmax</span><span class="p">),</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span>
-</span><span id="misorientation_index-123"><a href="#misorientation_index-123"><span class="linenos">123</span></a>    <span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="misorientation_index-117"><a href="#misorientation_index-117"><span class="linenos">117</span></a><span class="k">def</span> <span class="nf">misorientation_index</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">system</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)):</span>
+</span><span id="misorientation_index-118"><a href="#misorientation_index-118"><span class="linenos">118</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate M-index for polycrystal orientations.</span>
+</span><span id="misorientation_index-119"><a href="#misorientation_index-119"><span class="linenos">119</span></a>
+</span><span id="misorientation_index-120"><a href="#misorientation_index-120"><span class="linenos">120</span></a><span class="sd">    The `bins` argument is passed to `numpy.histogram`.</span>
+</span><span id="misorientation_index-121"><a href="#misorientation_index-121"><span class="linenos">121</span></a><span class="sd">    If left as `None`, 1° bins will be used as recommended by the reference paper.</span>
+</span><span id="misorientation_index-122"><a href="#misorientation_index-122"><span class="linenos">122</span></a><span class="sd">    The symmetry system can be specified using the `system` argument.</span>
+</span><span id="misorientation_index-123"><a href="#misorientation_index-123"><span class="linenos">123</span></a><span class="sd">    The default system is orthorhombic.</span>
 </span><span id="misorientation_index-124"><a href="#misorientation_index-124"><span class="linenos">124</span></a>
-</span><span id="misorientation_index-125"><a href="#misorientation_index-125"><span class="linenos">125</span></a>    <span class="c1"># Compute counts of theoretical misorientation for an isotropic aggregate,</span>
-</span><span id="misorientation_index-126"><a href="#misorientation_index-126"><span class="linenos">126</span></a>    <span class="c1"># using the same bins (Skemer 2005 recommend 1° bins).</span>
-</span><span id="misorientation_index-127"><a href="#misorientation_index-127"><span class="linenos">127</span></a>    <span class="n">misorientations_theory</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-</span><span id="misorientation_index-128"><a href="#misorientation_index-128"><span class="linenos">128</span></a>        <span class="p">[</span>
-</span><span id="misorientation_index-129"><a href="#misorientation_index-129"><span class="linenos">129</span></a>            <span class="n">_st</span><span class="o">.</span><span class="n">misorientations_random</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
-</span><span id="misorientation_index-130"><a href="#misorientation_index-130"><span class="linenos">130</span></a>            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">misorientations_count</span><span class="p">))</span>
-</span><span id="misorientation_index-131"><a href="#misorientation_index-131"><span class="linenos">131</span></a>        <span class="p">]</span>
-</span><span id="misorientation_index-132"><a href="#misorientation_index-132"><span class="linenos">132</span></a>    <span class="p">)</span>
-</span><span id="misorientation_index-133"><a href="#misorientation_index-133"><span class="linenos">133</span></a>
-</span><span id="misorientation_index-134"><a href="#misorientation_index-134"><span class="linenos">134</span></a>    <span class="c1"># Equation 2 in Skemer 2005.</span>
-</span><span id="misorientation_index-135"><a href="#misorientation_index-135"><span class="linenos">135</span></a>    <span class="k">return</span> <span class="p">(</span><span class="n">θmax</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">misorientations_count</span><span class="p">)))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-</span><span id="misorientation_index-136"><a href="#misorientation_index-136"><span class="linenos">136</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">misorientations_theory</span> <span class="o">-</span> <span class="n">misorientations_count</span><span class="p">)</span>
-</span><span id="misorientation_index-137"><a href="#misorientation_index-137"><span class="linenos">137</span></a>    <span class="p">)</span>
+</span><span id="misorientation_index-125"><a href="#misorientation_index-125"><span class="linenos">125</span></a><span class="sd">    See [Skemer et al. 2005](https://doi.org/10.1016/j.tecto.2005.08.023).</span>
+</span><span id="misorientation_index-126"><a href="#misorientation_index-126"><span class="linenos">126</span></a>
+</span><span id="misorientation_index-127"><a href="#misorientation_index-127"><span class="linenos">127</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="misorientation_index-128"><a href="#misorientation_index-128"><span class="linenos">128</span></a>    <span class="c1"># Compute and bin misorientation angles from orientation data.</span>
+</span><span id="misorientation_index-129"><a href="#misorientation_index-129"><span class="linenos">129</span></a>    <span class="n">combinations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">sp</span><span class="o">.</span><span class="n">comb</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">orientations</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="n">exact</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+</span><span id="misorientation_index-130"><a href="#misorientation_index-130"><span class="linenos">130</span></a>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+</span><span id="misorientation_index-131"><a href="#misorientation_index-131"><span class="linenos">131</span></a>        <span class="n">it</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">Rotation</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">orientations</span><span class="p">)</span><span class="o">.</span><span class="n">as_quat</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span>
+</span><span id="misorientation_index-132"><a href="#misorientation_index-132"><span class="linenos">132</span></a>    <span class="p">):</span>
+</span><span id="misorientation_index-133"><a href="#misorientation_index-133"><span class="linenos">133</span></a>        <span class="n">combinations</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</span><span id="misorientation_index-134"><a href="#misorientation_index-134"><span class="linenos">134</span></a>    <span class="n">_log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Largest array size: </span><span class="si">%s</span><span class="s2"> GB&quot;</span><span class="p">,</span> <span class="n">combinations</span><span class="o">.</span><span class="n">nbytes</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">)</span>
+</span><span id="misorientation_index-135"><a href="#misorientation_index-135"><span class="linenos">135</span></a>
+</span><span id="misorientation_index-136"><a href="#misorientation_index-136"><span class="linenos">136</span></a>    <span class="n">misorientations_data</span> <span class="o">=</span> <span class="n">misorientation_angles</span><span class="p">(</span><span class="n">combinations</span><span class="p">)</span>
+</span><span id="misorientation_index-137"><a href="#misorientation_index-137"><span class="linenos">137</span></a>    <span class="n">θmax</span> <span class="o">=</span> <span class="n">_st</span><span class="o">.</span><span class="n">_max_misorientation</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+</span><span id="misorientation_index-138"><a href="#misorientation_index-138"><span class="linenos">138</span></a>    <span class="n">misorientations_count</span><span class="p">,</span> <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span>
+</span><span id="misorientation_index-139"><a href="#misorientation_index-139"><span class="linenos">139</span></a>        <span class="n">misorientations_data</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">θmax</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">θmax</span><span class="p">),</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span>
+</span><span id="misorientation_index-140"><a href="#misorientation_index-140"><span class="linenos">140</span></a>    <span class="p">)</span>
+</span><span id="misorientation_index-141"><a href="#misorientation_index-141"><span class="linenos">141</span></a>
+</span><span id="misorientation_index-142"><a href="#misorientation_index-142"><span class="linenos">142</span></a>    <span class="c1"># Compute counts of theoretical misorientation for an isotropic aggregate,</span>
+</span><span id="misorientation_index-143"><a href="#misorientation_index-143"><span class="linenos">143</span></a>    <span class="c1"># using the same bins (Skemer 2005 recommend 1° bins).</span>
+</span><span id="misorientation_index-144"><a href="#misorientation_index-144"><span class="linenos">144</span></a>    <span class="n">misorientations_theory</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+</span><span id="misorientation_index-145"><a href="#misorientation_index-145"><span class="linenos">145</span></a>        <span class="p">[</span>
+</span><span id="misorientation_index-146"><a href="#misorientation_index-146"><span class="linenos">146</span></a>            <span class="n">_st</span><span class="o">.</span><span class="n">misorientations_random</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">bin_edges</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+</span><span id="misorientation_index-147"><a href="#misorientation_index-147"><span class="linenos">147</span></a>            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">misorientations_count</span><span class="p">))</span>
+</span><span id="misorientation_index-148"><a href="#misorientation_index-148"><span class="linenos">148</span></a>        <span class="p">]</span>
+</span><span id="misorientation_index-149"><a href="#misorientation_index-149"><span class="linenos">149</span></a>    <span class="p">)</span>
+</span><span id="misorientation_index-150"><a href="#misorientation_index-150"><span class="linenos">150</span></a>
+</span><span id="misorientation_index-151"><a href="#misorientation_index-151"><span class="linenos">151</span></a>    <span class="c1"># Equation 2 in Skemer 2005.</span>
+</span><span id="misorientation_index-152"><a href="#misorientation_index-152"><span class="linenos">152</span></a>    <span class="k">return</span> <span class="p">(</span><span class="n">θmax</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">misorientations_count</span><span class="p">)))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+</span><span id="misorientation_index-153"><a href="#misorientation_index-153"><span class="linenos">153</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">misorientations_theory</span> <span class="o">-</span> <span class="n">misorientations_count</span><span class="p">)</span>
+</span><span id="misorientation_index-154"><a href="#misorientation_index-154"><span class="linenos">154</span></a>    <span class="p">)</span>
 </span></pre></div>
 
 
@@ -507,20 +565,20 @@ The default system is orthorhombic.</p>
 
     </div>
     <a class="headerlink" href="#coaxial_index"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="coaxial_index-140"><a href="#coaxial_index-140"><span class="linenos">140</span></a><span class="k">def</span> <span class="nf">coaxial_index</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis1</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">axis2</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">):</span>
-</span><span id="coaxial_index-141"><a href="#coaxial_index-141"><span class="linenos">141</span></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate coaxial “BA” index for a combination of two crystal axes.</span>
-</span><span id="coaxial_index-142"><a href="#coaxial_index-142"><span class="linenos">142</span></a>
-</span><span id="coaxial_index-143"><a href="#coaxial_index-143"><span class="linenos">143</span></a><span class="sd">    The BA index of [Mainprice et al. 2015](https://doi.org/10.1144/SP409.8)</span>
-</span><span id="coaxial_index-144"><a href="#coaxial_index-144"><span class="linenos">144</span></a><span class="sd">    is derived from the eigenvalue `symmetry` diagnostics and measures point vs girdle</span>
-</span><span id="coaxial_index-145"><a href="#coaxial_index-145"><span class="linenos">145</span></a><span class="sd">    symmetry in the aggregate. $BA \in [0, 1]$ where $BA = 0$ corresponds to a perfect</span>
-</span><span id="coaxial_index-146"><a href="#coaxial_index-146"><span class="linenos">146</span></a><span class="sd">    axial girdle texture and $BA = 1$ represents a point symmetry texture assuming that</span>
-</span><span id="coaxial_index-147"><a href="#coaxial_index-147"><span class="linenos">147</span></a><span class="sd">    the random component $R$ is negligible. May be less susceptible to random</span>
-</span><span id="coaxial_index-148"><a href="#coaxial_index-148"><span class="linenos">148</span></a><span class="sd">    fluctuations compared to the raw eigenvalue diagnostics.</span>
-</span><span id="coaxial_index-149"><a href="#coaxial_index-149"><span class="linenos">149</span></a>
-</span><span id="coaxial_index-150"><a href="#coaxial_index-150"><span class="linenos">150</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="coaxial_index-151"><a href="#coaxial_index-151"><span class="linenos">151</span></a>    <span class="n">P1</span><span class="p">,</span> <span class="n">G1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis1</span><span class="p">)</span>
-</span><span id="coaxial_index-152"><a href="#coaxial_index-152"><span class="linenos">152</span></a>    <span class="n">P2</span><span class="p">,</span> <span class="n">G2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis2</span><span class="p">)</span>
-</span><span id="coaxial_index-153"><a href="#coaxial_index-153"><span class="linenos">153</span></a>    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">P1</span> <span class="o">/</span> <span class="p">(</span><span class="n">G1</span> <span class="o">+</span> <span class="n">P1</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="n">G2</span> <span class="o">/</span> <span class="p">(</span><span class="n">G2</span> <span class="o">+</span> <span class="n">P2</span><span class="p">)))</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="coaxial_index-157"><a href="#coaxial_index-157"><span class="linenos">157</span></a><span class="k">def</span> <span class="nf">coaxial_index</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis1</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">axis2</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">):</span>
+</span><span id="coaxial_index-158"><a href="#coaxial_index-158"><span class="linenos">158</span></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate coaxial “BA” index for a combination of two crystal axes.</span>
+</span><span id="coaxial_index-159"><a href="#coaxial_index-159"><span class="linenos">159</span></a>
+</span><span id="coaxial_index-160"><a href="#coaxial_index-160"><span class="linenos">160</span></a><span class="sd">    The BA index of [Mainprice et al. 2015](https://doi.org/10.1144/SP409.8)</span>
+</span><span id="coaxial_index-161"><a href="#coaxial_index-161"><span class="linenos">161</span></a><span class="sd">    is derived from the eigenvalue `symmetry` diagnostics and measures point vs girdle</span>
+</span><span id="coaxial_index-162"><a href="#coaxial_index-162"><span class="linenos">162</span></a><span class="sd">    symmetry in the aggregate. $BA \in [0, 1]$ where $BA = 0$ corresponds to a perfect</span>
+</span><span id="coaxial_index-163"><a href="#coaxial_index-163"><span class="linenos">163</span></a><span class="sd">    axial girdle texture and $BA = 1$ represents a point symmetry texture assuming that</span>
+</span><span id="coaxial_index-164"><a href="#coaxial_index-164"><span class="linenos">164</span></a><span class="sd">    the random component $R$ is negligible. May be less susceptible to random</span>
+</span><span id="coaxial_index-165"><a href="#coaxial_index-165"><span class="linenos">165</span></a><span class="sd">    fluctuations compared to the raw eigenvalue diagnostics.</span>
+</span><span id="coaxial_index-166"><a href="#coaxial_index-166"><span class="linenos">166</span></a>
+</span><span id="coaxial_index-167"><a href="#coaxial_index-167"><span class="linenos">167</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="coaxial_index-168"><a href="#coaxial_index-168"><span class="linenos">168</span></a>    <span class="n">P1</span><span class="p">,</span> <span class="n">G1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis1</span><span class="p">)</span>
+</span><span id="coaxial_index-169"><a href="#coaxial_index-169"><span class="linenos">169</span></a>    <span class="n">P2</span><span class="p">,</span> <span class="n">G2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis2</span><span class="p">)</span>
+</span><span id="coaxial_index-170"><a href="#coaxial_index-170"><span class="linenos">170</span></a>    <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">P1</span> <span class="o">/</span> <span class="p">(</span><span class="n">G1</span> <span class="o">+</span> <span class="n">P1</span><span class="p">))</span> <span class="o">-</span> <span class="p">(</span><span class="n">G2</span> <span class="o">/</span> <span class="p">(</span><span class="n">G2</span> <span class="o">+</span> <span class="n">P2</span><span class="p">)))</span>
 </span></pre></div>
 
 
@@ -547,30 +605,30 @@ fluctuations compared to the raw eigenvalue diagnostics.</p>
 
     </div>
     <a class="headerlink" href="#misorientation_angles"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="misorientation_angles-156"><a href="#misorientation_angles-156"><span class="linenos">156</span></a><span class="k">def</span> <span class="nf">misorientation_angles</span><span class="p">(</span><span class="n">combinations</span><span class="p">):</span>
-</span><span id="misorientation_angles-157"><a href="#misorientation_angles-157"><span class="linenos">157</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the misorientation angles for pairs of rotation quaternions.</span>
-</span><span id="misorientation_angles-158"><a href="#misorientation_angles-158"><span class="linenos">158</span></a>
-</span><span id="misorientation_angles-159"><a href="#misorientation_angles-159"><span class="linenos">159</span></a><span class="sd">    Calculate the angular distance between the rotations `combinations[:, 0]`</span>
-</span><span id="misorientation_angles-160"><a href="#misorientation_angles-160"><span class="linenos">160</span></a><span class="sd">    and `combinations[:, 1]`, which are expected to be 1x4 passive (alias)</span>
-</span><span id="misorientation_angles-161"><a href="#misorientation_angles-161"><span class="linenos">161</span></a><span class="sd">    rotation quaternions.</span>
-</span><span id="misorientation_angles-162"><a href="#misorientation_angles-162"><span class="linenos">162</span></a>
-</span><span id="misorientation_angles-163"><a href="#misorientation_angles-163"><span class="linenos">163</span></a><span class="sd">    Uses ~25% less memory than the same operation with rotation matrices.</span>
-</span><span id="misorientation_angles-164"><a href="#misorientation_angles-164"><span class="linenos">164</span></a>
-</span><span id="misorientation_angles-165"><a href="#misorientation_angles-165"><span class="linenos">165</span></a><span class="sd">    See also:</span>
-</span><span id="misorientation_angles-166"><a href="#misorientation_angles-166"><span class="linenos">166</span></a><span class="sd">    - &lt;https://math.stackexchange.com/questions/90081/quaternion-distance&gt;</span>
-</span><span id="misorientation_angles-167"><a href="#misorientation_angles-167"><span class="linenos">167</span></a><span class="sd">    - &lt;https://link.springer.com/article/10.1007/s10851-009-0161-2&gt;</span>
-</span><span id="misorientation_angles-168"><a href="#misorientation_angles-168"><span class="linenos">168</span></a>
-</span><span id="misorientation_angles-169"><a href="#misorientation_angles-169"><span class="linenos">169</span></a>
-</span><span id="misorientation_angles-170"><a href="#misorientation_angles-170"><span class="linenos">170</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="misorientation_angles-171"><a href="#misorientation_angles-171"><span class="linenos">171</span></a>    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
-</span><span id="misorientation_angles-172"><a href="#misorientation_angles-172"><span class="linenos">172</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span>
-</span><span id="misorientation_angles-173"><a href="#misorientation_angles-173"><span class="linenos">173</span></a>            <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
-</span><span id="misorientation_angles-174"><a href="#misorientation_angles-174"><span class="linenos">174</span></a>                <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
-</span><span id="misorientation_angles-175"><a href="#misorientation_angles-175"><span class="linenos">175</span></a>                    <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">combinations</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">combinations</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
-</span><span id="misorientation_angles-176"><a href="#misorientation_angles-176"><span class="linenos">176</span></a>                <span class="p">)</span>
-</span><span id="misorientation_angles-177"><a href="#misorientation_angles-177"><span class="linenos">177</span></a>            <span class="p">)</span>
-</span><span id="misorientation_angles-178"><a href="#misorientation_angles-178"><span class="linenos">178</span></a>        <span class="p">)</span>
-</span><span id="misorientation_angles-179"><a href="#misorientation_angles-179"><span class="linenos">179</span></a>    <span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="misorientation_angles-173"><a href="#misorientation_angles-173"><span class="linenos">173</span></a><span class="k">def</span> <span class="nf">misorientation_angles</span><span class="p">(</span><span class="n">combinations</span><span class="p">):</span>
+</span><span id="misorientation_angles-174"><a href="#misorientation_angles-174"><span class="linenos">174</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the misorientation angles for pairs of rotation quaternions.</span>
+</span><span id="misorientation_angles-175"><a href="#misorientation_angles-175"><span class="linenos">175</span></a>
+</span><span id="misorientation_angles-176"><a href="#misorientation_angles-176"><span class="linenos">176</span></a><span class="sd">    Calculate the angular distance between the rotations `combinations[:, 0]`</span>
+</span><span id="misorientation_angles-177"><a href="#misorientation_angles-177"><span class="linenos">177</span></a><span class="sd">    and `combinations[:, 1]`, which are expected to be 1x4 passive (alias)</span>
+</span><span id="misorientation_angles-178"><a href="#misorientation_angles-178"><span class="linenos">178</span></a><span class="sd">    rotation quaternions.</span>
+</span><span id="misorientation_angles-179"><a href="#misorientation_angles-179"><span class="linenos">179</span></a>
+</span><span id="misorientation_angles-180"><a href="#misorientation_angles-180"><span class="linenos">180</span></a><span class="sd">    Uses ~25% less memory than the same operation with rotation matrices.</span>
+</span><span id="misorientation_angles-181"><a href="#misorientation_angles-181"><span class="linenos">181</span></a>
+</span><span id="misorientation_angles-182"><a href="#misorientation_angles-182"><span class="linenos">182</span></a><span class="sd">    See also:</span>
+</span><span id="misorientation_angles-183"><a href="#misorientation_angles-183"><span class="linenos">183</span></a><span class="sd">    - &lt;https://math.stackexchange.com/questions/90081/quaternion-distance&gt;</span>
+</span><span id="misorientation_angles-184"><a href="#misorientation_angles-184"><span class="linenos">184</span></a><span class="sd">    - &lt;https://link.springer.com/article/10.1007/s10851-009-0161-2&gt;</span>
+</span><span id="misorientation_angles-185"><a href="#misorientation_angles-185"><span class="linenos">185</span></a>
+</span><span id="misorientation_angles-186"><a href="#misorientation_angles-186"><span class="linenos">186</span></a>
+</span><span id="misorientation_angles-187"><a href="#misorientation_angles-187"><span class="linenos">187</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="misorientation_angles-188"><a href="#misorientation_angles-188"><span class="linenos">188</span></a>    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
+</span><span id="misorientation_angles-189"><a href="#misorientation_angles-189"><span class="linenos">189</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span>
+</span><span id="misorientation_angles-190"><a href="#misorientation_angles-190"><span class="linenos">190</span></a>            <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
+</span><span id="misorientation_angles-191"><a href="#misorientation_angles-191"><span class="linenos">191</span></a>                <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
+</span><span id="misorientation_angles-192"><a href="#misorientation_angles-192"><span class="linenos">192</span></a>                    <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">combinations</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">combinations</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span>
+</span><span id="misorientation_angles-193"><a href="#misorientation_angles-193"><span class="linenos">193</span></a>                <span class="p">)</span>
+</span><span id="misorientation_angles-194"><a href="#misorientation_angles-194"><span class="linenos">194</span></a>            <span class="p">)</span>
+</span><span id="misorientation_angles-195"><a href="#misorientation_angles-195"><span class="linenos">195</span></a>        <span class="p">)</span>
+</span><span id="misorientation_angles-196"><a href="#misorientation_angles-196"><span class="linenos">196</span></a>    <span class="p">)</span>
 </span></pre></div>
 
 
@@ -603,18 +661,18 @@ rotation quaternions.</p>
 
     </div>
     <a class="headerlink" href="#smallest_angle"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="smallest_angle-182"><a href="#smallest_angle-182"><span class="linenos">182</span></a><span class="k">def</span> <span class="nf">smallest_angle</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
-</span><span id="smallest_angle-183"><a href="#smallest_angle-183"><span class="linenos">183</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get smallest angle between a unit `vector` and a bidirectional `axis`.</span>
-</span><span id="smallest_angle-184"><a href="#smallest_angle-184"><span class="linenos">184</span></a>
-</span><span id="smallest_angle-185"><a href="#smallest_angle-185"><span class="linenos">185</span></a><span class="sd">    The axis is specified using either of its two parallel unit vectors.</span>
-</span><span id="smallest_angle-186"><a href="#smallest_angle-186"><span class="linenos">186</span></a>
-</span><span id="smallest_angle-187"><a href="#smallest_angle-187"><span class="linenos">187</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="smallest_angle-188"><a href="#smallest_angle-188"><span class="linenos">188</span></a>    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
-</span><span id="smallest_angle-189"><a href="#smallest_angle-189"><span class="linenos">189</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span> <span class="o">*</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">)))</span>
-</span><span id="smallest_angle-190"><a href="#smallest_angle-190"><span class="linenos">190</span></a>    <span class="p">)</span>
-</span><span id="smallest_angle-191"><a href="#smallest_angle-191"><span class="linenos">191</span></a>    <span class="k">if</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
-</span><span id="smallest_angle-192"><a href="#smallest_angle-192"><span class="linenos">192</span></a>        <span class="k">return</span> <span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span>
-</span><span id="smallest_angle-193"><a href="#smallest_angle-193"><span class="linenos">193</span></a>    <span class="k">return</span> <span class="n">angle</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="smallest_angle-199"><a href="#smallest_angle-199"><span class="linenos">199</span></a><span class="k">def</span> <span class="nf">smallest_angle</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+</span><span id="smallest_angle-200"><a href="#smallest_angle-200"><span class="linenos">200</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get smallest angle between a unit `vector` and a bidirectional `axis`.</span>
+</span><span id="smallest_angle-201"><a href="#smallest_angle-201"><span class="linenos">201</span></a>
+</span><span id="smallest_angle-202"><a href="#smallest_angle-202"><span class="linenos">202</span></a><span class="sd">    The axis is specified using either of its two parallel unit vectors.</span>
+</span><span id="smallest_angle-203"><a href="#smallest_angle-203"><span class="linenos">203</span></a>
+</span><span id="smallest_angle-204"><a href="#smallest_angle-204"><span class="linenos">204</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="smallest_angle-205"><a href="#smallest_angle-205"><span class="linenos">205</span></a>    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
+</span><span id="smallest_angle-206"><a href="#smallest_angle-206"><span class="linenos">206</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span> <span class="o">*</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">)))</span>
+</span><span id="smallest_angle-207"><a href="#smallest_angle-207"><span class="linenos">207</span></a>    <span class="p">)</span>
+</span><span id="smallest_angle-208"><a href="#smallest_angle-208"><span class="linenos">208</span></a>    <span class="k">if</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
+</span><span id="smallest_angle-209"><a href="#smallest_angle-209"><span class="linenos">209</span></a>        <span class="k">return</span> <span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span>
+</span><span id="smallest_angle-210"><a href="#smallest_angle-210"><span class="linenos">210</span></a>    <span class="k">return</span> <span class="n">angle</span>
 </span></pre></div>
 
 
