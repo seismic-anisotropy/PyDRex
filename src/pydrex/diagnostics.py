@@ -1,4 +1,4 @@
-r"""> PyDRex: Methods to calculate texture diagnostics.
+r"""> PyDRex: Methods to calculate texture and strain diagnostics.
 
 .. note::
     Calculations expect orientation matrices $a$ to represent passive
@@ -54,6 +54,23 @@ def bingham_average(orientations, axis="a"):
     # SciPy uses lower triangular entries by default, no need for all components.
     mean_vector = la.eigh(_st._scatter_matrix(orientations, row))[1][:, -1]
     return mean_vector / la.norm(mean_vector)
+
+
+def finite_strain(deformation_gradient, **kwargs):
+    """Extract measures of finite strain from the deformation gradient.
+
+    Extracts the vector defining the axis of maximum extension (longest semiaxis of the
+    finite strain ellipsoid) and the largest principal strain value from the 3x3
+    deformation gradient tensor.
+
+    """
+    # Get eigenvalues and eigenvectors of the left stretch (Cauchy-Green) tensor.
+    B_λ, B_v = la.eigh(
+        deformation_gradient @ deformation_gradient.transpose(),
+        driver=kwargs.pop("driver", "ev"),
+    )
+    # Stretch ratio is sqrt(λ) - 1, the (-1) is so that undeformed strain is 0 not 1.
+    return np.sqrt(B_λ[-1]) - 1, B_v[:, -1]
 
 
 def symmetry(orientations, axis="a"):
