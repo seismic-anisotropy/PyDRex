@@ -45,12 +45,8 @@ class TestSimpleShearOPX:
                 cosθ = np.cos(θ)
                 cos2θ = np.cos(2 * θ)
                 sinθ = np.sin(θ)
-                target_orientations_diff = np.array(
-                    [
-                        [sinθ * (1 + cos2θ), 0, -cosθ * (1 + cos2θ)],
-                        [0, 0, 0],
-                        [cosθ * (1 + cos2θ), 0, sinθ * (1 + cos2θ)],
-                    ]
+                target_orientations_diff = (1 + cos2θ) * np.array(
+                    [[sinθ, 0, -cosθ], [0, 0, 0], [cosθ, 0, sinθ]]
                 )
                 np.testing.assert_allclose(
                     orientations_diff[0], target_orientations_diff
@@ -65,13 +61,20 @@ class TestSimpleShearOPX:
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
         with optional_logging:
-            for θ in np.mgrid[0 : 2 * np.pi : 360j]:
+            for θ in np.linspace(0, 2 * np.pi, 361):
                 _log.debug("θ (°): %s", np.rad2deg(θ))
+                orientations = Rotation.from_rotvec([[0, 0, θ]]).as_matrix()
+                deformation_rate = _core._get_deformation_rate(
+                    _core.MineralPhase.enstatite,
+                    orientations[0],
+                    np.array([0, 0, 0, 0]),
+                )
+                np.testing.assert_allclose(deformation_rate.flatten(), np.zeros(9))
                 orientations_diff, fractions_diff = _core.derivatives(
                     phase=_core.MineralPhase.enstatite,
                     fabric=_core.MineralFabric.enstatite_AB,
                     n_grains=1,
-                    orientations=Rotation.from_rotvec([[0, 0, θ]]).as_matrix(),
+                    orientations=orientations,
                     fractions=np.array([1.0]),
                     strain_rate=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]]),
                     velocity_gradient=np.array([[0, 0, 0], [2, 0, 0], [0, 0, 0]]),
@@ -81,10 +84,15 @@ class TestSimpleShearOPX:
                     gbm_mobility=0,
                     volume_fraction=1.0,
                 )
-                # Can't activate the (100)[001] slip system, no-op.
-                target_orientations_diff = np.zeros((3, 3))
+                # Can't activate the (100)[001] slip system, no plastic deformation.
+                # Only passive (rigid-body) rotation due to the velocity gradient.
+                sinθ = np.sin(θ)
+                cosθ = np.cos(θ)
+                target_orientations_diff = np.array(
+                    [[sinθ, cosθ, 0], [-cosθ, sinθ, 0], [0, 0, 0]]
+                )
                 np.testing.assert_allclose(
-                    orientations_diff[0], target_orientations_diff
+                    orientations_diff[0], target_orientations_diff, atol=1e-15
                 )
                 assert np.isclose(np.sum(fractions_diff), 0.0)
 
@@ -121,7 +129,7 @@ class TestSimpleShearOlivineA:
                 # Initial grain rotations around Z (anti-clockwise).
                 initial_orientations = Rotation.from_rotvec([[0, 0, θ]])
                 orientation_matrix = initial_orientations[0].as_matrix()
-                slip_invariants = _core._get_slip_invariants_olivine(
+                slip_invariants = _core._get_slip_invariants(
                     nondim_strain_rate, orientation_matrix
                 )
                 _log.debug("slip invariants: %s", slip_invariants)
@@ -216,7 +224,7 @@ class TestSimpleShearOlivineA:
                 # Initial grain rotations around Y (anti-clockwise).
                 initial_orientations = Rotation.from_rotvec([[0, θ, 0]])
                 orientation_matrix = initial_orientations[0].as_matrix()
-                slip_invariants = _core._get_slip_invariants_olivine(
+                slip_invariants = _core._get_slip_invariants(
                     nondim_strain_rate, orientation_matrix
                 )
                 _log.debug("slip invariants: %s", slip_invariants)
@@ -294,7 +302,7 @@ class TestSimpleShearOlivineA:
                 # Initial grain rotations around Y (anti-clockwise).
                 initial_orientations = Rotation.from_rotvec([[0, θ, 0]])
                 orientation_matrix = initial_orientations[0].as_matrix()
-                slip_invariants = _core._get_slip_invariants_olivine(
+                slip_invariants = _core._get_slip_invariants(
                     nondim_strain_rate, orientation_matrix
                 )
                 _log.debug("slip invariants: %s", slip_invariants)
@@ -372,7 +380,7 @@ class TestSimpleShearOlivineA:
                 # Initial grain rotations around X (anti-clockwise).
                 initial_orientations = Rotation.from_rotvec([[θ, 0, 0]])
                 orientation_matrix = initial_orientations[0].as_matrix()
-                slip_invariants = _core._get_slip_invariants_olivine(
+                slip_invariants = _core._get_slip_invariants(
                     nondim_strain_rate, orientation_matrix
                 )
                 _log.debug("slip invariants: %s", slip_invariants)

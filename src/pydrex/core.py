@@ -169,17 +169,12 @@ def _get_deformation_rate(phase, orientation, slip_rates):
     deformation_rate = np.empty((3, 3))
     for i in range(3):
         for j in range(3):
-            if phase == MineralPhase.olivine:
-                deformation_rate[i, j] = 2 * (
-                    slip_rates[0] * orientation[0, i] * orientation[1, j]
-                    + slip_rates[1] * orientation[0, i] * orientation[2, j]
-                    + slip_rates[2] * orientation[2, i] * orientation[1, j]
-                    + slip_rates[3] * orientation[2, i] * orientation[0, j]
-                )
-            elif phase == MineralPhase.enstatite:
-                deformation_rate[i, j] = 2 * orientation[2, i] * orientation[0, j]
-            else:
-                assert False  # Should never happen.
+            deformation_rate[i, j] = 2 * (
+                slip_rates[0] * orientation[0, i] * orientation[1, j]
+                + slip_rates[1] * orientation[0, i] * orientation[2, j]
+                + slip_rates[2] * orientation[2, i] * orientation[1, j]
+                + slip_rates[3] * orientation[2, i] * orientation[0, j]
+            )
     return deformation_rate
 
 
@@ -210,6 +205,10 @@ def _get_slip_rate_softest(deformation_rate, velocity_gradient):
             enumerator += 2 * deformation_rate[j, L] * velocity_gradient[j, L]
             denominator += 2 * deformation_rate[j, L] ** 2
 
+    # Tiny denominator means that relevant deformation_rate entries are zero.
+    # No deformation rate means no slip rate.
+    if -1e-15 < denominator < 1e-15:
+        return 0.0
     return enumerator / denominator
 
 
@@ -241,10 +240,16 @@ def _get_slip_rates_olivine(invariants, slip_indices, crss, deformation_exponent
 
 
 @nb.njit(fastmath=True)
-def _get_slip_invariants_olivine(strain_rate, orientation):
-    r"""Calculate strain rate invariants for the four slip systems of olivine.
+def _get_slip_invariants(strain_rate, orientation):
+    r"""Calculate strain rate invariants for minerals with four slip systems.
 
-    Calculates $I = ∑_{ij} l_{i} n_{j} \dot{ε}_{ij}$ for each slip sytem.
+    Calculates $I = ∑_{ij} l_{i} n_{j} \dot{ε}_{ij}$ for each slip sytem of:
+    - (010)[100]
+    - (001)[100]
+    - (010)[001]
+    - (100)[001]
+    Only the last return value is relevant for enstatite.
+    These are not configurable for now.
 
     Args:
     - `strain_rate` (array) — 3x3 dimensionless strain rate matrix
@@ -280,6 +285,9 @@ def _get_orientation_change(
     """
     orientation_change = np.zeros((3, 3))
     # Spin vector for the grain, see eq. 3 in Fraters 2021.
+    # Includes rigid body rotation as well as the plastic deformation contribution.
+    # This means that even with no active slip systems, the rotation will be nonzero
+    # if there is a rotational (i.e. antisymmetric) component of the velocity_gradient.
     spin_vector = np.empty(3)
     for j in range(3):
         r = (j + 1) % 3
@@ -290,6 +298,11 @@ def _get_orientation_change(
         ) / 2
 
     # Calculate rotation rate, see eq. 9 Kaminski & Ribe (2001).
+    # TODO: Alternative that might be faster:
+    # spin_matrix = np.einsum("ikj,k->ij", PERMUTATION_SYMBOL, spin_vector)
+    # orientation_change = spin_matrix.transpose() @ orientation
+    # Do Fraters 2021 only solve for the spin_matrix???
+    # Is it more stable to do that and perform the actual rotation after?
     for p in range(3):
         for q in range(3):
             for r in range(3):
@@ -364,22 +377,17 @@ def _get_strain_energy_enstatite(
     - `nucleation_efficiency` (float) — parameter controlling grain nucleation
 
     """
-    weight_factor = slip_rate_softest / crss[slip_indices[-1]] ** stress_exponent
+    # weight_factor = slip_rate_softest / crss[slip_indices[-1]] ** stress_exponent
     dislocation_density = (1 / crss[slip_indices[-1]]) ** (
         deformation_exponent - stress_exponent
-    ) * np.abs(weight_factor) ** (stress_exponent / deformation_exponent)
+    ) * np.abs(slip_rate_softest) ** (stress_exponent / deformation_exponent)
     # Dimensionless strain energy for this grain, see eq. 14, Fraters 2021.
     return dislocation_density * np.exp(
         -nucleation_efficiency * dislocation_density**2
     )
 
 
-# NOTE: Requires explicit Numba signature and must be defined last,
-# otherwise Numba 0.57.1 is not happy when CPO for multiple phases is calculated.
-# @nb.njit(
-#     "Tuple((f8[:,::1], f8))(i8, i8, f8[:,::1], f8[:,::1], f8[:,::1], f8, f8, i8)", fastmath=True
-# )
-@nb.njit
+@nb.njit(fastmath=True)
 def _get_rotation_and_strain(
     phase,
     fabric,
@@ -412,8 +420,8 @@ def _get_rotation_and_strain(
 
     """
     crss = get_crss(phase, fabric)
+    slip_invariants = _get_slip_invariants(strain_rate, orientation)
     if phase == MineralPhase.olivine:
-        slip_invariants = _get_slip_invariants_olivine(strain_rate, orientation)
         slip_indices = np.argsort(np.abs(slip_invariants / crss))
         slip_rates = _get_slip_rates_olivine(
             slip_invariants,
@@ -422,8 +430,11 @@ def _get_rotation_and_strain(
             deformation_exponent,
         )
     elif phase == MineralPhase.enstatite:
+        # Assumes exclusively (100)[001] slip for enstatite.
         slip_indices = np.argsort(1 / crss)
-        slip_rates = np.repeat(np.nan, 4)
+        slip_rates = np.zeros(4)
+        if np.abs(slip_invariants[-1]) > 1e-15:
+            slip_rates[-1] = 1
     else:
         assert False  # Should never happen.
 
@@ -435,6 +446,7 @@ def _get_rotation_and_strain(
         deformation_rate,
         slip_rate_softest,
     )
+
     if phase == MineralPhase.olivine:
         strain_energy = _get_strain_energy_olivine(
             crss,
@@ -446,6 +458,7 @@ def _get_rotation_and_strain(
             nucleation_efficiency,
         )
     elif phase == MineralPhase.enstatite:
+        slip_rate_softest *= 1 / crss[slip_indices[-1]] ** stress_exponent
         strain_energy = _get_strain_energy_enstatite(
             crss,
             slip_indices,
@@ -456,4 +469,5 @@ def _get_rotation_and_strain(
         )
     else:
         assert False  # Should never happen.
+
     return orientation_change, strain_energy
