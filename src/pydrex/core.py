@@ -1,6 +1,6 @@
-r"""> PyDRex: Core D-ReX functions and enums.
+r"""> PyDRex: Core D-Rex functions and enums.
 
-The function `derivatives` implements the core DRex solver, which computes the
+The function `derivatives` implements the core D-Rex solver, which computes the
 crystallographic rotation rate and changes in fractional grain volumes.
 
 """
@@ -179,7 +179,7 @@ def _get_deformation_rate(phase, orientation, slip_rates):
             elif phase == MineralPhase.enstatite:
                 deformation_rate[i, j] = 2 * orientation[2, i] * orientation[0, j]
             else:
-                assert False  # Should never happen.
+                raise SystemExit(1)  # Should never happen.
     return deformation_rate
 
 
@@ -425,7 +425,7 @@ def _get_rotation_and_strain(
         slip_indices = np.argsort(1 / crss)
         slip_rates = np.repeat(np.nan, 4)
     else:
-        assert False  # Should never happen.
+        raise SystemExit(1)  # Should never happen.
 
     deformation_rate = _get_deformation_rate(phase, orientation, slip_rates)
     slip_rate_softest = _get_slip_rate_softest(deformation_rate, velocity_gradient)
@@ -455,5 +455,5 @@ def _get_rotation_and_strain(
             nucleation_efficiency,
         )
     else:
-        assert False  # Should never happen.
+        raise SystemExit(1)  # Should never happen.
     return orientation_change, strain_energy

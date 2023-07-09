@@ -74,7 +74,7 @@ class TestSimpleShearOPX:
                     orientations=Rotation.from_rotvec([[0, 0, θ]]).as_matrix(),
                     fractions=np.array([1.0]),
                     strain_rate=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]]),
-                    velocity_gradient=np.array([[0, 2, 0], [2, 0, 0], [0, 0, 0]]),
+                    velocity_gradient=np.array([[0, 0, 0], [2, 0, 0], [0, 0, 0]]),
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,

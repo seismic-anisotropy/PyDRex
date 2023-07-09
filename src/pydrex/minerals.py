@@ -311,7 +311,7 @@ class Mineral:
         elif self.phase == _core.MineralPhase.enstatite:
             volume_fraction = config["enstatite_fraction"]
         else:
-            assert False  # Should never happen.
+            raise SystemExit(1)  # Should never happen.
 
         y_start = np.hstack(
             (
