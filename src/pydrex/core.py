@@ -1,19 +1,89 @@
-r"""> PyDRex: Core D-ReX functions.
+r"""> PyDRex: Core D-ReX functions and enums.
 
-CPO can be calculated along a flow pathline, using interpolated velocity values,
-or for a Lagrangian particle experiencing a given velocity gradient.
-
-.. warning::
-    It is recommended to use the `Mineral` class from `pydrex.minerals`
-    instead of using these routines directly, which do not circumvent all edge cases.
-    For example, the pathological case with a flow field with zero vorticity will crash.
+The function `derivatives` implements the core DRex solver, which computes the
+crystallographic rotation rate and changes in fractional grain volumes.
 
 """
+from enum import IntEnum, unique
+
 import numba as nb
 import numpy as np
 
-import pydrex.minerals as _minerals
-import pydrex.tensors as _tensors
+# NOTE: Do NOT import any pydrex submodules here to avoid cyclical imports.
+
+
+PERMUTATION_SYMBOL = np.array(
+    [
+        [[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]],
+        [[0.0, 0.0, -1.0], [0.0, 0.0, 0.0], [1.0, 0.0, 0.0]],
+        [[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
+    ]
+)
+
+
+@unique
+class MineralPhase(IntEnum):
+    """Supported mineral phases."""
+    olivine = 0
+    enstatite = 1
+
+
+@unique
+class DeformationRegime(IntEnum):
+    """Deformation mechanism regimes."""
+    diffusion = 0
+    dislocation = 1
+    byerlee = 2
+    max_viscosity = 3
+
+
+@unique
+class MineralFabric(IntEnum):
+    """Supported mineral fabrics.
+
+    The following fabric types are supported:
+    - olivine A-E type fabrics according to e.g.
+      [Karato et al., 2008](https://doi.org/10.1146%2Fannurev.earth.36.031207.124120).
+    - enstatite AB fabric, see
+      [Bernard et al., 2021](https://doi.org/10.1016/j.tecto.2021.228954).
+
+    """
+    olivine_A = 0
+    olivine_B = 1
+    olivine_C = 2
+    olivine_D = 3
+    olivine_E = 4
+    enstatite_AB = 5
+
+
+@nb.njit
+def get_crss(phase, fabric):
+    """Get Critical Resolved Shear Stress for the mineral `phase` and `fabric`.
+
+    Returns an array of the normalised threshold stresses required to activate slip on
+    each slip system. Olivine slip systems are ordered according to the convention used
+    for `OLIVINE_SLIP_SYSTEMS`.
+
+    """
+    if phase == MineralPhase.olivine:
+        match fabric:
+            case MineralFabric.olivine_A:
+                return np.array([1, 2, 3, np.inf])
+            case MineralFabric.olivine_B:
+                return np.array([3, 2, 1, np.inf])
+            case MineralFabric.olivine_C:
+                return np.array([3, 2, np.inf, 1])
+            case MineralFabric.olivine_D:
+                return np.array([1, 1, 3, np.inf])
+            case MineralFabric.olivine_E:
+                return np.array([3, 1, 2, np.inf])
+            case _:
+                raise ValueError("unsupported olivine fabric")
+    elif phase == MineralPhase.enstatite:
+        if fabric == MineralFabric.enstatite_AB:
+            return np.array([np.inf, np.inf, np.inf, 1])
+            raise ValueError("unsupported enstatite fabric")
+    raise ValueError("phase must be a valid `MineralPhase`")
 
 
 # 12 args is a lot, but this way we can use numba
@@ -80,86 +150,6 @@ def derivatives(
 
 
 @nb.njit(fastmath=True)
-def _get_rotation_and_strain(
-    phase,
-    fabric,
-    orientation,
-    strain_rate,
-    velocity_gradient,
-    stress_exponent,
-    deformation_exponent,
-    nucleation_efficiency,
-):
-    """Get the crystal axes rotation rate and strain energy of individual grain.
-
-    Args:
-    - `phase` (int) — ordinal number of the mineral phase
-                      see `pydrex.minerals.MineralPhase`
-    - `fabric` (int) — ordinal number of the fabric type, see `pydrex.fabric`
-    - `orientation` (array) — 3x3 orientation matrix (direction cosines)
-    - `strain_rate` (array) — 3x3 dimensionless strain rate matrix
-    - `velocity_gradient` (array) — 3x3 dimensionless velocity gradient matrix
-    - `stress_exponent` (float) — value of `p` for `dislocation_density ∝ shear_stress^p`
-    - `deformation_exponent` (float) — value of `n` for `shear_stress ∝ |deformation_rate|^(1/n)`
-    - `nucleation_efficiency (float) — parameter controlling grain nucleation
-
-    Note that "new" grains are assumed to rotate with their parent.
-
-    .. warning:: Raises zero-division errors if the vorticity is zero.
-
-    Returns a tuple with the rotation rate of the crystalline axes
-    with respect to the principal strain axes and strain energy of the grain.
-
-    """
-    crss = _minerals.get_crss(phase, fabric)
-    if phase == _minerals.MineralPhase.olivine:
-        slip_invariants = _get_slip_invariants_olivine(strain_rate, orientation)
-        slip_indices = np.argsort(np.abs(slip_invariants / crss))
-        slip_rates = _get_slip_rates_olivine(
-            slip_invariants,
-            slip_indices,
-            crss,
-            deformation_exponent,
-        )
-    elif phase == _minerals.MineralPhase.enstatite:
-        slip_indices = np.argsort(1 / crss)
-        slip_rates = np.repeat(np.nan, 4)
-    else:
-        assert False  # Should never happen.
-
-    deformation_rate = _get_deformation_rate(phase, orientation, slip_rates)
-    slip_rate_softest = _get_slip_rate_softest(deformation_rate, velocity_gradient)
-    orientation_change = _get_orientation_change(
-        orientation,
-        velocity_gradient,
-        deformation_rate,
-        slip_rate_softest,
-    )
-    if phase == _minerals.MineralPhase.olivine:
-        strain_energy = _get_strain_energy_olivine(
-            crss,
-            slip_rates,
-            slip_indices,
-            slip_rate_softest,
-            stress_exponent,
-            deformation_exponent,
-            nucleation_efficiency,
-        )
-    elif phase == _minerals.MineralPhase.enstatite:
-        strain_energy = _get_strain_energy_enstatite(
-            crss,
-            slip_indices,
-            slip_rate_softest,
-            stress_exponent,
-            deformation_exponent,
-            nucleation_efficiency,
-        )
-    else:
-        assert False  # Should never happen.
-    return orientation_change, strain_energy
-
-
-@nb.njit(fastmath=True)
 def _get_deformation_rate(phase, orientation, slip_rates):
     """Calculate deformation rate tensor for olivine or enstatite.
 
@@ -176,14 +166,14 @@ def _get_deformation_rate(phase, orientation, slip_rates):
     deformation_rate = np.empty((3, 3))
     for i in range(3):
         for j in range(3):
-            if phase == _minerals.MineralPhase.olivine:
+            if phase == MineralPhase.olivine:
                 deformation_rate[i, j] = 2 * (
                     slip_rates[0] * orientation[0, i] * orientation[1, j]
                     + slip_rates[1] * orientation[0, i] * orientation[2, j]
                     + slip_rates[2] * orientation[2, i] * orientation[1, j]
                     + slip_rates[3] * orientation[2, i] * orientation[0, j]
                 )
-            elif phase == _minerals.MineralPhase.enstatite:
+            elif phase == MineralPhase.enstatite:
                 deformation_rate[i, j] = 2 * orientation[2, i] * orientation[0, j]
             else:
                 assert False  # Should never happen.
@@ -302,7 +292,7 @@ def _get_orientation_change(
             for r in range(3):
                 for s in range(3):
                     orientation_change[p, q] += (
-                        _tensors.PERMUTATION_SYMBOL[q, r, s]
+                        PERMUTATION_SYMBOL[q, r, s]
                         * orientation[p, s]
                         * spin_vector[r]
                     )
@@ -381,3 +371,88 @@ def _get_strain_energy_enstatite(
     return dislocation_density * np.exp(
         -nucleation_efficiency * dislocation_density**2
     )
+
+
+# NOTE: Requires explicit Numba signature and must be defined last,
+# otherwise Numba 0.57.1 is not happy when CPO for multiple phases is calculated.
+# @nb.njit(
+#     "Tuple((f8[:,::1], f8))(i8, i8, f8[:,::1], f8[:,::1], f8[:,::1], f8, f8, i8)", fastmath=True
+# )
+@nb.njit
+def _get_rotation_and_strain(
+    phase,
+    fabric,
+    orientation,
+    strain_rate,
+    velocity_gradient,
+    stress_exponent,
+    deformation_exponent,
+    nucleation_efficiency,
+):
+    """Get the crystal axes rotation rate and strain energy of individual grain.
+
+    Args:
+    - `phase` (int) — ordinal number of the mineral phase
+                      see `pydrex.minerals.MineralPhase`
+    - `fabric` (int) — ordinal number of the fabric type, see `pydrex.fabric`
+    - `orientation` (array) — 3x3 orientation matrix (direction cosines)
+    - `strain_rate` (array) — 3x3 dimensionless strain rate matrix
+    - `velocity_gradient` (array) — 3x3 dimensionless velocity gradient matrix
+    - `stress_exponent` (float) — value of `p` for `dislocation_density ∝ shear_stress^p`
+    - `deformation_exponent` (float) — value of `n` for `shear_stress ∝ |deformation_rate|^(1/n)`
+    - `nucleation_efficiency (float) — parameter controlling grain nucleation
+
+    Note that "new" grains are assumed to rotate with their parent.
+
+    .. warning:: Raises zero-division errors if the vorticity is zero.
+
+    Returns a tuple with the rotation rate of the crystalline axes
+    with respect to the principal strain axes and strain energy of the grain.
+
+    """
+    crss = get_crss(phase, fabric)
+    if phase == MineralPhase.olivine:
+        slip_invariants = _get_slip_invariants_olivine(strain_rate, orientation)
+        slip_indices = np.argsort(np.abs(slip_invariants / crss))
+        slip_rates = _get_slip_rates_olivine(
+            slip_invariants,
+            slip_indices,
+            crss,
+            deformation_exponent,
+        )
+    elif phase == MineralPhase.enstatite:
+        slip_indices = np.argsort(1 / crss)
+        slip_rates = np.repeat(np.nan, 4)
+    else:
+        assert False  # Should never happen.
+
+    deformation_rate = _get_deformation_rate(phase, orientation, slip_rates)
+    slip_rate_softest = _get_slip_rate_softest(deformation_rate, velocity_gradient)
+    orientation_change = _get_orientation_change(
+        orientation,
+        velocity_gradient,
+        deformation_rate,
+        slip_rate_softest,
+    )
+    if phase == MineralPhase.olivine:
+        strain_energy = _get_strain_energy_olivine(
+            crss,
+            slip_rates,
+            slip_indices,
+            slip_rate_softest,
+            stress_exponent,
+            deformation_exponent,
+            nucleation_efficiency,
+        )
+    elif phase == MineralPhase.enstatite:
+        strain_energy = _get_strain_energy_enstatite(
+            crss,
+            slip_indices,
+            slip_rate_softest,
+            stress_exponent,
+            deformation_exponent,
+            nucleation_efficiency,
+        )
+    else:
+        assert False  # Should never happen.
+    return orientation_change, strain_energy

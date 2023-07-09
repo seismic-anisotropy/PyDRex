@@ -73,7 +73,9 @@ def polefigures(
         )
         fig_time = fig.add_subfigure(grid[0, :])
         first_row = 1
-        fig_time.suptitle("index along pathline", x=0.5, y=0.85, fontsize="small")
+        fig_time.suptitle(
+            f"N ⋅ (max strain) / {i_range.stop}", x=0.5, y=0.85, fontsize="small"
+        )
         ax_time = fig_time.add_subplot(111)
         ax_time.set_frame_on(False)
         ax_time.grid(False)
@@ -99,25 +101,38 @@ def polefigures(
             1, n_orientations, n + 1, projection="pydrex.polefigure"
         )
         pf100 = ax100.polefigure(
-            orientations, hkl=[1, 0, 0], density=density, density_kwargs=kwargs
+            orientations,
+            hkl=[1, 0, 0],
+            ref_axes=ref_axes,
+            density=density,
+            density_kwargs=kwargs,
         )
         ax010 = fig010.add_subplot(
             1, n_orientations, n + 1, projection="pydrex.polefigure"
         )
         pf010 = ax010.polefigure(
-            orientations, hkl=[0, 1, 0], density=density, density_kwargs=kwargs
+            orientations,
+            hkl=[0, 1, 0],
+            ref_axes=ref_axes,
+            density=density,
+            density_kwargs=kwargs,
         )
         ax001 = fig001.add_subplot(
             1, n_orientations, n + 1, projection="pydrex.polefigure"
         )
         pf001 = ax001.polefigure(
-            orientations, hkl=[0, 0, 1], density=density, density_kwargs=kwargs
+            orientations,
+            hkl=[0, 0, 1],
+            ref_axes=ref_axes,
+            density=density,
+            density_kwargs=kwargs,
         )
         if density:
             for ax, pf in zip((ax100, ax010, ax001), (pf100, pf010, pf001)):
                 cbar = fig.colorbar(
                     pf,
                     ax=ax,
+                    ref_axes=ref_axes,
                     fraction=0.05,
                     location="bottom",
                     orientation="horizontal",
@@ -164,7 +179,7 @@ def simple_shear_stationary_2d(
     savefile="pydrex_simple_shear_stationary_2d.png",
     markers=("."),
     labels=None,
-    refval=None,
+    θ_fse=None,
 ):
     """Plot diagnostics for stationary A-type olivine 2D simple shear box tests."""
     fig = plt.figure(figsize=(5, 8), dpi=300)
@@ -175,7 +190,33 @@ def simple_shear_stationary_2d(
     ax_mean.tick_params(labelbottom=False)
     ax_strength = fig.add_subplot(grid[1], sharex=ax_mean)
     ax_strength.set_ylabel("Texture strength (M-index)")
-    ax_strength.set_xlabel(r"Strain-time ($\dot{ε}_0 t$)")
+    ax_strength.set_xlabel(r"Strain ($\dot{ε}_0 t$)")
+
+    colors = []
+    data_Kaminski2001 = _io.read_scsv(
+        _io.data("thirdparty") / "Kaminski2001_GBMshear.scsv"
+    )
+    lines = ax_mean.plot(
+        np.asarray(data_Kaminski2001.equivalent_strain_M0) / 200,
+        data_Kaminski2001.angle_M0,
+        alpha=0.33,
+        label=r"$M^{\ast}=0$",
+    )
+    colors.append(lines[0].get_color())
+    lines = ax_mean.plot(
+        np.asarray(data_Kaminski2001.equivalent_strain_M50) / 200,
+        data_Kaminski2001.angle_M50,
+        alpha=0.33,
+        label=r"$M^{\ast}=50$",
+    )
+    colors.append(lines[0].get_color())
+    lines = ax_mean.plot(
+        np.asarray(data_Kaminski2001.equivalent_strain_M200) / 200,
+        data_Kaminski2001.angle_M200,
+        alpha=0.33,
+        label=r"$M^{\ast}=200$",
+    )
+    colors.append(lines[0].get_color())
 
     for i, (misorient_angles, misorient_indices) in enumerate(zip(angles, indices)):
         timestamps = np.linspace(0, timestop, len(misorient_angles))
@@ -188,6 +229,7 @@ def simple_shear_stationary_2d(
             markersize=5,
             alpha=0.33,
             label=label,
+            color=colors[i],
         )
         ax_strength.plot(
             timestamps,
@@ -196,17 +238,11 @@ def simple_shear_stationary_2d(
             markersize=5,
             alpha=0.33,
             label=label,
+            color=colors[i],
         )
 
-    if refval is not None:
-        ax_mean.plot(
-            timestamps,
-            refval * np.exp(timestamps * (np.cos(np.deg2rad(refval * 2)) - 1)),
-            "r--",
-            label=r"$θ ⋅ \exp[t ⋅ (\cos2θ - 1)]$,"
-            + "\n\t"
-            + rf"$\theta = {refval:.1f}$",
-        )
+    if θ_fse is not None:
+        ax_mean.plot(timestamps, θ_fse, "r--", label="FSE")
 
     if labels is not None:
         ax_mean.legend()
@@ -392,4 +428,23 @@ def corner_flow_2d(
     if labels is not None:
         ax_mean.legend()
 
+    fig.savefig(_io.resolve_path(savefile))
+
+
+def single_olivineA_simple_shear(
+    initial_angles,
+    rotation_rates,
+    target_rotation_rates,
+    savefile="single_olivineA_simple_shear.png",
+):
+    fig = plt.figure(figsize=(4, 3), dpi=300)
+    ax = fig.subplots(nrows=1, ncols=1)
+    ax.set_ylabel("rotation rate")
+    ax.set_xlabel("initial angle (°)")
+    ax.set_xlim((0, 360))
+    ax.set_xticks(np.linspace(0, 360, 5))
+    ax.plot(initial_angles, target_rotation_rates, c="tab:orange", lw=1)
+    ax.scatter(
+        initial_angles, rotation_rates, facecolors="none", edgecolors="k", s=8, lw=1
+    )
     fig.savefig(_io.resolve_path(savefile))
