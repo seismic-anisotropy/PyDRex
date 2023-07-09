@@ -189,7 +189,6 @@ class TestSinglePolycrystalOlivineA:
                 savefile=f"{outdir}/simple_shearYZ_stationary_olivineA_initQ1.png",
                 markers=("o", "v", "s"),
                 labels=labels,
-                refval=45,
             )
 
     def test_shearXZ_initQ1(
@@ -355,5 +354,4 @@ class TestSinglePolycrystalOlivineA:
                 savefile=f"{outdir}/simple_shearXZ_stationary_olivineA_initQ1.png",
                 markers=("o", "v", "s"),
                 labels=labels,
-                refval=45,
             )
