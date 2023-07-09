@@ -179,7 +179,7 @@ def _get_deformation_rate(phase, orientation, slip_rates):
             elif phase == MineralPhase.enstatite:
                 deformation_rate[i, j] = 2 * orientation[2, i] * orientation[0, j]
             else:
-                raise SystemExit(1)  # Should never happen.
+                assert False  # Should never happen.
     return deformation_rate
 
 
@@ -425,7 +425,7 @@ def _get_rotation_and_strain(
         slip_indices = np.argsort(1 / crss)
         slip_rates = np.repeat(np.nan, 4)
     else:
-        raise SystemExit(1)  # Should never happen.
+        assert False  # Should never happen.
 
     deformation_rate = _get_deformation_rate(phase, orientation, slip_rates)
     slip_rate_softest = _get_slip_rate_softest(deformation_rate, velocity_gradient)
@@ -455,5 +455,5 @@ def _get_rotation_and_strain(
             nucleation_efficiency,
         )
     else:
-        raise SystemExit(1)  # Should never happen.
+        assert False  # Should never happen.
     return orientation_change, strain_energy

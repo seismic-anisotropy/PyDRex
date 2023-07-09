@@ -161,7 +161,7 @@ def misorientations_random(low, high, system=(2, 4)):
                 )
             )
         else:
-            raise SystemExit(1)  # Should never happen.
+            assert False  # Should never happen.
 
     return np.sum(counts_both) / 2
 
