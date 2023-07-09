@@ -49,6 +49,7 @@ import numpy as np
 from numpy import testing as nt
 from scipy.spatial.transform import Rotation
 
+from pydrex import core as _core
 from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
 from pydrex import io as _io
@@ -133,8 +134,8 @@ class TestOlivineA:
             _begin = time.perf_counter()
             for z_exit in z_ends:
                 mineral = _minerals.Mineral(
-                    _minerals.MineralPhase.olivine,
-                    _minerals.OlivineFabric.A,
+                    _core.MineralPhase.olivine,
+                    _core.MineralFabric.olivine_A,
                     _defmech.Regime.dislocation,
                     n_grains=n_grains,
                     fractions_init=np.full(n_grains, 1 / n_grains),

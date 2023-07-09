@@ -16,6 +16,7 @@ from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
+from pydrex import core as _core
 from pydrex import stats as _stats
 from pydrex import visualisation as _vis
 
@@ -79,8 +80,8 @@ class TestSinglePolycrystalOlivineA:
         # One mineral to test each value of grain boundary mobility.
         minerals = [
             _minerals.Mineral(
-                _minerals.MineralPhase.olivine,
-                _minerals.OlivineFabric.A,
+                _core.MineralPhase.olivine,
+                _core.MineralFabric.olivine_A,
                 _defmech.Regime.dislocation,
                 n_grains=n_grains,
                 fractions_init=np.full(n_grains, 1 / n_grains),
@@ -240,8 +241,8 @@ class TestSinglePolycrystalOlivineA:
         # One mineral to test each grain boundary sliding threshold.
         minerals = [
             _minerals.Mineral(
-                _minerals.MineralPhase.olivine,
-                _minerals.OlivineFabric.A,
+                _core.MineralPhase.olivine,
+                _core.MineralFabric.olivine_A,
                 _defmech.Regime.dislocation,
                 n_grains=n_grains,
                 fractions_init=np.full(n_grains, 1 / n_grains),

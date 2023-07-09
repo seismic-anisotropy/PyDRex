@@ -1,10 +1,10 @@
 """> PyDRex: Mock objects for testing and reproducibility."""
-from pydrex.minerals import OlivineFabric
+from pydrex.core import MineralFabric
 
 PARAMS_FRATERS2021 = {
     "olivine_fraction": 0.7,
     "enstatite_fraction": 0.3,
-    "initial_olivine_fabric": OlivineFabric.A,
+    "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
     "deformation_exponent": 3.5,
     "gbm_mobility": 125,
@@ -17,7 +17,7 @@ PARAMS_FRATERS2021 = {
 PARAMS_KAMINSKI2001_FIG5_SOLID = {
     "olivine_fraction": 1,
     "enstatite_fraction": 0,
-    "initial_olivine_fabric": OlivineFabric.A,
+    "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
     "deformation_exponent": 3.5,
     "gbm_mobility": 0,
@@ -30,7 +30,7 @@ PARAMS_KAMINSKI2001_FIG5_SOLID = {
 PARAMS_KAMINSKI2001_FIG5_SHORTDASH = {
     "olivine_fraction": 1,
     "enstatite_fraction": 0,
-    "initial_olivine_fabric": OlivineFabric.A,
+    "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
     "deformation_exponent": 3.5,
     "gbm_mobility": 50,
@@ -43,7 +43,7 @@ PARAMS_KAMINSKI2001_FIG5_SHORTDASH = {
 PARAMS_KAMINSKI2001_FIG5_LONGDASH = {
     "olivine_fraction": 1,
     "enstatite_fraction": 0,
-    "initial_olivine_fabric": OlivineFabric.A,
+    "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
     "deformation_exponent": 3.5,
     "gbm_mobility": 200,
@@ -56,7 +56,7 @@ PARAMS_KAMINSKI2001_FIG5_LONGDASH = {
 PARAMS_KAMINSKI2004_FIG4_TRIANGLES = {
     "olivine_fraction": 1,
     "enstatite_fraction": 0,
-    "initial_olivine_fabric": OlivineFabric.A,
+    "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
     "deformation_exponent": 3.5,
     "gbm_mobility": 125,
@@ -69,7 +69,7 @@ PARAMS_KAMINSKI2004_FIG4_TRIANGLES = {
 PARAMS_KAMINSKI2004_FIG4_SQUARES = {
     "olivine_fraction": 1,
     "enstatite_fraction": 0,
-    "initial_olivine_fabric": OlivineFabric.A,
+    "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
     "deformation_exponent": 3.5,
     "gbm_mobility": 125,
@@ -82,7 +82,7 @@ PARAMS_KAMINSKI2004_FIG4_SQUARES = {
 PARAMS_KAMINSKI2004_FIG4_CIRCLES = {
     "olivine_fraction": 1,
     "enstatite_fraction": 0,
-    "initial_olivine_fabric": OlivineFabric.A,
+    "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
     "deformation_exponent": 3.5,
     "gbm_mobility": 125,
@@ -95,7 +95,7 @@ PARAMS_KAMINSKI2004_FIG4_CIRCLES = {
 PARAMS_HEDJAZIAN2017 = {
     "olivine_fraction": 0.7,
     "enstatite_fraction": 0.3,
-    "initial_olivine_fabric": OlivineFabric.A,
+    "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
     "deformation_exponent": 3.5,
     "gbm_mobility": 10,

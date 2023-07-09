@@ -8,10 +8,8 @@
 """
 import io
 from dataclasses import dataclass, field
-from enum import IntEnum, unique
 from zipfile import ZipFile
 
-import numba as nb
 import numpy as np
 from scipy import linalg as la
 from scipy.integrate import LSODA
@@ -22,37 +20,6 @@ from pydrex import deformation_mechanism as _defmech
 from pydrex import exceptions as _err
 from pydrex import io as _io
 from pydrex import logger as _log
-
-
-@unique
-class OlivineFabric(IntEnum):
-    """Enumeration type for olivine fabrics A-E."""
-
-    A = 0
-    B = 1
-    C = 2
-    D = 3
-    E = 4
-
-
-@unique
-class EnstatiteFabric(IntEnum):
-    """Enumeration type with a single member A which is the only enstatite fabric."""
-
-    A = 0  # Just to make it consistent.
-
-
-@unique
-class MineralPhase(IntEnum):
-    """Supported mineral phases:
-
-    - olivine (0)
-    - enstatite (1)
-
-    """
-
-    olivine = 0
-    enstatite = 1
 
 
 OLIVINE_STIFFNESS = np.array(
@@ -92,11 +59,11 @@ from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.
 
 
 OLIVINE_PRIMARY_AXIS = {
-    OlivineFabric.A: "a",
-    OlivineFabric.B: "c",
-    OlivineFabric.C: "c",
-    OlivineFabric.D: "a",
-    OlivineFabric.E: "a",
+    _core.MineralFabric.olivine_A: "a",
+    _core.MineralFabric.olivine_B: "c",
+    _core.MineralFabric.olivine_C: "c",
+    _core.MineralFabric.olivine_D: "a",
+    _core.MineralFabric.olivine_E: "a",
 }
 """Primary slip axis name for for the given olivine `fabric`."""
 
@@ -116,36 +83,6 @@ returned by `get_crss`.
 """
 
 
-@nb.njit
-def get_crss(phase, fabric):
-    """Get Critical Resolved Shear Stress for the mineral `phase` and `fabric`.
-
-    Returns an array of the normalised threshold stresses required to activate slip on
-    each slip system. Slip systems are ordered according to the convention used for
-    `OLIVINE_SLIP_SYSTEMS`.
-
-    """
-    if phase == MineralPhase.olivine:
-        match fabric:
-            case OlivineFabric.A:
-                return np.array([1, 2, 3, np.inf])
-            case OlivineFabric.B:
-                return np.array([3, 2, 1, np.inf])
-            case OlivineFabric.C:
-                return np.array([3, 2, np.inf, 1])
-            case OlivineFabric.D:
-                return np.array([1, 1, 3, np.inf])
-            case OlivineFabric.E:
-                return np.array([3, 1, 2, np.inf])
-            case _:
-                raise ValueError("fabric must be a valid `OlivineFabric`")
-    elif phase == MineralPhase.enstatite:
-        if fabric == EnstatiteFabric.A:
-            return np.array([np.inf, np.inf, np.inf, 1])
-        raise ValueError("fabric must be a valid `EnstatiteFabric`")
-    raise ValueError("phase must be a valid `MineralPhase`")
-
-
 @dataclass
 class Mineral:
     """Class for storing mineral CPO.
@@ -156,7 +93,7 @@ class Mineral:
 
     Attributes:
     - `phase` (int) — ordinal number of the mineral phase, see `MineralPhase`
-    - `fabric` (int) — ordinal number of the fabric type, see `OlivineFabric`
+    - `fabric` (int) — ordinal number of the fabric type, see `MineralFabric.olivine_
       and `EnstatiteFabric`
     - `regime` (int) — ordinal number of the deformation regime,
       see `pydrex.deformation_mechanism.Regime`
@@ -175,8 +112,8 @@ class Mineral:
 
     """
 
-    phase: int = MineralPhase.olivine
-    fabric: int = OlivineFabric.A
+    phase: int = _core.MineralPhase.olivine
+    fabric: int = _core.MineralFabric.olivine_A
     regime: int = _defmech.Regime.dislocation
     n_grains: int = 1000
     # Initial condition, randomised if not given.
@@ -370,9 +307,9 @@ class Mineral:
                 + " that returns a 3-component array."
             )
 
-        if self.phase == MineralPhase.olivine:
+        if self.phase == _core.MineralPhase.olivine:
             volume_fraction = config["olivine_fraction"]
-        elif self.phase == MineralPhase.enstatite:
+        elif self.phase == _core.MineralPhase.enstatite:
             volume_fraction = config["enstatite_fraction"]
         else:
             assert False  # Should never happen.
