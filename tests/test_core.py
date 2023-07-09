@@ -47,7 +47,7 @@ class TestSimpleShearOPX:
                 sinθ = np.sin(θ)
                 target_orientations_diff = np.array(
                     [
-                        [sinθ * (1 + cos2θ), 0, - cosθ * (1 + cos2θ)],
+                        [sinθ * (1 + cos2θ), 0, -cosθ * (1 + cos2θ)],
                         [0, 0, 0],
                         [cosθ * (1 + cos2θ), 0, sinθ * (1 + cos2θ)],
                     ]

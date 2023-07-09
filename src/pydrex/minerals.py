@@ -21,7 +21,6 @@ from pydrex import exceptions as _err
 from pydrex import io as _io
 from pydrex import logger as _log
 
-
 OLIVINE_STIFFNESS = np.array(
     [
         [320.71, 69.84, 71.22, 0.0, 0.0, 0.0],

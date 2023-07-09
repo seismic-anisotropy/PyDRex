@@ -24,6 +24,7 @@ PERMUTATION_SYMBOL = np.array(
 @unique
 class MineralPhase(IntEnum):
     """Supported mineral phases."""
+
     olivine = 0
     enstatite = 1
 
@@ -31,6 +32,7 @@ class MineralPhase(IntEnum):
 @unique
 class DeformationRegime(IntEnum):
     """Deformation mechanism regimes."""
+
     diffusion = 0
     dislocation = 1
     byerlee = 2
@@ -48,6 +50,7 @@ class MineralFabric(IntEnum):
       [Bernard et al., 2021](https://doi.org/10.1016/j.tecto.2021.228954).
 
     """
+
     olivine_A = 0
     olivine_B = 1
     olivine_C = 2
@@ -292,9 +295,7 @@ def _get_orientation_change(
             for r in range(3):
                 for s in range(3):
                     orientation_change[p, q] += (
-                        PERMUTATION_SYMBOL[q, r, s]
-                        * orientation[p, s]
-                        * spin_vector[r]
+                        PERMUTATION_SYMBOL[q, r, s] * orientation[p, s] * spin_vector[r]
                     )
 
     return orientation_change
