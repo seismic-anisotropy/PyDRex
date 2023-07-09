@@ -65,7 +65,7 @@ def get_crss(phase, fabric):
 
     Returns an array of the normalised threshold stresses required to activate slip on
     each slip system. Olivine slip systems are ordered according to the convention used
-    for `OLIVINE_SLIP_SYSTEMS`.
+    for `pydrex.minerals.OLIVINE_SLIP_SYSTEMS`.
 
     """
     if phase == MineralPhase.olivine:
@@ -109,9 +109,8 @@ def derivatives(
     """Get derivatives of orientation and volume distribution.
 
     Args:
-    - `phase` (int) — ordinal number of the mineral phase
-                      see `pydrex.minerals.MineralPhase`
-    - `fabric` (int) — ordinal number of the fabric type, see `pydrex.fabric`
+    - `phase` (`MineralPhase`) — ordinal number of the mineral phase
+    - `fabric` (`MineralFabric`) — ordinal number of the fabric type
     - `n_grains` (int) — number of "grains" i.e. discrete volume segments
     - `orientations` (array) — `n_grains`x3x3 orientations (direction cosines)
     - `fractions` (array) — volume fractions of the "grains" relative to aggregate volume
@@ -123,7 +122,6 @@ def derivatives(
     - `gmb_mobility` (float) — grain boundary mobility parameter
     - `volume_fraction` (float) — volume fraction of the mineral phase relative to
                                   other phases
-    .. warning:: Raises zero-division errors if the vorticity is zero.
 
     Returns a tuple with the rotation rates and grain volume fraction changes.
 
@@ -160,8 +158,7 @@ def _get_deformation_rate(phase, orientation, slip_rates):
     defined by the principal strain axes (finite strain ellipsoid).
 
     Args:
-    - `phase` (int) — ordinal number of the mineral phase
-                      see `pydrex.minerals.MineralPhase`
+    - `phase` (`MineralPhase`) — ordinal number of the mineral phase
     - `orientation` (array) — 3x3 orientation matrix (direction cosines)
     - `slip_rates` (array) — slip rates relative to slip rate on softest slip system
 
@@ -401,9 +398,8 @@ def _get_rotation_and_strain(
     """Get the crystal axes rotation rate and strain energy of individual grain.
 
     Args:
-    - `phase` (int) — ordinal number of the mineral phase
-                      see `pydrex.minerals.MineralPhase`
-    - `fabric` (int) — ordinal number of the fabric type, see `pydrex.fabric`
+    - `phase` (`MineralPhase`) — ordinal number of the mineral phase
+    - `fabric` (`MineralFabric`) — ordinal number of the fabric type
     - `orientation` (array) — 3x3 orientation matrix (direction cosines)
     - `strain_rate` (array) — 3x3 dimensionless strain rate matrix
     - `velocity_gradient` (array) — 3x3 dimensionless velocity gradient matrix
@@ -412,8 +408,6 @@ def _get_rotation_and_strain(
     - `nucleation_efficiency (float) — parameter controlling grain nucleation
 
     Note that "new" grains are assumed to rotate with their parent.
-
-    .. warning:: Raises zero-division errors if the vorticity is zero.
 
     Returns a tuple with the rotation rate of the crystalline axes
     with respect to the principal strain axes and strain energy of the grain.
