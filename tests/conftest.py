@@ -66,9 +66,11 @@ def outdir(request):
 
 @pytest.fixture(scope="function")
 def console_handler(request):
-    return request.config.pluginmanager.get_plugin(
-        "pytest-console-logger"
-    ).log_cli_handler
+    if request.config.option.verbose > 0:
+        return request.config.pluginmanager.get_plugin(
+            "pytest-console-logger"
+        ).log_cli_handler
+    return _log.LOGGER_CONSOLE
 
 
 @pytest.fixture
