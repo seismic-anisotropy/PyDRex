@@ -5,6 +5,14 @@ from pydrex.minerals import OLIVINE_STIFFNESS, ENSTATITE_STIFFNESS
 from pydrex import tensors as _tensors
 
 
+def test_voigt_decompose():
+    """Test decomposition of Voigt 6x6 matrix into distinct contractions."""
+    olivine_tensor = _tensors.voigt_to_elastic_tensor(OLIVINE_STIFFNESS)
+    dilat, voigt = _tensors.voigt_decompose(OLIVINE_STIFFNESS)
+    np.assert_array_equal(np.einsum("ijkk", olivine_tensor), dilat)
+    np.assert_array_equal(np.einsum("ijkj", olivine_tensor), voigt)
+
+
 def test_voigt_tensor():
     """Test elasticity tensor <-> 6x6 Voigt matrix conversions."""
     olivine_tensor = np.array(

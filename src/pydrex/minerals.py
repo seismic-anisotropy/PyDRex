@@ -20,6 +20,7 @@ from pydrex import deformation_mechanism as _defmech
 from pydrex import exceptions as _err
 from pydrex import io as _io
 from pydrex import logger as _log
+from pydrex import tensors as _tensors
 
 OLIVINE_STIFFNESS = np.array(
     [
@@ -80,6 +81,73 @@ The order of slip systems returned matches the order of critical shear stresses
 returned by `get_crss`.
 
 """
+
+
+# TODO: Compare to [Man & Huang, 2011](https://doi.org/10.1007/s10659-011-9312-y).
+def voigt_averages(minerals, weights):
+    """Calculate elastic tensors as the Voigt averages of a collection of `mineral`s.
+
+    Args:
+    - `minerals` — list of `pydrex.minerals.Mineral` instances storing orientations and
+      fractional volumes of the grains within each distinct mineral phase
+    - `weights` (dict) — dictionary containing weights of each mineral
+      phase, as a fraction of 1, in keys named "<phase>_fraction", e.g. "olivine_fraction"
+
+    Raises a ValueError if the minerals contain an unequal number of grains or stored
+    texture results.
+
+    """
+    n_grains = minerals[0].n_grains
+    if not np.all([m.n_grains == n_grains for m in minerals[1:]]):
+        raise ValueError("cannot average minerals with unequal grain counts")
+    n_steps = len(minerals[0].orientations)
+    if not np.all([len(m.orientations) == n_steps for m in minerals[1:]]):
+        raise ValueError(
+            "cannot average minerals with variable-length orientation arrays"
+        )
+    if not np.all([len(m.fractions) == n_steps for m in minerals]):
+        raise ValueError(
+            "cannot average minerals with variable-length grain volume arrays"
+        )
+
+    elastic_tensors = {}
+
+    # TODO: Perform rotation directly on the 6x6 matrices, see Carcione 2007.
+    # This trick is implemented in cpo_elastic_tensor.cc in Aspect.
+    average_tensors = np.zeros((n_steps, 6, 6))
+    for i in range(n_steps):
+        for mineral in minerals:
+            for n in range(n_grains):
+                match mineral.phase:
+                    case _core.MineralPhase.olivine:
+                        if "olivine" not in elastic_tensors:
+                            elastic_tensors[
+                                "olivine"
+                            ] = _tensors.voigt_to_elastic_tensor(OLIVINE_STIFFNESS)
+                        average_tensors[i] += _tensors.elastic_tensor_to_voigt(
+                            _tensors.rotate(
+                                elastic_tensors["olivine"],
+                                mineral.orientations[i][n, ...].transpose(),
+                            )
+                            * mineral.fractions[i][n]
+                            * weights["olivine_fraction"]
+                        )
+                    case _core.MineralPhase.enstatite:
+                        if "enstatite" not in elastic_tensors:
+                            elastic_tensors[
+                                "enstatite"
+                            ] = _tensors.voigt_to_elastic_tensor(ENSTATITE_STIFFNESS)
+                        average_tensors[i] += _tensors.elastic_tensor_to_voigt(
+                            _tensors.rotate(
+                                elastic_tensors["enstatite"],
+                                minerals.orientations[i][n, ...].transpose(),
+                            )
+                            * mineral.fractions[i][n]
+                            * weights["enstatite_fraction"]
+                        )
+                    case _:
+                        raise ValueError(f"unsupported mineral phase: {mineral.phase}")
+    return average_tensors
 
 
 @dataclass
