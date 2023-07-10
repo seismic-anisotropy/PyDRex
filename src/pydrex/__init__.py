@@ -136,27 +136,32 @@ Read [the D-Rex introduction section](#the-d-rex-kinematic-cpo-model) for more d
 
 """
 from pydrex.core import (
-    MineralPhase,
-    MineralFabric,
     DeformationRegime,
+    MineralFabric,
+    MineralPhase,
     derivatives,
     get_crss,
 )
 from pydrex.diagnostics import (
     bingham_average,
-    finite_strain,
-    symmetry,
-    misorientation_index,
     coaxial_index,
+    finite_strain,
     misorientation_angles,
+    misorientation_index,
     smallest_angle,
+    symmetry,
 )
 from pydrex.geometry import (
+    lambert_equal_area,
+    poles,
+    shirley_concentric_squaredisk,
     to_cartesian,
     to_spherical,
-    poles,
-    lambert_equal_area,
-    shirley_concentric_squaredisk,
 )
-from pydrex.minerals import OLIVINE_STIFFNESS, OLIVINE_SLIP_SYSTEMS, Mineral, voigt_averages
+from pydrex.minerals import (
+    OLIVINE_SLIP_SYSTEMS,
+    OLIVINE_STIFFNESS,
+    Mineral,
+    voigt_averages,
+)
 from pydrex.stats import resample_orientations

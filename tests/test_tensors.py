@@ -1,8 +1,8 @@
 """> PyDRex: Tests for tensor operations."""
 import numpy as np
 
-from pydrex.minerals import OLIVINE_STIFFNESS, ENSTATITE_STIFFNESS
 from pydrex import tensors as _tensors
+from pydrex.minerals import ENSTATITE_STIFFNESS, OLIVINE_STIFFNESS
 
 
 def test_voigt_decompose():
