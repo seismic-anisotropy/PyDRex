@@ -1,4 +1,11 @@
-"""> PyDRex: Tensor operation functions and helpers."""
+"""> PyDRex: Tensor operation functions and helpers.
+
+For Voigt notation, the symmetric 6x6 matrix representation is used,
+which assumes that the fourth order tensor being represented as such is also symmetric.
+The vectorial notation uses 21 components which are the independent components of the
+symmetric 6x6 matrix.
+
+"""
 import numba as nb
 import numpy as np
 
@@ -11,6 +18,7 @@ PERMUTATION_SYMBOL = np.array(
 )
 
 
+@nb.njit(fastmath=True)
 def upper_tri_to_symmetric(arr):
     """Create symmetric array using upper triangle of input array.
 
@@ -32,8 +40,13 @@ def upper_tri_to_symmetric(arr):
     return np.where(upper_tri, upper_tri, upper_tri.transpose())
 
 
+@nb.njit(fastmath=True)
 def voigt_to_elastic_tensor(matrix):
-    """Create 4-th order elastic tensor from an equivalent Voigt matrix."""
+    """Create 4-th order elastic tensor from an equivalent Voigt matrix.
+
+    See also: `elastic_tensor_to_voigt`.
+
+    """
     tensor = np.empty((3, 3, 3, 3))
     for p in range(3):
         for q in range(3):
@@ -47,6 +60,7 @@ def voigt_to_elastic_tensor(matrix):
     return tensor
 
 
+@nb.njit(fastmath=True)
 def elastic_tensor_to_voigt(tensor):
     """Create a 6x6 Voigt matrix from an equivalent 4-th order elastic tensor."""
     matrix = np.zeros((6, 6))
@@ -65,6 +79,7 @@ def elastic_tensor_to_voigt(tensor):
     return (matrix + matrix.transpose()) / 2
 
 
+@nb.njit(fastmath=True)
 def voigt_matrix_to_vector(matrix):
     """Create the 21-component Voigt vector equivalent to the 6x6 Voigt matrix."""
     vector = np.zeros(21)
@@ -79,7 +94,43 @@ def voigt_matrix_to_vector(matrix):
     return vector
 
 
-@nb.njit
+@nb.njit(fastmath=True)
+def voigt_vector_to_matrix(vector):
+    """Create the 6x6 matrix representation of the 21-component Voigt vector.
+
+    See also: `voigt_matrix_to_vector`.
+
+    """
+    matrix = np.zeros((6, 6))
+    for i in range(3):
+        matrix[i, i] = vector[i]
+        matrix[i + 3, i + 3] = 0.5 * vector[i + 6]
+
+    matrix[1, 2] = 1 / np.sqrt(2) * vector[3]
+    matrix[0, 2] = 1 / np.sqrt(2) * vector[4]
+    matrix[0, 1] = 1 / np.sqrt(2) * vector[5]
+
+    matrix[1, 4] = 0.5 * vector[10]
+    matrix[2, 5] = 0.5 * vector[11]
+    matrix[2, 3] = 0.5 * vector[12]
+
+    matrix[1, 4] = 0.5 * vector[10]
+    matrix[2, 5] = 0.5 * vector[11]
+    matrix[2, 3] = 0.5 * vector[12]
+
+    matrix[0, 4] = 0.5 * vector[13]
+    matrix[1, 5] = 0.5 * vector[14]
+    matrix[1, 3] = 0.5 * vector[15]
+
+    matrix[2][4] = 0.5 * input[16]
+    matrix[0][5] = 0.5 * input[17]
+    matrix[4][5] = 0.5 * 1 / np.sqrt(2) * vector[18]
+    matrix[3][5] = 0.5 * 1 / np.sqrt(2) * vector[19]
+    matrix[3][4] = 0.5 * 1 / np.sqrt(2) * vector[20]
+    return matrix
+
+
+@nb.njit(fastmath=True)
 def rotate(tensor, rotation):
     """Rotate 4-th order tensor using a 3x3 rotation matrix."""
     rotated_tensor = np.zeros((3, 3, 3, 3))
