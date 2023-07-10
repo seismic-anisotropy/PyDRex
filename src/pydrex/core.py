@@ -3,6 +3,11 @@ r"""> PyDRex: Core D-Rex functions and enums.
 The function `derivatives` implements the core D-Rex solver, which computes the
 crystallographic rotation rate and changes in fractional grain volumes.
 
+**Acronyms:**
+- CRSS = Critical Resolved Shear Stress,
+    i.e. threshold stress required to initiate slip on a slip system,
+    normalised to the stress required to initiate slip on the softest slip system
+
 """
 from enum import IntEnum, unique
 

@@ -1,11 +1,4 @@
-"""> PyDRex: Lagrangian data structures and mineral fabric definitions.
-
-**Acronyms:**
-- CRSS = Critical Resolved Shear Stress,
-    i.e. threshold stress required to initiate slip on a slip system,
-    normalised to the stress required to initiate slip on the softest slip system
-
-"""
+"""> PyDRex: Computations of mineral texture and elasticity."""
 import io
 from dataclasses import dataclass, field
 from zipfile import ZipFile
@@ -32,7 +25,7 @@ OLIVINE_STIFFNESS = np.array(
         [0.0, 0.0, 0.0, 0.0, 0.0, 78.36],
     ]
 )
-"""Stiffness tensor for olivine, with units of GPa.
+"""Stiffness tensor for olivine (Voigt representation), with units of GPa.
 
 The source of the values used here is unknown, but they are copied
 from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz> [88K download]
@@ -50,7 +43,7 @@ ENSTATITE_STIFFNESS = np.array(
         [0.0, 0.0, 0.0, 0.0, 0.0, 80.1],
     ]
 )
-"""Stiffness tensor for enstatite, with units of GPa.
+"""Stiffness tensor for enstatite (Voigt representation), with units of GPa.
 
 The source of the values used here is unknown, but they are copied
 from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz> [88K download]
@@ -78,7 +71,7 @@ OLIVINE_SLIP_SYSTEMS = (
 
 Tuples contain the slip plane normal and slip direction vectors.
 The order of slip systems returned matches the order of critical shear stresses
-returned by `get_crss`.
+returned by `pydrex.core.get_crss`.
 
 """
 
@@ -152,30 +145,64 @@ def voigt_averages(minerals, weights):
 
 @dataclass
 class Mineral:
-    """Class for storing mineral CPO.
+    """Class for storing polycrystal texture for a single mineral phase.
 
-    A `Mineral` stores CPO data for an aggregate of grains*.
-    Additionally, mineral fabric type and deformation regime
-    are also tracked. See `pydrex.deformation_mechanism`.
+    A `Mineral` stores texture data for an aggregate of grains*.
+    Additionally, mineral fabric type and deformation regime are also tracked.
+    To provide an initial texture for the mineral, use the constructor arguments
+    `fractions_init` and `orientations_init`. By default,
+    a uniform volume distribution of random orientations is generated.
 
-    Attributes:
-    - `phase` (int) — ordinal number of the mineral phase, see `MineralPhase`
-    - `fabric` (int) — ordinal number of the fabric type, see `MineralFabric.olivine_
-      and `EnstatiteFabric`
-    - `regime` (int) — ordinal number of the deformation regime,
-      see `pydrex.deformation_mechanism.Regime`
+    The `update_orientations` method computes new orientations and grain volumes
+    for a given velocity gradient. These results are stored in the `.orientations` and
+    `.fractions` attributes of the `Mineral` instance. The method also returns the
+    updated macroscopic deformation gradient based on the provided initial deformation
+    gradient.
+
+    *Note that the "number of grains" is a static integer value that
+    does not track the actual number of physical grains in the deforming polycrystal.
+    Instead, this number acts as a "number of bins" for the statistical resolution of
+    the crystallographic orientation distribution. The value is roughly equivalent to
+    (a multiple of) the number of initial, un-recrystallised grains in the polycrystal.
+    It is assumed that recrystallised grains do not grow large enough to require
+    rotation tracking.
+
+    **Examples:**
+
+    Mineral with isotropic initial texture:
+    >>> import pydrex
+    >>> pydrex.Mineral(
+    >>>     phase=pydrex.MineralPhase.olivine,
+    >>>     fabric=pydrex.MineralFabric.olivine_A,
+    >>>     regime=pydrex.DeformationRegime.dislocation,
+    >>>     n_grains=2000,
+    >>> )
+    Mineral(phase=0, fabric=0, regime=1, n_grains=2000, fractions=<list of ndarray (2000,)>, orientations=<list of ndarray (2000, 3, 3)>)
+
+    Mineral with specified initial texture and default phase, fabric and regime settings
+    which are for an olivine A-type mineral in the dislocation creep regime.
+    The initial grain volume fractions should be normalised.
+    >>> import numpy as np
+    >>> from scipy.spatial.transform import Rotation
+    >>> import pydrex
+    >>> rng = np.random.default_rng()
+    >>> n_grains = 2000
+    >>> pydrex.Mineral(
+    >>>     n_grains=n_grains,
+    >>>     fractions_init=np.full(n_grains, 1 / n_grains),
+    >>>     orientations_init=Rotation.from_euler(
+    >>>         "zxz", [[x * np.pi / 2, np.pi / /2, np.pi / 2] for x in rng.random(n_grains)]
+    >>>     ).inv().as_matrix(),
+    >>> )
+    Mineral(phase=0, fabric=0, regime=1, n_grains=2000, fractions=<list of ndarray (2000,)>, orientations=<list of ndarray (2000, 3, 3)>)
+
+    **Attributes:**
+    - `phase` (`pydrex.core.MineralPhase`) — ordinal number of the mineral phase
+    - `fabric` (`pydrex.core.MineralFabric`) — ordinal number of the fabric type
+    - `regime` (`pydrex.core.DeformationRegime`) — ordinal number of the deformation regime
     - `n_grains` (int) — number of grains in the aggregate
-    - `fractions_init` (array, optional) — initial dimensionless grain volumes
-    - `orientations_init` (array, optional) — initial grain orientation matrices
-
-    By default, a uniform volume distribution of random orientations is generated.
-
-    *Note that "grains" is here an approximate term,
-    and the stored objects do not fully correspond to physical grains.
-    For example, the number of grains is fixed despite inclusion of
-    grain nucleation in the modelling. It is assumed that new grains
-    do not grow large enough to require independent rotation tracking.
-    The DRex model is also unsuitable if static recrystallization is significant.
+    - `fractions` (list of arrays) — grain volume fractions for each texture snapshot
+    - `orientations` (list of arrays) — grain orientation matrices for each texture snapshot
 
     """
 
@@ -521,3 +548,9 @@ class Mineral:
         mineral.fractions = fractions
         mineral.orientations = orientations
         return mineral
+
+
+def __run_doctests():
+    import doctest
+
+    return doctest.testmod()
