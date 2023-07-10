@@ -172,8 +172,8 @@ def voigt_vector_to_matrix(vector):
     matrix[1, 5] = 0.5 * vector[14]
     matrix[1, 3] = 0.5 * vector[15]
 
-    matrix[2][4] = 0.5 * input[16]
-    matrix[0][5] = 0.5 * input[17]
+    matrix[2][4] = 0.5 * vector[16]
+    matrix[0][5] = 0.5 * vector[17]
     matrix[4][5] = 0.5 * 1 / np.sqrt(2) * vector[18]
     matrix[3][5] = 0.5 * 1 / np.sqrt(2) * vector[19]
     matrix[3][4] = 0.5 * 1 / np.sqrt(2) * vector[20]
