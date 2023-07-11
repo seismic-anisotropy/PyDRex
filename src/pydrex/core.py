@@ -128,7 +128,6 @@ def derivatives(
     """
     strain_energies = np.empty(n_grains)
     orientations_diff = np.empty((n_grains, 3, 3))
-    # TODO: Make sure that orientations[grain_index] is only a pointer, not a copy.
     for grain_index in range(n_grains):
         orientation_change, strain_energy = _get_rotation_and_strain(
             phase,
@@ -295,7 +294,7 @@ def _get_orientation_change(
         ) / 2
 
     # Calculate rotation rate, see eq. 9 Kaminski & Ribe (2001).
-    # TODO: Alternative that might be faster:
+    # Equivalent to:
     # spin_matrix = np.einsum("ikj,k->ij", PERMUTATION_SYMBOL, spin_vector)
     # orientation_change = spin_matrix.transpose() @ orientation
     # Do Fraters 2021 only solve for the spin_matrix???
@@ -311,9 +310,8 @@ def _get_orientation_change(
     return orientation_change
 
 
-# TODO: Why is enstatite different and can the logic be merged better?
 @nb.njit(fastmath=True)
-def _get_strain_energy_olivine(
+def _get_strain_energy(
     crss,
     slip_rates,
     slip_indices,
@@ -352,36 +350,6 @@ def _get_strain_energy_olivine(
             -nucleation_efficiency * dislocation_density**2
         )
     return strain_energy
-
-
-@nb.njit(fastmath=True)
-def _get_strain_energy_enstatite(
-    crss,
-    slip_indices,
-    slip_rate_softest,
-    stress_exponent,
-    deformation_exponent,
-    nucleation_efficiency,
-):
-    """Calculate strain energy due to dislocations for an enstatite grain.
-
-    Args:
-    - `crss` (array) — reference resolved shear stresses (CRSS), see `pydrex.fabric`
-    - `slip_indices` (array) — indices that sort the CRSS by increasing slip-rate activity
-    - `slip_rate_softest` (float) — slip rate on the softest (most active) slip system
-    - `stress_exponent` (float) — value of `p` for `dislocation_density ∝ shear_stress^p`
-    - `deformation_exponent` (float) — value of `n` for `shear_stress ∝ |deformation_rate|^(1/n)`
-    - `nucleation_efficiency` (float) — parameter controlling grain nucleation
-
-    """
-    # weight_factor = slip_rate_softest / crss[slip_indices[-1]] ** stress_exponent
-    dislocation_density = (1 / crss[slip_indices[-1]]) ** (
-        deformation_exponent - stress_exponent
-    ) * np.abs(slip_rate_softest) ** (stress_exponent / deformation_exponent)
-    # Dimensionless strain energy for this grain, see eq. 14, Fraters 2021.
-    return dislocation_density * np.exp(
-        -nucleation_efficiency * dislocation_density**2
-    )
 
 
 @nb.njit(fastmath=True)
@@ -441,27 +409,16 @@ def _get_rotation_and_strain(
         slip_rate_softest,
     )
 
-    if phase == MineralPhase.olivine:
-        strain_energy = _get_strain_energy_olivine(
-            crss,
-            slip_rates,
-            slip_indices,
-            slip_rate_softest,
-            stress_exponent,
-            deformation_exponent,
-            nucleation_efficiency,
-        )
-    elif phase == MineralPhase.enstatite:
-        slip_rate_softest *= 1 / crss[slip_indices[-1]] ** stress_exponent
-        strain_energy = _get_strain_energy_enstatite(
-            crss,
-            slip_indices,
-            slip_rate_softest,
-            stress_exponent,
-            deformation_exponent,
-            nucleation_efficiency,
-        )
-    else:
-        assert False  # Should never happen.
+    if phase == MineralPhase.enstatite:
+        slip_rate_softest /= crss[slip_indices[-1]] ** stress_exponent
 
+    strain_energy = _get_strain_energy(
+        crss,
+        slip_rates,
+        slip_indices,
+        slip_rate_softest,
+        stress_exponent,
+        deformation_exponent,
+        nucleation_efficiency,
+    )
     return orientation_change, strain_energy
