@@ -85,7 +85,7 @@ class TestOlivineA:
                     )
                     fse_λ, fse_v = _diagnostics.finite_strain(deformation_gradient)
                     _log.info("strain = %s", fse_λ)
-                    if p == 0:
+                    if p == 0 and outdir is not None:
                         θ_fse.append(
                             _diagnostics.smallest_angle(fse_v, shear_direction)
                         )
@@ -205,7 +205,7 @@ class TestOlivineA:
                     )
                     fse_λ, fse_v = _diagnostics.finite_strain(deformation_gradient)
                     _log.info("strain = %s", fse_λ)
-                    if p == 0:
+                    if p == 0 and outdir is not None:
                         θ_fse.append(
                             _diagnostics.smallest_angle(fse_v, shear_direction)
                         )
