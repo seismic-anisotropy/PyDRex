@@ -13,6 +13,7 @@ from pydrex import exceptions as _err
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import tensors as _tensors
+from pydrex import stats as _stats
 
 OLIVINE_STIFFNESS = np.array(
     [
@@ -202,6 +203,8 @@ class Mineral:
     - `n_grains` (int) — number of grains in the aggregate
     - `fractions` (list of arrays) — grain volume fractions for each texture snapshot
     - `orientations` (list of arrays) — grain orientation matrices for each texture snapshot
+    - `rng` (`numpy.random.Generator`) — random number generator used for the isotropic
+      initial condition when `fractions_init` or `orientations_init` are not provided
 
     """
 
@@ -214,6 +217,7 @@ class Mineral:
     orientations_init: np.ndarray = None
     fractions: list = field(default_factory=list)
     orientations: list = field(default_factory=list)
+    rng: np.random.Generator = _stats._RNG
 
     def __str__(self):
         # String output, used for str(self) and f"{self}", etc.

@@ -167,21 +167,21 @@ def simple_shear_stationary_2d(
         _io.data("thirdparty") / "Kaminski2001_GBMshear.scsv"
     )
     lines = ax_mean.plot(
-        np.asarray(data_Kaminski2001.equivalent_strain_M0) / 200,
+        np.asarray(data_Kaminski2001.equivalent_strain_M0) / 200 * timestop,
         data_Kaminski2001.angle_M0,
         alpha=0.33,
         label=r"$M^{\ast}=0$",
     )
     colors.append(lines[0].get_color())
     lines = ax_mean.plot(
-        np.asarray(data_Kaminski2001.equivalent_strain_M50) / 200,
+        np.asarray(data_Kaminski2001.equivalent_strain_M50) / 200 * timestop,
         data_Kaminski2001.angle_M50,
         alpha=0.33,
         label=r"$M^{\ast}=50$",
     )
     colors.append(lines[0].get_color())
     lines = ax_mean.plot(
-        np.asarray(data_Kaminski2001.equivalent_strain_M200) / 200,
+        np.asarray(data_Kaminski2001.equivalent_strain_M200) / 200 * timestop,
         data_Kaminski2001.angle_M200,
         alpha=0.33,
         label=r"$M^{\ast}=200$",
