@@ -47,7 +47,7 @@ repos:
         args: ["--max-line-length", "88", "--extend-ignore", "E203,E501,E722,W503"]
         exclude: |  # https://pre-commit.com/#regular-expressions
             (?x)^(
-                src/initial_implementation/AlternativeFunctions.py
+                src/initial_implementation/AlternativeFunctions.py|
                 src/pydrex/__init__.py
             )$
 
