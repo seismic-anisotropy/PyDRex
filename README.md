@@ -10,7 +10,8 @@ Documentation is accessible via Python's REPL `help()` and also [online](https:/
 ## Install
 
 Check `requires-python` in `pyproject.toml` for the minimum required Python
-version.
+version. The software is only tested on Linux, although it should work on any
+platform that can host the required Python dependencies.
 
 The package is currently not available on PyPi, so installation requires `git`.
 Install the package with Python's `pip`:
