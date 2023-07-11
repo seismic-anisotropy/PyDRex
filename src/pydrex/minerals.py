@@ -207,7 +207,7 @@ class Mineral:
 
     phase: int = _core.MineralPhase.olivine
     fabric: int = _core.MineralFabric.olivine_A
-    regime: int = _core.Regime.dislocation
+    regime: int = _core.DeformationRegime.dislocation
     n_grains: int = 1000
     # Initial condition, randomised if not given.
     fractions_init: np.ndarray = None

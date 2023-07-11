@@ -81,7 +81,7 @@ class TestSinglePolycrystalOlivineA:
             _minerals.Mineral(
                 _core.MineralPhase.olivine,
                 _core.MineralFabric.olivine_A,
-                _core.Regime.dislocation,
+                _core.DeformationRegime.dislocation,
                 n_grains=n_grains,
                 fractions_init=np.full(n_grains, 1 / n_grains),
                 orientations_init=orientations_init,
@@ -241,7 +241,7 @@ class TestSinglePolycrystalOlivineA:
             _minerals.Mineral(
                 _core.MineralPhase.olivine,
                 _core.MineralFabric.olivine_A,
-                _core.Regime.dislocation,
+                _core.DeformationRegime.dislocation,
                 n_grains=n_grains,
                 fractions_init=np.full(n_grains, 1 / n_grains),
                 orientations_init=orientations_init,
