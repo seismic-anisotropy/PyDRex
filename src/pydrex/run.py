@@ -32,7 +32,6 @@ import pydrex.interpolations as _interp
 import pydrex.io as _io
 import pydrex.vtk_helpers as _vtk
 
-# import pydrex.deformation_mechanism as _defmech
 # import pydrex.exceptions as _err
 # import pydrex.pole_figures as _fig
 

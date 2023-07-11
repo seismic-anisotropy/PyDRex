@@ -9,7 +9,6 @@ from scipy.integrate import LSODA
 from scipy.spatial.transform import Rotation
 
 from pydrex import core as _core
-from pydrex import deformation_mechanism as _defmech
 from pydrex import exceptions as _err
 from pydrex import io as _io
 from pydrex import logger as _log
@@ -208,7 +207,7 @@ class Mineral:
 
     phase: int = _core.MineralPhase.olivine
     fabric: int = _core.MineralFabric.olivine_A
-    regime: int = _defmech.Regime.dislocation
+    regime: int = _core.Regime.dislocation
     n_grains: int = 1000
     # Initial condition, randomised if not given.
     fractions_init: np.ndarray = None

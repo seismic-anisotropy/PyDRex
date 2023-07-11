@@ -6,9 +6,9 @@ import numpy as np
 from matplotlib.tri import CubicTriInterpolator
 from scipy.interpolate import CloughTocher2DInterpolator, NearestNDInterpolator
 
-import pydrex.deformation_mechanism as _defmech
-import pydrex.exceptions as _err
-import pydrex.vtk_helpers as _vtk
+from pydrex import core as _core
+from pydrex import exceptions as _err
+from pydrex import vtk_helpers as _vtk
 
 
 def default_interpolators(config, coords, vtk_output, mpl_interp=None):
@@ -43,7 +43,7 @@ def default_interpolators(config, coords, vtk_output, mpl_interp=None):
         )
     except LookupError:
         n_nodes = np.product(config["mesh"]["gridnodes"])
-        deformation_mechanism = np.empty(n_nodes).fill(_defmech.Regime.dislocation)
+        deformation_mechanism = np.empty(n_nodes).fill(_core.Regime.dislocation)
 
     velocity = _vtk.read_tuple_array(data, "Velocity", skip_z=is_2d)
     velocity_gradient = _vtk.read_tuple_array(data, "VelocityGradient", skip_z=is_2d)
