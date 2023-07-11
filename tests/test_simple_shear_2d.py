@@ -13,7 +13,6 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 from pydrex import core as _core
-from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
@@ -82,7 +81,7 @@ class TestSinglePolycrystalOlivineA:
             _minerals.Mineral(
                 _core.MineralPhase.olivine,
                 _core.MineralFabric.olivine_A,
-                _defmech.Regime.dislocation,
+                _core.DeformationRegime.dislocation,
                 n_grains=n_grains,
                 fractions_init=np.full(n_grains, 1 / n_grains),
                 orientations_init=orientations_init,
@@ -242,7 +241,7 @@ class TestSinglePolycrystalOlivineA:
             _minerals.Mineral(
                 _core.MineralPhase.olivine,
                 _core.MineralFabric.olivine_A,
-                _defmech.Regime.dislocation,
+                _core.DeformationRegime.dislocation,
                 n_grains=n_grains,
                 fractions_init=np.full(n_grains, 1 / n_grains),
                 orientations_init=orientations_init,

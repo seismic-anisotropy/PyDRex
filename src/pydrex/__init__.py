@@ -135,3 +135,33 @@ Read [the D-Rex introduction section](#the-d-rex-kinematic-cpo-model) for more d
 | `<phase>_fraction` | the volume fraction of any other phases (sum of all volume fractions must sum to 1) | N/A
 
 """
+from pydrex.core import (
+    DeformationRegime,
+    MineralFabric,
+    MineralPhase,
+    derivatives,
+    get_crss,
+)
+from pydrex.diagnostics import (
+    bingham_average,
+    coaxial_index,
+    finite_strain,
+    misorientation_angles,
+    misorientation_index,
+    smallest_angle,
+    symmetry,
+)
+from pydrex.geometry import (
+    lambert_equal_area,
+    poles,
+    shirley_concentric_squaredisk,
+    to_cartesian,
+    to_spherical,
+)
+from pydrex.minerals import (
+    OLIVINE_SLIP_SYSTEMS,
+    OLIVINE_STIFFNESS,
+    Mineral,
+    voigt_averages,
+)
+from pydrex.stats import resample_orientations
