@@ -74,6 +74,23 @@ LOGGER.addHandler(LOGGER_CONSOLE)
 
 
 @cl.contextmanager
+def handler_level(level, handler=LOGGER_CONSOLE):
+    """Set logging handler level for current context.
+
+    Args:
+    - `level` (string) — logging level name e.g. "DEBUG", "ERROR", etc.
+      See Python's logging module for details.
+    - `handler` (optional, `logging.Handler`) — alternative handler to control instead
+      of the default, `LOGGER_CONSOLE`.
+
+    """
+    default_level = handler.level
+    handler.setLevel(level)
+    yield
+    handler.setLevel(default_level)
+
+
+@cl.contextmanager
 def logfile_enable(path, level=logging.DEBUG, mode="w"):
     """Enable logging to a file at `path` with given `level`."""
     logger_file = logging.FileHandler(_io.resolve_path(path), mode=mode)

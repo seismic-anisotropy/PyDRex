@@ -12,6 +12,7 @@ import contextlib as cl
 import numpy as np
 from scipy.spatial.transform import Rotation
 
+from pydrex import core as _core
 from pydrex import deformation_mechanism as _defmech
 from pydrex import diagnostics as _diagnostics
 from pydrex import logger as _log
@@ -79,8 +80,8 @@ class TestSinglePolycrystalOlivineA:
         # One mineral to test each value of grain boundary mobility.
         minerals = [
             _minerals.Mineral(
-                _minerals.MineralPhase.olivine,
-                _minerals.OlivineFabric.A,
+                _core.MineralPhase.olivine,
+                _core.MineralFabric.olivine_A,
                 _defmech.Regime.dislocation,
                 n_grains=n_grains,
                 fractions_init=np.full(n_grains, 1 / n_grains),
@@ -188,7 +189,6 @@ class TestSinglePolycrystalOlivineA:
                 savefile=f"{outdir}/simple_shearYZ_stationary_olivineA_initQ1.png",
                 markers=("o", "v", "s"),
                 labels=labels,
-                refval=45,
             )
 
     def test_shearXZ_initQ1(
@@ -240,8 +240,8 @@ class TestSinglePolycrystalOlivineA:
         # One mineral to test each grain boundary sliding threshold.
         minerals = [
             _minerals.Mineral(
-                _minerals.MineralPhase.olivine,
-                _minerals.OlivineFabric.A,
+                _core.MineralPhase.olivine,
+                _core.MineralFabric.olivine_A,
                 _defmech.Regime.dislocation,
                 n_grains=n_grains,
                 fractions_init=np.full(n_grains, 1 / n_grains),
@@ -354,5 +354,4 @@ class TestSinglePolycrystalOlivineA:
                 savefile=f"{outdir}/simple_shearXZ_stationary_olivineA_initQ1.png",
                 markers=("o", "v", "s"),
                 labels=labels,
-                refval=45,
             )
