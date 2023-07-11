@@ -48,6 +48,7 @@ repos:
         exclude: |  # https://pre-commit.com/#regular-expressions
             (?x)^(
                 src/initial_implementation/AlternativeFunctions.py
+                src/pydrex/__init__.py
             )$
 
 exclude: \.vtu$
