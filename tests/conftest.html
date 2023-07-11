@@ -78,6 +78,9 @@
                     <a class="function" href="#outdir">outdir</a>
             </li>
             <li>
+                    <a class="function" href="#console_handler">console_handler</a>
+            </li>
+            <li>
                     <a class="function" href="#params_Fraters2021">params_Fraters2021</a>
             </li>
             <li>
@@ -181,79 +184,89 @@
 </span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>        <span class="n">handler</span> <span class="o">=</span> <span class="n">_LiveLoggingStreamHandler</span><span class="p">(</span><span class="n">terminal_reporter</span><span class="p">,</span> <span class="n">capture_manager</span><span class="p">)</span>
 </span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a>        <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">_log</span><span class="o">.</span><span class="n">LOGGER_CONSOLE</span><span class="o">.</span><span class="n">formatter</span><span class="p">)</span>
 </span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>        <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">_log</span><span class="o">.</span><span class="n">LOGGER_CONSOLE</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>        <span class="n">config</span><span class="o">.</span><span class="n">pluginmanager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span>
-</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>            <span class="n">PytestConsoleLogger</span><span class="p">(</span><span class="n">config</span><span class="p">),</span> <span class="n">PytestConsoleLogger</span><span class="o">.</span><span class="n">name</span>
-</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>        <span class="p">)</span>
-</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>
+</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>        <span class="n">_log</span><span class="o">.</span><span class="n">LOGGER_PYTEST</span> <span class="o">=</span> <span class="n">handler</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>        <span class="n">config</span><span class="o">.</span><span class="n">pluginmanager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>            <span class="n">PytestConsoleLogger</span><span class="p">(</span><span class="n">config</span><span class="p">),</span> <span class="n">PytestConsoleLogger</span><span class="o">.</span><span class="n">name</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>        <span class="p">)</span>
 </span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a>
-</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a><span class="k">def</span> <span class="nf">pytest_addoption</span><span class="p">(</span><span class="n">parser</span><span class="p">):</span>
-</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>    <span class="n">parser</span><span class="o">.</span><span class="n">addoption</span><span class="p">(</span>
-</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>        <span class="s2">&quot;--outdir&quot;</span><span class="p">,</span>
-</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;DIR&quot;</span><span class="p">,</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;output directory in which to store PyDRex figures/logs&quot;</span><span class="p">,</span>
-</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>    <span class="p">)</span>
-</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>
+</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>
+</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a><span class="k">def</span> <span class="nf">pytest_addoption</span><span class="p">(</span><span class="n">parser</span><span class="p">):</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>    <span class="n">parser</span><span class="o">.</span><span class="n">addoption</span><span class="p">(</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>        <span class="s2">&quot;--outdir&quot;</span><span class="p">,</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;DIR&quot;</span><span class="p">,</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;output directory in which to store PyDRex figures/logs&quot;</span><span class="p">,</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>    <span class="p">)</span>
 </span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>
-</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a><span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--outdir&quot;</span><span class="p">)</span>
-</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>
+</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>
+</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--outdir&quot;</span><span class="p">)</span>
 </span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>
-</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="k">def</span> <span class="nf">params_Fraters2021</span><span class="p">():</span>
-</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_FRATERS2021</span>
-</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>
-</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>
-</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_solid</span><span class="p">():</span>
-</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SOLID</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>
+</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;function&quot;</span><span class="p">)</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="k">def</span> <span class="nf">console_handler</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pluginmanager</span><span class="o">.</span><span class="n">get_plugin</span><span class="p">(</span>
+</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>            <span class="s2">&quot;pytest-console-logger&quot;</span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>        <span class="p">)</span><span class="o">.</span><span class="n">log_cli_handler</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>    <span class="k">return</span> <span class="n">_log</span><span class="o">.</span><span class="n">LOGGER_CONSOLE</span>
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>
 </span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_shortdash</span><span class="p">():</span>
-</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SHORTDASH</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="k">def</span> <span class="nf">params_Fraters2021</span><span class="p">():</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_FRATERS2021</span>
 </span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>
 </span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>
 </span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_longdash</span><span class="p">():</span>
-</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_LONGDASH</span>
+</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_solid</span><span class="p">():</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SOLID</span>
 </span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>
 </span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>
 </span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_triangles</span><span class="p">():</span>
-</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_TRIANGLES</span>
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_shortdash</span><span class="p">():</span>
+</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SHORTDASH</span>
 </span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>
 </span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>
 </span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_squares</span><span class="p">():</span>
-</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_SQUARES</span>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_longdash</span><span class="p">():</span>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_LONGDASH</span>
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_circles</span><span class="p">():</span>
-</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_CIRCLES</span>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_triangles</span><span class="p">():</span>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_TRIANGLES</span>
 </span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>
 </span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>
 </span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a><span class="k">def</span> <span class="nf">params_Hedjazian2017</span><span class="p">():</span>
-</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_HEDJAZIAN2017</span>
+</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_squares</span><span class="p">():</span>
+</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_SQUARES</span>
 </span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>
 </span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>
-</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
-</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="k">def</span> <span class="nf">hkl</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
+</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_circles</span><span class="p">():</span>
+</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_CIRCLES</span>
 </span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>
 </span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>
-</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">])</span>
-</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="k">def</span> <span class="nf">ref_axes</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="k">def</span> <span class="nf">params_Hedjazian2017</span><span class="p">():</span>
+</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_HEDJAZIAN2017</span>
 </span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>
 </span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>
-</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a><span class="k">def</span> <span class="nf">rng</span><span class="p">():</span>
-</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A seeded RNG for tests to have (more) reproducible results.&quot;&quot;&quot;</span>
-</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>    <span class="k">return</span> <span class="n">rn</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">8816</span><span class="p">)</span>
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a><span class="k">def</span> <span class="nf">hkl</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">])</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="k">def</span> <span class="nf">ref_axes</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="k">def</span> <span class="nf">rng</span><span class="p">():</span>
+</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A seeded RNG for tests to have (more) reproducible results.&quot;&quot;&quot;</span>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>    <span class="k">return</span> <span class="n">rn</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">8816</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -417,9 +430,10 @@ create a single one for the entire test session here.</p>
 </span><span id="pytest_configure-45"><a href="#pytest_configure-45"><span class="linenos">45</span></a>        <span class="n">handler</span> <span class="o">=</span> <span class="n">_LiveLoggingStreamHandler</span><span class="p">(</span><span class="n">terminal_reporter</span><span class="p">,</span> <span class="n">capture_manager</span><span class="p">)</span>
 </span><span id="pytest_configure-46"><a href="#pytest_configure-46"><span class="linenos">46</span></a>        <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">_log</span><span class="o">.</span><span class="n">LOGGER_CONSOLE</span><span class="o">.</span><span class="n">formatter</span><span class="p">)</span>
 </span><span id="pytest_configure-47"><a href="#pytest_configure-47"><span class="linenos">47</span></a>        <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">_log</span><span class="o">.</span><span class="n">LOGGER_CONSOLE</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
-</span><span id="pytest_configure-48"><a href="#pytest_configure-48"><span class="linenos">48</span></a>        <span class="n">config</span><span class="o">.</span><span class="n">pluginmanager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span>
-</span><span id="pytest_configure-49"><a href="#pytest_configure-49"><span class="linenos">49</span></a>            <span class="n">PytestConsoleLogger</span><span class="p">(</span><span class="n">config</span><span class="p">),</span> <span class="n">PytestConsoleLogger</span><span class="o">.</span><span class="n">name</span>
-</span><span id="pytest_configure-50"><a href="#pytest_configure-50"><span class="linenos">50</span></a>        <span class="p">)</span>
+</span><span id="pytest_configure-48"><a href="#pytest_configure-48"><span class="linenos">48</span></a>        <span class="n">_log</span><span class="o">.</span><span class="n">LOGGER_PYTEST</span> <span class="o">=</span> <span class="n">handler</span>
+</span><span id="pytest_configure-49"><a href="#pytest_configure-49"><span class="linenos">49</span></a>        <span class="n">config</span><span class="o">.</span><span class="n">pluginmanager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span>
+</span><span id="pytest_configure-50"><a href="#pytest_configure-50"><span class="linenos">50</span></a>            <span class="n">PytestConsoleLogger</span><span class="p">(</span><span class="n">config</span><span class="p">),</span> <span class="n">PytestConsoleLogger</span><span class="o">.</span><span class="n">name</span>
+</span><span id="pytest_configure-51"><a href="#pytest_configure-51"><span class="linenos">51</span></a>        <span class="p">)</span>
 </span></pre></div>
 
 
@@ -437,13 +451,13 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#pytest_addoption"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="pytest_addoption-53"><a href="#pytest_addoption-53"><span class="linenos">53</span></a><span class="k">def</span> <span class="nf">pytest_addoption</span><span class="p">(</span><span class="n">parser</span><span class="p">):</span>
-</span><span id="pytest_addoption-54"><a href="#pytest_addoption-54"><span class="linenos">54</span></a>    <span class="n">parser</span><span class="o">.</span><span class="n">addoption</span><span class="p">(</span>
-</span><span id="pytest_addoption-55"><a href="#pytest_addoption-55"><span class="linenos">55</span></a>        <span class="s2">&quot;--outdir&quot;</span><span class="p">,</span>
-</span><span id="pytest_addoption-56"><a href="#pytest_addoption-56"><span class="linenos">56</span></a>        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;DIR&quot;</span><span class="p">,</span>
-</span><span id="pytest_addoption-57"><a href="#pytest_addoption-57"><span class="linenos">57</span></a>        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-</span><span id="pytest_addoption-58"><a href="#pytest_addoption-58"><span class="linenos">58</span></a>        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;output directory in which to store PyDRex figures/logs&quot;</span><span class="p">,</span>
-</span><span id="pytest_addoption-59"><a href="#pytest_addoption-59"><span class="linenos">59</span></a>    <span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="pytest_addoption-54"><a href="#pytest_addoption-54"><span class="linenos">54</span></a><span class="k">def</span> <span class="nf">pytest_addoption</span><span class="p">(</span><span class="n">parser</span><span class="p">):</span>
+</span><span id="pytest_addoption-55"><a href="#pytest_addoption-55"><span class="linenos">55</span></a>    <span class="n">parser</span><span class="o">.</span><span class="n">addoption</span><span class="p">(</span>
+</span><span id="pytest_addoption-56"><a href="#pytest_addoption-56"><span class="linenos">56</span></a>        <span class="s2">&quot;--outdir&quot;</span><span class="p">,</span>
+</span><span id="pytest_addoption-57"><a href="#pytest_addoption-57"><span class="linenos">57</span></a>        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;DIR&quot;</span><span class="p">,</span>
+</span><span id="pytest_addoption-58"><a href="#pytest_addoption-58"><span class="linenos">58</span></a>        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+</span><span id="pytest_addoption-59"><a href="#pytest_addoption-59"><span class="linenos">59</span></a>        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;output directory in which to store PyDRex figures/logs&quot;</span><span class="p">,</span>
+</span><span id="pytest_addoption-60"><a href="#pytest_addoption-60"><span class="linenos">60</span></a>    <span class="p">)</span>
 </span></pre></div>
 
 
@@ -462,9 +476,34 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#outdir"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="outdir-62"><a href="#outdir-62"><span class="linenos">62</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="outdir-63"><a href="#outdir-63"><span class="linenos">63</span></a><span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="outdir-64"><a href="#outdir-64"><span class="linenos">64</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--outdir&quot;</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="outdir-63"><a href="#outdir-63"><span class="linenos">63</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="outdir-64"><a href="#outdir-64"><span class="linenos">64</span></a><span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="outdir-65"><a href="#outdir-65"><span class="linenos">65</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--outdir&quot;</span><span class="p">)</span>
+</span></pre></div>
+
+
+    
+
+                </section>
+                <section id="console_handler">
+                            <input id="console_handler-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+                    <div class="decorator">@pytest.fixture(scope=&#39;function&#39;)</div>
+
+        <span class="def">def</span>
+        <span class="name">console_handler</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">request</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="console_handler-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#console_handler"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="console_handler-68"><a href="#console_handler-68"><span class="linenos">68</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;function&quot;</span><span class="p">)</span>
+</span><span id="console_handler-69"><a href="#console_handler-69"><span class="linenos">69</span></a><span class="k">def</span> <span class="nf">console_handler</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="console_handler-70"><a href="#console_handler-70"><span class="linenos">70</span></a>    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+</span><span id="console_handler-71"><a href="#console_handler-71"><span class="linenos">71</span></a>        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pluginmanager</span><span class="o">.</span><span class="n">get_plugin</span><span class="p">(</span>
+</span><span id="console_handler-72"><a href="#console_handler-72"><span class="linenos">72</span></a>            <span class="s2">&quot;pytest-console-logger&quot;</span>
+</span><span id="console_handler-73"><a href="#console_handler-73"><span class="linenos">73</span></a>        <span class="p">)</span><span class="o">.</span><span class="n">log_cli_handler</span>
+</span><span id="console_handler-74"><a href="#console_handler-74"><span class="linenos">74</span></a>    <span class="k">return</span> <span class="n">_log</span><span class="o">.</span><span class="n">LOGGER_CONSOLE</span>
 </span></pre></div>
 
 
@@ -483,9 +522,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Fraters2021"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Fraters2021-67"><a href="#params_Fraters2021-67"><span class="linenos">67</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Fraters2021-68"><a href="#params_Fraters2021-68"><span class="linenos">68</span></a><span class="k">def</span> <span class="nf">params_Fraters2021</span><span class="p">():</span>
-</span><span id="params_Fraters2021-69"><a href="#params_Fraters2021-69"><span class="linenos">69</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_FRATERS2021</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Fraters2021-77"><a href="#params_Fraters2021-77"><span class="linenos">77</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Fraters2021-78"><a href="#params_Fraters2021-78"><span class="linenos">78</span></a><span class="k">def</span> <span class="nf">params_Fraters2021</span><span class="p">():</span>
+</span><span id="params_Fraters2021-79"><a href="#params_Fraters2021-79"><span class="linenos">79</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_FRATERS2021</span>
 </span></pre></div>
 
 
@@ -504,9 +543,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Kaminski2001_fig5_solid"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2001_fig5_solid-72"><a href="#params_Kaminski2001_fig5_solid-72"><span class="linenos">72</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Kaminski2001_fig5_solid-73"><a href="#params_Kaminski2001_fig5_solid-73"><span class="linenos">73</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_solid</span><span class="p">():</span>
-</span><span id="params_Kaminski2001_fig5_solid-74"><a href="#params_Kaminski2001_fig5_solid-74"><span class="linenos">74</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SOLID</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2001_fig5_solid-82"><a href="#params_Kaminski2001_fig5_solid-82"><span class="linenos">82</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Kaminski2001_fig5_solid-83"><a href="#params_Kaminski2001_fig5_solid-83"><span class="linenos">83</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_solid</span><span class="p">():</span>
+</span><span id="params_Kaminski2001_fig5_solid-84"><a href="#params_Kaminski2001_fig5_solid-84"><span class="linenos">84</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SOLID</span>
 </span></pre></div>
 
 
@@ -525,9 +564,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Kaminski2001_fig5_shortdash"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2001_fig5_shortdash-77"><a href="#params_Kaminski2001_fig5_shortdash-77"><span class="linenos">77</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Kaminski2001_fig5_shortdash-78"><a href="#params_Kaminski2001_fig5_shortdash-78"><span class="linenos">78</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_shortdash</span><span class="p">():</span>
-</span><span id="params_Kaminski2001_fig5_shortdash-79"><a href="#params_Kaminski2001_fig5_shortdash-79"><span class="linenos">79</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SHORTDASH</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2001_fig5_shortdash-87"><a href="#params_Kaminski2001_fig5_shortdash-87"><span class="linenos">87</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Kaminski2001_fig5_shortdash-88"><a href="#params_Kaminski2001_fig5_shortdash-88"><span class="linenos">88</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_shortdash</span><span class="p">():</span>
+</span><span id="params_Kaminski2001_fig5_shortdash-89"><a href="#params_Kaminski2001_fig5_shortdash-89"><span class="linenos">89</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SHORTDASH</span>
 </span></pre></div>
 
 
@@ -546,9 +585,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Kaminski2001_fig5_longdash"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2001_fig5_longdash-82"><a href="#params_Kaminski2001_fig5_longdash-82"><span class="linenos">82</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Kaminski2001_fig5_longdash-83"><a href="#params_Kaminski2001_fig5_longdash-83"><span class="linenos">83</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_longdash</span><span class="p">():</span>
-</span><span id="params_Kaminski2001_fig5_longdash-84"><a href="#params_Kaminski2001_fig5_longdash-84"><span class="linenos">84</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_LONGDASH</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2001_fig5_longdash-92"><a href="#params_Kaminski2001_fig5_longdash-92"><span class="linenos">92</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Kaminski2001_fig5_longdash-93"><a href="#params_Kaminski2001_fig5_longdash-93"><span class="linenos">93</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_longdash</span><span class="p">():</span>
+</span><span id="params_Kaminski2001_fig5_longdash-94"><a href="#params_Kaminski2001_fig5_longdash-94"><span class="linenos">94</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_LONGDASH</span>
 </span></pre></div>
 
 
@@ -567,9 +606,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Kaminski2004_fig4_triangles"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2004_fig4_triangles-87"><a href="#params_Kaminski2004_fig4_triangles-87"><span class="linenos">87</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Kaminski2004_fig4_triangles-88"><a href="#params_Kaminski2004_fig4_triangles-88"><span class="linenos">88</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_triangles</span><span class="p">():</span>
-</span><span id="params_Kaminski2004_fig4_triangles-89"><a href="#params_Kaminski2004_fig4_triangles-89"><span class="linenos">89</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_TRIANGLES</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2004_fig4_triangles-97"><a href="#params_Kaminski2004_fig4_triangles-97"><span class="linenos">97</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Kaminski2004_fig4_triangles-98"><a href="#params_Kaminski2004_fig4_triangles-98"><span class="linenos">98</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_triangles</span><span class="p">():</span>
+</span><span id="params_Kaminski2004_fig4_triangles-99"><a href="#params_Kaminski2004_fig4_triangles-99"><span class="linenos">99</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_TRIANGLES</span>
 </span></pre></div>
 
 
@@ -588,9 +627,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Kaminski2004_fig4_squares"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2004_fig4_squares-92"><a href="#params_Kaminski2004_fig4_squares-92"><span class="linenos">92</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Kaminski2004_fig4_squares-93"><a href="#params_Kaminski2004_fig4_squares-93"><span class="linenos">93</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_squares</span><span class="p">():</span>
-</span><span id="params_Kaminski2004_fig4_squares-94"><a href="#params_Kaminski2004_fig4_squares-94"><span class="linenos">94</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_SQUARES</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2004_fig4_squares-102"><a href="#params_Kaminski2004_fig4_squares-102"><span class="linenos">102</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Kaminski2004_fig4_squares-103"><a href="#params_Kaminski2004_fig4_squares-103"><span class="linenos">103</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_squares</span><span class="p">():</span>
+</span><span id="params_Kaminski2004_fig4_squares-104"><a href="#params_Kaminski2004_fig4_squares-104"><span class="linenos">104</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_SQUARES</span>
 </span></pre></div>
 
 
@@ -609,9 +648,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Kaminski2004_fig4_circles"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2004_fig4_circles-97"><a href="#params_Kaminski2004_fig4_circles-97"><span class="linenos">97</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Kaminski2004_fig4_circles-98"><a href="#params_Kaminski2004_fig4_circles-98"><span class="linenos">98</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_circles</span><span class="p">():</span>
-</span><span id="params_Kaminski2004_fig4_circles-99"><a href="#params_Kaminski2004_fig4_circles-99"><span class="linenos">99</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_CIRCLES</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2004_fig4_circles-107"><a href="#params_Kaminski2004_fig4_circles-107"><span class="linenos">107</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Kaminski2004_fig4_circles-108"><a href="#params_Kaminski2004_fig4_circles-108"><span class="linenos">108</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_circles</span><span class="p">():</span>
+</span><span id="params_Kaminski2004_fig4_circles-109"><a href="#params_Kaminski2004_fig4_circles-109"><span class="linenos">109</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_CIRCLES</span>
 </span></pre></div>
 
 
@@ -630,9 +669,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Hedjazian2017"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Hedjazian2017-102"><a href="#params_Hedjazian2017-102"><span class="linenos">102</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Hedjazian2017-103"><a href="#params_Hedjazian2017-103"><span class="linenos">103</span></a><span class="k">def</span> <span class="nf">params_Hedjazian2017</span><span class="p">():</span>
-</span><span id="params_Hedjazian2017-104"><a href="#params_Hedjazian2017-104"><span class="linenos">104</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_HEDJAZIAN2017</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Hedjazian2017-112"><a href="#params_Hedjazian2017-112"><span class="linenos">112</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Hedjazian2017-113"><a href="#params_Hedjazian2017-113"><span class="linenos">113</span></a><span class="k">def</span> <span class="nf">params_Hedjazian2017</span><span class="p">():</span>
+</span><span id="params_Hedjazian2017-114"><a href="#params_Hedjazian2017-114"><span class="linenos">114</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_HEDJAZIAN2017</span>
 </span></pre></div>
 
 
@@ -651,9 +690,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#hkl"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="hkl-107"><a href="#hkl-107"><span class="linenos">107</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
-</span><span id="hkl-108"><a href="#hkl-108"><span class="linenos">108</span></a><span class="k">def</span> <span class="nf">hkl</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="hkl-109"><a href="#hkl-109"><span class="linenos">109</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="hkl-117"><a href="#hkl-117"><span class="linenos">117</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+</span><span id="hkl-118"><a href="#hkl-118"><span class="linenos">118</span></a><span class="k">def</span> <span class="nf">hkl</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="hkl-119"><a href="#hkl-119"><span class="linenos">119</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
 </span></pre></div>
 
 
@@ -672,9 +711,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#ref_axes"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="ref_axes-112"><a href="#ref_axes-112"><span class="linenos">112</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">])</span>
-</span><span id="ref_axes-113"><a href="#ref_axes-113"><span class="linenos">113</span></a><span class="k">def</span> <span class="nf">ref_axes</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="ref_axes-114"><a href="#ref_axes-114"><span class="linenos">114</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="ref_axes-122"><a href="#ref_axes-122"><span class="linenos">122</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">])</span>
+</span><span id="ref_axes-123"><a href="#ref_axes-123"><span class="linenos">123</span></a><span class="k">def</span> <span class="nf">ref_axes</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="ref_axes-124"><a href="#ref_axes-124"><span class="linenos">124</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
 </span></pre></div>
 
 
@@ -693,10 +732,10 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#rng"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="rng-117"><a href="#rng-117"><span class="linenos">117</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="rng-118"><a href="#rng-118"><span class="linenos">118</span></a><span class="k">def</span> <span class="nf">rng</span><span class="p">():</span>
-</span><span id="rng-119"><a href="#rng-119"><span class="linenos">119</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A seeded RNG for tests to have (more) reproducible results.&quot;&quot;&quot;</span>
-</span><span id="rng-120"><a href="#rng-120"><span class="linenos">120</span></a>    <span class="k">return</span> <span class="n">rn</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">8816</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="rng-127"><a href="#rng-127"><span class="linenos">127</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="rng-128"><a href="#rng-128"><span class="linenos">128</span></a><span class="k">def</span> <span class="nf">rng</span><span class="p">():</span>
+</span><span id="rng-129"><a href="#rng-129"><span class="linenos">129</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;A seeded RNG for tests to have (more) reproducible results.&quot;&quot;&quot;</span>
+</span><span id="rng-130"><a href="#rng-130"><span class="linenos">130</span></a>    <span class="k">return</span> <span class="n">rn</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">8816</span><span class="p">)</span>
 </span></pre></div>
 
 

@@ -69,6 +69,9 @@
                     <a class="variable" href="#LOGGER_CONSOLE">LOGGER_CONSOLE</a>
             </li>
             <li>
+                    <a class="function" href="#handler_level">handler_level</a>
+            </li>
+            <li>
                     <a class="function" href="#logfile_enable">logfile_enable</a>
             </li>
             <li>
@@ -217,56 +220,73 @@ Example:</p>
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>
 </span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="nd">@cl</span><span class="o">.</span><span class="n">contextmanager</span>
-</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="k">def</span> <span class="nf">logfile_enable</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">):</span>
-</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Enable logging to a file at `path` with given `level`.&quot;&quot;&quot;</span>
-</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>    <span class="n">logger_file</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">resolve_path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
-</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>    <span class="n">logger_file</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span>
-</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>        <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
-</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a>            <span class="s2">&quot;</span><span class="si">%(levelname)s</span><span class="s2"> [</span><span class="si">%(asctime)s</span><span class="s2">] </span><span class="si">%(name)s</span><span class="s2">: </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>            <span class="n">datefmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">,</span>
-</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>        <span class="p">)</span>
-</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>    <span class="p">)</span>
-</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>    <span class="n">logger_file</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
-</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logger_file</span><span class="p">)</span>
-</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>    <span class="k">yield</span>
-</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>    <span class="n">logger_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="k">def</span> <span class="nf">handler_level</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">handler</span><span class="o">=</span><span class="n">LOGGER_CONSOLE</span><span class="p">):</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Set logging handler level for current context.</span>
+</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>
+</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a><span class="sd">    Args:</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="sd">    - `level` (string) — logging level name e.g. &quot;DEBUG&quot;, &quot;ERROR&quot;, etc.</span>
+</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="sd">      See Python&#39;s logging module for details.</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a><span class="sd">    - `handler` (optional, `logging.Handler`) — alternative handler to control instead</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a><span class="sd">      of the default, `LOGGER_CONSOLE`.</span>
+</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>
+</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>    <span class="n">default_level</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">level</span>
+</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>    <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>    <span class="k">yield</span>
+</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>    <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">default_level</span><span class="p">)</span>
 </span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>
-</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="k">def</span> <span class="nf">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log a CRITICAL message in PyDRex.&quot;&quot;&quot;</span>
-</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>
-</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>
-</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log an ERROR message in PyDRex.&quot;&quot;&quot;</span>
-</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>
-</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>
-</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a><span class="k">def</span> <span class="nf">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log a WARNING message in PyDRex.&quot;&quot;&quot;</span>
-</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>
-</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>
-</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log an INFO message in PyDRex.&quot;&quot;&quot;</span>
-</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>
-</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>
-</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log a DEBUG message in PyDRex.&quot;&quot;&quot;</span>
-</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>
-</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>
-</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a><span class="k">def</span> <span class="nf">quiet_aliens</span><span class="p">():</span>
-</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Restrict alien loggers 👽 because I&#39;m trying to find MY bugs, thanks.&quot;&quot;&quot;</span>
-</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>    <span class="c1"># Only allow warnings or above from root logger.</span>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
-</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a>    <span class="c1"># Only allow critical stuff from other things.</span>
-</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">loggerDict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>        <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;pydrex&quot;</span><span class="p">:</span>
-</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">)</span>
-</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>    <span class="c1"># Numba is not in the list for some reason, I guess we can leave warnings.</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;numba&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="nd">@cl</span><span class="o">.</span><span class="n">contextmanager</span>
+</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="k">def</span> <span class="nf">logfile_enable</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">):</span>
+</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Enable logging to a file at `path` with given `level`.&quot;&quot;&quot;</span>
+</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>    <span class="n">logger_file</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">resolve_path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>    <span class="n">logger_file</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>        <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>            <span class="s2">&quot;</span><span class="si">%(levelname)s</span><span class="s2"> [</span><span class="si">%(asctime)s</span><span class="s2">] </span><span class="si">%(name)s</span><span class="s2">: </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>            <span class="n">datefmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">,</span>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>        <span class="p">)</span>
+</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>    <span class="p">)</span>
+</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>    <span class="n">logger_file</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logger_file</span><span class="p">)</span>
+</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>    <span class="k">yield</span>
+</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>    <span class="n">logger_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>
+</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a><span class="k">def</span> <span class="nf">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log a CRITICAL message in PyDRex.&quot;&quot;&quot;</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>
+</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>
+</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a><span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log an ERROR message in PyDRex.&quot;&quot;&quot;</span>
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="k">def</span> <span class="nf">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log a WARNING message in PyDRex.&quot;&quot;&quot;</span>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>
+</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log an INFO message in PyDRex.&quot;&quot;&quot;</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>
+</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log a DEBUG message in PyDRex.&quot;&quot;&quot;</span>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="k">def</span> <span class="nf">quiet_aliens</span><span class="p">():</span>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Restrict alien loggers 👽 because I&#39;m trying to find MY bugs, thanks.&quot;&quot;&quot;</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>    <span class="c1"># Only allow warnings or above from root logger.</span>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>    <span class="c1"># Only allow critical stuff from other things.</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">loggerDict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>        <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;pydrex&quot;</span><span class="p">:</span>
+</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">)</span>
+</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>    <span class="c1"># Numba is not in the list for some reason, I guess we can leave warnings.</span>
+</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;numba&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -405,6 +425,50 @@ it is formatted using formatException() and appended to the message.</p>
     
 
                 </section>
+                <section id="handler_level">
+                            <input id="handler_level-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+                    <div class="decorator">@cl.contextmanager</div>
+
+        <span class="def">def</span>
+        <span class="name">handler_level</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">level</span>, </span><span class="param"><span class="n">handler</span><span class="o">=&lt;</span><span class="n">StreamHandler</span> <span class="p">(</span><span class="n">INFO</span><span class="p">)</span><span class="o">&gt;</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="handler_level-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#handler_level"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="handler_level-77"><a href="#handler_level-77"><span class="linenos">77</span></a><span class="nd">@cl</span><span class="o">.</span><span class="n">contextmanager</span>
+</span><span id="handler_level-78"><a href="#handler_level-78"><span class="linenos">78</span></a><span class="k">def</span> <span class="nf">handler_level</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">handler</span><span class="o">=</span><span class="n">LOGGER_CONSOLE</span><span class="p">):</span>
+</span><span id="handler_level-79"><a href="#handler_level-79"><span class="linenos">79</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Set logging handler level for current context.</span>
+</span><span id="handler_level-80"><a href="#handler_level-80"><span class="linenos">80</span></a>
+</span><span id="handler_level-81"><a href="#handler_level-81"><span class="linenos">81</span></a><span class="sd">    Args:</span>
+</span><span id="handler_level-82"><a href="#handler_level-82"><span class="linenos">82</span></a><span class="sd">    - `level` (string) — logging level name e.g. &quot;DEBUG&quot;, &quot;ERROR&quot;, etc.</span>
+</span><span id="handler_level-83"><a href="#handler_level-83"><span class="linenos">83</span></a><span class="sd">      See Python&#39;s logging module for details.</span>
+</span><span id="handler_level-84"><a href="#handler_level-84"><span class="linenos">84</span></a><span class="sd">    - `handler` (optional, `logging.Handler`) — alternative handler to control instead</span>
+</span><span id="handler_level-85"><a href="#handler_level-85"><span class="linenos">85</span></a><span class="sd">      of the default, `LOGGER_CONSOLE`.</span>
+</span><span id="handler_level-86"><a href="#handler_level-86"><span class="linenos">86</span></a>
+</span><span id="handler_level-87"><a href="#handler_level-87"><span class="linenos">87</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="handler_level-88"><a href="#handler_level-88"><span class="linenos">88</span></a>    <span class="n">default_level</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">level</span>
+</span><span id="handler_level-89"><a href="#handler_level-89"><span class="linenos">89</span></a>    <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+</span><span id="handler_level-90"><a href="#handler_level-90"><span class="linenos">90</span></a>    <span class="k">yield</span>
+</span><span id="handler_level-91"><a href="#handler_level-91"><span class="linenos">91</span></a>    <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">default_level</span><span class="p">)</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Set logging handler level for current context.</p>
+
+<p>Args:</p>
+
+<ul>
+<li><code>level</code> (string) — logging level name e.g. "DEBUG", "ERROR", etc.
+See Python's logging module for details.</li>
+<li><code>handler</code> (optional, <code>logging.Handler</code>) — alternative handler to control instead
+of the default, <code><a href="#LOGGER_CONSOLE">LOGGER_CONSOLE</a></code>.</li>
+</ul>
+</div>
+
+
+                </section>
                 <section id="logfile_enable">
                             <input id="logfile_enable-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
@@ -417,20 +481,20 @@ it is formatted using formatException() and appended to the message.</p>
 
     </div>
     <a class="headerlink" href="#logfile_enable"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="logfile_enable-77"><a href="#logfile_enable-77"><span class="linenos">77</span></a><span class="nd">@cl</span><span class="o">.</span><span class="n">contextmanager</span>
-</span><span id="logfile_enable-78"><a href="#logfile_enable-78"><span class="linenos">78</span></a><span class="k">def</span> <span class="nf">logfile_enable</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">):</span>
-</span><span id="logfile_enable-79"><a href="#logfile_enable-79"><span class="linenos">79</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Enable logging to a file at `path` with given `level`.&quot;&quot;&quot;</span>
-</span><span id="logfile_enable-80"><a href="#logfile_enable-80"><span class="linenos">80</span></a>    <span class="n">logger_file</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">resolve_path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
-</span><span id="logfile_enable-81"><a href="#logfile_enable-81"><span class="linenos">81</span></a>    <span class="n">logger_file</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span>
-</span><span id="logfile_enable-82"><a href="#logfile_enable-82"><span class="linenos">82</span></a>        <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
-</span><span id="logfile_enable-83"><a href="#logfile_enable-83"><span class="linenos">83</span></a>            <span class="s2">&quot;</span><span class="si">%(levelname)s</span><span class="s2"> [</span><span class="si">%(asctime)s</span><span class="s2">] </span><span class="si">%(name)s</span><span class="s2">: </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
-</span><span id="logfile_enable-84"><a href="#logfile_enable-84"><span class="linenos">84</span></a>            <span class="n">datefmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">,</span>
-</span><span id="logfile_enable-85"><a href="#logfile_enable-85"><span class="linenos">85</span></a>        <span class="p">)</span>
-</span><span id="logfile_enable-86"><a href="#logfile_enable-86"><span class="linenos">86</span></a>    <span class="p">)</span>
-</span><span id="logfile_enable-87"><a href="#logfile_enable-87"><span class="linenos">87</span></a>    <span class="n">logger_file</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
-</span><span id="logfile_enable-88"><a href="#logfile_enable-88"><span class="linenos">88</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logger_file</span><span class="p">)</span>
-</span><span id="logfile_enable-89"><a href="#logfile_enable-89"><span class="linenos">89</span></a>    <span class="k">yield</span>
-</span><span id="logfile_enable-90"><a href="#logfile_enable-90"><span class="linenos">90</span></a>    <span class="n">logger_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="logfile_enable-94"><a href="#logfile_enable-94"><span class="linenos"> 94</span></a><span class="nd">@cl</span><span class="o">.</span><span class="n">contextmanager</span>
+</span><span id="logfile_enable-95"><a href="#logfile_enable-95"><span class="linenos"> 95</span></a><span class="k">def</span> <span class="nf">logfile_enable</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">):</span>
+</span><span id="logfile_enable-96"><a href="#logfile_enable-96"><span class="linenos"> 96</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Enable logging to a file at `path` with given `level`.&quot;&quot;&quot;</span>
+</span><span id="logfile_enable-97"><a href="#logfile_enable-97"><span class="linenos"> 97</span></a>    <span class="n">logger_file</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">resolve_path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
+</span><span id="logfile_enable-98"><a href="#logfile_enable-98"><span class="linenos"> 98</span></a>    <span class="n">logger_file</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span>
+</span><span id="logfile_enable-99"><a href="#logfile_enable-99"><span class="linenos"> 99</span></a>        <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+</span><span id="logfile_enable-100"><a href="#logfile_enable-100"><span class="linenos">100</span></a>            <span class="s2">&quot;</span><span class="si">%(levelname)s</span><span class="s2"> [</span><span class="si">%(asctime)s</span><span class="s2">] </span><span class="si">%(name)s</span><span class="s2">: </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+</span><span id="logfile_enable-101"><a href="#logfile_enable-101"><span class="linenos">101</span></a>            <span class="n">datefmt</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">,</span>
+</span><span id="logfile_enable-102"><a href="#logfile_enable-102"><span class="linenos">102</span></a>        <span class="p">)</span>
+</span><span id="logfile_enable-103"><a href="#logfile_enable-103"><span class="linenos">103</span></a>    <span class="p">)</span>
+</span><span id="logfile_enable-104"><a href="#logfile_enable-104"><span class="linenos">104</span></a>    <span class="n">logger_file</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+</span><span id="logfile_enable-105"><a href="#logfile_enable-105"><span class="linenos">105</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logger_file</span><span class="p">)</span>
+</span><span id="logfile_enable-106"><a href="#logfile_enable-106"><span class="linenos">106</span></a>    <span class="k">yield</span>
+</span><span id="logfile_enable-107"><a href="#logfile_enable-107"><span class="linenos">107</span></a>    <span class="n">logger_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -450,9 +514,9 @@ it is formatted using formatException() and appended to the message.</p>
 
     </div>
     <a class="headerlink" href="#critical"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="critical-93"><a href="#critical-93"><span class="linenos">93</span></a><span class="k">def</span> <span class="nf">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</span><span id="critical-94"><a href="#critical-94"><span class="linenos">94</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log a CRITICAL message in PyDRex.&quot;&quot;&quot;</span>
-</span><span id="critical-95"><a href="#critical-95"><span class="linenos">95</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="critical-110"><a href="#critical-110"><span class="linenos">110</span></a><span class="k">def</span> <span class="nf">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="critical-111"><a href="#critical-111"><span class="linenos">111</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log a CRITICAL message in PyDRex.&quot;&quot;&quot;</span>
+</span><span id="critical-112"><a href="#critical-112"><span class="linenos">112</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -472,9 +536,9 @@ it is formatted using formatException() and appended to the message.</p>
 
     </div>
     <a class="headerlink" href="#error"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="error-98"><a href="#error-98"><span class="linenos"> 98</span></a><span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</span><span id="error-99"><a href="#error-99"><span class="linenos"> 99</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log an ERROR message in PyDRex.&quot;&quot;&quot;</span>
-</span><span id="error-100"><a href="#error-100"><span class="linenos">100</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="error-115"><a href="#error-115"><span class="linenos">115</span></a><span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="error-116"><a href="#error-116"><span class="linenos">116</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log an ERROR message in PyDRex.&quot;&quot;&quot;</span>
+</span><span id="error-117"><a href="#error-117"><span class="linenos">117</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -494,9 +558,9 @@ it is formatted using formatException() and appended to the message.</p>
 
     </div>
     <a class="headerlink" href="#warning"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="warning-103"><a href="#warning-103"><span class="linenos">103</span></a><span class="k">def</span> <span class="nf">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</span><span id="warning-104"><a href="#warning-104"><span class="linenos">104</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log a WARNING message in PyDRex.&quot;&quot;&quot;</span>
-</span><span id="warning-105"><a href="#warning-105"><span class="linenos">105</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="warning-120"><a href="#warning-120"><span class="linenos">120</span></a><span class="k">def</span> <span class="nf">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="warning-121"><a href="#warning-121"><span class="linenos">121</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log a WARNING message in PyDRex.&quot;&quot;&quot;</span>
+</span><span id="warning-122"><a href="#warning-122"><span class="linenos">122</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -516,9 +580,9 @@ it is formatted using formatException() and appended to the message.</p>
 
     </div>
     <a class="headerlink" href="#info"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="info-108"><a href="#info-108"><span class="linenos">108</span></a><span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</span><span id="info-109"><a href="#info-109"><span class="linenos">109</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log an INFO message in PyDRex.&quot;&quot;&quot;</span>
-</span><span id="info-110"><a href="#info-110"><span class="linenos">110</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="info-125"><a href="#info-125"><span class="linenos">125</span></a><span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="info-126"><a href="#info-126"><span class="linenos">126</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log an INFO message in PyDRex.&quot;&quot;&quot;</span>
+</span><span id="info-127"><a href="#info-127"><span class="linenos">127</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -538,9 +602,9 @@ it is formatted using formatException() and appended to the message.</p>
 
     </div>
     <a class="headerlink" href="#debug"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="debug-113"><a href="#debug-113"><span class="linenos">113</span></a><span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-</span><span id="debug-114"><a href="#debug-114"><span class="linenos">114</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log a DEBUG message in PyDRex.&quot;&quot;&quot;</span>
-</span><span id="debug-115"><a href="#debug-115"><span class="linenos">115</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="debug-130"><a href="#debug-130"><span class="linenos">130</span></a><span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+</span><span id="debug-131"><a href="#debug-131"><span class="linenos">131</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Log a DEBUG message in PyDRex.&quot;&quot;&quot;</span>
+</span><span id="debug-132"><a href="#debug-132"><span class="linenos">132</span></a>    <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -560,16 +624,16 @@ it is formatted using formatException() and appended to the message.</p>
 
     </div>
     <a class="headerlink" href="#quiet_aliens"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="quiet_aliens-118"><a href="#quiet_aliens-118"><span class="linenos">118</span></a><span class="k">def</span> <span class="nf">quiet_aliens</span><span class="p">():</span>
-</span><span id="quiet_aliens-119"><a href="#quiet_aliens-119"><span class="linenos">119</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Restrict alien loggers 👽 because I&#39;m trying to find MY bugs, thanks.&quot;&quot;&quot;</span>
-</span><span id="quiet_aliens-120"><a href="#quiet_aliens-120"><span class="linenos">120</span></a>    <span class="c1"># Only allow warnings or above from root logger.</span>
-</span><span id="quiet_aliens-121"><a href="#quiet_aliens-121"><span class="linenos">121</span></a>    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
-</span><span id="quiet_aliens-122"><a href="#quiet_aliens-122"><span class="linenos">122</span></a>    <span class="c1"># Only allow critical stuff from other things.</span>
-</span><span id="quiet_aliens-123"><a href="#quiet_aliens-123"><span class="linenos">123</span></a>    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">loggerDict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-</span><span id="quiet_aliens-124"><a href="#quiet_aliens-124"><span class="linenos">124</span></a>        <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;pydrex&quot;</span><span class="p">:</span>
-</span><span id="quiet_aliens-125"><a href="#quiet_aliens-125"><span class="linenos">125</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">)</span>
-</span><span id="quiet_aliens-126"><a href="#quiet_aliens-126"><span class="linenos">126</span></a>    <span class="c1"># Numba is not in the list for some reason, I guess we can leave warnings.</span>
-</span><span id="quiet_aliens-127"><a href="#quiet_aliens-127"><span class="linenos">127</span></a>    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;numba&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="quiet_aliens-135"><a href="#quiet_aliens-135"><span class="linenos">135</span></a><span class="k">def</span> <span class="nf">quiet_aliens</span><span class="p">():</span>
+</span><span id="quiet_aliens-136"><a href="#quiet_aliens-136"><span class="linenos">136</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Restrict alien loggers 👽 because I&#39;m trying to find MY bugs, thanks.&quot;&quot;&quot;</span>
+</span><span id="quiet_aliens-137"><a href="#quiet_aliens-137"><span class="linenos">137</span></a>    <span class="c1"># Only allow warnings or above from root logger.</span>
+</span><span id="quiet_aliens-138"><a href="#quiet_aliens-138"><span class="linenos">138</span></a>    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+</span><span id="quiet_aliens-139"><a href="#quiet_aliens-139"><span class="linenos">139</span></a>    <span class="c1"># Only allow critical stuff from other things.</span>
+</span><span id="quiet_aliens-140"><a href="#quiet_aliens-140"><span class="linenos">140</span></a>    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">loggerDict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+</span><span id="quiet_aliens-141"><a href="#quiet_aliens-141"><span class="linenos">141</span></a>        <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s2">&quot;pydrex&quot;</span><span class="p">:</span>
+</span><span id="quiet_aliens-142"><a href="#quiet_aliens-142"><span class="linenos">142</span></a>            <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">)</span>
+</span><span id="quiet_aliens-143"><a href="#quiet_aliens-143"><span class="linenos">143</span></a>    <span class="c1"># Numba is not in the list for some reason, I guess we can leave warnings.</span>
+</span><span id="quiet_aliens-144"><a href="#quiet_aliens-144"><span class="linenos">144</span></a>    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;numba&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
 </span></pre></div>
 
 
