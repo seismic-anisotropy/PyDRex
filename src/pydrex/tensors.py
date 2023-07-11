@@ -160,10 +160,7 @@ def voigt_vector_to_matrix(vector):
     matrix[0, 2] = 1 / np.sqrt(2) * vector[4]
     matrix[0, 1] = 1 / np.sqrt(2) * vector[5]
 
-    matrix[1, 4] = 0.5 * vector[10]
-    matrix[2, 5] = 0.5 * vector[11]
-    matrix[2, 3] = 0.5 * vector[12]
-
+    matrix[0, 3] = 0.5 * vector[9]
     matrix[1, 4] = 0.5 * vector[10]
     matrix[2, 5] = 0.5 * vector[11]
     matrix[2, 3] = 0.5 * vector[12]
@@ -177,7 +174,7 @@ def voigt_vector_to_matrix(vector):
     matrix[4][5] = 0.5 * 1 / np.sqrt(2) * vector[18]
     matrix[3][5] = 0.5 * 1 / np.sqrt(2) * vector[19]
     matrix[3][4] = 0.5 * 1 / np.sqrt(2) * vector[20]
-    return matrix
+    return upper_tri_to_symmetric(matrix)
 
 
 @nb.njit(fastmath=True)
