@@ -10,7 +10,7 @@ from pydrex import io as _io
 from pydrex import logger as _log
 
 
-def test_validate_schema():
+def test_validate_schema(console_handler):
     """Test SCSV schema validation."""
     schema_nofill = {
         "delimiter": ",",
@@ -43,28 +43,29 @@ def test_validate_schema():
         "fields": [{"name": "baddelim", "type": "float", "fill": "NaN"}],
     }
 
-    with pytest.raises(_err.SCSVError):
-        temp = tempfile.NamedTemporaryFile()
-        _io.save_scsv(temp.name, schema_nofill, [[0.1]])
-    with pytest.raises(_err.SCSVError):
-        temp = tempfile.NamedTemporaryFile()
-        _io.save_scsv(temp.name, schema_nomissing, [[0.1]])
-    with pytest.raises(_err.SCSVError):
-        temp = tempfile.NamedTemporaryFile()
-        _io.save_scsv(temp.name, schema_nofields, [[0.1]])
-    with pytest.raises(_err.SCSVError):
-        temp = tempfile.NamedTemporaryFile()
-        _io.save_scsv(temp.name, schema_badfieldname, [[0.1]])
-    with pytest.raises(_err.SCSVError):
-        temp = tempfile.NamedTemporaryFile()
-        _io.save_scsv(temp.name, schema_delimiter_eq_missing, [[0.1]])
-    with pytest.raises(_err.SCSVError):
-        temp = tempfile.NamedTemporaryFile()
-        _io.save_scsv(temp.name, schema_delimiter_in_missing, [[0.1]])
-    # CSV module already raises a TypeError on long delimiters.
-    with pytest.raises(TypeError):
-        temp = tempfile.NamedTemporaryFile()
-        _io.save_scsv(temp.name, schema_long_delimiter, [[0.1]])
+    with _log.handler_level("CRITICAL", console_handler):
+        with pytest.raises(_err.SCSVError):
+            temp = tempfile.NamedTemporaryFile()
+            _io.save_scsv(temp.name, schema_nofill, [[0.1]])
+        with pytest.raises(_err.SCSVError):
+            temp = tempfile.NamedTemporaryFile()
+            _io.save_scsv(temp.name, schema_nomissing, [[0.1]])
+        with pytest.raises(_err.SCSVError):
+            temp = tempfile.NamedTemporaryFile()
+            _io.save_scsv(temp.name, schema_nofields, [[0.1]])
+        with pytest.raises(_err.SCSVError):
+            temp = tempfile.NamedTemporaryFile()
+            _io.save_scsv(temp.name, schema_badfieldname, [[0.1]])
+        with pytest.raises(_err.SCSVError):
+            temp = tempfile.NamedTemporaryFile()
+            _io.save_scsv(temp.name, schema_delimiter_eq_missing, [[0.1]])
+        with pytest.raises(_err.SCSVError):
+            temp = tempfile.NamedTemporaryFile()
+            _io.save_scsv(temp.name, schema_delimiter_in_missing, [[0.1]])
+        # CSV module already raises a TypeError on long delimiters.
+        with pytest.raises(TypeError):
+            temp = tempfile.NamedTemporaryFile()
+            _io.save_scsv(temp.name, schema_long_delimiter, [[0.1]])
 
 
 def test_read_specfile():

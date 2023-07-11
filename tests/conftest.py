@@ -44,6 +44,7 @@ def pytest_configure(config):
         handler = _LiveLoggingStreamHandler(terminal_reporter, capture_manager)
         handler.setFormatter(_log.LOGGER_CONSOLE.formatter)
         handler.setLevel(_log.LOGGER_CONSOLE.level)
+        _log.LOGGER_PYTEST = handler
         config.pluginmanager.register(
             PytestConsoleLogger(config), PytestConsoleLogger.name
         )
@@ -61,6 +62,15 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="session")
 def outdir(request):
     return request.config.getoption("--outdir")
+
+
+@pytest.fixture(scope="function")
+def console_handler(request):
+    if request.config.option.verbose > 0:
+        return request.config.pluginmanager.get_plugin(
+            "pytest-console-logger"
+        ).log_cli_handler
+    return _log.LOGGER_CONSOLE
 
 
 @pytest.fixture

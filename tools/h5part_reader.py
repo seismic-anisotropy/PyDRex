@@ -17,6 +17,7 @@ from zipfile import ZipFile
 import h5py
 import numpy as np
 
+from pydrex import core as _core
 from pydrex import minerals as _minerals
 
 
@@ -75,8 +76,8 @@ if __name__ == "__main__":
 
         for particle_id in file["Step#0/id"][:]:
             option_map = {
-                "olivine": _minerals.MineralPhase.olivine,
-                "enstatite": _minerals.MineralPhase.enstatite,
+                "olivine": _core.MineralPhase.olivine,
+                "enstatite": _core.MineralPhase.enstatite,
                 "A": _minerals.OlivineFabric.A,
                 "B": _minerals.OlivineFabric.B,
                 "C": _minerals.OlivineFabric.C,

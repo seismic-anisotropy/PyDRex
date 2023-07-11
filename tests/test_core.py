@@ -7,10 +7,100 @@ from scipy.spatial.transform import Rotation
 from pydrex import core as _core
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
+from pydrex import visualisation as _vis
+
+# Subdirectory of `outdir` used to store outputs from these tests.
+SUBDIR = "core"
+
+
+class TestSimpleShearOPX:
+    """Single-grain orthopyroxene crystallographic rotation rate tests."""
+
+    class_id = "simple_shear_OPX"
+
+    def test_shear_dudz(self, outdir):
+        test_id = "dudz"
+        optional_logging = cl.nullcontext()
+        if outdir is not None:
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
+            )
+        with optional_logging:
+            for θ in np.mgrid[0 : 2 * np.pi : 360j]:
+                _log.debug("θ (°): %s", np.rad2deg(θ))
+                orientations_diff, fractions_diff = _core.derivatives(
+                    phase=_core.MineralPhase.enstatite,
+                    fabric=_core.MineralFabric.enstatite_AB,
+                    n_grains=1,
+                    orientations=Rotation.from_rotvec([[0, θ, 0]]).as_matrix(),
+                    fractions=np.array([1.0]),
+                    strain_rate=np.array([[0, 0, 1], [0, 0, 0], [1, 0, 0]]),
+                    velocity_gradient=np.array([[0, 0, 2], [0, 0, 0], [0, 0, 0]]),
+                    stress_exponent=1.5,
+                    deformation_exponent=3.5,
+                    nucleation_efficiency=5,
+                    gbm_mobility=0,
+                    volume_fraction=1.0,
+                )
+                cosθ = np.cos(θ)
+                cos2θ = np.cos(2 * θ)
+                sinθ = np.sin(θ)
+                target_orientations_diff = (1 + cos2θ) * np.array(
+                    [[sinθ, 0, -cosθ], [0, 0, 0], [cosθ, 0, sinθ]]
+                )
+                np.testing.assert_allclose(
+                    orientations_diff[0], target_orientations_diff
+                )
+                assert np.isclose(np.sum(fractions_diff), 0.0)
+
+    def test_shear_dvdx(self, outdir):
+        test_id = "dvdx"
+        optional_logging = cl.nullcontext()
+        if outdir is not None:
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
+            )
+        with optional_logging:
+            for θ in np.linspace(0, 2 * np.pi, 361):
+                _log.debug("θ (°): %s", np.rad2deg(θ))
+                orientations = Rotation.from_rotvec([[0, 0, θ]]).as_matrix()
+                deformation_rate = _core._get_deformation_rate(
+                    _core.MineralPhase.enstatite,
+                    orientations[0],
+                    np.array([0, 0, 0, 0]),
+                )
+                np.testing.assert_allclose(deformation_rate.flatten(), np.zeros(9))
+                orientations_diff, fractions_diff = _core.derivatives(
+                    phase=_core.MineralPhase.enstatite,
+                    fabric=_core.MineralFabric.enstatite_AB,
+                    n_grains=1,
+                    orientations=orientations,
+                    fractions=np.array([1.0]),
+                    strain_rate=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]]),
+                    velocity_gradient=np.array([[0, 0, 0], [2, 0, 0], [0, 0, 0]]),
+                    stress_exponent=1.5,
+                    deformation_exponent=3.5,
+                    nucleation_efficiency=5,
+                    gbm_mobility=0,
+                    volume_fraction=1.0,
+                )
+                # Can't activate the (100)[001] slip system, no plastic deformation.
+                # Only passive (rigid-body) rotation due to the velocity gradient.
+                sinθ = np.sin(θ)
+                cosθ = np.cos(θ)
+                target_orientations_diff = np.array(
+                    [[sinθ, cosθ, 0], [-cosθ, sinθ, 0], [0, 0, 0]]
+                )
+                np.testing.assert_allclose(
+                    orientations_diff[0], target_orientations_diff, atol=1e-15
+                )
+                assert np.isclose(np.sum(fractions_diff), 0.0)
 
 
 class TestSimpleShearOlivineA:
-    """Single-grain A-type olivine analytical re-orientation rate tests."""
+    """Single-grain A-type olivine analytical rotation rate tests."""
+
+    class_id = "simple_shear_Ol"
 
     def test_shear_dvdx_slip_010_100(self, outdir):
         r"""Single grain of olivine A-type, simple shear on (010)[100].
@@ -19,14 +109,19 @@ class TestSimpleShearOlivineA:
         $$\bm{L} = \begin{bmatrix} 0 & 0 & 0 \cr 2 & 0 & 0 \cr 0 & 0 & 0 \end{bmatrix}$$
 
         """
-        test_id = "shear_dvdx_010_100"
+        test_id = "dvdx_010_100"
         nondim_velocity_gradient = np.array([[0, 0, 0], [2, 0, 0], [0, 0, 0]])
         # Strain rate is 0.5*(L + Lᵀ).
         nondim_strain_rate = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]])
 
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(f"{outdir}/{test_id}.log")
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
+            )
+            initial_angles = []
+            rotation_rates = []
+            target_rotation_rates = []
 
         with optional_logging:
             for θ in np.mgrid[0 : 2 * np.pi : 360j]:
@@ -34,14 +129,14 @@ class TestSimpleShearOlivineA:
                 # Initial grain rotations around Z (anti-clockwise).
                 initial_orientations = Rotation.from_rotvec([[0, 0, θ]])
                 orientation_matrix = initial_orientations[0].as_matrix()
-                slip_invariants = _core._get_slip_invariants_olivine(
+                slip_invariants = _core._get_slip_invariants(
                     nondim_strain_rate, orientation_matrix
                 )
                 _log.debug("slip invariants: %s", slip_invariants)
 
-                crss = _minerals.get_crss(
-                    _minerals.MineralPhase.olivine,
-                    _minerals.OlivineFabric.A,
+                crss = _core.get_crss(
+                    _core.MineralPhase.olivine,
+                    _core.MineralFabric.olivine_A,
                 )
                 slip_indices = np.argsort(np.abs(slip_invariants / crss))
                 slip_system = _minerals.OLIVINE_SLIP_SYSTEMS[slip_indices[-1]]
@@ -53,15 +148,15 @@ class TestSimpleShearOlivineA:
                 _log.debug("slip rates: %s", slip_rates)
 
                 deformation_rate = _core._get_deformation_rate(
-                    _minerals.MineralPhase.olivine,
+                    _core.MineralPhase.olivine,
                     orientation_matrix,
                     slip_rates,
                 )
                 _log.debug("deformation rate:\n%s", deformation_rate)
 
                 orientations_diff, fractions_diff = _core.derivatives(
-                    phase=_minerals.MineralPhase.olivine,
-                    fabric=_minerals.OlivineFabric.A,
+                    phase=_core.MineralPhase.olivine,
+                    fabric=_core.MineralFabric.olivine_A,
                     n_grains=1,
                     orientations=initial_orientations.as_matrix(),
                     fractions=np.array([1.0]),
@@ -70,7 +165,7 @@ class TestSimpleShearOlivineA:
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
-                    gbm_mobility=125,
+                    gbm_mobility=0,
                     volume_fraction=1.0,
                 )
                 cosθ = np.cos(θ)
@@ -86,7 +181,24 @@ class TestSimpleShearOlivineA:
                 np.testing.assert_allclose(
                     orientations_diff[0], target_orientations_diff
                 )
+                if outdir is not None:
+                    initial_angles.append(np.rad2deg(θ))
+                    rotation_rates.append(
+                        np.sqrt(
+                            orientations_diff[0][0, 0] ** 2
+                            + orientations_diff[0][0, 1] ** 2
+                        )
+                    )
+                    target_rotation_rates.append(1 + cos2θ)
                 assert np.isclose(np.sum(fractions_diff), 0.0)
+
+        if outdir is not None:
+            _vis.single_olivineA_simple_shear(
+                initial_angles,
+                rotation_rates,
+                target_rotation_rates,
+                savefile=f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.png",
+            )
 
     def test_shear_dudz_slip_001_100(self, outdir):
         r"""Single grain of olivine A-type, simple shear on (001)[100].
@@ -95,14 +207,16 @@ class TestSimpleShearOlivineA:
         $$\bm{L} = \begin{bmatrix} 0 & 0 & 2 \cr 0 & 0 & 0 \cr 0 & 0 & 0 \end{bmatrix}$$
 
         """
-        test_id = "shear_dudz_001_100"
+        test_id = "dudz_001_100"
         nondim_velocity_gradient = np.array([[0, 0, 2], [0, 0, 0], [0, 0, 0]])
         # Strain rate is 0.5*(L + Lᵀ).
         nondim_strain_rate = np.array([[0, 0, 1], [0, 0, 0], [1, 0, 0]])
 
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(f"{outdir}/{test_id}.log")
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
+            )
 
         with optional_logging:
             for θ in np.mgrid[0 : 2 * np.pi : 360j]:
@@ -110,14 +224,14 @@ class TestSimpleShearOlivineA:
                 # Initial grain rotations around Y (anti-clockwise).
                 initial_orientations = Rotation.from_rotvec([[0, θ, 0]])
                 orientation_matrix = initial_orientations[0].as_matrix()
-                slip_invariants = _core._get_slip_invariants_olivine(
+                slip_invariants = _core._get_slip_invariants(
                     nondim_strain_rate, orientation_matrix
                 )
                 _log.debug("slip invariants: %s", slip_invariants)
 
-                crss = _minerals.get_crss(
-                    _minerals.MineralPhase.olivine,
-                    _minerals.OlivineFabric.A,
+                crss = _core.get_crss(
+                    _core.MineralPhase.olivine,
+                    _core.MineralFabric.olivine_A,
                 )
                 slip_indices = np.argsort(np.abs(slip_invariants / crss))
                 slip_system = _minerals.OLIVINE_SLIP_SYSTEMS[slip_indices[-1]]
@@ -129,15 +243,15 @@ class TestSimpleShearOlivineA:
                 _log.debug("slip rates: %s", slip_rates)
 
                 deformation_rate = _core._get_deformation_rate(
-                    _minerals.MineralPhase.olivine,
+                    _core.MineralPhase.olivine,
                     orientation_matrix,
                     slip_rates,
                 )
                 _log.debug("deformation rate:\n%s", deformation_rate)
 
                 orientations_diff, fractions_diff = _core.derivatives(
-                    phase=_minerals.MineralPhase.olivine,
-                    fabric=_minerals.OlivineFabric.A,
+                    phase=_core.MineralPhase.olivine,
+                    fabric=_core.MineralFabric.olivine_A,
                     n_grains=1,
                     orientations=initial_orientations.as_matrix(),
                     fractions=np.array([1.0]),
@@ -146,7 +260,7 @@ class TestSimpleShearOlivineA:
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
-                    gbm_mobility=125,
+                    gbm_mobility=0,
                     volume_fraction=1.0,
                 )
                 cosθ = np.cos(θ)
@@ -171,14 +285,16 @@ class TestSimpleShearOlivineA:
         $$\bm{L} = \begin{bmatrix} 0 & 0 & 0 \cr 0 & 0 & 0 \cr 2 & 0 & 0 \end{bmatrix}$$
 
         """
-        test_id = "shear_dudz_001_100"
+        test_id = "dudz_001_100"
         nondim_velocity_gradient = np.array([[0, 0, 0], [0, 0, 0], [2, 0, 0]])
         # Strain rate is 0.5*(L + Lᵀ).
         nondim_strain_rate = np.array([[0, 0, 1], [0, 0, 0], [1, 0, 0]])
 
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(f"{outdir}/{test_id}.log")
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
+            )
 
         with optional_logging:
             for θ in np.mgrid[0 : 2 * np.pi : 360j]:
@@ -186,14 +302,14 @@ class TestSimpleShearOlivineA:
                 # Initial grain rotations around Y (anti-clockwise).
                 initial_orientations = Rotation.from_rotvec([[0, θ, 0]])
                 orientation_matrix = initial_orientations[0].as_matrix()
-                slip_invariants = _core._get_slip_invariants_olivine(
+                slip_invariants = _core._get_slip_invariants(
                     nondim_strain_rate, orientation_matrix
                 )
                 _log.debug("slip invariants: %s", slip_invariants)
 
-                crss = _minerals.get_crss(
-                    _minerals.MineralPhase.olivine,
-                    _minerals.OlivineFabric.A,
+                crss = _core.get_crss(
+                    _core.MineralPhase.olivine,
+                    _core.MineralFabric.olivine_A,
                 )
                 slip_indices = np.argsort(np.abs(slip_invariants / crss))
                 slip_system = _minerals.OLIVINE_SLIP_SYSTEMS[slip_indices[-1]]
@@ -205,15 +321,15 @@ class TestSimpleShearOlivineA:
                 _log.debug("slip rates: %s", slip_rates)
 
                 deformation_rate = _core._get_deformation_rate(
-                    _minerals.MineralPhase.olivine,
+                    _core.MineralPhase.olivine,
                     orientation_matrix,
                     slip_rates,
                 )
                 _log.debug("deformation rate:\n%s", deformation_rate)
 
                 orientations_diff, fractions_diff = _core.derivatives(
-                    phase=_minerals.MineralPhase.olivine,
-                    fabric=_minerals.OlivineFabric.A,
+                    phase=_core.MineralPhase.olivine,
+                    fabric=_core.MineralFabric.olivine_A,
                     n_grains=1,
                     orientations=initial_orientations.as_matrix(),
                     fractions=np.array([1.0]),
@@ -222,7 +338,7 @@ class TestSimpleShearOlivineA:
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
-                    gbm_mobility=125,
+                    gbm_mobility=0,
                     volume_fraction=1.0,
                 )
                 cosθ = np.cos(θ)
@@ -247,14 +363,16 @@ class TestSimpleShearOlivineA:
         $$\bm{L} = \begin{bmatrix} 0 & 0 & 0 \cr 0 & 0 & 2 \cr 0 & 0 & 0 \end{bmatrix}$$
 
         """
-        test_id = "shear_dvdz_010_001"
+        test_id = "dvdz_010_001"
         nondim_velocity_gradient = np.array([[0, 0, 0], [0, 0, 2], [0, 0, 0]])
         # Strain rate is 0.5*(L + Lᵀ).
         nondim_strain_rate = np.array([[0, 0, 0], [0, 0, 1], [0, 1, 0]])
 
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(f"{outdir}/{test_id}.log")
+            optional_logging = _log.logfile_enable(
+                f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
+            )
 
         with optional_logging:
             for θ in np.mgrid[0 : 2 * np.pi : 360j]:
@@ -262,14 +380,14 @@ class TestSimpleShearOlivineA:
                 # Initial grain rotations around X (anti-clockwise).
                 initial_orientations = Rotation.from_rotvec([[θ, 0, 0]])
                 orientation_matrix = initial_orientations[0].as_matrix()
-                slip_invariants = _core._get_slip_invariants_olivine(
+                slip_invariants = _core._get_slip_invariants(
                     nondim_strain_rate, orientation_matrix
                 )
                 _log.debug("slip invariants: %s", slip_invariants)
 
-                crss = _minerals.get_crss(
-                    _minerals.MineralPhase.olivine,
-                    _minerals.OlivineFabric.A,
+                crss = _core.get_crss(
+                    _core.MineralPhase.olivine,
+                    _core.MineralFabric.olivine_A,
                 )
                 slip_indices = np.argsort(np.abs(slip_invariants / crss))
                 slip_system = _minerals.OLIVINE_SLIP_SYSTEMS[slip_indices[-1]]
@@ -281,15 +399,15 @@ class TestSimpleShearOlivineA:
                 _log.debug("slip rates: %s", slip_rates)
 
                 deformation_rate = _core._get_deformation_rate(
-                    _minerals.MineralPhase.olivine,
+                    _core.MineralPhase.olivine,
                     orientation_matrix,
                     slip_rates,
                 )
                 _log.debug("deformation rate:\n%s", deformation_rate)
 
                 orientations_diff, fractions_diff = _core.derivatives(
-                    phase=_minerals.MineralPhase.olivine,
-                    fabric=_minerals.OlivineFabric.A,
+                    phase=_core.MineralPhase.olivine,
+                    fabric=_core.MineralFabric.olivine_A,
                     n_grains=1,
                     orientations=initial_orientations.as_matrix(),
                     fractions=np.array([1.0]),
@@ -298,7 +416,7 @@ class TestSimpleShearOlivineA:
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
-                    gbm_mobility=125,
+                    gbm_mobility=0,
                     volume_fraction=1.0,
                 )
                 cosθ = np.cos(θ)
