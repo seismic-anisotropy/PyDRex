@@ -24,6 +24,88 @@ from scipy.spatial.transform import Rotation
 
 from pydrex import logger as _log
 from pydrex import stats as _st
+from pydrex import tensors as _tensors
+
+
+def anisotropy(voigt_matrix, proj="hex"):
+    """Calculate anisotropy diagnostics for the given elasticity tensor.
+
+    Args:
+    - `voigt_matrix` (6x6 array) — the Voigt matrix representation of the averaged
+      elasticity tensor for a polycrystal
+    - `proj` — the projection function to use, currently only "hex" for hexagonal
+      symmetry (transverse isotropy)
+
+    Returns the percent anisotropy, a matrix containing the axes of the Symmetry
+    Cartesian Coordinate System (rows), and the elasticity tensor in the SCCS frame
+    (Voigt vector representation).
+
+    """
+    match proj:
+        case "hex":
+            proj = _tensors.hex_projector
+        case _:
+            raise ValueError(f"unsupported projector '{proj}'")
+
+    voigt_matrix = _tensors.upper_tri_to_symmetric(voigt_matrix)
+    stiffness_dilat, stiffness_voigt = _tensors.voigt_decompose(voigt_matrix)
+    # Appendix A5, Browaeys & Chevrot, 2004.
+    K = np.trace(stiffness_dilat) / 9  # Bulk modulus
+    G = (np.trace(stiffness_voigt) - 3 * K) / 10  # Shear modulus
+    isotropic_vector = np.hstack(
+        (
+            np.repeat(K + 4 * G / 3, 3),
+            np.repeat(np.sqrt(2) * (K - 2 * G / 3), 3),
+            np.repeat(2 * G, 3),
+            np.repeat(0, 12),
+        )
+    )
+    voigt_vector = _tensors.voigt_matrix_to_vector(voigt_matrix)
+    percent_anisotropy = (
+        (la.norm(voigt_vector - isotropic_vector) - proj(voigt_vector))
+        / la.norm(voigt_vector)
+        * 100
+    )
+    eigv_dij = la.eigh(stiffness_dilat)[1][:, ::-1]
+    eigv_vij = la.eigh(stiffness_voigt)[1][:, ::-1]
+
+    # Search for SCCA directions.
+    for i in range(3):
+        ndvc = 0
+        advc = 10
+        for j in range(3):
+            sdv = np.clip(np.dot(eigv_dij[:, i], eigv_vij[:, j]), -1, 1)
+            adv = np.arccos(abs(sdv))
+            if adv < advc:
+                ndvc = int((j + 1) * np.sign(sdv)) if sdv != 0 else j + 1
+                advc = adv
+        eigv_dij[:, i] = (eigv_dij[:, i] + ndvc * eigv_vij[:, abs(ndvc) - 1]) / 2
+        eigv_dij[:, i] /= la.norm(eigv_dij[:, i], ord=2)
+
+    # Higher symmetry axis
+    elastic_tensor = _tensors.voigt_to_elastic_tensor(voigt_matrix)
+    voigt_norm = la.norm(voigt_vector)
+    for i in range(3):
+        dev = proj(
+            _tensors.voigt_matrix_to_vector(
+                _tensors.elastic_tensor_to_voigt(
+                    _tensors.rotate(
+                        elastic_tensor,
+                        eigv_dij[:, [(i + j) % 3 for j in range(3)]].transpose(),
+                    )
+                )
+            )
+        )
+        if dev < voigt_norm:
+            voigt_norm = dev
+            ndvc = i + 1
+
+    # Rotate in SCCA
+    sccs = eigv_dij[:, [(abs(ndvc) - 1 + i) % 3 for i in range(3)]].transpose()
+    voigt_vector = _tensors.voigt_matrix_to_vector(
+        _tensors.elastic_tensor_to_voigt(_tensors.rotate(elastic_tensor, sccs))
+    )
+    return percent_anisotropy, sccs / la.norm(sccs, axis=1)[:, None], voigt_vector
 
 
 def bingham_average(orientations, axis="a"):
