@@ -253,7 +253,7 @@ class Mineral:
             self.fractions_init = np.full(self.n_grains, 1.0 / self.n_grains)
         if self.orientations_init is None:
             self.orientations_init = Rotation.random(
-                self.n_grains, random_state=1
+                self.n_grains, random_state=self.rng
             ).as_matrix()
 
         # Copy the initial values to the storage lists.
