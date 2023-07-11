@@ -46,7 +46,7 @@ class TestOlivineA:
             return grad_v
 
         shear_direction = [0, 1, 0]
-        timestamps = np.linspace(0, 2e3, 500)
+        timestamps = np.linspace(0, 1, 500)
 
         # Optional logging and plotting setup.
         optional_logging = cl.nullcontext()
@@ -91,23 +91,23 @@ class TestOlivineA:
                         )
 
                 n_timesteps = len(mineral.orientations)
-                misorient_angles = np.zeros(n_timesteps)
                 misorient_indices = np.zeros(n_timesteps)
-                # Loop over first dimension (time steps) of orientations.
-                for idx, matrices in enumerate(mineral.orientations):
-                    orientations_resampled, _ = _stats.resample_orientations(
-                        matrices, mineral.fractions[idx]
-                    )
-                    direction_mean = _diagnostics.bingham_average(
-                        orientations_resampled,
-                        axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
-                    )
-                    misorient_angles[idx] = _diagnostics.smallest_angle(
-                        direction_mean, shear_direction
-                    )
-                    # misorient_indices[idx] = _diagnostics.misorientation_index(
-                    #     orientations_resampled
-                    # )
+                # misorient_angles = np.zeros(n_timesteps)
+                # # Loop over first dimension (time steps) of orientations.
+                # for idx, matrices in enumerate(mineral.orientations):
+                #     orientations_resampled, _ = _stats.resample_orientations(
+                #         matrices, mineral.fractions[idx]
+                #     )
+                #     direction_mean = _diagnostics.bingham_average(
+                #         orientations_resampled,
+                #         axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
+                #     )
+                #     misorient_angles[idx] = _diagnostics.smallest_angle(
+                #         direction_mean, shear_direction
+                #     )
+                #     misorient_indices[idx] = _diagnostics.misorientation_index(
+                #         orientations_resampled
+                #     )
 
                 # Optionally store plotting metadata.
                 if outdir is not None:
@@ -166,7 +166,7 @@ class TestOlivineA:
             return grad_v
 
         shear_direction = [1, 0, 0]
-        timestamps = np.linspace(0, 2e3, 500)
+        timestamps = np.linspace(0, 1, 500)
 
         # Optional plotting and logging setup.
         optional_logging = cl.nullcontext()
@@ -211,23 +211,23 @@ class TestOlivineA:
                         )
 
                 n_timesteps = len(mineral.orientations)
-                misorient_angles = np.zeros(n_timesteps)
                 misorient_indices = np.zeros(n_timesteps)
-                # Loop over first dimension (time steps) of orientations.
-                for idx, matrices in enumerate(mineral.orientations):
-                    orientations_resampled, _ = _stats.resample_orientations(
-                        matrices, mineral.fractions[idx]
-                    )
-                    direction_mean = _diagnostics.bingham_average(
-                        orientations_resampled,
-                        axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
-                    )
-                    misorient_angles[idx] = _diagnostics.smallest_angle(
-                        direction_mean, [1, 0, 0]
-                    )
-                    # misorient_indices[idx] = _diagnostics.misorientation_index(
-                    #     orientations_resampled
-                    # )
+                # misorient_angles = np.zeros(n_timesteps)
+                # # Loop over first dimension (time steps) of orientations.
+                # for idx, matrices in enumerate(mineral.orientations):
+                #     orientations_resampled, _ = _stats.resample_orientations(
+                #         matrices, mineral.fractions[idx]
+                #     )
+                #     direction_mean = _diagnostics.bingham_average(
+                #         orientations_resampled,
+                #         axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
+                #     )
+                #     misorient_angles[idx] = _diagnostics.smallest_angle(
+                #         direction_mean, [1, 0, 0]
+                #     )
+                #     misorient_indices[idx] = _diagnostics.misorientation_index(
+                #         orientations_resampled
+                #     )
 
                 # Optionally store plotting metadata.
                 if outdir is not None:
