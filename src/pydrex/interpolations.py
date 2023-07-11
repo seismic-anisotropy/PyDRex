@@ -43,7 +43,9 @@ def default_interpolators(config, coords, vtk_output, mpl_interp=None):
         )
     except LookupError:
         n_nodes = np.product(config["mesh"]["gridnodes"])
-        deformation_mechanism = np.empty(n_nodes).fill(_core.DeformationRegime.dislocation)
+        deformation_mechanism = np.empty(n_nodes).fill(
+            _core.DeformationRegime.dislocation
+        )
 
     velocity = _vtk.read_tuple_array(data, "Velocity", skip_z=is_2d)
     velocity_gradient = _vtk.read_tuple_array(data, "VelocityGradient", skip_z=is_2d)
