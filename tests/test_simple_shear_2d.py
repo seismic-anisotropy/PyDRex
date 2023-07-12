@@ -38,7 +38,7 @@ class TestOlivineA:
         [Kaminski 2001](https://doi.org/10.1016%2Fs0012-821x%2801%2900356-9).
 
         """
-        strain_rate = 1
+        strain_rate = 1.5844e-14  # Strain rate from Fraters & Billen, 2021.
 
         def get_velocity_gradient(x):
             grad_v = np.zeros((3, 3))
@@ -46,7 +46,9 @@ class TestOlivineA:
             return grad_v
 
         shear_direction = [0, 1, 0]
-        timestamps = np.linspace(0, 0.005, 500)
+        # Solve texture until 20 Ma.
+        timestamps = np.linspace(0, 20 * 1e6 * 31556952, 100)
+        n_timesteps = len(timestamps)
 
         # Optional logging and plotting setup.
         optional_logging = cl.nullcontext()
@@ -72,8 +74,9 @@ class TestOlivineA:
                 deformation_gradient = np.eye(3)  # Undeformed initial state.
                 for t, time in enumerate(timestamps[:-1], start=1):
                     _log.info(
-                        "calculating CPO at %s (t=%s) with velocity gradient: %s",
-                        self.get_position(None),
+                        "step %s/%s (t=%s) with velocity gradient: %s",
+                        t,
+                        n_timesteps,
                         time,
                         get_velocity_gradient(None).flatten(),
                     )
@@ -84,13 +87,12 @@ class TestOlivineA:
                         pathline=(time, time + timestamps[t], self.get_position),
                     )
                     fse_λ, fse_v = _diagnostics.finite_strain(deformation_gradient)
-                    _log.info("strain = %s", fse_λ)
+                    _log.info("strain √λ-1=%s (D₀t=%s)", fse_λ, strain_rate * time)
                     if p == 0 and outdir is not None:
                         θ_fse.append(
                             _diagnostics.smallest_angle(fse_v, shear_direction)
                         )
 
-                n_timesteps = len(mineral.orientations)
                 misorient_indices = np.zeros(n_timesteps)
                 misorient_angles = np.zeros(n_timesteps)
                 # Loop over first dimension (time steps) of orientations.
@@ -105,9 +107,9 @@ class TestOlivineA:
                     misorient_angles[idx] = _diagnostics.smallest_angle(
                         direction_mean, shear_direction
                     )
-                    misorient_indices[idx] = _diagnostics.misorientation_index(
-                        orientations_resampled
-                    )
+                    # misorient_indices[idx] = _diagnostics.misorientation_index(
+                    #     orientations_resampled
+                    # )
 
                 # Optionally store plotting metadata.
                 if outdir is not None:
@@ -158,7 +160,7 @@ class TestOlivineA:
         $$\bm{L} = \begin{bmatrix} 0 & 0 & 2 \cr 0 & 0 & 0 \cr 0 & 0 & 0 \end{bmatrix}$$
 
         """
-        strain_rate = 1
+        strain_rate = 1.5844e-14  # Strain rate from Fraters & Billen, 2021.
 
         def get_velocity_gradient(x):
             grad_v = np.zeros((3, 3))
@@ -166,7 +168,9 @@ class TestOlivineA:
             return grad_v
 
         shear_direction = [1, 0, 0]
-        timestamps = np.linspace(0, 0.005, 500)
+        # Solve texture until 20 Ma.
+        timestamps = np.linspace(0, 20 * 1e6 * 31556952, 100)
+        n_timesteps = len(timestamps)
 
         # Optional plotting and logging setup.
         optional_logging = cl.nullcontext()
@@ -192,8 +196,9 @@ class TestOlivineA:
                 deformation_gradient = np.eye(3)  # Undeformed initial state.
                 for t, time in enumerate(timestamps[:-1], start=1):
                     _log.info(
-                        "calculating CPO at %s (t=%s) with velocity gradient: %s",
-                        self.get_position(None),
+                        "step %s/%s (t=%s) with velocity gradient: %s",
+                        t,
+                        n_timesteps,
                         time,
                         get_velocity_gradient(None).flatten(),
                     )
@@ -204,13 +209,12 @@ class TestOlivineA:
                         pathline=(time, time + timestamps[t], self.get_position),
                     )
                     fse_λ, fse_v = _diagnostics.finite_strain(deformation_gradient)
-                    _log.info("strain = %s", fse_λ)
+                    _log.info("strain √λ-1=%s", fse_λ)
                     if p == 0 and outdir is not None:
                         θ_fse.append(
                             _diagnostics.smallest_angle(fse_v, shear_direction)
                         )
 
-                n_timesteps = len(mineral.orientations)
                 misorient_indices = np.zeros(n_timesteps)
                 # misorient_angles = np.zeros(n_timesteps)
                 # # Loop over first dimension (time steps) of orientations.
