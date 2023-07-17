@@ -47,7 +47,10 @@ class ConsoleFormatter(logging.Formatter):
     """Log formatter that uses terminal color codes."""
 
     def colorfmt(self, code):
-        return f"\033[{code}m%(levelname)s [%(asctime)s]\033[m %(name)s: %(message)s"
+        return (
+            f"\033[{code}m%(levelname)s [%(asctime)s]\033[m"
+            + " \033[1m%(name)s:\033[m %(message)s"
+        )
 
     def format(self, record):
         format_specs = {
