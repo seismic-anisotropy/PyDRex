@@ -212,7 +212,18 @@ def simple_shear_stationary_2d(
         )
 
     if θ_fse is not None:
-        ax_mean.plot(timestamps, θ_fse, "r--", label="FSE")
+        ax_mean.plot(timestamps, θ_fse, "r--", alpha=0.33, label="calc. FSE")
+        ax_mean.plot(
+            timestamps,
+            [
+                90 - np.rad2deg(
+                    np.arctan(np.sqrt(5e-6**2 * t**2 + 1) + 5e-6 * t)
+                )
+                for t in timestamps
+            ],
+            "k",
+            label="true FSE",
+        )
 
     if labels is not None:
         ax_mean.legend()

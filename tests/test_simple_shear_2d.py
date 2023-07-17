@@ -8,6 +8,7 @@ from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
 from pydrex import visualisation as _vis
+from pydrex import utils as _utils
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "2d_simple_shear"
@@ -38,17 +39,23 @@ class TestOlivineA:
         [Kaminski 2001](https://doi.org/10.1016%2Fs0012-821x%2801%2900356-9).
 
         """
-        strain_rate = 1.5844e-14  # Strain rate from Fraters & Billen, 2021.
+        strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
+        timestamps = np.linspace(0, 2e5, 501)  # Solve until D₀t=1 ('shear strain' γ=2).
+        n_timesteps = len(timestamps) - 1
 
         def get_velocity_gradient(x):
+            # It is independent of time or position in this test.
             grad_v = np.zeros((3, 3))
             grad_v[1, 0] = 2 * strain_rate
             return grad_v
 
-        shear_direction = [0, 1, 0]
-        # Solve texture until 20 Ma.
-        timestamps = np.linspace(0, 20 * 1e6 * 31556952, 100)
-        n_timesteps = len(timestamps)
+        shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
+
+        # Theoretical FSE axis for simple shear.
+        # We want the angle from the Y axis (shear direction), so subtract from 90.
+        θ_fse_eq = [
+            90 - _utils.angle_fse_simpleshear(t * strain_rate) for t in timestamps
+        ]
 
         # Optional logging and plotting setup.
         optional_logging = cl.nullcontext()
@@ -84,11 +91,12 @@ class TestOlivineA:
                         params,
                         deformation_gradient,
                         get_velocity_gradient,
-                        pathline=(time, time + timestamps[t], self.get_position),
+                        pathline=(time, timestamps[t], self.get_position),
                     )
                     fse_λ, fse_v = _diagnostics.finite_strain(deformation_gradient)
-                    _log.info("strain √λ-1=%s (D₀t=%s)", fse_λ, strain_rate * time)
+                    _log.info("› strain √λ-1=%s (D₀t=%s)", fse_λ, strain_rate * time)
                     if p == 0 and outdir is not None:
+                        # θ_fse.append(90 - np.rad2deg(np.arctan2(fse_v[1], fse_v[0])))
                         θ_fse.append(
                             _diagnostics.smallest_angle(fse_v, shear_direction)
                         )
@@ -107,32 +115,22 @@ class TestOlivineA:
                     misorient_angles[idx] = _diagnostics.smallest_angle(
                         direction_mean, shear_direction
                     )
-                    # misorient_indices[idx] = _diagnostics.misorientation_index(
-                    #     orientations_resampled
-                    # )
+                    misorient_indices[idx] = _diagnostics.misorientation_index(
+                        orientations_resampled
+                    )
 
                 # Optionally store plotting metadata.
                 if outdir is not None:
                     labels.append(f"$M^∗$ = {params['gbm_mobility']}")
                     angles.append(misorient_angles)
-                    # angles.append(
-                    #     [
-                    #         # _diagnostics.smallest_angle(
-                    #         #     _diagnostics.anisotropy(x)[1][2, :], shear_direction
-                    #         # )
-                    #         np.abs(
-                    #             np.rad2deg(
-                    #                 np.arcsin(_diagnostics.anisotropy(x)[1][2, 2])
-                    #             )
-                    #         )
-                    #         for x in _minerals.voigt_averages([mineral], params)
-                    #     ]
-                    # )
                     indices.append(misorient_indices)
                     mineral.save(
                         f"{out_basepath}.npz",
                         postfix=f"M{params['gbm_mobility']}",
                     )
+
+        # Check that FSE is correct.
+        np.testing.assert_allclose(θ_fse, θ_fse_eq, rtol=1e-6, atol=0)
 
         # Optionally plot figure.
         if outdir is not None:
@@ -160,17 +158,23 @@ class TestOlivineA:
         $$\bm{L} = \begin{bmatrix} 0 & 0 & 2 \cr 0 & 0 & 0 \cr 0 & 0 & 0 \end{bmatrix}$$
 
         """
-        strain_rate = 1.5844e-14  # Strain rate from Fraters & Billen, 2021.
+        strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
+        timestamps = np.linspace(0, 2e5, 501)  # Solve until D₀t=1 ('shear strain' γ=2).
+        n_timesteps = len(timestamps) - 1
 
         def get_velocity_gradient(x):
+            # It is independent of time or position in this test.
             grad_v = np.zeros((3, 3))
             grad_v[0, 2] = 2 * strain_rate
             return grad_v
 
-        shear_direction = [1, 0, 0]
-        # Solve texture until 20 Ma.
-        timestamps = np.linspace(0, 20 * 1e6 * 31556952, 100)
-        n_timesteps = len(timestamps)
+        shear_direction = [1, 0, 0]  # Used to calculate the angular diagnostics.
+
+        # Theoretical FSE axis for simple shear.
+        # We want the angle from the Y axis (shear direction), so subtract from 90.
+        θ_fse_eq = [
+            90 - _utils.angle_fse_simpleshear(t * strain_rate) for t in timestamps
+        ]
 
         # Optional plotting and logging setup.
         optional_logging = cl.nullcontext()
@@ -206,55 +210,45 @@ class TestOlivineA:
                         params,
                         deformation_gradient,
                         get_velocity_gradient,
-                        pathline=(time, time + timestamps[t], self.get_position),
+                        pathline=(time, timestamps[t], self.get_position),
                     )
                     fse_λ, fse_v = _diagnostics.finite_strain(deformation_gradient)
-                    _log.info("strain √λ-1=%s", fse_λ)
+                    _log.info("› strain √λ-1=%s (D₀t=%s)", fse_λ, strain_rate * time)
                     if p == 0 and outdir is not None:
                         θ_fse.append(
                             _diagnostics.smallest_angle(fse_v, shear_direction)
                         )
 
                 misorient_indices = np.zeros(n_timesteps)
-                # misorient_angles = np.zeros(n_timesteps)
-                # # Loop over first dimension (time steps) of orientations.
-                # for idx, matrices in enumerate(mineral.orientations):
-                #     orientations_resampled, _ = _stats.resample_orientations(
-                #         matrices, mineral.fractions[idx]
-                #     )
-                #     direction_mean = _diagnostics.bingham_average(
-                #         orientations_resampled,
-                #         axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
-                #     )
-                #     misorient_angles[idx] = _diagnostics.smallest_angle(
-                #         direction_mean, [1, 0, 0]
-                #     )
-                #     misorient_indices[idx] = _diagnostics.misorientation_index(
-                #         orientations_resampled
-                #     )
+                misorient_angles = np.zeros(n_timesteps)
+                # Loop over first dimension (time steps) of orientations.
+                for idx, matrices in enumerate(mineral.orientations):
+                    orientations_resampled, _ = _stats.resample_orientations(
+                        matrices, mineral.fractions[idx]
+                    )
+                    direction_mean = _diagnostics.bingham_average(
+                        orientations_resampled,
+                        axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
+                    )
+                    misorient_angles[idx] = _diagnostics.smallest_angle(
+                        direction_mean, [1, 0, 0]
+                    )
+                    misorient_indices[idx] = _diagnostics.misorientation_index(
+                        orientations_resampled
+                    )
 
                 # Optionally store plotting metadata.
                 if outdir is not None:
                     labels.append(f"$f_{{gbs}}$ = {params['gbs_threshold']}")
-                    # angles.append(misorient_angles)
-                    angles.append(
-                        [
-                            # _diagnostics.smallest_angle(
-                            #     _diagnostics.anisotropy(x)[1][2, :], shear_direction
-                            # )
-                            np.abs(
-                                np.rad2deg(
-                                    np.arcsin(_diagnostics.anisotropy(x)[1][2, 2])
-                                )
-                            )
-                            for x in _minerals.voigt_averages([mineral], params)
-                        ]
-                    )
+                    angles.append(misorient_angles)
                     indices.append(misorient_indices)
                     mineral.save(
                         f"{out_basepath}.npz",
                         postfix=f"X{params['gbs_threshold']}",
                     )
+
+        # Check that FSE is correct.
+        np.testing.assert_allclose(θ_fse, θ_fse_eq, rtol=1e-6, atol=0)
 
         # Optionally plot figure.
         if outdir is not None:
