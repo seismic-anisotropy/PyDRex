@@ -51,7 +51,7 @@ repository = "https://github.com/Patol75/PyDRex/"
 documentation = "https://patol75.github.io/PyDRex/"
 
 [project.scripts]
-pydrex = "pydrex.run:main"
+pydrex-polefigures = "pydrex.cli:CLI_HANDLERS.pole_figure_visualiser"
 
 # Make setuptools include datafiles in wheels/packages.
 # Data files must be inside the package directory.

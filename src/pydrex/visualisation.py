@@ -9,8 +9,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from pydrex import axes as _axes
 from pydrex import io as _io
 from pydrex import logger as _log
-from pydrex import minerals as _minerals
-from pydrex import stats as _stats
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
@@ -25,43 +23,16 @@ if "pydrex.polefigure" not in mproj.get_projection_names():
 
 
 def polefigures(
-    datafile,
-    i_range=None,
-    postfix=None,
-    density=False,
-    ref_axes="xz",
-    savefile="polefigures.png",
-    **kwargs,
+    orientations, ref_axes, i_range, density=False, savefile="polefigures.png", **kwargs
 ):
-    """Plot [100], [010] and [001] pole figures for CPO data.
+    """Plot pole figures of a series of (Nx3x3) orientation matrix stacks.
 
-    The data is read from fields ending with the optional `postfix` in the NPZ file
-    `datafile`. Use `i_range` to specify the indices of the timesteps to be plotted,
-    which can be any valid Python range object, e.g. `range(0, 12, 2)` for a step of 2.
-    By default (`i_range=None`), a maximum of 25 timesteps are plotted.
-    If the number would exceed this, a warning is printed,
-    which signals the complete number of timesteps found in the file.
-
-    Use `density=True` to plot contoured pole figures instead of raw points.
-    In this case, any additional keyword arguments are passed to
-    `pydrex.stats.point_density`.
-
-    See also: `pydrex.minerals.Mineral.save`, `pydrex.axes.PoleFigureAxes.polefigure`.
+    Produces [100], [010] and [001] pole figures for (resampled) orientations.
+    For the argument specification, check the output of `pydrex-polefigures --help`
+    on the command line.
 
     """
-    mineral = _minerals.Mineral.from_file(datafile, postfix=postfix)
-    if i_range is None:
-        i_range = range(0, len(mineral.orientations))
-        if len(i_range) > 25:
-            _log.warning("truncating to 25 timesteps (out of %s total)", len(i_range))
-            i_range = range(0, 25)
-
-    orientations_resampled = [
-        _stats.resample_orientations(mineral.orientations[i], mineral.fractions[i])[0]
-        for i in np.arange(i_range.start, i_range.stop, i_range.step, dtype=int)
-    ]
-    n_orientations = len(orientations_resampled)
-
+    n_orientations = len(orientations)
     fig = plt.figure(figsize=(n_orientations, 4), dpi=600)
 
     if len(i_range) == 1:
@@ -96,7 +67,7 @@ def polefigures(
         grid[first_row + 2, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
     )
     fig001.suptitle("[001]", fontsize="small")
-    for n, orientations in enumerate(orientations_resampled):
+    for n, orientations in enumerate(orientations):
         ax100 = fig100.add_subplot(
             1, n_orientations, n + 1, projection="pydrex.polefigure"
         )
@@ -132,7 +103,6 @@ def polefigures(
                 cbar = fig.colorbar(
                     pf,
                     ax=ax,
-                    ref_axes=ref_axes,
                     fraction=0.05,
                     location="bottom",
                     orientation="horizontal",
