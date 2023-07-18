@@ -143,90 +143,52 @@ def _get_marker_and_label(data, seq_index, markers, labels=None):
 
 @check_marker_seq
 def simple_shear_stationary_2d(
+    strains,
+    target_angles,
     angles,
     indices,
-    timestop,
     savefile="pydrex_simple_shear_stationary_2d.png",
     markers=("."),
-    labels=None,
     θ_fse=None,
+    labels=None,
 ):
     """Plot diagnostics for stationary A-type olivine 2D simple shear box tests."""
     fig = plt.figure(figsize=(5, 8), dpi=300)
     grid = fig.add_gridspec(2, 1, hspace=0.05)
     ax_mean = fig.add_subplot(grid[0])
     ax_mean.set_ylabel("Mean angle ∈ [0, 90]°")
-    ax_mean.axhline(0, color=plt.rcParams["axes.edgecolor"])
     ax_mean.tick_params(labelbottom=False)
+    ax_mean.set_xlim((strains[0], strains[-1]))
+    ax_mean.set_ylim((0, 60))
     ax_strength = fig.add_subplot(grid[1], sharex=ax_mean)
+    ax_strength.set_xlim((strains[0], strains[-1]))
+    ax_strength.set_ylim((0, 1))
     ax_strength.set_ylabel("Texture strength (M-index)")
-    ax_strength.set_xlabel(r"Strain ($\dot{ε}_0 t$)")
+    ax_strength.set_xlabel(r"Strain ($\dot{D}_0 t = γ/2$)")
 
-    colors = []
-    data_Kaminski2001 = _io.read_scsv(
-        _io.data("thirdparty") / "Kaminski2001_GBMshear.scsv"
-    )
-    lines = ax_mean.plot(
-        np.asarray(data_Kaminski2001.equivalent_strain_M0) / 200 * timestop,
-        data_Kaminski2001.angle_M0,
-        alpha=0.33,
-        label=r"$M^{\ast}=0$",
-    )
-    colors.append(lines[0].get_color())
-    lines = ax_mean.plot(
-        np.asarray(data_Kaminski2001.equivalent_strain_M50) / 200 * timestop,
-        data_Kaminski2001.angle_M50,
-        alpha=0.33,
-        label=r"$M^{\ast}=50$",
-    )
-    colors.append(lines[0].get_color())
-    lines = ax_mean.plot(
-        np.asarray(data_Kaminski2001.equivalent_strain_M200) / 200 * timestop,
-        data_Kaminski2001.angle_M200,
-        alpha=0.33,
-        label=r"$M^{\ast}=200$",
-    )
-    colors.append(lines[0].get_color())
-
-    for i, (misorient_angles, misorient_indices) in enumerate(zip(angles, indices)):
-        timestamps = np.linspace(0, timestop, len(misorient_angles))
+    for i, (θ_target, θ, m_indices) in enumerate(zip(target_angles, angles, indices)):
         marker, label = _get_marker_and_label(angles, i, markers, labels)
 
-        ax_mean.plot(
-            timestamps,
-            misorient_angles,
-            marker,
-            markersize=5,
-            alpha=0.33,
-            label=label,
-            color=colors[i],
-        )
+        lines = ax_mean.plot(strains, θ_target, alpha=0.66, label=label)
+        color = lines[0].get_color()
+        ax_mean.plot(strains, θ, marker, markersize=5, alpha=0.33, color=color)
         ax_strength.plot(
-            timestamps,
-            misorient_indices,
+            strains,
+            m_indices,
             marker,
             markersize=5,
             alpha=0.33,
+            color=color,
             label=label,
-            color=colors[i],
         )
 
     if θ_fse is not None:
-        ax_mean.plot(timestamps, θ_fse, "r--", alpha=0.33, label="calc. FSE")
         ax_mean.plot(
-            timestamps,
-            [
-                90 - np.rad2deg(
-                    np.arctan(np.sqrt(5e-6**2 * t**2 + 1) + 5e-6 * t)
-                )
-                for t in timestamps
-            ],
-            "k",
-            label="true FSE",
+            strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE"
         )
-
     if labels is not None:
         ax_mean.legend()
+        ax_strength.legend()
 
     fig.savefig(_io.resolve_path(savefile))
 

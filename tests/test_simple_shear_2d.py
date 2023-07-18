@@ -2,13 +2,16 @@
 import contextlib as cl
 
 import numpy as np
+from numpy import testing as nt
+from scipy.interpolate import PchipInterpolator
 
 from pydrex import diagnostics as _diagnostics
+from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
-from pydrex import visualisation as _vis
 from pydrex import utils as _utils
+from pydrex import visualisation as _vis
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "2d_simple_shear"
@@ -40,8 +43,10 @@ class TestOlivineA:
 
         """
         strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
-        timestamps = np.linspace(0, 2e5, 501)  # Solve until D₀t=1 ('shear strain' γ=2).
-        n_timesteps = len(timestamps) - 1
+        timestamps = np.linspace(0, 2e5, 201)  # Solve until D₀t=1 ('shear strain' γ=2).
+        n_timesteps = len(timestamps)
+        i_first_cpo = 50  # First index where Bingham averages are sufficiently stable.
+        i_strain_50p = [0, 50, 100, 150, 200]  # Indices for += 50% strain.
 
         def get_velocity_gradient(x):
             # It is independent of time or position in this test.
@@ -51,21 +56,15 @@ class TestOlivineA:
 
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
 
-        # Theoretical FSE axis for simple shear.
-        # We want the angle from the Y axis (shear direction), so subtract from 90.
-        θ_fse_eq = [
-            90 - _utils.angle_fse_simpleshear(t * strain_rate) for t in timestamps
-        ]
-
-        # Optional logging and plotting setup.
+        # Output setup with optional logging and data series labels.
+        θ_fse = [45]
+        angles = []
+        indices = []
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_dvdx_GBM"
             optional_logging = _log.logfile_enable(f"{out_basepath}.log")
-            θ_fse = [45]
             labels = []
-            angles = []
-            indices = []
 
         with optional_logging:
             for p, params in enumerate(
@@ -83,7 +82,7 @@ class TestOlivineA:
                     _log.info(
                         "step %s/%s (t=%s) with velocity gradient: %s",
                         t,
-                        n_timesteps,
+                        n_timesteps - 1,
                         time,
                         get_velocity_gradient(None).flatten(),
                     )
@@ -96,7 +95,6 @@ class TestOlivineA:
                     fse_λ, fse_v = _diagnostics.finite_strain(deformation_gradient)
                     _log.info("› strain √λ-1=%s (D₀t=%s)", fse_λ, strain_rate * time)
                     if p == 0 and outdir is not None:
-                        # θ_fse.append(90 - np.rad2deg(np.arctan2(fse_v[1], fse_v[0])))
                         θ_fse.append(
                             _diagnostics.smallest_angle(fse_v, shear_direction)
                         )
@@ -129,20 +127,77 @@ class TestOlivineA:
                         postfix=f"M{params['gbm_mobility']}",
                     )
 
-        # Check that FSE is correct.
-        np.testing.assert_allclose(θ_fse, θ_fse_eq, rtol=1e-6, atol=0)
+            # Interpolate Kaminski & Ribe, 2001 data to get target angles at `strains`.
+            _log.info("interpolating target misorientation angles...")
+            strains = timestamps * strain_rate
+            data = _io.read_scsv(_io.data("thirdparty") / "Kaminski2001_GBMshear.scsv")
+            cs_M0 = PchipInterpolator(
+                _utils.skip_nans(data.equivalent_strain_M0) / 200,
+                _utils.skip_nans(data.angle_M0),
+            )
+            cs_M50 = PchipInterpolator(
+                _utils.skip_nans(data.equivalent_strain_M50) / 200,
+                _utils.skip_nans(data.angle_M50),
+            )
+            cs_M200 = PchipInterpolator(
+                _utils.skip_nans(data.equivalent_strain_M200) / 200,
+                _utils.skip_nans(data.angle_M200),
+            )
+            target_angles = [cs_M0(strains), cs_M50(strains), cs_M200(strains)]
 
         # Optionally plot figure.
         if outdir is not None:
             _vis.simple_shear_stationary_2d(
+                strains,
+                target_angles,
                 angles,
                 indices,
-                timestop=timestamps[-1],
-                savefile=f"{out_basepath}.png",
+                savefile=f"{out_basepath}.pdf",
                 markers=("o", "v", "s"),
-                labels=labels,
                 θ_fse=θ_fse,
+                labels=labels,
             )
+
+        # Check that FSE is correct.
+        # First, get theoretical FSE axis for simple shear.
+        # We want the angle from the Y axis (shear direction), so subtract from 90.
+        θ_fse_eq = [90 - _utils.angle_fse_simpleshear(strain) for strain in strains]
+        nt.assert_allclose(θ_fse, θ_fse_eq, rtol=1e-7, atol=0)
+
+        # Check Bingham angles, ignoring the first portion.
+        # Average orientations of near-isotropic distributions are unstable.
+        nt.assert_allclose(
+            θ_fse[i_first_cpo:], angles[0][i_first_cpo:], rtol=0.1, atol=0
+        )
+        nt.assert_allclose(
+            target_angles[0][i_first_cpo:], angles[0][i_first_cpo:], rtol=0.1, atol=0
+        )
+        nt.assert_allclose(
+            target_angles[1][i_first_cpo:], angles[1][i_first_cpo:], rtol=0, atol=5.7
+        )
+        nt.assert_allclose(
+            target_angles[2][i_first_cpo:], angles[2][i_first_cpo:], rtol=0, atol=5.5
+        )
+
+        # Check texture strength (M-index) at strains of 0%, 50%, 100%, 150% & 200%.
+        nt.assert_allclose(
+            [0.29, 0.28, 0.26, 0.24, 0.24],
+            indices[1].take(i_strain_50p),
+            rtol=0,
+            atol=0.02,
+        )
+        nt.assert_allclose(
+            [0.29, 0.27, 0.26, 0.42, 0.6],
+            indices[1].take(i_strain_50p),
+            rtol=0,
+            atol=0.02,
+        )
+        nt.assert_allclose(
+            [0.29, 0.3, 0.52, 0.83, 0.89],
+            indices[2].take(i_strain_50p),
+            rtol=0,
+            atol=0.02,
+        )
 
     def test_dudz_GBS(
         self,
@@ -159,8 +214,10 @@ class TestOlivineA:
 
         """
         strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
-        timestamps = np.linspace(0, 2e5, 501)  # Solve until D₀t=1 ('shear strain' γ=2).
-        n_timesteps = len(timestamps) - 1
+        timestamps = np.linspace(0, 2e5, 201)  # Solve until D₀t=1 ('shear strain' γ=2).
+        n_timesteps = len(timestamps)
+        i_first_cpo = 50  # First index where Bingham averages are sufficiently stable.
+        i_strain_50p = [0, 50, 100, 150, 200]  # Indices for += 50% strain.
 
         def get_velocity_gradient(x):
             # It is independent of time or position in this test.
@@ -170,21 +227,15 @@ class TestOlivineA:
 
         shear_direction = [1, 0, 0]  # Used to calculate the angular diagnostics.
 
-        # Theoretical FSE axis for simple shear.
-        # We want the angle from the Y axis (shear direction), so subtract from 90.
-        θ_fse_eq = [
-            90 - _utils.angle_fse_simpleshear(t * strain_rate) for t in timestamps
-        ]
-
-        # Optional plotting and logging setup.
+        # Output setup with optional logging and data series labels.
+        θ_fse = [45]
+        angles = []
+        indices = []
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_dudz_GBS"
             optional_logging = _log.logfile_enable(f"{out_basepath}.log")
-            θ_fse = [45]
             labels = []
-            angles = []
-            indices = []
 
         with optional_logging:
             for p, params in enumerate(
@@ -202,7 +253,7 @@ class TestOlivineA:
                     _log.info(
                         "step %s/%s (t=%s) with velocity gradient: %s",
                         t,
-                        n_timesteps,
+                        n_timesteps - 1,
                         time,
                         get_velocity_gradient(None).flatten(),
                     )
@@ -248,14 +299,19 @@ class TestOlivineA:
                     )
 
         # Check that FSE is correct.
-        np.testing.assert_allclose(θ_fse, θ_fse_eq, rtol=1e-6, atol=0)
+        # First get theoretical FSE axis for simple shear.
+        # We want the angle from the Y axis (shear direction), so subtract from 90.
+        θ_fse_eq = [
+            90 - _utils.angle_fse_simpleshear(t * strain_rate) for t in timestamps
+        ]
+        nt.assert_allclose(θ_fse, θ_fse_eq, rtol=1e-7, atol=0)
 
         # Optionally plot figure.
         if outdir is not None:
             _vis.simple_shear_stationary_2d(
+                timestamps[-1] * strain_rate,
                 angles,
                 indices,
-                timestop=timestamps[-1],
                 savefile=f"{out_basepath}.png",
                 markers=("o", "v", "s"),
                 labels=labels,
