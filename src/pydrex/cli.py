@@ -1,16 +1,16 @@
 """PyDRex: Entry points for command line tools."""
-import os
 import argparse
+import os
 from collections import namedtuple
 from dataclasses import dataclass
 
 import numpy as np
 
+from pydrex import exceptions as _err
+from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
-from pydrex import logger as _log
 from pydrex import visualisation as _vis
-from pydrex import exceptions as _err
 
 # NOTE: Register all cli handlers in the namedtuple at the end of the file.
 
@@ -47,9 +47,9 @@ class PoleFigureVisualiser:
                     i_range = range(0, 25)
 
             orientations_resampled = [
-                _stats.resample_orientations(mineral.orientations[i], mineral.fractions[i])[
-                    0
-                ]
+                _stats.resample_orientations(
+                    mineral.orientations[i], mineral.fractions[i]
+                )[0]
                 for i in np.arange(i_range.start, i_range.stop, i_range.step, dtype=int)
             ]
             _vis.polefigures(
