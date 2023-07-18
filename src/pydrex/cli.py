@@ -1,0 +1,133 @@
+"""PyDRex: Entry points for command line tools."""
+import os
+import argparse
+from collections import namedtuple
+from dataclasses import dataclass
+
+import numpy as np
+
+from pydrex import minerals as _minerals
+from pydrex import stats as _stats
+from pydrex import logger as _log
+from pydrex import visualisation as _vis
+from pydrex import exceptions as _err
+
+# NOTE: Register all cli handlers in the namedtuple at the end of the file.
+
+
+@dataclass
+class PoleFigureVisualiser:
+    """PyDRex script to plot pole figures of serialized CPO data.
+
+    Produces [100], [010] and [001] pole figures for serialized `pydrex.Mineral`s.
+    If the range of indices is not specified,
+    a maximum of 25 of each pole figure will be produced.
+
+    """
+
+    def __call__(self):
+        try:
+            args = self._get_args()
+            if args.range is None:
+                i_range = None
+            else:
+                i_range = range(*(int(s) for s in args.range.split(":")))
+
+            density_kwargs = {"kernel": args.kernel}
+            if args.smoothing is not None:
+                density_kwargs["σ"] = args.smoothing
+
+            mineral = _minerals.Mineral.from_file(args.input, postfix=args.postfix)
+            if i_range is None:
+                i_range = range(0, len(mineral.orientations))
+                if len(i_range) > 25:
+                    _log.warning(
+                        "truncating to 25 timesteps (out of %s total)", len(i_range)
+                    )
+                    i_range = range(0, 25)
+
+            orientations_resampled = [
+                _stats.resample_orientations(mineral.orientations[i], mineral.fractions[i])[
+                    0
+                ]
+                for i in np.arange(i_range.start, i_range.stop, i_range.step, dtype=int)
+            ]
+            _vis.polefigures(
+                orientations_resampled,
+                ref_axes=args.ref_axes,
+                i_range=i_range,
+                density=args.density,
+                savefile=args.out,
+                **density_kwargs,
+            )
+        except (argparse.ArgumentError, ValueError, _err.Error) as e:
+            _log.error(str(e))
+
+    def _get_args(self) -> argparse.Namespace:
+        description, epilog = self.__doc__.split(os.linesep + os.linesep, 1)
+        parser = argparse.ArgumentParser(description=description, epilog=epilog)
+        parser.add_argument("input", help="input file (.npz)")
+        parser.add_argument(
+            "-r",
+            "--range",
+            help="range of strain indices to be plotted, in the format start:stop:step",
+            default=None,
+        )
+        parser.add_argument(
+            "-p",
+            "--postfix",
+            help=(
+                "postfix of the mineral to load,"
+                + " required if the input file contains data for multiple minerals"
+            ),
+            default=None,
+        )
+        parser.add_argument(
+            "-d",
+            "--density",
+            help="toggle contouring of pole figures using point density estimation",
+            default=False,
+            action="store_true",
+        )
+        parser.add_argument(
+            "-k",
+            "--kernel",
+            help=(
+                "kernel function for point density estimation, one of:"
+                + f" {list(_stats.SPHERICAL_COUNTING_KERNELS.keys())}"
+            ),
+            default="linear_inverse_kamb",
+        )
+        parser.add_argument(
+            "-s",
+            "--smoothing",
+            help="smoothing parameter for Kamb type density estimation kernels",
+            default=None,
+            type=float,
+            metavar="σ",
+        )
+        parser.add_argument(
+            "-a",
+            "--ref-axes",
+            help=(
+                "two letters from {'x', 'y', 'z'} that specify"
+                + " the horizontal and vertical axes of the pole figures"
+            ),
+            default="xz",
+        )
+        parser.add_argument(
+            "-o",
+            "--out",
+            help="name of the output file, with either .png or .pdf extension",
+            default="polefigures.png",
+        )
+        return parser.parse_args()
+
+
+_CLI_HANDLERS = namedtuple(
+    "CLI_HANDLERS",
+    {
+        "pole_figure_visualiser",
+    },
+)
+CLI_HANDLERS = _CLI_HANDLERS(pole_figure_visualiser=PoleFigureVisualiser())
