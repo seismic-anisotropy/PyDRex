@@ -128,11 +128,11 @@ class TestOlivineA:
                 #     ]
                 # )
 
-                # Optionally store plotting metadata.
+                # Store data series and optional plotting metadata.
+                angles.append(mean_angles)
+                point100_symmetry.append(texture_symmetry)
                 if outdir is not None:
                     labels.append(f"$M^∗$ = {params['gbm_mobility']}")
-                    angles.append(mean_angles)
-                    point100_symmetry.append(texture_symmetry)
                     mineral.save(
                         f"{out_basepath}.npz",
                         postfix=f"M{params['gbm_mobility']}",
@@ -326,11 +326,11 @@ class TestOlivineA:
                 #     ]
                 # )
 
-                # Optionally store plotting metadata.
+                # Store data series and optional plotting metadata.
+                angles.append(mean_angles)
+                point100_symmetry.append(texture_symmetry)
                 if outdir is not None:
                     labels.append(f"$f_{{gbs}}$ = {params['gbs_threshold']}")
-                    angles.append(mean_angles)
-                    point100_symmetry.append(texture_symmetry)
                     mineral.save(
                         f"{out_basepath}.npz",
                         postfix=f"X{params['gbs_threshold']}",
