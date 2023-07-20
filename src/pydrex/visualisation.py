@@ -49,22 +49,29 @@ def polefigures(
         fig_strain = fig.add_subfigure(grid[0, :])
         first_row = 1
         ax_strain = fig_strain.add_subplot(111)
-        ax_strain.set_xlim((i_range.start, i_range.stop))
 
         if strains is None:
             fig_strain.suptitle(
                 f"N ⋅ (max strain) / {i_range.stop}", x=0.5, y=0.85, fontsize="small"
             )
+            ax_strain.set_xlim(
+                (i_range.start - i_range.step / 2, i_range.stop - i_range.step / 2)
+            )
             ax_strain.set_xticks(list(i_range))
         else:
             fig_strain.suptitle("strain (%)", x=0.5, y=0.85, fontsize="small")
             ax_strain.set_xticks(strains[i_range.start : i_range.stop : i_range.step])
+            ax_strain.set_xlim(
+                (
+                    strains[i_range.start] - strains[i_range.step] / 2,
+                    strains[i_range.stop - i_range.step] + strains[i_range.step] / 2,
+                )
+            )
 
         ax_strain.set_frame_on(False)
         ax_strain.grid(False)
         ax_strain.yaxis.set_visible(False)
         ax_strain.xaxis.set_tick_params(labelsize="x-small", length=0)
-        ax_strain.set_xlim((-i_range.step / 2, i_range.stop - i_range.step / 2))
 
     fig100 = fig.add_subfigure(
         grid[first_row, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
