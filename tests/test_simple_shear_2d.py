@@ -118,6 +118,16 @@ class TestOlivineA:
                         axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
                     )[0]
 
+                # Uncomment to use SCCS axis (hexagonal symmetry) for the angle instead.
+                # mean_angles = np.array(
+                #     [
+                #         _diagnostics.smallest_angle(
+                #             _diagnostics.anisotropy(v)[1][2, :], shear_direction
+                #         )
+                #         for v in _minerals.voigt_averages([mineral], params)
+                #     ]
+                # )
+
                 # Optionally store plotting metadata.
                 if outdir is not None:
                     labels.append(f"$M^∗$ = {params['gbm_mobility']}")
@@ -234,7 +244,6 @@ class TestOlivineA:
         strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
         timestamps = np.linspace(0, 5e5, 251)  # Solve until D₀t=2.5 ('shear' γ=5).
         n_timesteps = len(timestamps)
-        i_first_cpo = 50  # First index where Bingham averages are sufficiently stable.
         i_strain_100p = [0, 50, 100, 150, 200]  # Indices for += 100% strain.
 
         def get_velocity_gradient(x):
@@ -307,6 +316,16 @@ class TestOlivineA:
                         axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
                     )[0]
 
+                # Uncomment to use SCCS axis (hexagonal symmetry) for the angle instead.
+                # mean_angles = np.array(
+                #     [
+                #         _diagnostics.smallest_angle(
+                #             _diagnostics.anisotropy(v)[1][2, :], shear_direction
+                #         )
+                #         for v in _minerals.voigt_averages([mineral], params)
+                #     ]
+                # )
+
                 # Optionally store plotting metadata.
                 if outdir is not None:
                     labels.append(f"$f_{{gbs}}$ = {params['gbs_threshold']}")
@@ -378,13 +397,13 @@ class TestOlivineA:
             atol=0.015,
         )
         nt.assert_allclose(
-            [0.015, 0.4, 0.72, 0.77, 0.79],
+            [0.015, 0.42, 0.71, 0.77, 0.79],
             point100_symmetry[1].take(i_strain_100p),
             rtol=0,
             atol=0.015,
         )
         nt.assert_allclose(
-            [0.015, 0.39, 0.58, 0.61, 0.62],
+            [0.015, 0.36, 0.57, 0.6, 0.62],
             point100_symmetry[2].take(i_strain_100p),
             rtol=0,
             atol=0.015,

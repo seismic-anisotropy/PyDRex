@@ -1,6 +1,4 @@
 """> PyDRex: Visualisation functions for test outputs and examples."""
-import functools as ft
-
 import numpy as np
 from matplotlib import projections as mproj
 from matplotlib import pyplot as plt
