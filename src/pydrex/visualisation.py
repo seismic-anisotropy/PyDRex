@@ -159,7 +159,7 @@ def simple_shear_stationary_2d(
     strains,
     target_angles,
     angles,
-    indices,
+    point100_symmetry,
     savefile="pydrex_simple_shear_stationary_2d.png",
     markers=("."),
     θ_fse=None,
@@ -173,21 +173,23 @@ def simple_shear_stationary_2d(
     ax_mean.tick_params(labelbottom=False)
     ax_mean.set_xlim((strains[0], strains[-1]))
     ax_mean.set_ylim((0, 60))
-    ax_strength = fig.add_subplot(grid[1], sharex=ax_mean)
-    ax_strength.set_xlim((strains[0], strains[-1]))
-    ax_strength.set_ylim((0, 1))
-    ax_strength.set_ylabel("Texture strength (M-index)")
-    ax_strength.set_xlabel(r"Strain ($\dot{D}_0 t = γ/2$)")
+    ax_symmetry = fig.add_subplot(grid[1], sharex=ax_mean)
+    ax_symmetry.set_xlim((strains[0], strains[-1]))
+    ax_symmetry.set_ylim((0, 1))
+    ax_symmetry.set_ylabel(r"Texture symmetry ($P_{[100]}$)")
+    ax_symmetry.set_xlabel(r"Strain ($\dot{D}_0 t = γ/2$)")
 
-    for i, (θ_target, θ, m_indices) in enumerate(zip(target_angles, angles, indices)):
+    for i, (θ_target, θ, point100) in enumerate(
+        zip(target_angles, angles, point100_symmetry)
+    ):
         marker, label = _get_marker_and_label(angles, i, markers, labels)
 
         lines = ax_mean.plot(strains, θ_target, alpha=0.66, label=label)
         color = lines[0].get_color()
         ax_mean.plot(strains, θ, marker, markersize=5, alpha=0.33, color=color)
-        ax_strength.plot(
+        ax_symmetry.plot(
             strains,
-            m_indices,
+            point100,
             marker,
             markersize=5,
             alpha=0.33,
@@ -196,12 +198,10 @@ def simple_shear_stationary_2d(
         )
 
     if θ_fse is not None:
-        ax_mean.plot(
-            strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE"
-        )
+        ax_mean.plot(strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE")
     if labels is not None:
         ax_mean.legend()
-        ax_strength.legend()
+        ax_symmetry.legend()
 
     fig.savefig(_io.resolve_path(savefile))
 

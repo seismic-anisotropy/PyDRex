@@ -59,7 +59,7 @@ class TestOlivineA:
         # Output setup with optional logging and data series labels.
         θ_fse = [45]
         angles = []
-        indices = []
+        point100_symmetry = []
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_dvdx_GBM"
@@ -99,8 +99,11 @@ class TestOlivineA:
                             _diagnostics.smallest_angle(fse_v, shear_direction)
                         )
 
-                misorient_indices = np.zeros(n_timesteps)
-                misorient_angles = np.zeros(n_timesteps)
+                assert len(mineral.orientations) == n_timesteps
+                assert len(mineral.fractions) == n_timesteps
+                assert len(θ_fse) == n_timesteps
+                texture_symmetry = np.zeros(n_timesteps)
+                mean_angles = np.zeros(n_timesteps)
                 # Loop over first dimension (time steps) of orientations.
                 for idx, matrices in enumerate(mineral.orientations):
                     orientations_resampled, _ = _stats.resample_orientations(
@@ -110,18 +113,19 @@ class TestOlivineA:
                         orientations_resampled,
                         axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
                     )
-                    misorient_angles[idx] = _diagnostics.smallest_angle(
+                    mean_angles[idx] = _diagnostics.smallest_angle(
                         direction_mean, shear_direction
                     )
-                    misorient_indices[idx] = _diagnostics.misorientation_index(
-                        orientations_resampled
-                    )
+                    texture_symmetry[idx] = _diagnostics.symmetry(
+                        orientations_resampled,
+                        axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
+                    )[0]
 
                 # Optionally store plotting metadata.
                 if outdir is not None:
                     labels.append(f"$M^∗$ = {params['gbm_mobility']}")
-                    angles.append(misorient_angles)
-                    indices.append(misorient_indices)
+                    angles.append(mean_angles)
+                    point100_symmetry.append(texture_symmetry)
                     mineral.save(
                         f"{out_basepath}.npz",
                         postfix=f"M{params['gbm_mobility']}",
@@ -147,12 +151,29 @@ class TestOlivineA:
 
         # Optionally plot figure.
         if outdir is not None:
+            schema = {
+                "delimiter": ",",
+                "missing": "-",
+                "fields": [
+                    {
+                        "name": "strain",
+                        "type": "integer",
+                        "unit": "percent",
+                        "fill": 999999,
+                    }
+                ],
+            }
+            _io.save_scsv(
+                f"{out_basepath}_strains.scsv",
+                schema,
+                [[int(γ * 200) for γ in strains]],
+            )
             _vis.simple_shear_stationary_2d(
                 strains,
                 target_angles,
                 angles,
-                indices,
-                savefile=f"{out_basepath}.pdf",
+                point100_symmetry,
+                savefile=f"{out_basepath}.png",
                 markers=("o", "v", "s"),
                 θ_fse=θ_fse,
                 labels=labels,
@@ -179,24 +200,24 @@ class TestOlivineA:
             target_angles[2][i_first_cpo:], angles[2][i_first_cpo:], rtol=0, atol=5.5
         )
 
-        # Check texture strength (M-index) at strains of 0%, 50%, 100%, 150% & 200%.
+        # Check point symmetry of [100] at strains of 0%, 50%, 100%, 150% & 200%.
         nt.assert_allclose(
-            [0.29, 0.28, 0.26, 0.24, 0.24],
-            indices[1].take(i_strain_50p),
+            [0.015, 0.11, 0.19, 0.27, 0.34],
+            point100_symmetry[0].take(i_strain_50p),
             rtol=0,
-            atol=0.02,
+            atol=0.015,
         )
         nt.assert_allclose(
-            [0.29, 0.27, 0.26, 0.42, 0.6],
-            indices[1].take(i_strain_50p),
+            [0.015, 0.15, 0.33, 0.57, 0.72],
+            point100_symmetry[1].take(i_strain_50p),
             rtol=0,
-            atol=0.02,
+            atol=0.015,
         )
         nt.assert_allclose(
-            [0.29, 0.3, 0.52, 0.83, 0.89],
-            indices[2].take(i_strain_50p),
+            [0.015, 0.22, 0.64, 0.86, 0.91],
+            point100_symmetry[2].take(i_strain_50p),
             rtol=0,
-            atol=0.02,
+            atol=0.015,
         )
 
     def test_dudz_GBS(
