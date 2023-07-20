@@ -12,8 +12,8 @@ from pydrex import core as _core
 from pydrex import exceptions as _err
 from pydrex import io as _io
 from pydrex import logger as _log
-from pydrex import tensors as _tensors
 from pydrex import stats as _stats
+from pydrex import tensors as _tensors
 
 OLIVINE_STIFFNESS = np.array(
     [

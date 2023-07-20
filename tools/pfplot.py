@@ -1,4 +1,5 @@
 import sys
+
 from pydrex import visualisation as _vis
 
 _vis.polefigures(

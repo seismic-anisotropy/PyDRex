@@ -6,8 +6,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from pydrex import io as _io
 from pydrex import exceptions as _err
+from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
