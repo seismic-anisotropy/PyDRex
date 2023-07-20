@@ -23,7 +23,13 @@ if "pydrex.polefigure" not in mproj.get_projection_names():
 
 
 def polefigures(
-    orientations, ref_axes, i_range, density=False, savefile="polefigures.png", **kwargs
+    orientations,
+    ref_axes,
+    i_range,
+    density=False,
+    savefile="polefigures.png",
+    strains=None,
+    **kwargs,
 ):
     """Plot pole figures of a series of (Nx3x3) orientation matrix stacks.
 
@@ -42,18 +48,25 @@ def polefigures(
         grid = fig.add_gridspec(
             4, n_orientations, height_ratios=((1, 3, 3, 3)), hspace=0, wspace=0.2
         )
-        fig_time = fig.add_subfigure(grid[0, :])
+        fig_strain = fig.add_subfigure(grid[0, :])
         first_row = 1
-        fig_time.suptitle(
-            f"N ⋅ (max strain) / {i_range.stop}", x=0.5, y=0.85, fontsize="small"
-        )
-        ax_time = fig_time.add_subplot(111)
-        ax_time.set_frame_on(False)
-        ax_time.grid(False)
-        ax_time.yaxis.set_visible(False)
-        ax_time.xaxis.set_tick_params(labelsize="x-small", length=0)
-        ax_time.set_xticks(list(i_range))
-        ax_time.set_xlim((-i_range.step / 2, i_range.stop - i_range.step / 2))
+        ax_strain = fig_strain.add_subplot(111)
+        ax_strain.set_xlim((i_range.start, i_range.stop))
+
+        if strains is None:
+            fig_strain.suptitle(
+                f"N ⋅ (max strain) / {i_range.stop}", x=0.5, y=0.85, fontsize="small"
+            )
+            ax_strain.set_xticks(list(i_range))
+        else:
+            fig_strain.suptitle("strain (%)", x=0.5, y=0.85, fontsize="small")
+            ax_strain.set_xticks(strains[i_range.start : i_range.stop : i_range.step])
+
+        ax_strain.set_frame_on(False)
+        ax_strain.grid(False)
+        ax_strain.yaxis.set_visible(False)
+        ax_strain.xaxis.set_tick_params(labelsize="x-small", length=0)
+        ax_strain.set_xlim((-i_range.step / 2, i_range.stop - i_range.step / 2))
 
     fig100 = fig.add_subfigure(
         grid[first_row, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
