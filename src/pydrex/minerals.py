@@ -362,8 +362,7 @@ class Mineral:
                 len(np.nonzero(mask)) / len(fractions),
             )
             # No rotation: carry over previous orientations.
-            # TODO: Should we really be resetting to initial orientations here?
-            orientations[mask, :, :] = self.orientations[0][mask, :, :]
+            orientations[mask, :, :] = self.orientations[-1][mask, :, :]
             fractions[mask] = config["gbs_threshold"] / self.n_grains
             fractions /= fractions.sum()
             _log.debug(

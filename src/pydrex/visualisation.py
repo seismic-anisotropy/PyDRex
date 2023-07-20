@@ -125,27 +125,6 @@ def polefigures(
     fig.savefig(_io.resolve_path(savefile))
 
 
-def check_marker_seq(func):
-    """Raises a `ValueError` if number of markers and data series don't match.
-
-    The decorated function is expected to take the data as the first positional
-    argument, and a keyword argument called `markers`.
-
-    """
-
-    @ft.wraps(func)
-    def wrapper(data, *args, **kwargs):
-        markers = kwargs["markers"]
-        if len(data) % len(markers) != 0:
-            raise ValueError(
-                "Number of data series must be divisible by number of markers."
-                + f" You've supplied {len(data)} data series and {len(markers)} markers."
-            )
-        func(data, *args, **kwargs)
-
-    return wrapper
-
-
 def _get_marker_and_label(data, seq_index, markers, labels=None):
     marker = markers[int(seq_index / (len(data) / len(markers)))]
     label = None
@@ -154,7 +133,6 @@ def _get_marker_and_label(data, seq_index, markers, labels=None):
     return marker, label
 
 
-@check_marker_seq
 def simple_shear_stationary_2d(
     strains,
     target_angles,
@@ -214,7 +192,6 @@ def _lag_2d_corner_flow(θ):
     )
 
 
-@check_marker_seq
 def corner_flow_2d(
     x_paths,
     z_paths,

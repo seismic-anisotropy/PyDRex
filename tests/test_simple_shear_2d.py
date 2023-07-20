@@ -219,9 +219,9 @@ class TestOlivineA:
 
     def test_dudz_GBS(
         self,
-        params_Kaminski2004_fig4_triangles,  # GBS = 0.4
-        params_Kaminski2004_fig4_squares,  # GBS = 0.2
         params_Kaminski2004_fig4_circles,  # GBS = 0
+        params_Kaminski2004_fig4_squares,  # GBS = 0.2
+        params_Kaminski2004_fig4_triangles,  # GBS = 0.4
         rng,
         outdir,
     ):
@@ -232,10 +232,10 @@ class TestOlivineA:
 
         """
         strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
-        timestamps = np.linspace(0, 5e5, 201)  # Solve until D₀t=2.5 ('shear' γ=5).
+        timestamps = np.linspace(0, 5e5, 251)  # Solve until D₀t=2.5 ('shear' γ=5).
         n_timesteps = len(timestamps)
         i_first_cpo = 50  # First index where Bingham averages are sufficiently stable.
-        i_strain_50p = [0, 50, 100, 150, 200]  # Indices for += 50% strain.
+        i_strain_100p = [0, 50, 100, 150, 200]  # Indices for += 100% strain.
 
         def get_velocity_gradient(x):
             # It is independent of time or position in this test.
@@ -258,9 +258,9 @@ class TestOlivineA:
         with optional_logging:
             for p, params in enumerate(
                 (
-                    params_Kaminski2004_fig4_triangles,  # GBS = 0.4
-                    params_Kaminski2004_fig4_squares,  # GBS = 0.2
                     params_Kaminski2004_fig4_circles,  # GBS = 0
+                    params_Kaminski2004_fig4_squares,  # GBS = 0.2
+                    params_Kaminski2004_fig4_triangles,  # GBS = 0.4
                 ),
             ):
                 mineral = _minerals.Mineral(
@@ -369,3 +369,23 @@ class TestOlivineA:
         # We want the angle from the Y axis (shear direction), so subtract from 90.
         θ_fse_eq = [90 - _utils.angle_fse_simpleshear(strain) for strain in strains]
         nt.assert_allclose(θ_fse, θ_fse_eq, rtol=1e-7, atol=0)
+
+        # Check point symmetry of [100] at strains of 0%, 100%, 200%, 300% & 400%.
+        nt.assert_allclose(
+            [0.015, 0.52, 0.86, 0.93, 0.94],
+            point100_symmetry[0].take(i_strain_100p),
+            rtol=0,
+            atol=0.015,
+        )
+        nt.assert_allclose(
+            [0.015, 0.4, 0.72, 0.77, 0.79],
+            point100_symmetry[1].take(i_strain_100p),
+            rtol=0,
+            atol=0.015,
+        )
+        nt.assert_allclose(
+            [0.015, 0.39, 0.58, 0.61, 0.62],
+            point100_symmetry[2].take(i_strain_100p),
+            rtol=0,
+            atol=0.015,
+        )
