@@ -1,8 +1,7 @@
 ---
 # Digitized data from Figure 5 in Kaminski & Ribe 2001, https://doi.org/10.1016%2Fs0012-821x%2801%2900356-9
 # This data records the mean angle of the a-axes of an olivine aggregate from the horizontal shear direction.
-# The flow field is a static simple shear and the aggregate starts with all grain orientations restricted to the first quadrant
-# in the 2D deformation plane (so the mean angle always starts at 45°).
+# The flow field is a static simple shear and the aggregate starts with random (i.e. isotropically distributed) grain orientations.
 
 schema:
   delimiter: ','

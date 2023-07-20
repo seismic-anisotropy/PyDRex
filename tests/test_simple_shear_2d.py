@@ -94,14 +94,11 @@ class TestOlivineA:
                     )
                     fse_λ, fse_v = _diagnostics.finite_strain(deformation_gradient)
                     _log.info("› strain √λ-1=%s (D₀t=%s)", fse_λ, strain_rate * time)
-                    if p == 0 and outdir is not None:
+                    if p == 0:
                         θ_fse.append(
                             _diagnostics.smallest_angle(fse_v, shear_direction)
                         )
 
-                assert len(mineral.orientations) == n_timesteps
-                assert len(mineral.fractions) == n_timesteps
-                assert len(θ_fse) == n_timesteps
                 texture_symmetry = np.zeros(n_timesteps)
                 mean_angles = np.zeros(n_timesteps)
                 # Loop over first dimension (time steps) of orientations.
@@ -132,7 +129,7 @@ class TestOlivineA:
                     )
 
             # Interpolate Kaminski & Ribe, 2001 data to get target angles at `strains`.
-            _log.info("interpolating target misorientation angles...")
+            _log.info("interpolating target CPO angles...")
             strains = timestamps * strain_rate
             data = _io.read_scsv(_io.data("thirdparty") / "Kaminski2001_GBMshear.scsv")
             cs_M0 = PchipInterpolator(
@@ -235,7 +232,7 @@ class TestOlivineA:
 
         """
         strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
-        timestamps = np.linspace(0, 2e5, 201)  # Solve until D₀t=1 ('shear strain' γ=2).
+        timestamps = np.linspace(0, 5e5, 201)  # Solve until D₀t=2.5 ('shear' γ=5).
         n_timesteps = len(timestamps)
         i_first_cpo = 50  # First index where Bingham averages are sufficiently stable.
         i_strain_50p = [0, 50, 100, 150, 200]  # Indices for += 50% strain.
@@ -251,7 +248,7 @@ class TestOlivineA:
         # Output setup with optional logging and data series labels.
         θ_fse = [45]
         angles = []
-        indices = []
+        point100_symmetry = []
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_dudz_GBS"
@@ -286,13 +283,13 @@ class TestOlivineA:
                     )
                     fse_λ, fse_v = _diagnostics.finite_strain(deformation_gradient)
                     _log.info("› strain √λ-1=%s (D₀t=%s)", fse_λ, strain_rate * time)
-                    if p == 0 and outdir is not None:
+                    if p == 0:
                         θ_fse.append(
                             _diagnostics.smallest_angle(fse_v, shear_direction)
                         )
 
-                misorient_indices = np.zeros(n_timesteps)
-                misorient_angles = np.zeros(n_timesteps)
+                texture_symmetry = np.zeros(n_timesteps)
+                mean_angles = np.zeros(n_timesteps)
                 # Loop over first dimension (time steps) of orientations.
                 for idx, matrices in enumerate(mineral.orientations):
                     orientations_resampled, _ = _stats.resample_orientations(
@@ -302,39 +299,73 @@ class TestOlivineA:
                         orientations_resampled,
                         axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
                     )
-                    misorient_angles[idx] = _diagnostics.smallest_angle(
-                        direction_mean, [1, 0, 0]
+                    mean_angles[idx] = _diagnostics.smallest_angle(
+                        direction_mean, shear_direction
                     )
-                    misorient_indices[idx] = _diagnostics.misorientation_index(
-                        orientations_resampled
-                    )
+                    texture_symmetry[idx] = _diagnostics.symmetry(
+                        orientations_resampled,
+                        axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
+                    )[0]
 
                 # Optionally store plotting metadata.
                 if outdir is not None:
                     labels.append(f"$f_{{gbs}}$ = {params['gbs_threshold']}")
-                    angles.append(misorient_angles)
-                    indices.append(misorient_indices)
+                    angles.append(mean_angles)
+                    point100_symmetry.append(texture_symmetry)
                     mineral.save(
                         f"{out_basepath}.npz",
                         postfix=f"X{params['gbs_threshold']}",
                     )
 
-        # Check that FSE is correct.
-        # First get theoretical FSE axis for simple shear.
-        # We want the angle from the Y axis (shear direction), so subtract from 90.
-        θ_fse_eq = [
-            90 - _utils.angle_fse_simpleshear(t * strain_rate) for t in timestamps
-        ]
-        nt.assert_allclose(θ_fse, θ_fse_eq, rtol=1e-7, atol=0)
+            # Interpolate Kaminski & Ribe, 2001 data to get target angles at `strains`.
+            _log.info("interpolating target CPO angles...")
+            strains = timestamps * strain_rate
+            data = _io.read_scsv(_io.data("thirdparty") / "Kaminski2004_GBSshear.scsv")
+            cs_X0 = PchipInterpolator(
+                _utils.skip_nans(data.dimensionless_time_X0),
+                45 + _utils.skip_nans(data.angle_X0),
+            )
+            cs_X0d2 = PchipInterpolator(
+                _utils.skip_nans(data.dimensionless_time_X0d2),
+                45 + _utils.skip_nans(data.angle_X0d2),
+            )
+            cs_X0d4 = PchipInterpolator(
+                _utils.skip_nans(data.dimensionless_time_X0d4),
+                45 + _utils.skip_nans(data.angle_X0d4),
+            )
+            target_angles = [cs_X0(strains), cs_X0d2(strains), cs_X0d4(strains)]
 
         # Optionally plot figure.
         if outdir is not None:
+            schema = {
+                "delimiter": ",",
+                "missing": "-",
+                "fields": [
+                    {
+                        "name": "strain",
+                        "type": "integer",
+                        "unit": "percent",
+                        "fill": 999999,
+                    }
+                ],
+            }
+            _io.save_scsv(
+                f"{out_basepath}_strains.scsv",
+                schema,
+                [[int(γ * 200) for γ in strains]],
+            )
             _vis.simple_shear_stationary_2d(
-                timestamps[-1] * strain_rate,
+                strains,
+                target_angles,
                 angles,
-                indices,
+                point100_symmetry,
                 savefile=f"{out_basepath}.png",
                 markers=("o", "v", "s"),
                 labels=labels,
-                θ_fse=θ_fse,
             )
+
+        # Check that FSE is correct.
+        # First, get theoretical FSE axis for simple shear.
+        # We want the angle from the Y axis (shear direction), so subtract from 90.
+        θ_fse_eq = [90 - _utils.angle_fse_simpleshear(strain) for strain in strains]
+        nt.assert_allclose(θ_fse, θ_fse_eq, rtol=1e-7, atol=0)
