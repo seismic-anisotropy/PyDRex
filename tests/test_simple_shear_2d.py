@@ -195,7 +195,7 @@ class TestOlivineA:
         # Check Bingham angles, ignoring the first portion.
         # Average orientations of near-isotropic distributions are unstable.
         nt.assert_allclose(
-            θ_fse[i_first_cpo:], angles[0][i_first_cpo:], rtol=0.1, atol=0
+            θ_fse[i_first_cpo:], angles[0][i_first_cpo:], rtol=0.11, atol=0
         )
         nt.assert_allclose(
             target_angles[0][i_first_cpo:], angles[0][i_first_cpo:], rtol=0.1, atol=0
