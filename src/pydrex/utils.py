@@ -2,8 +2,8 @@
 import numpy as np
 
 
-def skip_nans(a):
-    """Skip NaN values in array."""
+def remove_nans(a):
+    """Remove NaN values from array."""
     a = np.asarray(a)
     return a[~np.isnan(a)]
 

@@ -143,16 +143,16 @@ class TestOlivineA:
             strains = timestamps * strain_rate
             data = _io.read_scsv(_io.data("thirdparty") / "Kaminski2001_GBMshear.scsv")
             cs_M0 = PchipInterpolator(
-                _utils.skip_nans(data.equivalent_strain_M0) / 200,
-                _utils.skip_nans(data.angle_M0),
+                _utils.remove_nans(data.equivalent_strain_M0) / 200,
+                _utils.remove_nans(data.angle_M0),
             )
             cs_M50 = PchipInterpolator(
-                _utils.skip_nans(data.equivalent_strain_M50) / 200,
-                _utils.skip_nans(data.angle_M50),
+                _utils.remove_nans(data.equivalent_strain_M50) / 200,
+                _utils.remove_nans(data.angle_M50),
             )
             cs_M200 = PchipInterpolator(
-                _utils.skip_nans(data.equivalent_strain_M200) / 200,
-                _utils.skip_nans(data.angle_M200),
+                _utils.remove_nans(data.equivalent_strain_M200) / 200,
+                _utils.remove_nans(data.angle_M200),
             )
             target_angles = [cs_M0(strains), cs_M50(strains), cs_M200(strains)]
 
@@ -341,16 +341,16 @@ class TestOlivineA:
             strains = timestamps * strain_rate
             data = _io.read_scsv(_io.data("thirdparty") / "Kaminski2004_GBSshear.scsv")
             cs_X0 = PchipInterpolator(
-                _utils.skip_nans(data.dimensionless_time_X0),
-                45 + _utils.skip_nans(data.angle_X0),
+                _utils.remove_nans(data.dimensionless_time_X0),
+                45 + _utils.remove_nans(data.angle_X0),
             )
             cs_X0d2 = PchipInterpolator(
-                _utils.skip_nans(data.dimensionless_time_X0d2),
-                45 + _utils.skip_nans(data.angle_X0d2),
+                _utils.remove_nans(data.dimensionless_time_X0d2),
+                45 + _utils.remove_nans(data.angle_X0d2),
             )
             cs_X0d4 = PchipInterpolator(
-                _utils.skip_nans(data.dimensionless_time_X0d4),
-                45 + _utils.skip_nans(data.angle_X0d4),
+                _utils.remove_nans(data.dimensionless_time_X0d4),
+                45 + _utils.remove_nans(data.angle_X0d4),
             )
             target_angles = [cs_X0(strains), cs_X0d2(strains), cs_X0d4(strains)]
 
