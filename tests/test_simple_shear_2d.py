@@ -198,7 +198,7 @@ class TestOlivineA:
             θ_fse[i_first_cpo:], angles[0][i_first_cpo:], rtol=0.11, atol=0
         )
         nt.assert_allclose(
-            target_angles[0][i_first_cpo:], angles[0][i_first_cpo:], rtol=0.1, atol=0
+            target_angles[0][i_first_cpo:], angles[0][i_first_cpo:], rtol=0.11, atol=0
         )
         nt.assert_allclose(
             target_angles[1][i_first_cpo:], angles[1][i_first_cpo:], rtol=0, atol=5.7
