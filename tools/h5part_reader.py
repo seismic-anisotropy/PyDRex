@@ -17,7 +17,7 @@ from zipfile import ZipFile
 import h5py
 import numpy as np
 
-from pydrex import MineralFabric, MineralPhase, Mineral
+from pydrex import Mineral, MineralFabric, MineralPhase
 
 
 def _get_args() -> argparse.Namespace:
