@@ -131,6 +131,15 @@ def debug(msg, *args, **kwargs):
     LOGGER.debug(msg, *args, **kwargs)
 
 
+def exception(msg, *args, **kwargs):
+    """Log a message with level ERROR but retain exception information.
+
+    This function should only be called from an exception handler.
+
+    """
+    LOGGER.exception(msg, *args, **kwargs)
+
+
 def quiet_aliens():
     """Restrict alien loggers 👽 because I'm trying to find MY bugs, thanks."""
     # Only allow warnings or above from root logger.
