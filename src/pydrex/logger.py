@@ -8,15 +8,38 @@ logging objects (`pydrex.logger.LOGGER` and `pydrex.logger.CONSOLE_LOGGER`).
 The method `quiet_aliens` can be invoked to suppress most messages
 from third-party modules, except critical errors and warnings from Numba.
 
-For most applications, the `logfile_enable` context manager is recommended.
-Always use the old printf style formatting for log messages, not fstrings,
-otherwise the values will always be converted to strings even when logging is disabled.
-Example:
+By default, PyDRex emits INFO level messages to the console.
+This can be changed globally by setting the new level with `CONSOLE_LOGGER.setLevel`:
 
 ```python
 from pydrex import logger as _log
-_log.quiet_aliens()
-with _log.logfile_enable("my_log_file.log"):
+_log.info("this message will be printed to the console")
+
+_log.CONSOLE_LOGGER.setLevel("ERROR")
+_log.info("this message will NOT be printed to the console")
+_log.error("this message will be printed to the console")
+```
+
+To change the console logging level for a particular local context,
+use the `handler_level` context manager:
+
+```python
+_log.CONSOLE_LOGGER.setLevel("INFO")
+_log.info("this message will be printed to the console")
+
+with handler_level("ERROR"):
+    _log.info("this message will NOT be printed to the console")
+
+_log.info("this message will be printed to the console")
+```
+
+To save debug logs to a file, the `logfile_enable` context manager is recommended.
+Always use the old printf style formatting for log messages, not fstrings,
+otherwise compute time will be wasted on string conversions when logging is disabled:
+
+```python
+_log.quiet_aliens()  # Suppress third-party log messages except CRITICAL from Numba.
+with _log.logfile_enable("my_log_file.log"):  # Overwrite existing file unless mode="a".
     value = 42
     _log.critical("critical error with value: %s", value)
     _log.error("runtime error with value: %s", value)
