@@ -1,8 +1,9 @@
 """> PyDRex: 2D simple shear tests."""
 import contextlib as cl
 
-import pytest
 import numpy as np
+import pytest
+
 # from numpy import testing as nt
 from scipy.interpolate import PchipInterpolator
 
