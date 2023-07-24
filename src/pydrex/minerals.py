@@ -202,6 +202,8 @@ class Mineral:
     - `n_grains` (int) — number of grains in the aggregate
     - `fractions` (list of arrays) — grain volume fractions for each texture snapshot
     - `orientations` (list of arrays) — grain orientation matrices for each texture snapshot
+    - `seed` (`int`) — seed used by the random number generator to set up the isotropic
+      initial condition when `fractions_init` or `orientations_init` are not provided
 
     """
 
@@ -214,6 +216,7 @@ class Mineral:
     orientations_init: np.ndarray = None
     fractions: list = field(default_factory=list)
     orientations: list = field(default_factory=list)
+    seed: int = None
 
     def __str__(self):
         # String output, used for str(self) and f"{self}", etc.
@@ -249,7 +252,7 @@ class Mineral:
             self.fractions_init = np.full(self.n_grains, 1.0 / self.n_grains)
         if self.orientations_init is None:
             self.orientations_init = Rotation.random(
-                self.n_grains, random_state=1
+                self.n_grains, random_state=self.seed
             ).as_matrix()
 
         # Copy the initial values to the storage lists.
@@ -358,8 +361,7 @@ class Mineral:
                 len(np.nonzero(mask)) / len(fractions),
             )
             # No rotation: carry over previous orientations.
-            # TODO: Should we really be resetting to initial orientations here?
-            orientations[mask, :, :] = self.orientations[0][mask, :, :]
+            orientations[mask, :, :] = self.orientations[-1][mask, :, :]
             fractions[mask] = config["gbs_threshold"] / self.n_grains
             fractions /= fractions.sum()
             _log.debug(

@@ -240,7 +240,7 @@ def coaxial_index(orientations, axis1="b", axis2="a"):
 
     The BA index of [Mainprice et al. 2015](https://doi.org/10.1144/SP409.8)
     is derived from the eigenvalue `symmetry` diagnostics and measures point vs girdle
-    symmetry in the aggregate. $BA \in [0, 1]$ where $BA = 0$ corresponds to a perfect
+    symmetry in the aggregate. $BA ∈ [0, 1]$ where $BA = 0$ corresponds to a perfect
     axial girdle texture and $BA = 1$ represents a point symmetry texture assuming that
     the random component $R$ is negligible. May be less susceptible to random
     fluctuations compared to the raw eigenvalue diagnostics.

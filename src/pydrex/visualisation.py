@@ -1,6 +1,4 @@
 """> PyDRex: Visualisation functions for test outputs and examples."""
-import functools as ft
-
 import numpy as np
 from matplotlib import projections as mproj
 from matplotlib import pyplot as plt
@@ -23,7 +21,13 @@ if "pydrex.polefigure" not in mproj.get_projection_names():
 
 
 def polefigures(
-    orientations, ref_axes, i_range, density=False, savefile="polefigures.png", **kwargs
+    orientations,
+    ref_axes,
+    i_range,
+    density=False,
+    savefile="polefigures.png",
+    strains=None,
+    **kwargs,
 ):
     """Plot pole figures of a series of (Nx3x3) orientation matrix stacks.
 
@@ -42,18 +46,32 @@ def polefigures(
         grid = fig.add_gridspec(
             4, n_orientations, height_ratios=((1, 3, 3, 3)), hspace=0, wspace=0.2
         )
-        fig_time = fig.add_subfigure(grid[0, :])
+        fig_strain = fig.add_subfigure(grid[0, :])
         first_row = 1
-        fig_time.suptitle(
-            f"N ⋅ (max strain) / {i_range.stop}", x=0.5, y=0.85, fontsize="small"
-        )
-        ax_time = fig_time.add_subplot(111)
-        ax_time.set_frame_on(False)
-        ax_time.grid(False)
-        ax_time.yaxis.set_visible(False)
-        ax_time.xaxis.set_tick_params(labelsize="x-small", length=0)
-        ax_time.set_xticks(list(i_range))
-        ax_time.set_xlim((-i_range.step / 2, i_range.stop - i_range.step / 2))
+        ax_strain = fig_strain.add_subplot(111)
+
+        if strains is None:
+            fig_strain.suptitle(
+                f"N ⋅ (max strain) / {i_range.stop}", x=0.5, y=0.85, fontsize="small"
+            )
+            ax_strain.set_xlim(
+                (i_range.start - i_range.step / 2, i_range.stop - i_range.step / 2)
+            )
+            ax_strain.set_xticks(list(i_range))
+        else:
+            fig_strain.suptitle("strain (%)", x=0.5, y=0.85, fontsize="small")
+            ax_strain.set_xticks(strains[i_range.start : i_range.stop : i_range.step])
+            ax_strain.set_xlim(
+                (
+                    strains[i_range.start] - strains[i_range.step] / 2,
+                    strains[i_range.stop - i_range.step] + strains[i_range.step] / 2,
+                )
+            )
+
+        ax_strain.set_frame_on(False)
+        ax_strain.grid(False)
+        ax_strain.yaxis.set_visible(False)
+        ax_strain.xaxis.set_tick_params(labelsize="x-small", length=0)
 
     fig100 = fig.add_subfigure(
         grid[first_row, :], edgecolor=plt.rcParams["grid.color"], linewidth=1
@@ -112,27 +130,6 @@ def polefigures(
     fig.savefig(_io.resolve_path(savefile))
 
 
-def check_marker_seq(func):
-    """Raises a `ValueError` if number of markers and data series don't match.
-
-    The decorated function is expected to take the data as the first positional
-    argument, and a keyword argument called `markers`.
-
-    """
-
-    @ft.wraps(func)
-    def wrapper(data, *args, **kwargs):
-        markers = kwargs["markers"]
-        if len(data) % len(markers) != 0:
-            raise ValueError(
-                "Number of data series must be divisible by number of markers."
-                + f" You've supplied {len(data)} data series and {len(markers)} markers."
-            )
-        func(data, *args, **kwargs)
-
-    return wrapper
-
-
 def _get_marker_and_label(data, seq_index, markers, labels=None):
     marker = markers[int(seq_index / (len(data) / len(markers)))]
     label = None
@@ -141,81 +138,58 @@ def _get_marker_and_label(data, seq_index, markers, labels=None):
     return marker, label
 
 
-@check_marker_seq
 def simple_shear_stationary_2d(
+    strains,
+    target_angles,
     angles,
-    indices,
-    timestop,
+    point100_symmetry,
+    angles_err=None,
     savefile="pydrex_simple_shear_stationary_2d.png",
     markers=("."),
-    labels=None,
     θ_fse=None,
+    labels=None,
 ):
     """Plot diagnostics for stationary A-type olivine 2D simple shear box tests."""
     fig = plt.figure(figsize=(5, 8), dpi=300)
     grid = fig.add_gridspec(2, 1, hspace=0.05)
     ax_mean = fig.add_subplot(grid[0])
     ax_mean.set_ylabel("Mean angle ∈ [0, 90]°")
-    ax_mean.axhline(0, color=plt.rcParams["axes.edgecolor"])
     ax_mean.tick_params(labelbottom=False)
-    ax_strength = fig.add_subplot(grid[1], sharex=ax_mean)
-    ax_strength.set_ylabel("Texture strength (M-index)")
-    ax_strength.set_xlabel(r"Strain ($\dot{ε}_0 t$)")
+    ax_mean.set_xlim((strains[0], strains[-1]))
+    ax_mean.set_ylim((0, 60))
+    ax_symmetry = fig.add_subplot(grid[1], sharex=ax_mean)
+    ax_symmetry.set_xlim((strains[0], strains[-1]))
+    ax_symmetry.set_ylim((0, 1))
+    ax_symmetry.set_ylabel(r"Texture symmetry ($P_{[100]}$)")
+    ax_symmetry.set_xlabel(r"Strain ($\dot{D}_0 t = γ/2$)")
 
-    colors = []
-    data_Kaminski2001 = _io.read_scsv(
-        _io.data("thirdparty") / "Kaminski2001_GBMshear.scsv"
-    )
-    lines = ax_mean.plot(
-        np.asarray(data_Kaminski2001.equivalent_strain_M0) / 200,
-        data_Kaminski2001.angle_M0,
-        alpha=0.33,
-        label=r"$M^{\ast}=0$",
-    )
-    colors.append(lines[0].get_color())
-    lines = ax_mean.plot(
-        np.asarray(data_Kaminski2001.equivalent_strain_M50) / 200,
-        data_Kaminski2001.angle_M50,
-        alpha=0.33,
-        label=r"$M^{\ast}=50$",
-    )
-    colors.append(lines[0].get_color())
-    lines = ax_mean.plot(
-        np.asarray(data_Kaminski2001.equivalent_strain_M200) / 200,
-        data_Kaminski2001.angle_M200,
-        alpha=0.33,
-        label=r"$M^{\ast}=200$",
-    )
-    colors.append(lines[0].get_color())
-
-    for i, (misorient_angles, misorient_indices) in enumerate(zip(angles, indices)):
-        timestamps = np.linspace(0, timestop, len(misorient_angles))
+    for i, (θ_target, θ, point100) in enumerate(
+        zip(target_angles, angles, point100_symmetry)
+    ):
         marker, label = _get_marker_and_label(angles, i, markers, labels)
 
-        ax_mean.plot(
-            timestamps,
-            misorient_angles,
+        lines = ax_mean.plot(strains, θ_target, alpha=0.66, label=label)
+        color = lines[0].get_color()
+        ax_mean.plot(strains, θ, marker, markersize=5, alpha=0.33, color=color)
+        if angles_err is not None:
+            ax_mean.fill_between(
+                strains, θ - angles_err[i], θ + angles_err[i], alpha=0.22, color=color
+            )
+        ax_symmetry.plot(
+            strains,
+            point100,
             marker,
             markersize=5,
             alpha=0.33,
+            color=color,
             label=label,
-            color=colors[i],
-        )
-        ax_strength.plot(
-            timestamps,
-            misorient_indices,
-            marker,
-            markersize=5,
-            alpha=0.33,
-            label=label,
-            color=colors[i],
         )
 
     if θ_fse is not None:
-        ax_mean.plot(timestamps, θ_fse, "r--", label="FSE")
-
+        ax_mean.plot(strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE")
     if labels is not None:
         ax_mean.legend()
+        ax_symmetry.legend()
 
     fig.savefig(_io.resolve_path(savefile))
 
@@ -228,7 +202,6 @@ def _lag_2d_corner_flow(θ):
     )
 
 
-@check_marker_seq
 def corner_flow_2d(
     x_paths,
     z_paths,

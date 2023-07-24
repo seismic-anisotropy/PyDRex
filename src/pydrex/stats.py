@@ -2,60 +2,17 @@
 import numpy as np
 
 from pydrex import geometry as _geo
-from pydrex import minerals as _minerals
-from pydrex import tensors as _tensors
-
-_RNG = np.random.default_rng(seed=8845)
 
 
-def average_stiffness(minerals, config):
-    """Calculate average elastic tensor from a list of `minerals`.
-
-    The `config` dictionary must contain volume fractions of all occurring mineral phases,
-    indexed by keys of the format `"<phase>_fraction"`.
-
-    """
-    n_grains = minerals[0].n_grains
-    assert np.all(
-        [m.n_grains == n_grains for m in minerals[1:]]
-    ), "cannot average minerals with varying grain counts"
-    elastic_tensors = []
-    for phase in _minerals.MineralPhase:
-        if phase == _minerals.MineralPhase.olivine:
-            elastic_tensors.append(
-                _tensors.Voigt_to_elastic_tensor(_minerals.OLIVINE_STIFFNESS)
-            )
-        elif phase == _minerals.MineralPhase.enstatite:
-            elastic_tensors.append(
-                _tensors.Voigt_to_elastic_tensor(_minerals.ENSTATITE_STIFFNESS)
-            )
-
-    average_tensor = np.zeros((3, 3, 3, 3))
-    for n in n_grains:
-        for mineral in minerals:
-            if mineral.phase == _minerals.MineralPhase.olivine:
-                average_tensor += (
-                    _tensors.rotated_tensor(mineral.orientations[n, ...].transpose())
-                    * mineral.fractions[n]
-                    * config["olivine_fraction"]
-                )
-            elif mineral.phase == _minerals.MineralPhase.enstatite:
-                average_tensor += (
-                    _tensors.rotated_tensor(minerals.orientations[n, ...].transpose())
-                    * mineral.fractions[n]
-                    * config["enstatite_fraction"]
-                )
-    return _tensors.elastic_tensor_to_Voigt(average_tensor)
-
-
-def resample_orientations(orientations, fractions, n_samples=None, rng=_RNG):
+def resample_orientations(orientations, fractions, n_samples=None, seed=None):
     """Generate new samples from `orientations` weighed by the volume distribution.
 
     If the optional number of samples `n_samples` is not specified,
     it will be set to the number of original "grains" (length of `fractions`).
-    The argument `rng` can be used to specify a custom random number generator.
+    The argument `seed` can be used to seed the random number generator.
 
     """
+    rng = np.random.default_rng(seed=seed)
     if n_samples is None:
         n_samples = len(fractions)
     sort_ascending = np.argsort(fractions)

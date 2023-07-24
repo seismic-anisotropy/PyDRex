@@ -81,7 +81,7 @@ class TestOlivineA:
     def test_corner_prescribed_init_isotropic(
         self,
         params_Kaminski2001_fig5_shortdash,
-        rng,
+        seed,
         outdir,
     ):
         """Test CPO evolution in prescribed 2D corner flow.
@@ -96,7 +96,7 @@ class TestOlivineA:
         domain_height = 2.0e5  # Represents the depth of olivine-spinel transition.
         domain_width = 1.0e6
         n_grains = 2000
-        orientations_init = Rotation.random(n_grains, random_state=rng).as_matrix()
+        orientations_init = Rotation.random(n_grains, random_state=seed).as_matrix()
         n_timesteps = 20  # Number of places along the pathline to compute CPO.
         # Z-values at the end of each pathline.
         z_ends = list(map(lambda x: x * domain_height, (-0.1, -0.3, -0.54, -0.78)))
@@ -191,7 +191,7 @@ class TestOlivineA:
                 # Loop over first dimension (time steps) of orientations.
                 for idx, matrices in enumerate(mineral.orientations):
                     orientations_resampled, _ = _stats.resample_orientations(
-                        matrices, mineral.fractions[idx], rng=rng
+                        matrices, mineral.fractions[idx], seed=seed
                     )
                     direction_mean = _diagnostics.bingham_average(
                         orientations_resampled,

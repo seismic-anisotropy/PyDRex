@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from pydrex import exceptions as _err
+from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
@@ -31,7 +32,9 @@ class PoleFigureVisualiser:
             if args.range is None:
                 i_range = None
             else:
-                i_range = range(*(int(s) for s in args.range.split(":")))
+                start, stop_ex, step = (int(s) for s in args.range.split(":"))
+                # Make command line start:stop:step stop-inclusive, it's more intuitive.
+                i_range = range(start, stop_ex + step, step)
 
             density_kwargs = {"kernel": args.kernel}
             if args.smoothing is not None:
@@ -58,6 +61,7 @@ class PoleFigureVisualiser:
                 i_range=i_range,
                 density=args.density,
                 savefile=args.out,
+                strains=_io.read_scsv(args.scsv).strain,
                 **density_kwargs,
             )
         except (argparse.ArgumentError, ValueError, _err.Error) as e:
@@ -71,6 +75,15 @@ class PoleFigureVisualiser:
             "-r",
             "--range",
             help="range of strain indices to be plotted, in the format start:stop:step",
+            default=None,
+        )
+        parser.add_argument(
+            "-f",
+            "--scsv",
+            help=(
+                "path to SCSV file with a column named 'strain'"
+                + " that lists shear strain percentages for each strain index"
+            ),
             default=None,
         )
         parser.add_argument(
