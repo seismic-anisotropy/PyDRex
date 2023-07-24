@@ -3,17 +3,16 @@ import numpy as np
 
 from pydrex import geometry as _geo
 
-_RNG = np.random.default_rng(seed=8845)
 
-
-def resample_orientations(orientations, fractions, n_samples=None, rng=_RNG):
+def resample_orientations(orientations, fractions, n_samples=None, seed=None):
     """Generate new samples from `orientations` weighed by the volume distribution.
 
     If the optional number of samples `n_samples` is not specified,
     it will be set to the number of original "grains" (length of `fractions`).
-    The argument `rng` can be used to specify a custom random number generator.
+    The argument `seed` can be used to seed the random number generator.
 
     """
+    rng = np.random.default_rng(seed=seed)
     if n_samples is None:
         n_samples = len(fractions)
     sort_ascending = np.argsort(fractions)

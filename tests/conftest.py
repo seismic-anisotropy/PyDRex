@@ -2,13 +2,29 @@
 import matplotlib
 import pytest
 from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
-from numpy import random as rn
 
 from pydrex import logger as _log
 from pydrex import mock as _mock
+from pydrex import io as _io
 
 matplotlib.use("Agg")  # Stop matplotlib from looking for $DISPLAY in env.
 _log.quiet_aliens()  # Stop imported modules from spamming the logs.
+
+
+# Set up custom pytest CLI arguments.
+def pytest_addoption(parser):
+    parser.addoption(
+        "--outdir",
+        metavar="DIR",
+        default=None,
+        help="output directory in which to store PyDRex figures/logs",
+    )
+    parser.addoption(
+        "--runslow",
+        action="store_true",
+        default=False,
+        help="run slow tests (HPC cluster recommended, large memory requirement)",
+    )
 
 
 # The default pytest logging plugin always creates its own handlers...
@@ -34,10 +50,12 @@ class PytestConsoleLogger(LoggingPlugin):
         yield from self._runtest_for(item, "teardown")
 
 
-# Hook up our logging plugin last,
-# it relies on terminalreporter and capturemanager.
 @pytest.hookimpl(trylast=True)
 def pytest_configure(config):
+    config.addinivalue_line("markers", "slow: mark test as slow to run")
+
+    # Hook up our logging plugin last,
+    # it relies on terminalreporter and capturemanager.
     if config.option.verbose > 0:
         terminal_reporter = config.pluginmanager.get_plugin("terminalreporter")
         capture_manager = config.pluginmanager.get_plugin("capturemanager")
@@ -50,13 +68,13 @@ def pytest_configure(config):
         )
 
 
-def pytest_addoption(parser):
-    parser.addoption(
-        "--outdir",
-        metavar="DIR",
-        default=None,
-        help="output directory in which to store PyDRex figures/logs",
-    )
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--runslow"):
+        return  # Don't skip slow tests.
+    skip_slow = pytest.mark.skip(reason="need --runslow option to run")
+    for item in items:
+        if "slow" in item.keywords:
+            item.add_marker(skip_slow)
 
 
 @pytest.fixture(scope="session")
@@ -66,7 +84,7 @@ def outdir(request):
 
 @pytest.fixture(scope="function")
 def console_handler(request):
-    if request.config.option.verbose > 0:
+    if request.config.option.verbose > 0:  # Show console logs if -v/--verbose given.
         return request.config.pluginmanager.get_plugin(
             "pytest-console-logger"
         ).log_cli_handler
@@ -124,6 +142,6 @@ def ref_axes(request):
 
 
 @pytest.fixture
-def rng():
-    """A seeded RNG for tests to have (more) reproducible results."""
-    return rn.default_rng(seed=8816)
+def seeds():
+    """1000 unique seeds for ensemble runs that need an RNG seed."""
+    return _io.read_scsv(_io.data("rng") / "seeds.scsv").seeds

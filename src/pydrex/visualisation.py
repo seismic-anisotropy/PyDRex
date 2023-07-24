@@ -143,6 +143,7 @@ def simple_shear_stationary_2d(
     target_angles,
     angles,
     point100_symmetry,
+    angles_err=None,
     savefile="pydrex_simple_shear_stationary_2d.png",
     markers=("."),
     θ_fse=None,
@@ -170,6 +171,10 @@ def simple_shear_stationary_2d(
         lines = ax_mean.plot(strains, θ_target, alpha=0.66, label=label)
         color = lines[0].get_color()
         ax_mean.plot(strains, θ, marker, markersize=5, alpha=0.33, color=color)
+        if angles_err is not None:
+            ax_mean.fill_between(
+                strains, θ - angles_err[i], θ + angles_err[i], alpha=0.22, color=color
+            )
         ax_symmetry.plot(
             strains,
             point100,

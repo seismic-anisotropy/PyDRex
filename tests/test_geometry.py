@@ -26,7 +26,7 @@ def test_poles_example(hkl, ref_axes):
     np.testing.assert_allclose(ref_data["zvals"], zvals, atol=1e-16, rtol=0)
 
 
-def test_lambert_equal_area(rng):
+def test_lambert_equal_area(seed):
     """Test Lambert equal area projection."""
     x, y = np.mgrid[-1:1:11j, -1:1:11j]
     x_flat = [j for i in x for j in i]
@@ -35,6 +35,7 @@ def test_lambert_equal_area(rng):
     x_disk, y_disk = _geo.shirley_concentric_squaredisk(x_flat, y_flat)
     # Project onto the unit sphere by adding z = ± (1 - r).
     # Then project back onto the disk using Lambert equal-area, should be the same.
+    rng = np.random.default_rng(seed=seed)
     sign = rng.integers(low=0, high=2, size=len(x_disk))
     x_laea, y_laea = _geo.lambert_equal_area(
         x_disk, y_disk, (-1) ** sign * (1 - (x_disk**2 + y_disk**2))
