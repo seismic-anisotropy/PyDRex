@@ -13,7 +13,7 @@ the `data/` folder of the source repository. For supported cell types, see
 
 """
 import collections as c
-import configparser
+import tomllib
 import csv
 import functools as ft
 import os
@@ -24,6 +24,7 @@ import frontmatter as fm
 import meshio
 import numpy as np
 
+from pydrex import core as _core
 from pydrex import exceptions as _err
 from pydrex import logger as _log
 
@@ -62,8 +63,9 @@ def read_scsv(file):
         header_colnames = [s.strip() for s in next(reader)]
         if not schema_colnames == header_colnames:
             raise _err.SCSVError(
-                f"field names specified in schema must match CSV column headers in '{file}'."
-                + f" You've supplied schema fields:\n{schema_colnames}\nCSV header:\n{header_colnames}"
+                f"schema field names must match column headers in '{file}'."
+                + f" You've supplied schema fields\n{schema_colnames}"
+                + f"\n with column headers\n{header_colnames}"
             )
 
         Columns = c.namedtuple("Columns", schema_colnames)
@@ -168,68 +170,119 @@ def save_scsv(file, schema, data, **kwargs):
             writer.writerow(row)
 
 
-def parse_params(file):
-    """Parse an INI file containing PyDRex parameters."""
-    config = configparser.ConfigParser()
-    configpath = resolve_path(file)
-    config.read(configpath)
+def parse_config(path):
+    """Parse an TOML file containing PyDRex configuration."""
+    path = resolve_path(path)
+    with open(path, "rb") as file:
+        toml = tomllib.load(file)
 
-    geometry = config["Geometry"]
-    output = config["Output"]
-    params = config["Parameters"]
-
-    mesh = read_mesh(resolve_path(geometry.get("meshfile"), configpath.parent))
-    olivine_fraction = params.getfloat("olivine_fraction")
-    enstatite_fraction = params.getfloat("enstatite_fraction", 1.0 - olivine_fraction)
-
-    # TODO: Allow user-given order for Euler angle output (like Fraters 2021)?
-    olivine_output = tuple(
-        output.get("olivine", fallback="volume_distribution, orientations")
-        .replace(" ", "")
-        .split(",")
-    )
-    enstatite_output = tuple(
-        output.get("enstatite", fallback="volume_distribution, orientations")
-        .replace(" ", "")
-        .split(",")
+    # Use provided name or set randomized default.
+    toml["name"] = toml.get(
+        "name", f"pydrex.{np.random.default_rng().integers(1,1e10)}"
     )
 
-    return dict(
-        zip(
-            [
-                "mesh",
-                "simulation_name",
-                "checkpoint_interval",
-                "olivine_output",
-                "enstatite_output",
-                "olivine_fraction",
-                "enstatite_fraction",
-                "stress_exponent",
-                "gbm_mobility",
-                "gbs_threshold",
-                "nucleation_efficiency",
-                "olivine_fabric",
-                "number_of_grains",
-            ],
-            [
-                mesh,
-                output.get("simulation_name", fallback="simulation_name"),
-                # 0 disables checkpointing
-                output.getint("checkpoint_interval", fallback=0),
-                # Unique names for np.savez()
-                ["olivine_" + s for s in olivine_output],
-                ["enstatite_" + s for s in enstatite_output],
-                olivine_fraction,
-                enstatite_fraction,
-                params.getfloat("stress_exponent"),
-                params.getfloat("gbm_mobility"),
-                params.getfloat("gbs_threshold"),
-                params.getfloat("nucleation_efficiency"),
-                params.get("olivine_fabric"),
-                params.getint("number_of_grains"),
-            ],
+    _input = toml.get("input", {})
+    _output = toml.get("output", {})
+    try:
+        _params = toml["parameters"]
+    except KeyError:
+        raise _err.ConfigError(
+            f"could not parse parameters from '{path}'"
+            + " Does the file specify a '[parameters]' section?"
         )
-    )
+
+    # Optional mesh with numerical velocity gradient field.
+    if "mesh" in _input:
+        _input["mesh"] = read_mesh(resolve_path(_input["mesh"], path.parent))
+    else:
+        _input["mesh"] = None
+
+    # Optional NPZ or SCSV files with pre-computed input pathlines.
+    if "paths" in _input:
+        if _input["mesh"] is not None:
+            _log.warning(
+                "providing input mesh and input pathlines is mutually exclusive,"
+                + " ignoring input mesh at '%s'",
+                _input["mesh"],
+            )
+            _input["mesh"] = None
+        _input["paths"] = [
+            np.load(resolve_path(p, path.parent)) for p in _input["paths"]
+        ]
+    else:
+        _input["paths"] = None
+
+    # Output options are also optional, default: most data output, least logging output.
+    if "directory" in _output:
+        _output["directory"] = resolve_path(_output["directory"], path.parent)
+    else:
+        _output["directory"] = pathlib.Path.cwd()
+
+    # Raw output means rotation matrices and grain volumes.
+    _output["raw_output"] = _parse_output_options(_output, "raw_output")
+    # Diagnostic output means texture diagnostics (strength, symmetry, mean angle).
+    _output["diagnostics"] = _parse_output_options(_output, "diagnostics")
+    # Anisotropy output means hexagonal symmetry axis and ΔVp (%).
+    _output["anisotropy"] = _output.get("anisotropy", True)
+
+    # Optional SCSV or NPZ pathline outputs, not necessary if there are pathline inputs.
+    _output["paths"] = _output.get("paths", None)
+    # Optional output mesh of final particle positions (standalone mode).
+    if "mesh" in _output:
+        _output["mesh"] = read_mesh(resolve_path(_output.get("meshfile"), path.parent))
+    else:
+        _output["mesh"] = None
+    # Default logging level for all log files.
+    _output["log_level"] = _output.get("log_level", "WARNING")
+
+    for key, default in zip(
+        (
+            "olivine_fraction",
+            "enstatite_fraction",
+            "stress_exponent",
+            "deformation_exponent",
+            "gbm_mobility",
+            "gbs_threshold",
+            "nucleation_efficiency",
+            "number_of_grains",
+            "initial_olivine_fabric",
+        ),
+        (
+            1.0,
+            0.0,
+            1.5,
+            3.5,
+            125,
+            0.3,
+            5.0,
+            2000.0,
+            "A",
+        ),
+    ):
+        _params[key] = _params.get(key, default)
+
+    # Only olivine and enstatite for now, so they must sum to 1.
+    if _params["olivine_fraction"] + _params["enstatite_fraction"] != 1.0:
+        raise _err.ConfigError(
+            "olivine_fraction and enstatite_fraction must sum to 1."
+            + f" You've provided olivine_fraction = {_params['olivine_fraction']} and"
+            + f" enstatite_fraction = {_params['enstatite_fraction']}."
+        )
+    if _params["olivine_fraction"] != 1.0:
+        _params["enstatite_fraction"] = 1 - _params["olivine_fraction"]
+    elif _params["enstatite_fraction"] != 0.0:
+        _params["olivine_fraction"] = 1 - _params["enstatite_fraction"]
+
+    # Make sure initial olivine fabric is valid.
+    try:
+        _params["initial_olivine_fabric"] = getattr(
+            _core.MineralFabric, "olivine_" + _params["initial_olivine_fabric"]
+        )
+    except AttributeError:
+        raise _err.ConfigError(
+            f"invalid initial olivine fabric: {_params['initial_olivine_fabric']}"
+        )
+    return toml
 
 
 def read_mesh(meshfile, *args, **kwargs):
@@ -252,6 +305,20 @@ def resolve_path(path, refdir=None):
         _path = refdir / path
     _path.parent.mkdir(parents=True, exist_ok=True)
     return _path.resolve()
+
+
+def _parse_output_options(output_opts, level):
+    try:
+        output_opts[level] = [
+            getattr(_core.MineralPhase, phase)
+            for phase in output_opts.get(level, ["olivine", "enstatite"])
+        ]
+    except AttributeError:
+        raise _err.ConfigError(
+            f"unsupported mineral phase in {level} option.\n"
+            + f" You supplied the value: {output_opts[level]}.\n"
+            + " Check pydrex.core.MineralPhase for supported options."
+        )
 
 
 def _validate_scsv_schema(schema):
@@ -278,7 +345,7 @@ def _validate_scsv_schema(schema):
                 "SCSV field name '%s' is not a valid Python identifier", field["name"]
             )
             return False
-        if not field.get("type", _SCSV_DEFAULT_TYPE) in SCSV_TYPEMAP.keys():
+        if field.get("type", _SCSV_DEFAULT_TYPE) not in SCSV_TYPEMAP.keys():
             _log.error("unsupported SCSV field type: '%s'", field["type"])
             return False
         if (

@@ -6,6 +6,18 @@ class Error(Exception):
     """Base class for exceptions in PyDRex."""
 
 
+class ConfigError(Error):
+    """Exception raised for errors in the input configuration.
+
+    Attributes:
+        message — explanation of the error
+
+    """
+
+    def __init__(self, message):  # pylint: disable=super-init-not-called
+        self.message = message
+
+
 class MeshError(Error):
     """Exception raised for errors in the input mesh.
 
