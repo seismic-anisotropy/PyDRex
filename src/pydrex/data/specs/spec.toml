@@ -1,0 +1,110 @@
+# PyDRex TOML configuration specification.
+# None of the fields are mandatory, but at least the [parameters] section should be provided.
+
+# Simulation name is optional but recommended.
+name = "pydrex-spec"
+
+# Input files/options are given in this section:
+[input]
+
+# Input data can be provided in one of three ways:
+# 1. An input mesh with the steady-state numerical velocity gradient field
+#    and a plain text SCSV file specifying the FINAL locations of the polycrystals.
+#    In this case, polycrystals will first be back-propagated along flow pathlines,
+#    and then forward-propagated while the CPO is calculated.
+#    The SCSV file should have column names 'X', 'Y', 'Z' for 3D or any two of those for 2D.
+# 2. A built-in (analytical) velocity field name and INITIAL locations of the polycrystals.
+#    In this case, polycrystals will immediately be forward-advected in the specified field.
+#    The dimensions (2 or 3) of the velocity field should also be specified.
+#    For a list of supported analytical velocity field solutions,
+#    The SCSV file should have column names 'X', 'Y', 'Z' for 3D or any two of those for 2D.
+#    see [doc link].
+# 3. Pre-computed pathline files with velocity gradients at each point.
+#    These can be either plain text SCSV files or binary NPZ files.
+#    They should have columns/fields called: 'X_id', 'Y_id', 'Z_id', 'L11_id', 'L12_id', 'L13_id', etc.
+#    where 'id' is replaced by an unique identifier of the particle/pathline.
+#    If a field called 't' is also present, it will be used for the timestamps.
+#    Alternatively, a fixed timestep for all paths can be specified using `timestep`.
+# NOTE: If PyDRex is to be embedded in a third party fluid dynamics framework,
+# this section can be omitted entirely.
+
+# Example for method 1, not only .vtu but any format supported by meshio should work:
+# mesh = "filename.vtu"
+# locations_final = "filename.scsv"
+
+# Example for method 2:
+velocity_field = "simple_shear"
+velocity_dimensions = 2
+locations_initial = "start.scsv"
+timestep = 1e9
+
+# Example for method 3:
+# timestep = 1e9
+# paths = ["path001.npz", "path002.scsv"]
+
+# Output files/options are given in this section:
+[output]
+
+# Optional output directory, will be created if missing.
+# This is also relative to the parent directory of the TOML file,
+# unless an absolute path is given.
+directory = "out"
+
+# Optional choice of mineral phases to include in raw output.
+# Raw output means rotation matrices and grain volumes, so 10 floats per grain per mineral.
+# By default, raw output for all supported minerals is saved.
+raw_output = ["olivine"]
+
+# Optional choice of mineral phases to include in diagnostic output.
+# Diagnostic output includes texture symmetry, strength and mean angle results.
+# By default, diagnostic output for all supported minerals is saved.
+diagnostics = ["olivine"]
+
+# Should anisotropy postprocessing results be calculated?
+# This uses voigt averaging so the effective values for the multiphase polycrystal are calculated.
+anisotropy = true
+
+# Optional pathline output files (velocity gradients, positions, timestamps, particle ids).
+# Pathline output files use the same format as pathline inputs (by default, they are not produced).
+# They are stored inside the output directory unless absolute paths are given.
+# paths = ["pathline001.scsv"]
+
+# Optional logging level for log files.
+# This sets the log level for all log files, overriding the default value of "WARNING".
+# Supported levels are controlled by Python's logging module.
+# Usually they are "CRITICAL", "ERROR", "WARNING", "INFO" and "DEBUG".
+log_level = "DEBUG"
+
+# DREX and simulation parameters are given in this section:
+[parameters]
+
+# Optional olivine volume fraction to use for multiphase simulations.
+# If enstatite_fraction is provided, they must sum to 1.
+# Otherwise, the remainder is assumed to be enstatite.
+# olivine_fraction = 1.
+
+# Optional enstatite volume fraction to use for multiphase simulations.
+# If olivine_fraction is provided, they must sum to 1.
+# Otherwise, the remainder is assumed to be olivine.
+# enstatite_fraction = 0.
+
+# Optional initial olivine fabric. A-type by default.
+initial_olivine_fabric = "A"
+
+# Optional DREX stress_exponent, see documentation for details.
+stress_exponent = 1.5
+
+# Optional DREX deformation_exponent, see documentation for details.
+deformation_exponent = 3.5
+
+# Optional DREX grain boudary mobility, see documentation for details.
+gbm_mobility = 125
+
+# Optional DREX grain boundary sliding threshold, see documentation for details.
+gbs_threshold = 0.3
+
+# Optional DREX nucleation efficiency, see documentation for details.
+nucleation_efficiency = 5.0
+
+# Optional number of (initial) grains per mineral phase per polycrystal.
+number_of_grains = 2000
