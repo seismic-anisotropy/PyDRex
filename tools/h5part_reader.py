@@ -17,8 +17,7 @@ from zipfile import ZipFile
 import h5py
 import numpy as np
 
-from pydrex import core as _core
-from pydrex import minerals as _minerals
+from pydrex import Mineral, MineralFabric, MineralPhase
 
 
 def _get_args() -> argparse.Namespace:
@@ -76,14 +75,14 @@ if __name__ == "__main__":
 
         for particle_id in file["Step#0/id"][:]:
             option_map = {
-                "olivine": _core.MineralPhase.olivine,
-                "enstatite": _core.MineralPhase.enstatite,
-                "A": _minerals.OlivineFabric.A,
-                "B": _minerals.OlivineFabric.B,
-                "C": _minerals.OlivineFabric.C,
-                "D": _minerals.OlivineFabric.D,
-                "E": _minerals.OlivineFabric.E,
-                "N": _minerals.EnstatiteFabric.A,
+                "olivine": MineralPhase.olivine,
+                "enstatite": MineralPhase.enstatite,
+                "A": MineralFabric.olivine_A,
+                "B": MineralFabric.olivine_B,
+                "C": MineralFabric.olivine_C,
+                "D": MineralFabric.olivine_D,
+                "E": MineralFabric.olivine_E,
+                "N": MineralFabric.enstatite_AB,
             }
 
             # Temporary data arrays.
@@ -115,7 +114,7 @@ if __name__ == "__main__":
             _postfix = str(particle_id)
             _fractions = list(fractions)
             _orientations = list(orientations)
-            mineral = _minerals.Mineral(
+            mineral = Mineral(
                 phase=option_map[args.fabric],
                 fabric=option_map[args.phase],
                 n_grains=args.ngrains,
