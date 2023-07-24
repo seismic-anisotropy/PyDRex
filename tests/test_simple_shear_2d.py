@@ -275,7 +275,7 @@ class TestOlivineA:
         strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
         timestamps = np.linspace(0, 5e5, 251)  # Solve until D₀t=2.5 ('shear' γ=5).
         n_timestamps = len(timestamps)
-        i_strain_100p = [0, 50, 100, 150, 200]  # Indices for += 100% strain.
+        # i_strain_100p = [0, 50, 100, 150, 200]  # Indices for += 100% strain.
 
         def get_velocity_gradient(x):
             # It is independent of time or position in this test.
