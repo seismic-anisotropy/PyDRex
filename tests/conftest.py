@@ -146,6 +146,7 @@ def seeds():
     """1000 unique seeds for ensemble runs that need an RNG seed."""
     return _io.read_scsv(_io.data("rng") / "seeds.scsv").seeds
 
+
 @pytest.fixture
 def seed():
     """Default seed for test RNG."""
