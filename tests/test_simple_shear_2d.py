@@ -124,7 +124,7 @@ class TestOlivineA:
         return mineral, mean_angles, texture_symmetry, None
 
     @pytest.mark.slow
-    def test_dudz_GBS(
+    def test_dudz_GBS_nearX45(
         self,
         params_Kaminski2004_fig4_circles,  # GBS = 0
         params_Kaminski2004_fig4_squares,  # GBS = 0.2
@@ -133,7 +133,7 @@ class TestOlivineA:
         outdir,
         ncpus,
     ):
-        r"""Test a-axis alignment to shear in X direction.
+        r"""Test a-axis alignment to shear in X direction (init. SCCS near 45° from X).
 
         Velocity gradient:
         $$\bm{L} = \begin{bmatrix} 0 & 0 & 2 \cr 0 & 0 & 0 \cr 0 & 0 & 0 \end{bmatrix}$$
