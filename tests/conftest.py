@@ -1,4 +1,5 @@
 """> Configuration and fixtures for PyDRex tests."""
+import os
 import matplotlib
 import pytest
 from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
@@ -80,6 +81,13 @@ def pytest_collection_modifyitems(config, items):
 @pytest.fixture(scope="session")
 def outdir(request):
     return request.config.getoption("--outdir")
+
+
+@pytest.fixture(scope="session")
+def ncpus(request):
+    return max(
+        1, int(request.config.getoption("--ncpus", len(os.sched_getaffinity(0)) - 1))
+    )
 
 
 @pytest.fixture(scope="function")

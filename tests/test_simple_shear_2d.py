@@ -1,5 +1,7 @@
 """> PyDRex: 2D simple shear tests."""
 import contextlib as cl
+from multiprocessing import Pool
+import functools as ft
 
 import numpy as np
 import pytest
@@ -14,6 +16,7 @@ from pydrex import minerals as _minerals
 from pydrex import stats as _stats
 from pydrex import utils as _utils
 from pydrex import visualisation as _vis
+from pydrex import velocity_gradients as _dv
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "2d_simple_shear"
@@ -27,6 +30,229 @@ class TestOlivineA:
     def get_position(self, t):
         return np.zeros(3)
 
+    def run(
+        self,
+        params,
+        timestamps,
+        strain_rate,
+        get_velocity_gradient,
+        shear_direction,
+        seed=None,
+        log_param=None,
+        use_bingham_average=False,
+        return_fse=True,
+    ):
+        """Reusable logic for 2D olivine simple shear tests.
+
+        Always returns a tuple with 4 elements
+        (mineral, mean_angles, texture_symmetry, θ_fse),
+        but if `return_fse` is None then the last tuple element is also None.
+
+        """
+        mineral = _minerals.Mineral(n_grains=params["number_of_grains"], seed=seed)
+        deformation_gradient = np.eye(3)  # Undeformed initial state.
+
+        n_timestamps = len(timestamps)
+        if return_fse:
+            θ_fse = np.empty(n_timestamps)
+            θ_fse[0] = 45
+
+        for t, time in enumerate(timestamps[:-1], start=1):
+            # Set up logging message depending on dynamic parameter and seeds.
+            match log_param:
+                case "gbs_threshold":
+                    msg_start = f"X = {params['gbs_threshold']}; "
+                case "gbm_mobility":
+                    msg_start = f"$M^∗={params['gbm_mobility']}$; "
+                case _:
+                    msg_start = ""
+
+            if seed is not None:
+                msg_start += f"# {seed}; "
+
+            _log.info(msg_start + "step %s/%s (t = %s)", t, n_timestamps - 1, time)
+
+            deformation_gradient = mineral.update_orientations(
+                params,
+                deformation_gradient,
+                get_velocity_gradient,
+                pathline=(time, timestamps[t], self.get_position),
+            )
+            _log.info(
+                "› velocity gradient = %s",
+                get_velocity_gradient(None).flatten(),
+            )
+            _log.info("› strain D₀t = %.2f", strain_rate * time)
+            if return_fse:
+                _, fse_v = _diagnostics.finite_strain(deformation_gradient)
+                θ_fse[t] = _diagnostics.smallest_angle(fse_v, shear_direction)
+
+        # Compute texture diagnostics.
+        texture_symmetry = np.zeros(n_timestamps)
+        if use_bingham_average:
+            mean_angles = np.zeros(n_timestamps)
+        for idx, matrices in enumerate(mineral.orientations):
+            orientations_resampled, _ = _stats.resample_orientations(
+                matrices, mineral.fractions[idx], seed=seed
+            )
+            if use_bingham_average:
+                direction_mean = _diagnostics.bingham_average(
+                    orientations_resampled,
+                    axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
+                )
+                mean_angles[idx] = _diagnostics.smallest_angle(
+                    direction_mean, shear_direction
+                )
+            texture_symmetry[idx] = _diagnostics.symmetry(
+                orientations_resampled,
+                axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
+            )[0]
+
+        if not use_bingham_average:
+            # Use SCCS axis (hexagonal symmetry) for the angle instead (opt).
+            mean_angles = np.array(
+                [
+                    _diagnostics.smallest_angle(
+                        _diagnostics.anisotropy(v)[1][2, :], shear_direction
+                    )
+                    for v in _minerals.voigt_averages([mineral], params)
+                ]
+            )
+
+        if return_fse:
+            return mineral, mean_angles, texture_symmetry, θ_fse
+        return mineral, mean_angles, texture_symmetry, None
+
+    @pytest.mark.slow
+    def test_dudz_GBS(
+        self,
+        params_Kaminski2004_fig4_circles,  # GBS = 0
+        params_Kaminski2004_fig4_squares,  # GBS = 0.2
+        params_Kaminski2004_fig4_triangles,  # GBS = 0.4
+        seeds_nearX45,
+        outdir,
+        ncpus,
+    ):
+        r"""Test a-axis alignment to shear in X direction.
+
+        Velocity gradient:
+        $$\bm{L} = \begin{bmatrix} 0 & 0 & 2 \cr 0 & 0 & 0 \cr 0 & 0 & 0 \end{bmatrix}$$
+
+        """
+        strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
+        timestamps = np.linspace(0, 5e5, 251)  # Solve until D₀t=2.5 ('shear' γ=5).
+        n_timestamps = len(timestamps)
+        # i_strain_100p = [0, 50, 100, 150, 200]  # Indices for += 100% strain.
+
+        shear_direction = [1, 0, 0]  # Used to calculate the angular diagnostics.
+        get_velocity_gradient = _dv.simple_shear(shear_direction, "Z", strain_rate)
+
+        # Output setup with optional logging and data series labels.
+        θ_fse = np.empty(n_timestamps)
+        angles = np.empty((3, len(seeds_nearX45), n_timestamps))
+        point100_symmetry = np.empty_like(angles)
+        optional_logging = cl.nullcontext()
+        if outdir is not None:
+            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_dudz_GBS_nearX45"
+            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            labels = []
+
+        with optional_logging:
+            for p, params in enumerate(
+                (
+                    params_Kaminski2004_fig4_circles,  # GBS = 0
+                    params_Kaminski2004_fig4_squares,  # GBS = 0.2
+                    params_Kaminski2004_fig4_triangles,  # GBS = 0.4
+                ),
+            ):
+                if p == 0:
+                    return_fse = True
+                else:
+                    return_fse = False
+
+                _run = ft.partial(
+                    self.run,
+                    params,
+                    timestamps,
+                    strain_rate,
+                    get_velocity_gradient,
+                    shear_direction,
+                    log_param="gbs_threshold",
+                    use_bingham_average=False,
+                    return_fse=return_fse,
+                )
+                with Pool(processes=ncpus) as pool:
+                    for s, out in enumerate(pool.imap_unordered(_run, seeds_nearX45)):
+                        mineral, mean_angles, texture_symmetry, fse_angles = out
+                        angles[p, s, :] = mean_angles
+                        point100_symmetry[p, s, :] = texture_symmetry
+                        if return_fse:
+                            θ_fse += fse_angles
+
+                if return_fse:
+                    θ_fse /= len(seeds_nearX45)
+
+                # Update labels and store the last mineral of the ensemble for polefigs.
+                if outdir is not None:
+                    labels.append(f"$f_{{gbs}}$ = {params['gbs_threshold']}")
+                    mineral.save(
+                        f"{out_basepath}.npz",
+                        postfix=f"X{params['gbs_threshold']}",
+                    )
+
+            # Interpolate Kaminski & Ribe, 2001 data to get target angles at `strains`.
+            _log.info("interpolating target CPO angles...")
+            strains = timestamps * strain_rate
+            data = _io.read_scsv(_io.data("thirdparty") / "Kaminski2004_GBSshear.scsv")
+            cs_X0 = PchipInterpolator(
+                _utils.remove_nans(data.dimensionless_time_X0),
+                45 + _utils.remove_nans(data.angle_X0),
+            )
+            cs_X0d2 = PchipInterpolator(
+                _utils.remove_nans(data.dimensionless_time_X0d2),
+                45 + _utils.remove_nans(data.angle_X0d2),
+            )
+            cs_X0d4 = PchipInterpolator(
+                _utils.remove_nans(data.dimensionless_time_X0d4),
+                45 + _utils.remove_nans(data.angle_X0d4),
+            )
+            target_angles = [cs_X0(strains), cs_X0d2(strains), cs_X0d4(strains)]
+
+        # Take ensemble means and optionally plot figure.
+        result_angles = angles.mean(axis=1)
+        result_angles_err = angles.std(axis=1)
+        result_point100_symmetry = point100_symmetry.mean(axis=1)
+        if outdir is not None:
+            schema = {
+                "delimiter": ",",
+                "missing": "-",
+                "fields": [
+                    {
+                        "name": "strain",
+                        "type": "integer",
+                        "unit": "percent",
+                        "fill": 999999,
+                    }
+                ],
+            }
+            _io.save_scsv(
+                f"{out_basepath}_strains.scsv",
+                schema,
+                [[int(γ * 200) for γ in strains]],
+            )
+            _vis.simple_shear_stationary_2d(
+                strains,
+                target_angles,
+                result_angles,
+                result_point100_symmetry,
+                angles_err=result_angles_err,
+                savefile=f"{out_basepath}.png",
+                markers=("o", "v", "s"),
+                θ_fse=θ_fse,
+                labels=labels,
+            )
+
+# TODO: ================ Add multiprocessing to tests below =====================
     @pytest.mark.slow
     def test_dvdx_GBM_ensemble(
         self,
