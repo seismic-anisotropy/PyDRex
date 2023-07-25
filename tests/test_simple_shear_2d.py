@@ -1,7 +1,7 @@
 """> PyDRex: 2D simple shear tests."""
 import contextlib as cl
-from multiprocessing import Pool
 import functools as ft
+from multiprocessing import Pool
 from time import perf_counter, process_time
 
 import numpy as np
@@ -16,8 +16,8 @@ from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
 from pydrex import utils as _utils
-from pydrex import visualisation as _vis
 from pydrex import velocity_gradients as _dv
+from pydrex import visualisation as _vis
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "2d_simple_shear"

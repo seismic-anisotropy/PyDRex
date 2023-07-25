@@ -1,8 +1,9 @@
 """Find seeds that make grains start with an average SCCS direction of 45."""
 import numpy as np
+
 from pydrex import diagnostics as _d
-from pydrex import minerals as _m
 from pydrex import logger as _l
+from pydrex import minerals as _m
 
 for i in range(10000):
     with _l.handler_level("ERROR"):

@@ -1,5 +1,6 @@
 """> Configuration and fixtures for PyDRex tests."""
 import os
+
 import matplotlib
 import pytest
 from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler

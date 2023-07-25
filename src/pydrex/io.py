@@ -13,11 +13,11 @@ the `data/` folder of the source repository. For supported cell types, see
 
 """
 import collections as c
-import tomllib
 import csv
 import functools as ft
 import os
 import pathlib
+import tomllib
 from importlib.resources import files
 
 import frontmatter as fm

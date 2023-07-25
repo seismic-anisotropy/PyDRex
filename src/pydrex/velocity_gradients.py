@@ -1,5 +1,6 @@
 """> PyDRex: Steady-state solutions of velocity gradients for various flows."""
 import functools as ft
+
 import numba as nb
 import numpy as np
 

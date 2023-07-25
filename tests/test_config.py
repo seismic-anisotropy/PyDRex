@@ -3,8 +3,8 @@ import pathlib as pl
 
 import numpy as np
 
-from pydrex import io as _io
 from pydrex import core as _core
+from pydrex import io as _io
 
 
 def test_specfile():
