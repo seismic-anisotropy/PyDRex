@@ -17,6 +17,9 @@ import numpy as np
 # NOTE: Do NOT import any pydrex submodules here to avoid cyclical imports.
 
 
+_USE_ORIGINAL_DREX = False  # Switch to use D-Rex 2004 version without corrections.
+
+
 PERMUTATION_SYMBOL = np.array(
     [
         [[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]],
@@ -194,7 +197,10 @@ def _get_slip_rate_softest(deformation_rate, velocity_gradient):
 
     for j in range(3):
         # NOTE: Mistake in original DRex code (j + 2), see Fraters & Billen 2021 S1.
-        k = (j + 1) % 3
+        if _USE_ORIGINAL_DREX:
+            k = (j + 2) % 3
+        else:
+            k = (j + 1) % 3
         enumerator -= (velocity_gradient[j, k] - velocity_gradient[k, j]) * (
             deformation_rate[j, k] - deformation_rate[k, j]
         )
@@ -397,11 +403,14 @@ def _get_rotation_and_strain(
             deformation_exponent,
         )
     elif phase == MineralPhase.enstatite:
-        # Assumes exclusively (100)[001] slip for enstatite.
         slip_indices = np.argsort(1 / crss)
         slip_rates = np.zeros(4)
-        if np.abs(slip_invariants[-1]) > 1e-15:
-            slip_rates[-1] = 1
+        if _USE_ORIGINAL_DREX:
+            slip_rates[-1] = 1  # Original had an arbitrary slip always active (L1410).
+        else:
+            # Assumes exclusively (100)[001] slip for enstatite.
+            if np.abs(slip_invariants[-1]) > 1e-15:
+                slip_rates[-1] = 1
     else:
         assert False  # Should never happen.
 
