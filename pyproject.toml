@@ -37,7 +37,6 @@ dependencies = [
     "numba >= 0.5",  # <https://numba.pydata.org/numba-doc/latest/release-notes.html#version-0-50-0-jun-10-2020>
     "scipy >= 1.2",  # <https://github.com/scipy/scipy/pull/9176>
     "python-frontmatter",  # For YAML headers of plaintext datafiles.
-    "tomllib",  # For PyDRex configuration files (simulation setup).
     "vtk",  # TODO: Remove in favour of meshio when interpolators are fixed.
     "meshio",  # For reading VTK and other meshes.
 ]
