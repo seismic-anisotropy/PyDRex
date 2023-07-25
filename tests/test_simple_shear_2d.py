@@ -145,7 +145,7 @@ class TestOlivineA:
         # i_strain_100p = [0, 50, 100, 150, 200]  # Indices for += 100% strain.
 
         shear_direction = [1, 0, 0]  # Used to calculate the angular diagnostics.
-        get_velocity_gradient = _dv.simple_shear(shear_direction, "Z", strain_rate)
+        get_velocity_gradient = _dv.simple_shear_2d(shear_direction, "Z", strain_rate)
 
         # Output setup with optional logging and data series labels.
         θ_fse = np.empty(n_timestamps)
