@@ -1,0 +1,52 @@
+---
+# Seeds for which the hexagonal symmetry axis starts at 45 ±1° from the X direction.
+schema:
+  delimiter: ','
+  missing: '-'
+  fields:
+    - name: seeds
+      type: integer
+      fill: 0
+---
+seeds
+120
+722
+1436
+1540
+2094
+2206
+2238
+2756
+3232
+3809
+3868
+3941
+3992
+4140
+4192
+4283
+4584
+4952
+5062
+5346
+6880
+6925
+7018
+7035
+7229
+7433
+7439
+7451
+7468
+8020
+8110
+8194
+8369
+8392
+8427
+8543
+8564
+8729
+8930
+9041
+9922

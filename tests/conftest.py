@@ -151,3 +151,9 @@ def seeds():
 def seed():
     """Default seed for test RNG."""
     return 8816
+
+
+@pytest.fixture
+def seeds_nearX45():
+    """41 seeds which have the initial hexagonal symmetry axis near 45° from X."""
+    return _io.read_scsv(_io.data("rng") / "hexaxis_nearX45_seeds.scsv").seeds
