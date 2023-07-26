@@ -1,0 +1,23 @@
+---
+# Example initial particle locations.
+schema:
+  delimiter: ','
+  missing: '-'
+  fields:
+    - name: X
+      type: float
+      fill: NaN
+      unit: "km"
+    - name: Y
+      type: float
+      fill: NaN
+      unit: "km"
+    - name: Z
+      type: float
+      fill: NaN
+      unit: "km"
+---
+  X,  Y,  Z
+  0,  0,  0
+  0,  0,  0
+0.5,0.5,0.5
