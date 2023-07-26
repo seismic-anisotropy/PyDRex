@@ -192,6 +192,28 @@ def simple_shear_stationary_2d(
             label=label,
         )
 
+    data_Skemer2016 = _io.read_scsv(
+        _io.data("thirdparty") / "Skemer2016_ShearStrainAngles.scsv"
+    )
+    ax_mean.plot(
+        np.asarray(data_Skemer2016.shear_strain[0:5]) / 200,
+        data_Skemer2016.angle[0:5],
+        marker="v",
+        fillstyle="none",
+        linestyle="none",
+        markersize=5,
+        color="k",
+        label="Zhang & Karato, 1995 (1200°C)",
+    )
+    ax_mean.plot(
+        np.asarray(data_Skemer2016.shear_strain[5:11]) / 200,
+        data_Skemer2016.angle[5:11],
+        marker="^",
+        linestyle="none",
+        markersize=5,
+        color="k",
+        label="Zhang & Karato, 1995 (1300°C)",
+    )
     if θ_fse is not None:
         ax_mean.plot(strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE")
     if labels is not None:
@@ -201,6 +223,7 @@ def simple_shear_stationary_2d(
     fig.savefig(_io.resolve_path(savefile))
 
 
+# TODO: Move to utils.py
 def _lag_2d_corner_flow(θ):
     # Predicted grain orientation lag for 2D corner flow, eq. 11 in Kaminski 2002.
     _θ = np.ma.masked_less(θ, 1e-15)

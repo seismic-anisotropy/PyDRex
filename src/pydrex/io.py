@@ -37,7 +37,7 @@ DEFAULT_PARAMS = {
     "gbm_mobility": 125,
     "gbs_threshold": 0.3,
     "nucleation_efficiency": 5.0,
-    "number_of_grains": 2000,
+    "number_of_grains": 2500,
     "initial_olivine_fabric": "A",
 }
 """Default simulation parameters."""

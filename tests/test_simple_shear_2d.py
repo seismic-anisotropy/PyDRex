@@ -7,7 +7,7 @@ from time import perf_counter, process_time
 import numpy as np
 import pytest
 
-# from numpy import testing as nt
+from numpy import testing as nt
 from scipy.interpolate import PchipInterpolator
 
 from pydrex import diagnostics as _diagnostics
@@ -81,11 +81,17 @@ class TestOlivineA:
                 get_velocity_gradient,
                 pathline=(time, timestamps[t], cls.get_position),
             )
-            _log.info(
+            _log.debug(
                 "› velocity gradient = %s",
                 get_velocity_gradient(None).flatten(),
             )
-            _log.info("› strain D₀t = %.2f", strain_rate * time)
+            _log.debug("› strain D₀t = %.2f", strain_rate * time)
+            _log.debug(
+                "› grain fractions: median = %s, max = %s, min = %s",
+                np.median(mineral.fractions[-1]),
+                np.max(mineral.fractions[-1]),
+                np.min(mineral.fractions[-1]),
+            )
             if return_fse:
                 _, fse_v = _diagnostics.finite_strain(deformation_gradient)
                 θ_fse[t] = _diagnostics.smallest_angle(fse_v, shear_direction)
@@ -127,23 +133,33 @@ class TestOlivineA:
         return mineral, mean_angles, texture_symmetry, None
 
     @classmethod
-    def postprocess_ensemble(
+    def postprocess(
         cls,
         timestamps,
         strain_rate,
-        target_interpolator,
         angles,
         point100_symmetry,
         θ_fse,
         labels,
+        markers,
         outdir,
         out_basepath,
+        target_interpolator=None,
     ):
-        """Reusable postprocessing routine for ensemble simulations."""
+        """Reusable postprocessing routine for olivine 2D simple shear simulations."""
+        _log.info("postprocessing results...")
         strains = timestamps * strain_rate
-        result_angles = angles.mean(axis=1)
-        result_angles_err = angles.std(axis=1)
-        result_point100_symmetry = point100_symmetry.mean(axis=1)
+        if target_interpolator is not None:
+            result_angles = angles.mean(axis=1)
+            result_angles_err = angles.std(axis=1)
+            result_point100_symmetry = point100_symmetry.mean(axis=1)
+            target_angles = target_interpolator(strains)
+        else:
+            result_angles = angles
+            result_angles_err = None
+            result_point100_symmetry = point100_symmetry
+            target_angles = None
+
         if outdir is not None:
             schema = {
                 "delimiter": ",",
@@ -164,12 +180,12 @@ class TestOlivineA:
             )
             _vis.simple_shear_stationary_2d(
                 strains,
-                target_interpolator(strains),
                 result_angles,
                 result_point100_symmetry,
+                target_angles=target_angles,
                 angles_err=result_angles_err,
                 savefile=f"{out_basepath}.png",
-                markers=("o", "v", "s"),
+                markers=markers,
                 θ_fse=θ_fse,
                 labels=labels,
             )
@@ -304,16 +320,17 @@ class TestOlivineA:
             )
 
         # Take ensemble means and optionally plot figure.
-        self.postprocess_ensemble(
+        self.postprocess(
             timestamps,
             strain_rate,
-            self.interp_GBM_Kaminski2001,
             angles,
             point100_symmetry,
             θ_fse,
             labels,
+            ("o", "v", "s"),
             outdir,
             out_basepath,
+            target_interpolator=self.interp_GBM_Kaminski2001,
         )
 
         # # Check that FSE is correct.
@@ -461,13 +478,14 @@ class TestOlivineA:
         self.postprocess_ensemble(
             timestamps,
             strain_rate,
-            self.interp_GBS_Kaminski2004,
             angles,
             point100_symmetry,
             θ_fse,
             labels,
+            ("o", "v", "s"),
             outdir,
             out_basepath,
+            target_interpolator=self.interp_GBS_Kaminski2004,
         )
 
         # # Check that FSE is correct.
@@ -495,3 +513,92 @@ class TestOlivineA:
         #     rtol=0,
         #     atol=0.015,
         # )
+
+    def test_boudary_mobility(self, seed, outdir):
+        """Test that the grain boundary mobility parameter has an effect."""
+        shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
+        strain_rate = 1.0
+        get_velocity_gradient = _dv.simple_shear_2d("Y", "X", strain_rate)
+        timestamps = np.linspace(0, 1, 201)  # Solve until D₀t=1 ('shear' γ=2).
+        params = _io.DEFAULT_PARAMS
+        gbm_mobilities = (0, 10, 50, 125, 200)  # Must be in ascending order.
+        markers = ("x", ".", "*", "d", "s")
+        angles = np.empty((len(gbm_mobilities), len(timestamps)))
+        point100_symmetry = np.empty_like(angles)
+        minerals = []
+
+        optional_logging = cl.nullcontext()
+        if outdir is not None:
+            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_mobility"
+            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            labels = []
+
+        with optional_logging:
+            for i, M in enumerate(gbm_mobilities):
+                params["gbm_mobility"] = M
+                out = self.run(
+                    params,
+                    timestamps,
+                    strain_rate,
+                    get_velocity_gradient,
+                    shear_direction,
+                    seed=seed,
+                    log_param="gbm_mobility",
+                    return_fse=False,
+                )
+                minerals.append(out[0])
+                angles[i] = out[1]
+                point100_symmetry[i] = out[2]
+                if outdir is not None:
+                    labels.append(f"$M^∗$ = {params['gbm_mobility']}")
+
+        if outdir is not None:
+            self.postprocess(
+                timestamps,
+                strain_rate,
+                angles,
+                point100_symmetry,
+                None,
+                labels,
+                markers,
+                outdir,
+                out_basepath,
+            )
+
+        # Check that GBM speeds up the alignment.
+        _log.info("checking grain orientations...")
+        halfway = int(len(timestamps) / 2)
+        assert np.all(
+            np.array(
+                [
+                    θ[halfway] - angles[i][halfway]
+                    for i, θ in enumerate(angles[:-1], start=1)
+                ]
+            )
+            > 0
+        )
+        assert np.all(
+            np.array(
+                [θ[-1] - angles[i][-1] for i, θ in enumerate(angles[:-1], start=1)]
+            )
+            > 0
+        )
+        # Check that M*=0 doesn't affect grain sizes.
+        _log.info("checking grain sizes...")
+        for i, time in enumerate(timestamps):
+            _log.info(" › M∗ = 0; t = %s", time)
+            nt.assert_allclose(
+                minerals[0].fractions[i],
+                np.full(params["number_of_grains"], 1 / params["number_of_grains"]),
+            )
+        # Check that GBM causes decreasing grain size median.
+        assert np.all(
+            np.array(
+                [
+                    np.median(m.fractions[halfway])
+                    - np.median(minerals[i].fractions[halfway])
+                    for i, m in enumerate(minerals[:-1], start=1)
+                ]
+            )
+            > 0
+        )
