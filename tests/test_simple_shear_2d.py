@@ -386,7 +386,7 @@ class TestOlivineA:
         # )
 
     @pytest.mark.slow
-    def test_dudz_GBS_nearX45(
+    def test_dudz_GBS_ensemble(
         self,
         params_Kaminski2004_fig4_circles,  # GBS = 0
         params_Kaminski2004_fig4_squares,  # GBS = 0.2
