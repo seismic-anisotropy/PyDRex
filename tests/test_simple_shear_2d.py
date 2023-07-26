@@ -6,7 +6,6 @@ from time import perf_counter, process_time
 
 import numpy as np
 import pytest
-
 from numpy import testing as nt
 from scipy.interpolate import PchipInterpolator
 
