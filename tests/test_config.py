@@ -5,6 +5,7 @@ import numpy as np
 
 from pydrex import core as _core
 from pydrex import io as _io
+from pydrex import velocity_gradients as _dv
 
 
 def test_specfile():
@@ -13,13 +14,16 @@ def test_specfile():
     assert list(config.keys()) == ["name", "input", "output", "parameters"]
     _input = config["input"]
     # TODO: Add some example mesh/path files and use them in another test.
-    # TODO: Fix asserts here, implement locations_initial parser and
-    # built-in analytical velocity fields.
     assert _input["mesh"] is None
     assert _input["locations_final"] is None
-    assert _input["velocity_field"] == "simple_shear"  # Should be a funcref?
-    assert _input["velocity_dimensions"] == 2
-    assert _input["locations_initial"] == "start.scsv"  # Should be an absolute path.
+    assert _input["velocity_gradient"].func == _dv.simple_shear_2d("Y", "X", 5e-6).func
+    assert (
+        _input["velocity_gradient"].keywords
+        == _dv.simple_shear_2d("Y", "X", 5e-6).keywords
+    )
+    assert _input["locations_initial"] == _io.read_scsv(
+        _io.data("specs") / "start.scsv"
+    )
     assert _input["timestep"] == 1e9
     assert _input["paths"] is None
     outdir = pl.Path(_io.data("specs") / "out").resolve()

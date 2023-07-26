@@ -1,5 +1,6 @@
 # PyDRex TOML configuration specification.
-# None of the fields are mandatory, but at least the [parameters] section should be provided.
+# Exactly one valid combination of fields from the [input] section are required,
+# the rest is optional.
 
 # Simulation name is optional but recommended.
 name = "pydrex-spec"
@@ -13,34 +14,34 @@ name = "pydrex-spec"
 #    In this case, polycrystals will first be back-propagated along flow pathlines,
 #    and then forward-propagated while the CPO is calculated.
 #    The SCSV file should have column names 'X', 'Y', 'Z' for 3D or any two of those for 2D.
-# 2. A built-in (analytical) velocity field name and INITIAL locations of the polycrystals.
-#    In this case, polycrystals will immediately be forward-advected in the specified field.
-#    The dimensions (2 or 3) of the velocity field should also be specified.
-#    For a list of supported analytical velocity field solutions,
-#    The SCSV file should have column names 'X', 'Y', 'Z' for 3D or any two of those for 2D.
-#    see [doc link].
+# 2. A built-in (analytical) velocity gradient function from `pydrex.velocity_gradients`,
+#    its arguments, and INITIAL locations of the polycrystals. In this case,
+#    polycrystals will immediately be forward-advected in the specified field.
 # 3. Pre-computed pathline files with velocity gradients at each point.
 #    These can be either plain text SCSV files or binary NPZ files.
 #    They should have columns/fields called: 'X_id', 'Y_id', 'Z_id', 'L11_id', 'L12_id', 'L13_id', etc.
 #    where 'id' is replaced by an unique identifier of the particle/pathline.
 #    If a field called 't' is also present, it will be used for the timestamps.
 #    Alternatively, a fixed timestep for all paths can be specified using `timestep`.
-# NOTE: If PyDRex is to be embedded in a third party fluid dynamics framework,
-# this section can be omitted entirely.
+# 4. Names of fields to be read from a geodynamics framework during runtime (not implemented yet).
 
 # Example for method 1, not only .vtu but any format supported by meshio should work:
 # mesh = "filename.vtu"
 # locations_final = "filename.scsv"
+# timestep = 1e9
 
 # Example for method 2:
-velocity_field = "simple_shear"
-velocity_dimensions = 2
+velocity_gradient = ["simple_shear_2d", "Y", "X", 5e-6]
 locations_initial = "start.scsv"
 timestep = 1e9
 
 # Example for method 3:
 # timestep = 1e9
 # paths = ["path001.npz", "path002.scsv"]
+
+# In cases where the pathlines do not exit the domain,
+# a maximum strain threshold can bee provided, after which advection is halted.
+# max_strain = 10
 
 # Output files/options are given in this section:
 [output]
