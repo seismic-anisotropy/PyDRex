@@ -131,6 +131,7 @@ class TestOlivineA:
         cls,
         timestamps,
         strain_rate,
+        target_interpolator,
         angles,
         point100_symmetry,
         θ_fse,
@@ -163,7 +164,7 @@ class TestOlivineA:
             )
             _vis.simple_shear_stationary_2d(
                 strains,
-                cls.interp_GBM_Kaminski2001(strains),
+                target_interpolator(strains),
                 result_angles,
                 result_point100_symmetry,
                 angles_err=result_angles_err,
@@ -231,7 +232,7 @@ class TestOlivineA:
 
         """
         strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
-        timestamps = np.linspace(0, 2e5, 201)  # Solve until D₀t=2.5 ('shear' γ=5).
+        timestamps = np.linspace(0, 2e5, 201)  # Solve until D₀t=1 ('shear' γ=2).
         n_timestamps = len(timestamps)
         # i_strain_100p = [0, 50, 100, 150, 200]  # Indices for += 50% strain.
 
@@ -306,6 +307,7 @@ class TestOlivineA:
         self.postprocess_ensemble(
             timestamps,
             strain_rate,
+            self.interp_GBM_Kaminski2001,
             angles,
             point100_symmetry,
             θ_fse,
@@ -459,6 +461,7 @@ class TestOlivineA:
         self.postprocess_ensemble(
             timestamps,
             strain_rate,
+            self.interp_GBS_Kaminski2004,
             angles,
             point100_symmetry,
             θ_fse,
