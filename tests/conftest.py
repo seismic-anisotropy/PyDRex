@@ -34,6 +34,7 @@ def pytest_addoption(parser):
         help="number of CPUs to use for tests that support multiprocessing",
     )
 
+
 # The default pytest logging plugin always creates its own handlers...
 class PytestConsoleLogger(LoggingPlugin):
     """Pytest plugin that allows linking up a custom console logger."""
