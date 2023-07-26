@@ -161,7 +161,7 @@ def simple_shear_stationary_2d(
     ax_symmetry.set_xlim((strains[0], strains[-1]))
     ax_symmetry.set_ylim((0, 1))
     ax_symmetry.set_ylabel(r"Texture symmetry ($P_{[100]}$)")
-    ax_symmetry.set_xlabel(r"Strain ($\dot{D}_0 t = γ/2$)")
+    ax_symmetry.set_xlabel(r"Strain ($D_0 t = γ/2$)")
 
     angles = np.atleast_2d(angles)
     point100_symmetry = np.atleast_2d(point100_symmetry)
