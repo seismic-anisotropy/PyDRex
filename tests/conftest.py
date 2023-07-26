@@ -27,7 +27,12 @@ def pytest_addoption(parser):
         default=False,
         help="run slow tests (HPC cluster recommended, large memory requirement)",
     )
-
+    parser.addoption(
+        "--ncpus",
+        default=len(os.sched_getaffinity(0)) - 1,
+        type=int,
+        help="number of CPUs to use for tests that support multiprocessing",
+    )
 
 # The default pytest logging plugin always creates its own handlers...
 class PytestConsoleLogger(LoggingPlugin):
@@ -86,9 +91,7 @@ def outdir(request):
 
 @pytest.fixture(scope="session")
 def ncpus(request):
-    return max(
-        1, int(request.config.getoption("--ncpus", len(os.sched_getaffinity(0)) - 1))
-    )
+    return max(1, request.config.getoption("--ncpus"))
 
 
 @pytest.fixture(scope="function")
