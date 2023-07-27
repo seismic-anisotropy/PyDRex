@@ -474,7 +474,7 @@ class TestOlivineA:
             )
 
         # Take ensemble means and optionally plot figure.
-        self.postprocess_ensemble(
+        self.postprocess(
             timestamps,
             strain_rate,
             angles,
