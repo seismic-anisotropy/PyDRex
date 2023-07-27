@@ -40,6 +40,10 @@ def polefigures(
     on the command line.
 
     """
+    if len(orientations) != len(i_range):
+        raise ValueError("mismatched length of 'orientations' and 'i_range'")
+    if strains is not None and len(strains) != len(i_range):
+        raise ValueError("mismatched length of 'strains'")
     n_orientations = len(orientations)
     fig = plt.figure(figsize=(n_orientations, 4), dpi=600)
 
@@ -64,11 +68,11 @@ def polefigures(
             ax_strain.set_xticks(list(i_range))
         else:
             fig_strain.suptitle("strain (%)", x=0.5, y=0.85, fontsize="small")
-            ax_strain.set_xticks(strains[i_range.start : i_range.stop : i_range.step])
+            ax_strain.set_xticks(strains)
             ax_strain.set_xlim(
                 (
-                    strains[i_range.start] - strains[i_range.step] / 2,
-                    strains[i_range.stop - i_range.step] + strains[i_range.step] / 2,
+                    strains[0] - strains[1] / 2,
+                    strains[-1] + strains[1] / 2,
                 )
             )
 
