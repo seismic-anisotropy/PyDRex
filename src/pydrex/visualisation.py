@@ -148,6 +148,7 @@ def simple_shear_stationary_2d(
     markers=("."),
     θ_fse=None,
     labels=None,
+    a_type=True,
 ):
     """Plot diagnostics for stationary A-type olivine 2D simple shear box tests."""
     fig = plt.figure(figsize=(5, 8), dpi=300)
@@ -192,28 +193,31 @@ def simple_shear_stationary_2d(
             label=label,
         )
 
-    data_Skemer2016 = _io.read_scsv(
-        _io.data("thirdparty") / "Skemer2016_ShearStrainAngles.scsv"
-    )
-    ax_mean.plot(
-        np.asarray(data_Skemer2016.shear_strain[0:5]) / 200,
-        data_Skemer2016.angle[0:5],
-        marker="v",
-        fillstyle="none",
-        linestyle="none",
-        markersize=5,
-        color="k",
-        label="Zhang & Karato, 1995 (1200°C)",
-    )
-    ax_mean.plot(
-        np.asarray(data_Skemer2016.shear_strain[5:11]) / 200,
-        data_Skemer2016.angle[5:11],
-        marker="^",
-        linestyle="none",
-        markersize=5,
-        color="k",
-        label="Zhang & Karato, 1995 (1300°C)",
-    )
+    if a_type:
+        data_Skemer2016 = _io.read_scsv(
+            _io.data("thirdparty") / "Skemer2016_ShearStrainAngles.scsv"
+        )
+        indices_ZK1200 = np.nonzero(np.asarray(data_Skemer2016.study) == "Z&K 1200 C")
+        ax_mean.plot(
+            np.take(data_Skemer2016.shear_strain, indices_ZK1200) / 200,
+            np.take(data_Skemer2016.angle, indices_ZK1200),
+            marker="v",
+            fillstyle="none",
+            linestyle="none",
+            markersize=5,
+            color="k",
+            label="Zhang & Karato, 1995\n(1200°C)",
+        )
+        indices_ZK1300 = np.nonzero(np.asarray(data_Skemer2016.study) == "Z&K 1300 C")
+        ax_mean.plot(
+            np.take(data_Skemer2016.shear_strain, indices_ZK1300) / 200,
+            np.take(data_Skemer2016.angle, indices_ZK1300),
+            marker="^",
+            linestyle="none",
+            markersize=5,
+            color="k",
+            label="Zhang & Karato, 1995\n(1300°C)",
+        )
     if θ_fse is not None:
         ax_mean.plot(strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE")
     if labels is not None:

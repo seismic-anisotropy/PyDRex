@@ -134,8 +134,7 @@ class TestOlivineA:
     @classmethod
     def postprocess(
         cls,
-        timestamps,
-        strain_rate,
+        strains,
         angles,
         point100_symmetry,
         θ_fse,
@@ -147,7 +146,6 @@ class TestOlivineA:
     ):
         """Reusable postprocessing routine for olivine 2D simple shear simulations."""
         _log.info("postprocessing results...")
-        strains = timestamps * strain_rate
         if target_interpolator is not None:
             result_angles = angles.mean(axis=1)
             result_angles_err = angles.std(axis=1)
@@ -188,6 +186,7 @@ class TestOlivineA:
                 θ_fse=θ_fse,
                 labels=labels,
             )
+        return result_angles, result_angles_err, result_point100_symmetry, target_angles
 
     @classmethod
     def interp_GBM_Kaminski2001(cls, strains):
@@ -249,7 +248,7 @@ class TestOlivineA:
         strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
         timestamps = np.linspace(0, 2e5, 201)  # Solve until D₀t=1 ('shear' γ=2).
         n_timestamps = len(timestamps)
-        # i_strain_100p = [0, 50, 100, 150, 200]  # Indices for += 50% strain.
+        i_strain_50p = [0, 50, 100, 150, 200]  # Indices for += 50% strain.
 
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
         get_velocity_gradient = _dv.simple_shear_2d("Y", "X", strain_rate)
@@ -319,9 +318,9 @@ class TestOlivineA:
             )
 
         # Take ensemble means and optionally plot figure.
-        self.postprocess(
-            timestamps,
-            strain_rate,
+        strains = timestamps * strain_rate
+        res = self.postprocess(
+            strains,
             angles,
             point100_symmetry,
             θ_fse,
@@ -331,21 +330,26 @@ class TestOlivineA:
             out_basepath,
             target_interpolator=self.interp_GBM_Kaminski2001,
         )
+        result_angles, result_angles_err, result_point100_symmetry, target_angles = res
 
-        # # Check that FSE is correct.
-        # # First, get theoretical FSE axis for simple shear.
-        # # We want the angle from the Y axis (shear direction), so subtract from 90.
-        # θ_fse_eq = [90 - _utils.angle_fse_simpleshear(strain) for strain in strains]
-        # nt.assert_allclose(result_θ_fse, θ_fse_eq, rtol=1e-7, atol=0)
+        # Check that FSE is correct.
+        # First, get theoretical FSE axis for simple shear.
+        # We want the angle from the Y axis (shear direction), so subtract from 90.
+        θ_fse_eq = [90 - _utils.angle_fse_simpleshear(strain) for strain in strains]
+        nt.assert_allclose(θ_fse, θ_fse_eq, rtol=1e-7, atol=0)
 
-        # # Check Bingham angles, ignoring the first portion.
-        # # Average orientations of near-isotropic distributions are unstable.
-        # nt.assert_allclose(
-        #     result_θ_fse[i_first_cpo:],
-        #     result_angles[0][i_first_cpo:],
-        #     rtol=0.11,
-        #     atol=0,
-        # )
+        # TODO: Check that we are within 5° of Z&K 1200 for M*=50?
+        # TODO: Check that standard deviation decreases.
+        # TODO: Check for smooth decrease in ensemble average.
+
+        # Check angles, ignoring the first portion (<100% strain).
+        # Average orientations of near-isotropic distributions are unstable.
+        nt.assert_allclose(
+            θ_fse[i_strain_50p[2]:],
+            result_angles[0][i_strain_50p[2]:],
+            rtol=0.11,
+            atol=0,
+        )
         # nt.assert_allclose(
         #     target_angles[0][i_first_cpo:],
         #     result_angles[0][i_first_cpo:],
@@ -365,25 +369,25 @@ class TestOlivineA:
         #     atol=5.5,
         # )
 
-        # # Check point symmetry of [100] at strains of 0%, 50%, 100%, 150% & 200%.
-        # nt.assert_allclose(
-        #     [0.015, 0.11, 0.19, 0.27, 0.34],
-        #     result_point100_symmetry[0].take(i_strain_50p),
-        #     rtol=0,
-        #     atol=0.015,
-        # )
-        # nt.assert_allclose(
-        #     [0.015, 0.15, 0.33, 0.57, 0.72],
-        #     result_point100_symmetry[1].take(i_strain_50p),
-        #     rtol=0,
-        #     atol=0.015,
-        # )
-        # nt.assert_allclose(
-        #     [0.015, 0.22, 0.64, 0.86, 0.91],
-        #     result_point100_symmetry[2].take(i_strain_50p),
-        #     rtol=0,
-        #     atol=0.015,
-        # )
+        # Check point symmetry of [100] at strains of 0%, 50%, 100%, 150% & 200%.
+        nt.assert_allclose(
+            [0.015, 0.11, 0.19, 0.27, 0.34],
+            result_point100_symmetry[0].take(i_strain_50p),
+            rtol=0,
+            atol=0.015,
+        )
+        nt.assert_allclose(
+            [0.015, 0.15, 0.33, 0.57, 0.72],
+            result_point100_symmetry[1].take(i_strain_50p),
+            rtol=0,
+            atol=0.015,
+        )
+        nt.assert_allclose(
+            [0.015, 0.22, 0.64, 0.86, 0.91],
+            result_point100_symmetry[2].take(i_strain_50p),
+            rtol=0,
+            atol=0.015,
+        )
 
     @pytest.mark.slow
     def test_dudz_GBS_ensemble(
@@ -404,7 +408,7 @@ class TestOlivineA:
         strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
         timestamps = np.linspace(0, 5e5, 251)  # Solve until D₀t=2.5 ('shear' γ=5).
         n_timestamps = len(timestamps)
-        # i_strain_100p = [0, 50, 100, 150, 200]  # Indices for += 100% strain.
+        i_strain_100p = [0, 50, 100, 150, 200]  # Indices for += 100% strain.
 
         shear_direction = [1, 0, 0]  # Used to calculate the angular diagnostics.
         get_velocity_gradient = _dv.simple_shear_2d("X", "Z", strain_rate)
@@ -474,9 +478,9 @@ class TestOlivineA:
             )
 
         # Take ensemble means and optionally plot figure.
-        self.postprocess(
-            timestamps,
-            strain_rate,
+        strains = timestamps * strain_rate
+        res = self.postprocess_ensemble(
+            strains,
             angles,
             point100_symmetry,
             θ_fse,
@@ -486,33 +490,39 @@ class TestOlivineA:
             out_basepath,
             target_interpolator=self.interp_GBS_Kaminski2004,
         )
+        result_angles, result_angles_err, result_point100_symmetry, target_angles = res
 
-        # # Check that FSE is correct.
-        # # First, get theoretical FSE axis for simple shear.
-        # # We want the angle from the Y axis (shear direction), so subtract from 90.
-        # θ_fse_eq = [90 - _utils.angle_fse_simpleshear(strain) for strain in strains]
-        # nt.assert_allclose(θ_fse, θ_fse_eq, rtol=1e-7, atol=0)
+        # Check that FSE is correct.
+        # First, get theoretical FSE axis for simple shear.
+        # We want the angle from the Y axis (shear direction), so subtract from 90.
+        θ_fse_eq = [90 - _utils.angle_fse_simpleshear(strain) for strain in strains]
+        nt.assert_allclose(θ_fse, θ_fse_eq, rtol=1e-7, atol=0)
 
-        # # Check point symmetry of [100] at strains of 0%, 100%, 200%, 300% & 400%.
-        # nt.assert_allclose(
-        #     [0.015, 0.52, 0.86, 0.93, 0.94],
-        #     point100_symmetry[0].take(i_strain_100p),
-        #     rtol=0,
-        #     atol=0.015,
-        # )
-        # nt.assert_allclose(
-        #     [0.015, 0.42, 0.71, 0.77, 0.79],
-        #     point100_symmetry[1].take(i_strain_100p),
-        #     rtol=0,
-        #     atol=0.015,
-        # )
-        # nt.assert_allclose(
-        #     [0.015, 0.36, 0.57, 0.6, 0.62],
-        #     point100_symmetry[2].take(i_strain_100p),
-        #     rtol=0,
-        #     atol=0.015,
-        # )
+        # Check point symmetry of [100] at strains of 0%, 100%, 200%, 300% & 400%.
+        nt.assert_allclose(
+            [0.015, 0.52, 0.86, 0.93, 0.94],
+            point100_symmetry[0].take(i_strain_100p),
+            rtol=0,
+            atol=0.015,
+        )
+        nt.assert_allclose(
+            [0.015, 0.42, 0.71, 0.77, 0.79],
+            point100_symmetry[1].take(i_strain_100p),
+            rtol=0,
+            atol=0.015,
+        )
+        nt.assert_allclose(
+            [0.015, 0.36, 0.57, 0.6, 0.62],
+            point100_symmetry[2].take(i_strain_100p),
+            rtol=0,
+            atol=0.015,
+        )
 
+        # Add angle checks:
+        # TODO: Check that standard deviation decreases.
+        # TODO: Check for smooth decrease in ensemble average.
+
+    # TODO: Write some kind of smaller GBS test like this as well, without --runslow.
     def test_boudary_mobility(self, seed, outdir):
         """Test that the grain boundary mobility parameter has an effect."""
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
@@ -552,9 +562,9 @@ class TestOlivineA:
                     labels.append(f"$M^∗$ = {params['gbm_mobility']}")
 
         if outdir is not None:
+            strains = timestamps * strain_rate
             self.postprocess(
-                timestamps,
-                strain_rate,
+                strains,
                 angles,
                 point100_symmetry,
                 None,
@@ -601,3 +611,7 @@ class TestOlivineA:
             )
             > 0
         )
+
+        # Add angle checks:
+        # TODO: Check that standard deviation decreases.
+        # TODO: Check for smooth decrease in ensemble average.
