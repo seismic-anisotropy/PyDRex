@@ -84,7 +84,7 @@ class TestOlivineA:
                 "› velocity gradient = %s",
                 get_velocity_gradient(None).flatten(),
             )
-            _log.debug("› strain D₀t = %.2f", strain_rate * time)
+            _log.debug("› strain D₀t = %.2f", strain_rate * timestamps[t])
             _log.debug(
                 "› grain fractions: median = %s, max = %s, min = %s",
                 np.median(mineral.fractions[-1]),
