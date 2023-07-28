@@ -345,8 +345,8 @@ class TestOlivineA:
         # Check angles, ignoring the first portion (<100% strain).
         # Average orientations of near-isotropic distributions are unstable.
         nt.assert_allclose(
-            θ_fse[i_strain_50p[2]:],
-            result_angles[0][i_strain_50p[2]:],
+            θ_fse[i_strain_50p[2] :],
+            result_angles[0][i_strain_50p[2] :],
             rtol=0.11,
             atol=0,
         )
