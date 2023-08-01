@@ -62,7 +62,7 @@ if __name__ == "__main__":
             f"expected input file with .h5part extension, not {args.input}"
         )
     outfile = args.input[:-6] + "npz"  # Replace `.h5part` with `.npz`.
-    if type(args.output) == str and args.output != "":
+    if isinstance(args.output, str) and args.output != "":
         if args.output.endswith(".npz"):
             outfile = args.output
         else:
