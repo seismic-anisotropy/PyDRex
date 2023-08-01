@@ -341,8 +341,8 @@ class TestOlivineA:
         # Check that M*=0 angles match FSE, ignoring the first portion (<100% strain).
         # Average orientations of near-isotropic distributions are unstable.
         nt.assert_allclose(
-            θ_fse[i_strain_50p[2]:],
-            result_angles[0][i_strain_50p[2]:],
+            θ_fse[i_strain_50p[2] :],
+            result_angles[0][i_strain_50p[2] :],
             rtol=0.11,
             atol=0,
         )
@@ -357,8 +357,7 @@ class TestOlivineA:
         # Check for smooth decrease or stagnation in ensemble average (0.01 tolerance).
         for angles, angles_err in zip(result_angles, result_angles_err):
             assert np.all(np.diff(angles_err) < 0.01)
-            assert np.all(np.diff(angles[i_strain_50p[1]:]) < 0.01)
-
+            assert np.all(np.diff(angles[i_strain_50p[1] :]) < 0.01)
 
         # Check point symmetry of [100] at strains of 0%, 50%, 100%, 150% & 200%.
         nt.assert_allclose(
@@ -513,7 +512,7 @@ class TestOlivineA:
         # Check for smooth decrease or stagnation in ensemble average (0.01 tolerance).
         for angles, angles_err in zip(result_angles, result_angles_err):
             assert np.all(np.diff(angles_err) < 0.01)
-            assert np.all(np.diff(angles[i_strain_100p[1]:]) < 0.01)
+            assert np.all(np.diff(angles[i_strain_100p[1] :]) < 0.01)
 
     def test_boudary_mobility(self, seed, outdir):
         """Test that the grain boundary mobility parameter has an effect."""
