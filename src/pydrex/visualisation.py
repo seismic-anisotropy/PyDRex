@@ -197,7 +197,9 @@ def simple_shear_stationary_2d(
         data_Skemer2016 = _io.read_scsv(
             _io.data("thirdparty") / "Skemer2016_ShearStrainAngles.scsv"
         )
-        indices_ZK1200 = np.nonzero(np.asarray(data_Skemer2016.study) == "Z&K 1200 C")
+        indices_ZK1200 = np.nonzero(np.asarray(data_Skemer2016.study) == "Z&K 1200 C")[
+            0  # Note: np.nonzero returns a tuple.
+        ]
         ax_mean.plot(
             np.take(data_Skemer2016.shear_strain, indices_ZK1200) / 200,
             np.take(data_Skemer2016.angle, indices_ZK1200),
@@ -208,7 +210,9 @@ def simple_shear_stationary_2d(
             color="k",
             label="Zhang & Karato, 1995\n(1200°C)",
         )
-        indices_ZK1300 = np.nonzero(np.asarray(data_Skemer2016.study) == "Z&K 1300 C")
+        indices_ZK1300 = np.nonzero(np.asarray(data_Skemer2016.study) == "Z&K 1300 C")[
+            0  # Note: np.nonzero returns a tuple.
+        ]
         ax_mean.plot(
             np.take(data_Skemer2016.shear_strain, indices_ZK1300) / 200,
             np.take(data_Skemer2016.angle, indices_ZK1300),

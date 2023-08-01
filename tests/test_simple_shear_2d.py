@@ -338,36 +338,27 @@ class TestOlivineA:
         θ_fse_eq = [90 - _utils.angle_fse_simpleshear(strain) for strain in strains]
         nt.assert_allclose(θ_fse, θ_fse_eq, rtol=1e-7, atol=0)
 
-        # TODO: Check that we are within 5° of Z&K 1200 for M*=50?
-        # TODO: Check that standard deviation decreases.
-        # TODO: Check for smooth decrease in ensemble average.
-
-        # Check angles, ignoring the first portion (<100% strain).
+        # Check that M*=0 angles match FSE, ignoring the first portion (<100% strain).
         # Average orientations of near-isotropic distributions are unstable.
         nt.assert_allclose(
-            θ_fse[i_strain_50p[2] :],
-            result_angles[0][i_strain_50p[2] :],
+            θ_fse[i_strain_50p[2]:],
+            result_angles[0][i_strain_50p[2]:],
             rtol=0.11,
             atol=0,
         )
-        # nt.assert_allclose(
-        #     target_angles[0][i_first_cpo:],
-        #     result_angles[0][i_first_cpo:],
-        #     rtol=0.11,
-        #     atol=0,
-        # )
-        # nt.assert_allclose(
-        #     target_angles[1][i_first_cpo:],
-        #     result_angles[1][i_first_cpo:],
-        #     rtol=0,
-        #     atol=5.7,
-        # )
-        # nt.assert_allclose(
-        #     target_angles[2][i_first_cpo:],
-        #     result_angles[2][i_first_cpo:],
-        #     rtol=0,
-        #     atol=5.5,
-        # )
+        # Check that M*=0 matches target angles for strain > 100%.
+        nt.assert_allclose(
+            target_angles[0][i_strain_50p[2]],
+            result_angles[0][i_strain_50p[2]],
+            atol=1,
+            rtol=0,
+        )
+        # Check that standard deviation decreases or stagnates (0.01 tolerance).
+        # Check for smooth decrease or stagnation in ensemble average (0.01 tolerance).
+        for angles, angles_err in zip(result_angles, result_angles_err):
+            assert np.all(np.diff(angles_err) < 0.01)
+            assert np.all(np.diff(angles[i_strain_50p[1]:]) < 0.01)
+
 
         # Check point symmetry of [100] at strains of 0%, 50%, 100%, 150% & 200%.
         nt.assert_allclose(
@@ -518,22 +509,25 @@ class TestOlivineA:
             atol=0.015,
         )
 
-        # Add angle checks:
-        # TODO: Check that standard deviation decreases.
-        # TODO: Check for smooth decrease in ensemble average.
+        # Check that standard deviation decreases or stagnates (0.01 tolerance).
+        # Check for smooth decrease or stagnation in ensemble average (0.01 tolerance).
+        for angles, angles_err in zip(result_angles, result_angles_err):
+            assert np.all(np.diff(angles_err) < 0.01)
+            assert np.all(np.diff(angles[i_strain_100p[1]:]) < 0.01)
 
-    # TODO: Write some kind of smaller GBS test like this as well, without --runslow.
     def test_boudary_mobility(self, seed, outdir):
         """Test that the grain boundary mobility parameter has an effect."""
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
         strain_rate = 1.0
         get_velocity_gradient = _dv.simple_shear_2d("Y", "X", strain_rate)
         timestamps = np.linspace(0, 1, 201)  # Solve until D₀t=1 ('shear' γ=2).
+        i_strain_50p = 50  # Index of 50% strain.
         params = _io.DEFAULT_PARAMS
         gbm_mobilities = (0, 10, 50, 125, 200)  # Must be in ascending order.
         markers = ("x", ".", "*", "d", "s")
         angles = np.empty((len(gbm_mobilities), len(timestamps)))
         point100_symmetry = np.empty_like(angles)
+        θ_fse = np.empty_like(angles)
         minerals = []
 
         optional_logging = cl.nullcontext()
@@ -553,11 +547,12 @@ class TestOlivineA:
                     shear_direction,
                     seed=seed,
                     log_param="gbm_mobility",
-                    return_fse=False,
+                    return_fse=True,
                 )
                 minerals.append(out[0])
                 angles[i] = out[1]
                 point100_symmetry[i] = out[2]
+                θ_fse[i] = out[3]
                 if outdir is not None:
                     labels.append(f"$M^∗$ = {params['gbm_mobility']}")
 
@@ -567,7 +562,7 @@ class TestOlivineA:
                 strains,
                 angles,
                 point100_symmetry,
-                None,
+                np.mean(θ_fse, axis=0),
                 labels,
                 markers,
                 outdir,
@@ -595,11 +590,17 @@ class TestOlivineA:
         # Check that M*=0 doesn't affect grain sizes.
         _log.info("checking grain sizes...")
         for i, time in enumerate(timestamps):
-            _log.info(" › M∗ = 0; t = %s", time)
             nt.assert_allclose(
                 minerals[0].fractions[i],
                 np.full(params["number_of_grains"], 1 / params["number_of_grains"]),
             )
+        # Check that M*=0 matches FSE past 100% strain.
+        nt.assert_allclose(
+            angles[0][i_strain_50p:],
+            np.mean(θ_fse, axis=0)[i_strain_50p:],
+            atol=1,
+            rtol=0,
+        )
         # Check that GBM causes decreasing grain size median.
         assert np.all(
             np.array(
@@ -612,6 +613,92 @@ class TestOlivineA:
             > 0
         )
 
-        # Add angle checks:
-        # TODO: Check that standard deviation decreases.
-        # TODO: Check for smooth decrease in ensemble average.
+    def test_boudary_sliding(self, seed, outdir):
+        """Test that the grain boundary sliding parameter has an effect."""
+        strain_rate = 1.0
+        shear_direction = [1, 0, 0]  # Used to calculate the angular diagnostics.
+        get_velocity_gradient = _dv.simple_shear_2d("X", "Z", strain_rate)
+        timestamps = np.linspace(0, 2.5, 251)  # Solve until D₀t=2.5 ('shear' γ=5).
+        i_strain_200p = 100  # Index of 50% strain.
+        params = _io.DEFAULT_PARAMS
+        gbs_thresholds = (0, 0.2, 0.4, 0.6)  # Must be in ascending order.
+        markers = (".", "*", "d", "s")
+        angles = np.empty((len(gbs_thresholds), len(timestamps)))
+        point100_symmetry = np.empty_like(angles)
+        θ_fse = np.empty_like(angles)
+        minerals = []
+
+        optional_logging = cl.nullcontext()
+        if outdir is not None:
+            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_sliding"
+            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            labels = []
+
+        with optional_logging:
+            for i, f in enumerate(gbs_thresholds):
+                params["gbs_threshold"] = f
+                out = self.run(
+                    params,
+                    timestamps,
+                    strain_rate,
+                    get_velocity_gradient,
+                    shear_direction,
+                    seed=seed,
+                    log_param="gbs_threshold",
+                    return_fse=True,
+                )
+                minerals.append(out[0])
+                angles[i] = out[1]
+                point100_symmetry[i] = out[2]
+                θ_fse[i] = out[3]
+                if outdir is not None:
+                    labels.append(f"$M^∗$ = {params['gbs_threshold']}")
+
+        if outdir is not None:
+            strains = timestamps * strain_rate
+            self.postprocess(
+                strains,
+                angles,
+                point100_symmetry,
+                np.mean(θ_fse, axis=0),
+                labels,
+                markers,
+                outdir,
+                out_basepath,
+            )
+
+        # Check that GBS sets an upper bound on P_[100].
+        _log.info("checking degree of [100] point symmetry...")
+        nt.assert_allclose(
+            np.full(len(point100_symmetry[0][i_strain_200p:]), 0.0),
+            point100_symmetry[0][i_strain_200p:] - 0.95,
+            atol=0.05,
+            rtol=0,
+        )
+        nt.assert_allclose(
+            np.full(len(point100_symmetry[1][i_strain_200p:]), 0.0),
+            point100_symmetry[1][i_strain_200p:] - 0.78,
+            atol=0.05,
+            rtol=0,
+        )
+        nt.assert_allclose(
+            np.full(len(point100_symmetry[2][i_strain_200p:]), 0.0),
+            point100_symmetry[2][i_strain_200p:] - 0.61,
+            atol=0.05,
+            rtol=0,
+        )
+        nt.assert_allclose(
+            np.full(len(point100_symmetry[3][i_strain_200p:]), 0.0),
+            point100_symmetry[3][i_strain_200p:] - 0.44,
+            atol=0.055,
+            rtol=0,
+        )
+        # Check that angles always reach within 5° of the shear direction.
+        _log.info("checking grain orientations...")
+        for θ in angles:
+            nt.assert_allclose(
+                np.full(len(θ[i_strain_200p:]), 0.0),
+                2.5 - θ[i_strain_200p:],
+                atol=2.5,
+                rtol=0,
+            )
