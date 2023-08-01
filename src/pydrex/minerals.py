@@ -217,6 +217,8 @@ class Mineral:
     fractions: list = field(default_factory=list)
     orientations: list = field(default_factory=list)
     seed: int = None
+    lband: int = None
+    uband: int = None
 
     def __str__(self):
         # String output, used for str(self) and f"{self}", etc.
@@ -254,6 +256,18 @@ class Mineral:
             self.orientations_init = Rotation.random(
                 self.n_grains, random_state=self.seed
             ).as_matrix()
+        # For large numbers of grains, the number of ODE's is too large for SciPy.
+        # Instead, we need to solve the banded system of equations.
+        # By default, we use a bandwidth o f 12000 with lband = uband = 6000.
+        # This should work for up to 10000 grains.
+        if self.lband is None and self.uband is None and self.n_grains > 4632:
+            _log.warning(
+                "using a banded Jacobian because of the large number of grains."
+                + " To manually control the bandwidth, set `lband` and/or `uband`"
+                + f" in calls to `{self.__class__.__qualname__}.update_orientations`."
+            )
+            self.lband = 6000
+            self.uband = 6000
 
         # Copy the initial values to the storage lists.
         self.fractions.append(self.fractions_init)
@@ -425,6 +439,8 @@ class Mineral:
             rtol=kwargs.pop("rtol", 1e-6),
             first_step=kwargs.pop("first_step", np.abs(time_end - time_start) * 1e-1),
             # max_step=kwargs.pop("max_step", np.abs(time_end - time_start)),
+            lband=self.lband,
+            uband=self.uband,
             **kwargs,
         )
         perform_step(solver)

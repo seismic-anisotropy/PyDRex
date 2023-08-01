@@ -66,6 +66,8 @@ class TestOlivineA:
                     msg_start = f"X = {params['gbs_threshold']}; "
                 case "gbm_mobility":
                     msg_start = f"M∗ = {params['gbm_mobility']}; "
+                case "number_of_grains":
+                    msg_start = f"N = {params['number_of_grains']}; "
                 case _:
                     msg_start = ""
 
@@ -701,3 +703,31 @@ class TestOlivineA:
                 atol=2.5,
                 rtol=0,
             )
+
+    def test_ngrains(self, seed, outdir):
+        """Test that solvers work up to 10000 grains."""
+        shear_direction = [0, 1, 0]
+        strain_rate = 1.0
+        get_velocity_gradient = _dv.simple_shear_2d("Y", "X", strain_rate)
+        timestamps = np.linspace(0, 1, 201)  # Solve until D₀t=1 ('shear' γ=2).
+        params = _io.DEFAULT_PARAMS
+        grain_counts = (100, 1000, 2000, 5000, 10000)
+
+        optional_logging = cl.nullcontext()
+        if outdir is not None:
+            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_ngrains"
+            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+
+        with optional_logging:
+            for i, N in enumerate(grain_counts):
+                params["number_of_grains"] = N
+                self.run(
+                    params,
+                    timestamps,
+                    strain_rate,
+                    get_velocity_gradient,
+                    shear_direction,
+                    seed=seed,
+                    log_param="number_of_grains",
+                    return_fse=True,
+                )
