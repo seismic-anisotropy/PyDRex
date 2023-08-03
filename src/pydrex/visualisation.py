@@ -140,14 +140,15 @@ def _get_marker_and_label(data, seq_index, markers, labels=None):
 
 def simple_shear_stationary_2d(
     strains,
-    target_angles,
     angles,
     point100_symmetry,
+    target_angles=None,
     angles_err=None,
     savefile="pydrex_simple_shear_stationary_2d.png",
     markers=("."),
     θ_fse=None,
     labels=None,
+    a_type=True,
 ):
     """Plot diagnostics for stationary A-type olivine 2D simple shear box tests."""
     fig = plt.figure(figsize=(5, 8), dpi=300)
@@ -161,16 +162,23 @@ def simple_shear_stationary_2d(
     ax_symmetry.set_xlim((strains[0], strains[-1]))
     ax_symmetry.set_ylim((0, 1))
     ax_symmetry.set_ylabel(r"Texture symmetry ($P_{[100]}$)")
-    ax_symmetry.set_xlabel(r"Strain ($\dot{D}_0 t = γ/2$)")
+    ax_symmetry.set_xlabel(r"Strain ($D_0 t = γ/2$)")
 
+    angles = np.atleast_2d(angles)
+    point100_symmetry = np.atleast_2d(point100_symmetry)
+    if target_angles is None:
+        target_angles = [None] * len(angles)
     for i, (θ_target, θ, point100) in enumerate(
         zip(target_angles, angles, point100_symmetry)
     ):
         marker, label = _get_marker_and_label(angles, i, markers, labels)
 
-        lines = ax_mean.plot(strains, θ_target, alpha=0.66, label=label)
+        lines = ax_mean.plot(strains, θ, marker, markersize=5, alpha=0.33)
         color = lines[0].get_color()
-        ax_mean.plot(strains, θ, marker, markersize=5, alpha=0.33, color=color)
+        if θ_target is not None:
+            lines = ax_mean.plot(
+                strains, θ_target, alpha=0.66, label=label, color=color
+            )
         if angles_err is not None:
             ax_mean.fill_between(
                 strains, θ - angles_err[i], θ + angles_err[i], alpha=0.22, color=color
@@ -185,6 +193,35 @@ def simple_shear_stationary_2d(
             label=label,
         )
 
+    if a_type:
+        data_Skemer2016 = _io.read_scsv(
+            _io.data("thirdparty") / "Skemer2016_ShearStrainAngles.scsv"
+        )
+        indices_ZK1200 = np.nonzero(np.asarray(data_Skemer2016.study) == "Z&K 1200 C")[
+            0  # Note: np.nonzero returns a tuple.
+        ]
+        ax_mean.plot(
+            np.take(data_Skemer2016.shear_strain, indices_ZK1200) / 200,
+            np.take(data_Skemer2016.angle, indices_ZK1200),
+            marker="v",
+            fillstyle="none",
+            linestyle="none",
+            markersize=5,
+            color="k",
+            label="Zhang & Karato, 1995\n(1200°C)",
+        )
+        indices_ZK1300 = np.nonzero(np.asarray(data_Skemer2016.study) == "Z&K 1300 C")[
+            0  # Note: np.nonzero returns a tuple.
+        ]
+        ax_mean.plot(
+            np.take(data_Skemer2016.shear_strain, indices_ZK1300) / 200,
+            np.take(data_Skemer2016.angle, indices_ZK1300),
+            marker="^",
+            linestyle="none",
+            markersize=5,
+            color="k",
+            label="Zhang & Karato, 1995\n(1300°C)",
+        )
     if θ_fse is not None:
         ax_mean.plot(strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE")
     if labels is not None:
@@ -194,6 +231,7 @@ def simple_shear_stationary_2d(
     fig.savefig(_io.resolve_path(savefile))
 
 
+# TODO: Move to utils.py
 def _lag_2d_corner_flow(θ):
     # Predicted grain orientation lag for 2D corner flow, eq. 11 in Kaminski 2002.
     _θ = np.ma.masked_less(θ, 1e-15)

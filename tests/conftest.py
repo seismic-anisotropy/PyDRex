@@ -1,4 +1,6 @@
 """> Configuration and fixtures for PyDRex tests."""
+import os
+
 import matplotlib
 import pytest
 from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
@@ -24,6 +26,12 @@ def pytest_addoption(parser):
         action="store_true",
         default=False,
         help="run slow tests (HPC cluster recommended, large memory requirement)",
+    )
+    parser.addoption(
+        "--ncpus",
+        default=len(os.sched_getaffinity(0)) - 1,
+        type=int,
+        help="number of CPUs to use for tests that support multiprocessing",
     )
 
 
@@ -80,6 +88,11 @@ def pytest_collection_modifyitems(config, items):
 @pytest.fixture(scope="session")
 def outdir(request):
     return request.config.getoption("--outdir")
+
+
+@pytest.fixture(scope="session")
+def ncpus(request):
+    return max(1, request.config.getoption("--ncpus"))
 
 
 @pytest.fixture(scope="function")
@@ -151,3 +164,9 @@ def seeds():
 def seed():
     """Default seed for test RNG."""
     return 8816
+
+
+@pytest.fixture
+def seeds_nearX45():
+    """41 seeds which have the initial hexagonal symmetry axis near 45° from X."""
+    return _io.read_scsv(_io.data("rng") / "hexaxis_nearX45_seeds.scsv").seeds

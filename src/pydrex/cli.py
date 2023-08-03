@@ -1,4 +1,4 @@
-"""PyDRex: Entry points for command line tools."""
+"""> PyDRex: Entry points for command line tools."""
 import argparse
 import os
 from collections import namedtuple

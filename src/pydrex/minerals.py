@@ -320,12 +320,12 @@ class Mineral:
             # assert not np.any(np.isnan(y)), y[np.isnan(y)].shape
             position = get_position(t)
             velocity_gradient = get_velocity_gradient(position)
-            _log.debug(
-                "calculating CPO at %s (t=%e) with velocity gradient %s",
-                position,
-                t,
-                velocity_gradient.flatten(),
-            )
+            # _log.debug(
+            #     "calculating CPO at %s (t=%e) with velocity gradient %s",
+            #     position,
+            #     t,
+            #     velocity_gradient.flatten(),
+            # )
 
             strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
             strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
@@ -355,22 +355,22 @@ class Mineral:
 
         def apply_gbs(orientations, fractions, config):
             """Apply grain boundary sliding for small grains."""
-            mask = fractions < config["gbs_threshold"] / self.n_grains
-            _log.debug(
-                "grain boundary sliding activity (volume percentage): %s",
-                len(np.nonzero(mask)) / len(fractions),
-            )
+            mask = fractions < (config["gbs_threshold"] / self.n_grains)
+            # _log.debug(
+            #     "grain boundary sliding activity (volume percentage): %s",
+            #     len(np.nonzero(mask)) / len(fractions),
+            # )
             # No rotation: carry over previous orientations.
             orientations[mask, :, :] = self.orientations[-1][mask, :, :]
             fractions[mask] = config["gbs_threshold"] / self.n_grains
             fractions /= fractions.sum()
-            _log.debug(
-                "grain volume fractions: median=%e, min=%e, max=%e, sum=%e",
-                np.median(fractions),
-                np.min(fractions),
-                np.max(fractions),
-                np.sum(fractions),
-            )
+            # _log.debug(
+            #     "grain volume fractions: median=%e, min=%e, max=%e, sum=%e",
+            #     np.median(fractions),
+            #     np.min(fractions),
+            #     np.max(fractions),
+            #     np.sum(fractions),
+            # )
             return orientations, fractions
 
         def perform_step(solver):
@@ -378,9 +378,9 @@ class Mineral:
             message = solver.step()
             if message is not None and solver.status == "failed":
                 raise _err.IterationError(message)
-            _log.debug(
-                "%s step_size=%e", solver.__class__.__qualname__, solver.step_size
-            )
+            # _log.debug(
+            #     "%s step_size=%e", solver.__class__.__qualname__, solver.step_size
+            # )
 
             deformation_gradient, orientations, fractions = extract_vars(solver.y)
             orientations, fractions = apply_gbs(orientations, fractions, config)

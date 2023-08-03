@@ -7,7 +7,7 @@ r"""> PyDRex: Methods to calculate texture and strain diagnostics.
     $$
     a = \begin{bmatrix}
             \cosφ\cosϕ - \cosθ\sinϕ\sinφ & \cosθ\cosϕ\sinφ + \cosφ\sinϕ & \sinφ\sinθ \cr
-            -\sinφ\cosϕ - \cosθ\sinϕ\cosφ & \cosθ\cosϕ\cosφ - \sinφ\sinϕ & \cosφ\sinθ \cr
+           -\sinφ\cosϕ - \cosθ\sinϕ\cosφ & \cosθ\cosϕ\cosφ - \sinφ\sinϕ & \cosφ\sinθ \cr
             \sinθ\sinϕ & -\sinθ\cosϕ & \cosθ
         \end{bmatrix}
     $$

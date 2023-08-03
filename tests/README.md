@@ -7,6 +7,10 @@ use the flag `pytest -v`.
 The custom optional flag `--outdir="OUT"` can be used
 to produce output figures, data dumps and logs and save them in the directory `"OUT"`.
 The value `"."` can be used to save these in the current directory.
+Long tests/examples are disabled by default to prevent clogging up the CI,
+they can be enabled with `--runslow`.
+To mark a test as slow,
+add the `@pytest.mark.slow` decorator above its method definition.
 
 Tests should not produce persistent output by default.
 If a test method can produce such output for debugging, it should accept the `outdir`

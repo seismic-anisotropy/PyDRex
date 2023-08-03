@@ -90,7 +90,7 @@ olivine = volume_distribution, orientations
 
 [D-Rex]
 olivine_fraction = 1
-stress_exponent = 3.5
+stress_exponent = 1.5
 ...
 ```
 
@@ -123,12 +123,12 @@ Read [the D-Rex introduction section](#the-d-rex-kinematic-cpo-model) for more d
 
 | Parameter | Description | Default
 | ---       | ---         | ---
-| `stress_exponent` | the stress exponent $p$ that characterises the relationship between dislocation density and stress | `3.5`
-| `deformation_exponent` | the exponent $n$ that characterises the relationship between stress and rate of deformation | `1.5`
+| `stress_exponent` | the stress exponent $p$ that characterises the relationship between dislocation density and stress | `1.5`
+| `deformation_exponent` | the exponent $n$ that characterises the relationship between stress and rate of deformation | `3.5`
 | `gbm_mobility` | the dimensionless grain boundary mobility $M^{∗}$ which controls the chance for growth of grains with lower than average dislocation energy | `125`
 | `gbs_threshold` | a threshold ratio of current to original volume below which small grains move by sliding rather than rotation | `0.3`
 | `nucleation_efficiency` | the dimensionless nucleation efficiency which controls the chance for new, small, strain-free sub-grains to be created inside high dislocation energy grains | `5`
-| `number_of_grains` | the number of initial grains per crystal| `1000`
+| `number_of_grains` | the number of initial grains per crystal| `2500`
 | `olivine_fabric` | [not implemented] | `A`
 | `minerals` | a tuple of mineral phase names that specify the composition of the polycrystal | `("olivine",)`
 | `olivine_fraction` | the volume fraction of olivine compared to other phases (1 for pure olivine) | `1`

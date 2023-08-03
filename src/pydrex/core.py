@@ -1,4 +1,4 @@
-r"""> PyDRex: Core D-Rex functions and enums.
+"""> PyDRex: Core D-Rex functions and enums.
 
 The function `derivatives` implements the core D-Rex solver, which computes the
 crystallographic rotation rate and changes in fractional grain volumes.
@@ -15,6 +15,9 @@ import numba as nb
 import numpy as np
 
 # NOTE: Do NOT import any pydrex submodules here to avoid cyclical imports.
+
+
+_USE_ORIGINAL_DREX = False  # Switch to use D-Rex 2004 version without corrections.
 
 
 PERMUTATION_SYMBOL = np.array(
@@ -118,19 +121,20 @@ def derivatives(
     - `fabric` (`MineralFabric`) — ordinal number of the fabric type
     - `n_grains` (int) — number of "grains" i.e. discrete volume segments
     - `orientations` (array) — `n_grains`x3x3 orientations (direction cosines)
-    - `fractions` (array) — volume fractions of the "grains" relative to aggregate volume
+    - `fractions` (array) — volume fractions of the grains relative to aggregate volume
     - `strain_rate` (array) — 3x3 dimensionless macroscopic strain-rate tensor
-    - `velocity_gradient` (array) — 3x3 dimensionless macroscopic velocity gradient tensor
-    - `stress_exponent` (float) — value of `p` for `dislocation_density ∝ shear_stress^p`
-    - `deformation_exponent` (float) — value of `n` for `shear_stress ∝ |deformation_rate|^(1/n)`
+    - `velocity_gradient` (array) — 3x3 dimensionless macroscopic velocity gradient
+    - `stress_exponent` (float) — `p` in `dislocation_density ∝ shear_stress^p`
+    - `deformation_exponent` (float) — `n` in `shear_stress ∝ |deformation_rate|^(1/n)`
     - `nucleation_efficiency` (float) — parameter controlling grain nucleation
     - `gmb_mobility` (float) — grain boundary mobility parameter
     - `volume_fraction` (float) — volume fraction of the mineral phase relative to
-                                  other phases
+                                  other phases (multiphase simulations)
 
     Returns a tuple with the rotation rates and grain volume fraction changes.
 
     """
+    # Based on subroutine DERIV in original Fortran.
     strain_energies = np.empty(n_grains)
     orientations_diff = np.empty((n_grains, 3, 3))
     for grain_index in range(n_grains):
@@ -167,6 +171,7 @@ def _get_deformation_rate(phase, orientation, slip_rates):
     - `slip_rates` (array) — slip rates relative to slip rate on softest slip system
 
     """
+    # This is called the 'G'/'slip' tensor in the Fortran code, aka the Schmid tensor.
     deformation_rate = np.empty((3, 3))
     for i in range(3):
         for j in range(3):
@@ -194,7 +199,10 @@ def _get_slip_rate_softest(deformation_rate, velocity_gradient):
 
     for j in range(3):
         # NOTE: Mistake in original DRex code (j + 2), see Fraters & Billen 2021 S1.
-        k = (j + 1) % 3
+        if _USE_ORIGINAL_DREX:
+            k = (j + 2) % 3
+        else:
+            k = (j + 1) % 3
         enumerator -= (velocity_gradient[j, k] - velocity_gradient[k, j]) * (
             deformation_rate[j, k] - deformation_rate[k, j]
         )
@@ -206,6 +214,7 @@ def _get_slip_rate_softest(deformation_rate, velocity_gradient):
             enumerator += 2 * deformation_rate[j, L] * velocity_gradient[j, L]
             denominator += 2 * deformation_rate[j, L] ** 2
 
+    # Avoid zero divisions:
     # Tiny denominator means that relevant deformation_rate entries are zero.
     # No deformation rate means no slip rate.
     if -1e-15 < denominator < 1e-15:
@@ -222,7 +231,7 @@ def _get_slip_rates_olivine(invariants, slip_indices, crss, deformation_exponent
     - `slip_indices` (array) — indices that sort the CRSS by increasing slip-rate
                                activity
     - `crss` (array) — reference resolved shear stresses (CRSS), see `pydrex.fabric`
-    - `deformation_exponent` (float) — value of `n` for `shear_stress ∝ |deformation_rate|^(1/n)`
+    - `deformation_exponent` (float) — `n` in `shear_stress ∝ |deformation_rate|^(1/n)`
 
     """
     i_inac, i_min, i_int, i_max = slip_indices
@@ -300,10 +309,8 @@ def _get_orientation_change(
 
     # Calculate rotation rate, see eq. 9 Kaminski & Ribe (2001).
     # Equivalent to:
-    # spin_matrix = np.einsum("ikj,k->ij", PERMUTATION_SYMBOL, spin_vector)
-    # orientation_change = spin_matrix.transpose() @ orientation
-    # Do Fraters 2021 only solve for the spin_matrix???
-    # Is it more stable to do that and perform the actual rotation after?
+    #   spin_matrix = np.einsum("ikj,k->ij", PERMUTATION_SYMBOL, spin_vector)
+    #   orientation_change = spin_matrix.transpose() @ orientation
     for p in range(3):
         for q in range(3):
             for r in range(3):
@@ -333,8 +340,8 @@ def _get_strain_energy(
     - `slip_indices` (array) — indices that sort the CRSS by increasing slip-rate
                                activity
     - `slip_rate_softest` (float) — slip rate on the softest (most active) slip system
-    - `stress_exponent` (float) — value of `p` for `dislocation_density ∝ shear_stress^p`
-    - `deformation_exponent` (float) — value of `n` for `shear_stress ∝ |deformation_rate|^(1/n)`
+    - `stress_exponent` (float) — `p` in `dislocation_density ∝ shear_stress^p`
+    - `deformation_exponent` (float) — `n` in `shear_stress ∝ |deformation_rate|^(1/n)`
     - `nucleation_efficiency` (float) — parameter controlling grain nucleation
 
     Note that "new" grains are assumed to rotate with their parent.
@@ -344,6 +351,8 @@ def _get_strain_energy(
     # Dimensionless dislocation density for each slip system.
     # See eq. 16 Fraters 2021.
     # NOTE: Mistake in eq. 11, Kaminski 2004: spurious division by strain rate scale.
+    # NOTE: Here we call 'p' the 'stress_exponent' and 'n' the 'deformation_exponent',
+    # but in the original they use the variable 'stress_exponent' for 'n' (3.5).
     for i in range(3):
         dislocation_density = (1 / crss[i]) ** (
             deformation_exponent - stress_exponent
@@ -376,8 +385,8 @@ def _get_rotation_and_strain(
     - `orientation` (array) — 3x3 orientation matrix (direction cosines)
     - `strain_rate` (array) — 3x3 dimensionless strain rate matrix
     - `velocity_gradient` (array) — 3x3 dimensionless velocity gradient matrix
-    - `stress_exponent` (float) — value of `p` for `dislocation_density ∝ shear_stress^p`
-    - `deformation_exponent` (float) — value of `n` for `shear_stress ∝ |deformation_rate|^(1/n)`
+    - `stress_exponent` (float) — `p` in `dislocation_density ∝ shear_stress^p`
+    - `deformation_exponent` (float) — `n` in `shear_stress ∝ |deformation_rate|^(1/n)`
     - `nucleation_efficiency (float) — parameter controlling grain nucleation
 
     Note that "new" grains are assumed to rotate with their parent.
@@ -397,11 +406,14 @@ def _get_rotation_and_strain(
             deformation_exponent,
         )
     elif phase == MineralPhase.enstatite:
-        # Assumes exclusively (100)[001] slip for enstatite.
         slip_indices = np.argsort(1 / crss)
         slip_rates = np.zeros(4)
-        if np.abs(slip_invariants[-1]) > 1e-15:
-            slip_rates[-1] = 1
+        if _USE_ORIGINAL_DREX:
+            slip_rates[-1] = 1  # Original had an arbitrary slip always active (L1410).
+        else:
+            # Assumes exclusively (100)[001] slip for enstatite.
+            if np.abs(slip_invariants[-1]) > 1e-15:
+                slip_rates[-1] = 1
     else:
         assert False  # Should never happen.
 
