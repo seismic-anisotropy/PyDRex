@@ -704,6 +704,7 @@ class TestOlivineA:
                 rtol=0,
             )
 
+    @pytest.mark.slow
     def test_ngrains(self, seed, outdir):
         """Test that solvers work up to 10000 grains."""
         shear_direction = [0, 1, 0]
