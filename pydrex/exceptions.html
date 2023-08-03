@@ -57,6 +57,18 @@
 
             </li>
             <li>
+                    <a class="class" href="#ConfigError">ConfigError</a>
+                            <ul class="memberlist">
+                        <li>
+                                <a class="function" href="#ConfigError.__init__">ConfigError</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#ConfigError.message">message</a>
+                        </li>
+                </ul>
+
+            </li>
+            <li>
                     <a class="class" href="#MeshError">MeshError</a>
                             <ul class="memberlist">
                         <li>
@@ -125,8 +137,8 @@
 </span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for exceptions in PyDRex.&quot;&quot;&quot;</span>
 </span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a>
 </span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a>
-</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="k">class</span> <span class="nc">MeshError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in the input mesh.</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="k">class</span> <span class="nc">ConfigError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in the input configuration.</span>
 </span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>
 </span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="sd">    Attributes:</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="sd">        message — explanation of the error</span>
@@ -137,8 +149,8 @@
 </span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
 </span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a>
 </span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>
-</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a><span class="k">class</span> <span class="nc">IterationError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in numerical iteration schemes.</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a><span class="k">class</span> <span class="nc">MeshError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in the input mesh.</span>
 </span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a>
 </span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a><span class="sd">    Attributes:</span>
 </span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a><span class="sd">        message — explanation of the error</span>
@@ -146,20 +158,32 @@
 </span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>
 </span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
-</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>        <span class="c1"># TODO: Add data attribute? Timestep?</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a>
 </span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>
-</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a>
-</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a><span class="k">class</span> <span class="nc">SCSVError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in SCSV file I/O.</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a>
-</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a><span class="sd">    Attributes:</span>
-</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="sd">    - message — explanation of the error</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a>
-</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a>
-</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a><span class="k">class</span> <span class="nc">IterationError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in numerical iteration schemes.</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a>
+</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a><span class="sd">    Attributes:</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a><span class="sd">        message — explanation of the error</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a>
+</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a>
+</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a>        <span class="c1"># TODO: Add data attribute? Timestep?</span>
 </span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a>
+</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>
+</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a><span class="k">class</span> <span class="nc">SCSVError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in SCSV file I/O.</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>
+</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a><span class="sd">    Attributes:</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a><span class="sd">    - message — explanation of the error</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a>
+</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a>
+</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
 </span></pre></div>
 
 
@@ -200,6 +224,78 @@
                                 </dl>
                             </div>
                 </section>
+                <section id="ConfigError">
+                            <input id="ConfigError-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr class">
+            
+    <span class="def">class</span>
+    <span class="name">ConfigError</span><wbr>(<span class="base"><a href="#Error">Error</a></span>):
+
+                <label class="view-source-button" for="ConfigError-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#ConfigError"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="ConfigError-10"><a href="#ConfigError-10"><span class="linenos">10</span></a><span class="k">class</span> <span class="nc">ConfigError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+</span><span id="ConfigError-11"><a href="#ConfigError-11"><span class="linenos">11</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in the input configuration.</span>
+</span><span id="ConfigError-12"><a href="#ConfigError-12"><span class="linenos">12</span></a>
+</span><span id="ConfigError-13"><a href="#ConfigError-13"><span class="linenos">13</span></a><span class="sd">    Attributes:</span>
+</span><span id="ConfigError-14"><a href="#ConfigError-14"><span class="linenos">14</span></a><span class="sd">        message — explanation of the error</span>
+</span><span id="ConfigError-15"><a href="#ConfigError-15"><span class="linenos">15</span></a>
+</span><span id="ConfigError-16"><a href="#ConfigError-16"><span class="linenos">16</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="ConfigError-17"><a href="#ConfigError-17"><span class="linenos">17</span></a>
+</span><span id="ConfigError-18"><a href="#ConfigError-18"><span class="linenos">18</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
+</span><span id="ConfigError-19"><a href="#ConfigError-19"><span class="linenos">19</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Exception raised for errors in the input configuration.</p>
+
+<p>Attributes:
+    message — explanation of the error</p>
+</div>
+
+
+                            <div id="ConfigError.__init__" class="classattr">
+                                        <input id="ConfigError.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="name">ConfigError</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">message</span></span>)</span>
+
+                <label class="view-source-button" for="ConfigError.__init__-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#ConfigError.__init__"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="ConfigError.__init__-18"><a href="#ConfigError.__init__-18"><span class="linenos">18</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
+</span><span id="ConfigError.__init__-19"><a href="#ConfigError.__init__-19"><span class="linenos">19</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+</span></pre></div>
+
+
+    
+
+                            </div>
+                            <div id="ConfigError.message" class="classattr">
+                                <div class="attr variable">
+            <span class="name">message</span>
+
+        
+    </div>
+    <a class="headerlink" href="#ConfigError.message"></a>
+    
+    
+
+                            </div>
+                            <div class="inherited">
+                                <h5>Inherited Members</h5>
+                                <dl>
+                                    <div><dt>builtins.BaseException</dt>
+                                <dd id="ConfigError.with_traceback" class="function">with_traceback</dd>
+                <dd id="ConfigError.add_note" class="function">add_note</dd>
+                <dd id="ConfigError.args" class="variable">args</dd>
+
+            </div>
+                                </dl>
+                            </div>
+                </section>
                 <section id="MeshError">
                             <input id="MeshError-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr class">
@@ -211,16 +307,16 @@
 
     </div>
     <a class="headerlink" href="#MeshError"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="MeshError-10"><a href="#MeshError-10"><span class="linenos">10</span></a><span class="k">class</span> <span class="nc">MeshError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="MeshError-11"><a href="#MeshError-11"><span class="linenos">11</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in the input mesh.</span>
-</span><span id="MeshError-12"><a href="#MeshError-12"><span class="linenos">12</span></a>
-</span><span id="MeshError-13"><a href="#MeshError-13"><span class="linenos">13</span></a><span class="sd">    Attributes:</span>
-</span><span id="MeshError-14"><a href="#MeshError-14"><span class="linenos">14</span></a><span class="sd">        message — explanation of the error</span>
-</span><span id="MeshError-15"><a href="#MeshError-15"><span class="linenos">15</span></a>
-</span><span id="MeshError-16"><a href="#MeshError-16"><span class="linenos">16</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="MeshError-17"><a href="#MeshError-17"><span class="linenos">17</span></a>
-</span><span id="MeshError-18"><a href="#MeshError-18"><span class="linenos">18</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
-</span><span id="MeshError-19"><a href="#MeshError-19"><span class="linenos">19</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="MeshError-22"><a href="#MeshError-22"><span class="linenos">22</span></a><span class="k">class</span> <span class="nc">MeshError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+</span><span id="MeshError-23"><a href="#MeshError-23"><span class="linenos">23</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in the input mesh.</span>
+</span><span id="MeshError-24"><a href="#MeshError-24"><span class="linenos">24</span></a>
+</span><span id="MeshError-25"><a href="#MeshError-25"><span class="linenos">25</span></a><span class="sd">    Attributes:</span>
+</span><span id="MeshError-26"><a href="#MeshError-26"><span class="linenos">26</span></a><span class="sd">        message — explanation of the error</span>
+</span><span id="MeshError-27"><a href="#MeshError-27"><span class="linenos">27</span></a>
+</span><span id="MeshError-28"><a href="#MeshError-28"><span class="linenos">28</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="MeshError-29"><a href="#MeshError-29"><span class="linenos">29</span></a>
+</span><span id="MeshError-30"><a href="#MeshError-30"><span class="linenos">30</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
+</span><span id="MeshError-31"><a href="#MeshError-31"><span class="linenos">31</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
 </span></pre></div>
 
 
@@ -241,8 +337,8 @@
 
     </div>
     <a class="headerlink" href="#MeshError.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="MeshError.__init__-18"><a href="#MeshError.__init__-18"><span class="linenos">18</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
-</span><span id="MeshError.__init__-19"><a href="#MeshError.__init__-19"><span class="linenos">19</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="MeshError.__init__-30"><a href="#MeshError.__init__-30"><span class="linenos">30</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
+</span><span id="MeshError.__init__-31"><a href="#MeshError.__init__-31"><span class="linenos">31</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
 </span></pre></div>
 
 
@@ -283,17 +379,17 @@
 
     </div>
     <a class="headerlink" href="#IterationError"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="IterationError-22"><a href="#IterationError-22"><span class="linenos">22</span></a><span class="k">class</span> <span class="nc">IterationError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="IterationError-23"><a href="#IterationError-23"><span class="linenos">23</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in numerical iteration schemes.</span>
-</span><span id="IterationError-24"><a href="#IterationError-24"><span class="linenos">24</span></a>
-</span><span id="IterationError-25"><a href="#IterationError-25"><span class="linenos">25</span></a><span class="sd">    Attributes:</span>
-</span><span id="IterationError-26"><a href="#IterationError-26"><span class="linenos">26</span></a><span class="sd">        message — explanation of the error</span>
-</span><span id="IterationError-27"><a href="#IterationError-27"><span class="linenos">27</span></a>
-</span><span id="IterationError-28"><a href="#IterationError-28"><span class="linenos">28</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="IterationError-29"><a href="#IterationError-29"><span class="linenos">29</span></a>
-</span><span id="IterationError-30"><a href="#IterationError-30"><span class="linenos">30</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
-</span><span id="IterationError-31"><a href="#IterationError-31"><span class="linenos">31</span></a>        <span class="c1"># TODO: Add data attribute? Timestep?</span>
-</span><span id="IterationError-32"><a href="#IterationError-32"><span class="linenos">32</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="IterationError-34"><a href="#IterationError-34"><span class="linenos">34</span></a><span class="k">class</span> <span class="nc">IterationError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+</span><span id="IterationError-35"><a href="#IterationError-35"><span class="linenos">35</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in numerical iteration schemes.</span>
+</span><span id="IterationError-36"><a href="#IterationError-36"><span class="linenos">36</span></a>
+</span><span id="IterationError-37"><a href="#IterationError-37"><span class="linenos">37</span></a><span class="sd">    Attributes:</span>
+</span><span id="IterationError-38"><a href="#IterationError-38"><span class="linenos">38</span></a><span class="sd">        message — explanation of the error</span>
+</span><span id="IterationError-39"><a href="#IterationError-39"><span class="linenos">39</span></a>
+</span><span id="IterationError-40"><a href="#IterationError-40"><span class="linenos">40</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="IterationError-41"><a href="#IterationError-41"><span class="linenos">41</span></a>
+</span><span id="IterationError-42"><a href="#IterationError-42"><span class="linenos">42</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
+</span><span id="IterationError-43"><a href="#IterationError-43"><span class="linenos">43</span></a>        <span class="c1"># TODO: Add data attribute? Timestep?</span>
+</span><span id="IterationError-44"><a href="#IterationError-44"><span class="linenos">44</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
 </span></pre></div>
 
 
@@ -314,9 +410,9 @@
 
     </div>
     <a class="headerlink" href="#IterationError.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="IterationError.__init__-30"><a href="#IterationError.__init__-30"><span class="linenos">30</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
-</span><span id="IterationError.__init__-31"><a href="#IterationError.__init__-31"><span class="linenos">31</span></a>        <span class="c1"># TODO: Add data attribute? Timestep?</span>
-</span><span id="IterationError.__init__-32"><a href="#IterationError.__init__-32"><span class="linenos">32</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="IterationError.__init__-42"><a href="#IterationError.__init__-42"><span class="linenos">42</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
+</span><span id="IterationError.__init__-43"><a href="#IterationError.__init__-43"><span class="linenos">43</span></a>        <span class="c1"># TODO: Add data attribute? Timestep?</span>
+</span><span id="IterationError.__init__-44"><a href="#IterationError.__init__-44"><span class="linenos">44</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
 </span></pre></div>
 
 
@@ -357,16 +453,16 @@
 
     </div>
     <a class="headerlink" href="#SCSVError"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="SCSVError-35"><a href="#SCSVError-35"><span class="linenos">35</span></a><span class="k">class</span> <span class="nc">SCSVError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
-</span><span id="SCSVError-36"><a href="#SCSVError-36"><span class="linenos">36</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in SCSV file I/O.</span>
-</span><span id="SCSVError-37"><a href="#SCSVError-37"><span class="linenos">37</span></a>
-</span><span id="SCSVError-38"><a href="#SCSVError-38"><span class="linenos">38</span></a><span class="sd">    Attributes:</span>
-</span><span id="SCSVError-39"><a href="#SCSVError-39"><span class="linenos">39</span></a><span class="sd">    - message — explanation of the error</span>
-</span><span id="SCSVError-40"><a href="#SCSVError-40"><span class="linenos">40</span></a>
-</span><span id="SCSVError-41"><a href="#SCSVError-41"><span class="linenos">41</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="SCSVError-42"><a href="#SCSVError-42"><span class="linenos">42</span></a>
-</span><span id="SCSVError-43"><a href="#SCSVError-43"><span class="linenos">43</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
-</span><span id="SCSVError-44"><a href="#SCSVError-44"><span class="linenos">44</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="SCSVError-47"><a href="#SCSVError-47"><span class="linenos">47</span></a><span class="k">class</span> <span class="nc">SCSVError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+</span><span id="SCSVError-48"><a href="#SCSVError-48"><span class="linenos">48</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception raised for errors in SCSV file I/O.</span>
+</span><span id="SCSVError-49"><a href="#SCSVError-49"><span class="linenos">49</span></a>
+</span><span id="SCSVError-50"><a href="#SCSVError-50"><span class="linenos">50</span></a><span class="sd">    Attributes:</span>
+</span><span id="SCSVError-51"><a href="#SCSVError-51"><span class="linenos">51</span></a><span class="sd">    - message — explanation of the error</span>
+</span><span id="SCSVError-52"><a href="#SCSVError-52"><span class="linenos">52</span></a>
+</span><span id="SCSVError-53"><a href="#SCSVError-53"><span class="linenos">53</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="SCSVError-54"><a href="#SCSVError-54"><span class="linenos">54</span></a>
+</span><span id="SCSVError-55"><a href="#SCSVError-55"><span class="linenos">55</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
+</span><span id="SCSVError-56"><a href="#SCSVError-56"><span class="linenos">56</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
 </span></pre></div>
 
 
@@ -390,8 +486,8 @@
 
     </div>
     <a class="headerlink" href="#SCSVError.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="SCSVError.__init__-43"><a href="#SCSVError.__init__-43"><span class="linenos">43</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
-</span><span id="SCSVError.__init__-44"><a href="#SCSVError.__init__-44"><span class="linenos">44</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="SCSVError.__init__-55"><a href="#SCSVError.__init__-55"><span class="linenos">55</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>  <span class="c1"># pylint: disable=super-init-not-called</span>
+</span><span id="SCSVError.__init__-56"><a href="#SCSVError.__init__-56"><span class="linenos">56</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
 </span></pre></div>
 
 

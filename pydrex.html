@@ -70,10 +70,10 @@
                     <li><a href="pydrex/minerals.html">minerals</a></li>
                     <li><a href="pydrex/mock.html">mock</a></li>
                     <li><a href="pydrex/pathlines.html">pathlines</a></li>
-                    <li><a href="pydrex/run.html">run</a></li>
                     <li><a href="pydrex/stats.html">stats</a></li>
                     <li><a href="pydrex/tensors.html">tensors</a></li>
                     <li><a href="pydrex/utils.html">utils</a></li>
+                    <li><a href="pydrex/velocity_gradients.html">velocity_gradients</a></li>
                     <li><a href="pydrex/visualisation.html">visualisation</a></li>
                     <li><a href="pydrex/vtk_helpers.html">vtk_helpers</a></li>
             </ul>
@@ -185,7 +185,7 @@ olivine = volume_distribution, orientations
 
 [D-Rex]
 olivine_fraction = 1
-stress_exponent = 3.5
+stress_exponent = 1.5
 ...
 </code></pre>
 
@@ -260,12 +260,12 @@ Read <a href="#the-d-rex-kinematic-cpo-model">the D-Rex introduction section</a>
 <tr>
   <td><code>stress_exponent</code></td>
   <td>the stress exponent $p$ that characterises the relationship between dislocation density and stress</td>
-  <td><code>3.5</code></td>
+  <td><code>1.5</code></td>
 </tr>
 <tr>
   <td><code>deformation_exponent</code></td>
   <td>the exponent $n$ that characterises the relationship between stress and rate of deformation</td>
-  <td><code>1.5</code></td>
+  <td><code>3.5</code></td>
 </tr>
 <tr>
   <td><code>gbm_mobility</code></td>
@@ -285,7 +285,7 @@ Read <a href="#the-d-rex-kinematic-cpo-model">the D-Rex introduction section</a>
 <tr>
   <td><code>number_of_grains</code></td>
   <td>the number of initial grains per crystal</td>
-  <td><code>1000</code></td>
+  <td><code>2500</code></td>
 </tr>
 <tr>
   <td><code>olivine_fabric</code></td>
@@ -407,7 +407,7 @@ Read <a href="#the-d-rex-kinematic-cpo-model">the D-Rex introduction section</a>
 </span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>
 </span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">[D-Rex]</span>
 </span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">olivine_fraction = 1</span>
-</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">stress_exponent = 3.5</span>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">stress_exponent = 1.5</span>
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="sd">...</span>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="sd">```</span>
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>
@@ -440,12 +440,12 @@ Read <a href="#the-d-rex-kinematic-cpo-model">the D-Rex introduction section</a>
 </span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>
 </span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">| Parameter | Description | Default</span>
 </span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">| ---       | ---         | ---</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">| `stress_exponent` | the stress exponent $p$ that characterises the relationship between dislocation density and stress | `3.5`</span>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">| `deformation_exponent` | the exponent $n$ that characterises the relationship between stress and rate of deformation | `1.5`</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">| `stress_exponent` | the stress exponent $p$ that characterises the relationship between dislocation density and stress | `1.5`</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">| `deformation_exponent` | the exponent $n$ that characterises the relationship between stress and rate of deformation | `3.5`</span>
 </span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="sd">| `gbm_mobility` | the dimensionless grain boundary mobility $M^{∗}$ which controls the chance for growth of grains with lower than average dislocation energy | `125`</span>
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">| `gbs_threshold` | a threshold ratio of current to original volume below which small grains move by sliding rather than rotation | `0.3`</span>
 </span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="sd">| `nucleation_efficiency` | the dimensionless nucleation efficiency which controls the chance for new, small, strain-free sub-grains to be created inside high dislocation energy grains | `5`</span>
-</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="sd">| `number_of_grains` | the number of initial grains per crystal| `1000`</span>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="sd">| `number_of_grains` | the number of initial grains per crystal| `2500`</span>
 </span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="sd">| `olivine_fabric` | [not implemented] | `A`</span>
 </span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="sd">| `minerals` | a tuple of mineral phase names that specify the composition of the polycrystal | `(&quot;olivine&quot;,)`</span>
 </span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="sd">| `olivine_fraction` | the volume fraction of olivine compared to other phases (1 for pure olivine) | `1`</span>

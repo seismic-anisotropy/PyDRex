@@ -54,6 +54,9 @@
                     <a class="function" href="#remove_nans">remove_nans</a>
             </li>
             <li>
+                    <a class="function" href="#readable_timestamp">readable_timestamp</a>
+            </li>
+            <li>
                     <a class="function" href="#angle_fse_simpleshear">angle_fse_simpleshear</a>
             </li>
     </ul>
@@ -82,18 +85,25 @@
                         <label class="view-source-button" for="mod-utils-view-source"><span>View Source</span></label>
 
                         <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="sd">&quot;&quot;&quot;&gt; PyDRex: Miscellaneous utility methods.&quot;&quot;&quot;</span>
-</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 </span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a>
-</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a>
-</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="k">def</span> <span class="nf">remove_nans</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove NaN values from array.&quot;&quot;&quot;</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a>    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a>    <span class="k">return</span> <span class="n">a</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a</span><span class="p">)]</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a>
-</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="k">def</span> <span class="nf">angle_fse_simpleshear</span><span class="p">(</span><span class="n">strain</span><span class="p">):</span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get angle of FSE long axis anticlockwise from the X axis in simple shear.&quot;&quot;&quot;</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">strain</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">strain</span><span class="p">))</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a>
+</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a>
+</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="k">def</span> <span class="nf">remove_nans</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove NaN values from array.&quot;&quot;&quot;</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a>    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a>    <span class="k">return</span> <span class="n">a</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a</span><span class="p">)]</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>
+</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>
+</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="k">def</span> <span class="nf">readable_timestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">tformat</span><span class="o">=</span><span class="s2">&quot;%H:%M:%S&quot;</span><span class="p">):</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert timestamp in fractional seconds to human readable format.&quot;&quot;&quot;</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a>    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">tformat</span><span class="p">)</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a>
+</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a>
+</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a><span class="k">def</span> <span class="nf">angle_fse_simpleshear</span><span class="p">(</span><span class="n">strain</span><span class="p">):</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get angle of FSE long axis anticlockwise from the X axis in simple shear.&quot;&quot;&quot;</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">strain</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">strain</span><span class="p">))</span>
 </span></pre></div>
 
 
@@ -109,14 +119,36 @@
 
     </div>
     <a class="headerlink" href="#remove_nans"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="remove_nans-6"><a href="#remove_nans-6"><span class="linenos">6</span></a><span class="k">def</span> <span class="nf">remove_nans</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
-</span><span id="remove_nans-7"><a href="#remove_nans-7"><span class="linenos">7</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove NaN values from array.&quot;&quot;&quot;</span>
-</span><span id="remove_nans-8"><a href="#remove_nans-8"><span class="linenos">8</span></a>    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-</span><span id="remove_nans-9"><a href="#remove_nans-9"><span class="linenos">9</span></a>    <span class="k">return</span> <span class="n">a</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a</span><span class="p">)]</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="remove_nans-8"><a href="#remove_nans-8"><span class="linenos"> 8</span></a><span class="k">def</span> <span class="nf">remove_nans</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+</span><span id="remove_nans-9"><a href="#remove_nans-9"><span class="linenos"> 9</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove NaN values from array.&quot;&quot;&quot;</span>
+</span><span id="remove_nans-10"><a href="#remove_nans-10"><span class="linenos">10</span></a>    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</span><span id="remove_nans-11"><a href="#remove_nans-11"><span class="linenos">11</span></a>    <span class="k">return</span> <span class="n">a</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">a</span><span class="p">)]</span>
 </span></pre></div>
 
 
             <div class="docstring"><p>Remove NaN values from array.</p>
+</div>
+
+
+                </section>
+                <section id="readable_timestamp">
+                            <input id="readable_timestamp-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">readable_timestamp</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">timestamp</span>, </span><span class="param"><span class="n">tformat</span><span class="o">=</span><span class="s1">&#39;%H:%M:%S&#39;</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="readable_timestamp-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#readable_timestamp"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="readable_timestamp-14"><a href="#readable_timestamp-14"><span class="linenos">14</span></a><span class="k">def</span> <span class="nf">readable_timestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">tformat</span><span class="o">=</span><span class="s2">&quot;%H:%M:%S&quot;</span><span class="p">):</span>
+</span><span id="readable_timestamp-15"><a href="#readable_timestamp-15"><span class="linenos">15</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert timestamp in fractional seconds to human readable format.&quot;&quot;&quot;</span>
+</span><span id="readable_timestamp-16"><a href="#readable_timestamp-16"><span class="linenos">16</span></a>    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">tformat</span><span class="p">)</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Convert timestamp in fractional seconds to human readable format.</p>
 </div>
 
 
@@ -132,9 +164,9 @@
 
     </div>
     <a class="headerlink" href="#angle_fse_simpleshear"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="angle_fse_simpleshear-12"><a href="#angle_fse_simpleshear-12"><span class="linenos">12</span></a><span class="k">def</span> <span class="nf">angle_fse_simpleshear</span><span class="p">(</span><span class="n">strain</span><span class="p">):</span>
-</span><span id="angle_fse_simpleshear-13"><a href="#angle_fse_simpleshear-13"><span class="linenos">13</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get angle of FSE long axis anticlockwise from the X axis in simple shear.&quot;&quot;&quot;</span>
-</span><span id="angle_fse_simpleshear-14"><a href="#angle_fse_simpleshear-14"><span class="linenos">14</span></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">strain</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">strain</span><span class="p">))</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="angle_fse_simpleshear-19"><a href="#angle_fse_simpleshear-19"><span class="linenos">19</span></a><span class="k">def</span> <span class="nf">angle_fse_simpleshear</span><span class="p">(</span><span class="n">strain</span><span class="p">):</span>
+</span><span id="angle_fse_simpleshear-20"><a href="#angle_fse_simpleshear-20"><span class="linenos">20</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get angle of FSE long axis anticlockwise from the X axis in simple shear.&quot;&quot;&quot;</span>
+</span><span id="angle_fse_simpleshear-21"><a href="#angle_fse_simpleshear-21"><span class="linenos">21</span></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">strain</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">strain</span><span class="p">))</span>
 </span></pre></div>
 
 
