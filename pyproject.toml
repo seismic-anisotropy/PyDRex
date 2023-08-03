@@ -87,4 +87,5 @@ exclude = [
     ".vtu",
 ]
 [tool.ruff.per-file-ignores]
-"src/pydrex/__init__.py" = ["F401"]  # Don't complain about unused imports in __init__.py file.
+"src/pydrex/__init__.py" = ["F401", "E501"]  # Don't complain about unused imports or long lines in __init__.py file.
+"tests/" = ["E501"]  # Don't complain about long lines in test files.

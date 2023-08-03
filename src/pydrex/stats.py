@@ -157,7 +157,8 @@ def point_density(
     - `gridsteps` (int) — the number of steps, i.e. number of points along a diameter of
         the spherical counting grid
     - `weights` (array) — auxiliary weights for each data point
-    - `kernel` (string) — the name of the kernel function to use, see `SPHERICAL_COUNTING_KERNELS`
+    - `kernel` (string) — the name of the kernel function to use, see
+      `SPHERICAL_COUNTING_KERNELS`
     - `axial` (bool) — toggle axial versions of the kernel functions
         (for crystallographic data this should normally be kept as `True`)
 
