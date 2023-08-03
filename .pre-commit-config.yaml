@@ -43,3 +43,5 @@ repos:
     rev: v0.0.282
     hooks:
     -   id: ruff
+
+exclude: \.*vtu$
