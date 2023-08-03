@@ -256,8 +256,8 @@ class Mineral:
             self.orientations_init = Rotation.random(
                 self.n_grains, random_state=self.seed
             ).as_matrix()
-        # For large numbers of grains, the number of ODE's is too large for SciPy.
-        # Instead, we need to solve the banded system of equations.
+        # For large numbers of grains, the number of ODE's exceeds what LSODA can
+        # handle. Therefore, we specify the Jacobian matrix as banded.
         # By default, we use a bandwidth o f 12000 with lband = uband = 6000.
         # This should work for up to 10000 grains.
         if self.lband is None and self.uband is None and self.n_grains > 4632:
