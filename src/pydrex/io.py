@@ -185,7 +185,7 @@ def save_scsv(file, schema, data, **kwargs):
 
 
 def parse_config(path):
-    """Parse an TOML file containing PyDRex configuration."""
+    """Parse a TOML file containing PyDRex configuration."""
     path = resolve_path(path)
     with open(path, "rb") as file:
         toml = tomllib.load(file)

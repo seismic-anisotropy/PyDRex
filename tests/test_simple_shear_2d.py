@@ -514,7 +514,7 @@ class TestOlivineA:
             assert np.all(np.diff(angles_err) < 0.01)
             assert np.all(np.diff(angles[i_strain_100p[1] :]) < 0.01)
 
-    def test_boudary_mobility(self, seed, outdir):
+    def test_boundary_mobility(self, seed, outdir):
         """Test that the grain boundary mobility parameter has an effect."""
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
         strain_rate = 1.0
