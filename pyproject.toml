@@ -44,7 +44,8 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest", "matplotlib"]
 doc = ["pdoc"]
-dev = ["pytest", "matplotlib", "pdoc", "flake8", "black", "h5py", "isort", "ipython"]
+dev = ["pytest", "matplotlib", "pdoc", "ruff", "black", "h5py", "isort", "ipython"]
+lsp = ["python-lsp-server", "pyls-isort", "python-lsp-black", "python-lsp-ruff"]
 
 [project.urls]
 repository = "https://github.com/Patol75/PyDRex/"
@@ -72,3 +73,18 @@ testpaths = ["tests"]
 # --show-capture=no : Don't show captured output (stdout/stderr/logs) for failed tests.
 # --doctest-modules : Run doctest snippets in docstrings
 addopts = "--tb=short --show-capture=no --doctest-modules"
+
+# Global linter and devtools settings.
+[tool.isort]
+profile = "black"
+filter_files = true
+# Ruff is faster than flake8 and supports pyproject.toml config, line length is 88 by default.
+[tool.ruff]
+exclude = [
+    "src/initial_implementation",
+    ".scsv",
+    ".npz",
+    ".vtu",
+]
+[tool.ruff.per-file-ignores]
+"src/pydrex/__init__.py" = ["F401"]  # Don't complain about unused imports in __init__.py file.
