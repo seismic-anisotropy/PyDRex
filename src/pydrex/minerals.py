@@ -27,7 +27,8 @@ OLIVINE_STIFFNESS = np.array(
 """Stiffness tensor for olivine (Voigt representation), with units of GPa.
 
 The source of the values used here is unknown, but they are copied
-from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz> [88K download]
+from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz>
+[88K download]
 
 """
 
@@ -45,7 +46,8 @@ ENSTATITE_STIFFNESS = np.array(
 """Stiffness tensor for enstatite (Voigt representation), with units of GPa.
 
 The source of the values used here is unknown, but they are copied
-from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz> [88K download]
+from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz>
+[88K download]
 
 """
 
@@ -83,7 +85,8 @@ def voigt_averages(minerals, weights):
     - `minerals` — list of `pydrex.minerals.Mineral` instances storing orientations and
       fractional volumes of the grains within each distinct mineral phase
     - `weights` (dict) — dictionary containing weights of each mineral
-      phase, as a fraction of 1, in keys named "<phase>_fraction", e.g. "olivine_fraction"
+      phase, as a fraction of 1, in keys named "<phase>_fraction",
+      e.g. "olivine_fraction"
 
     Raises a ValueError if the minerals contain an unequal number of grains or stored
     texture results.
@@ -176,7 +179,7 @@ class Mineral:
     >>>     regime=pydrex.DeformationRegime.dislocation,
     >>>     n_grains=2000,
     >>> )
-    Mineral(phase=0, fabric=0, regime=1, n_grains=2000, fractions=<list of ndarray (2000,)>, orientations=<list of ndarray (2000, 3, 3)>)
+    Mineral(phase=0, fabric=0, regime=1, n_grains=2000, ...)
 
     Mineral with specified initial texture and default phase, fabric and regime settings
     which are for an olivine A-type mineral in the dislocation creep regime.
@@ -190,18 +193,22 @@ class Mineral:
     >>>     n_grains=n_grains,
     >>>     fractions_init=np.full(n_grains, 1 / n_grains),
     >>>     orientations_init=Rotation.from_euler(
-    >>>         "zxz", [[x * np.pi / 2, np.pi / /2, np.pi / 2] for x in rng.random(n_grains)]
+    >>>         "zxz", [
+    >>>             [x * np.pi / 2, np.pi / /2, np.pi / 2] for x in rng.random(n_grains)
+    >>>         ]
     >>>     ).inv().as_matrix(),
     >>> )
-    Mineral(phase=0, fabric=0, regime=1, n_grains=2000, fractions=<list of ndarray (2000,)>, orientations=<list of ndarray (2000, 3, 3)>)
+    Mineral(phase=0, fabric=0, regime=1, n_grains=2000, ...)
 
     **Attributes:**
     - `phase` (`pydrex.core.MineralPhase`) — ordinal number of the mineral phase
     - `fabric` (`pydrex.core.MineralFabric`) — ordinal number of the fabric type
-    - `regime` (`pydrex.core.DeformationRegime`) — ordinal number of the deformation regime
+    - `regime` (`pydrex.core.DeformationRegime`) — ordinal number of the deformation
+      regime
     - `n_grains` (int) — number of grains in the aggregate
     - `fractions` (list of arrays) — grain volume fractions for each texture snapshot
-    - `orientations` (list of arrays) — grain orientation matrices for each texture snapshot
+    - `orientations` (list of arrays) — grain orientation matrices for each texture
+      snapshot
     - `seed` (`int`) — seed used by the random number generator to set up the isotropic
       initial condition when `fractions_init` or `orientations_init` are not provided
 
@@ -241,7 +248,8 @@ class Mineral:
             + f"fractions=<{self.fractions.__class__.__qualname__}"
             + f" of {self.fractions[0].__class__.__qualname__} {shape_of_fractions}>, "
             + f"orientations=<{self.orientations.__class__.__qualname__}"
-            + f" of {self.orientations[0].__class__.__qualname__} {shape_of_orientations}>)"
+            + f" of {self.orientations[0].__class__.__qualname__}"
+            + f" {shape_of_orientations}>)"
         )
 
     def _repr_pretty_(self, p, cycle):

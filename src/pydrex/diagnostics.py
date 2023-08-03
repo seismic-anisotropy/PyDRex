@@ -156,7 +156,7 @@ def finite_strain(deformation_gradient, **kwargs):
 
 
 def symmetry(orientations, axis="a"):
-    r"""Compute texture symmetry eigenvalue diagnostics from olivine orientation matrices.
+    r"""Compute texture symmetry eigenvalue diagnostics from grain orientation matrices.
 
     Compute Point, Girdle and Random symmetry diagnostics
     for ternary texture classification.
