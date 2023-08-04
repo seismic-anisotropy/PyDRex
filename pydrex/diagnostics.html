@@ -395,18 +395,25 @@ grain axis and the j-th external axis (in the global Eulerian frame).</p>
 </span><span id="L-277"><a href="#L-277"><span class="linenos">277</span></a>    <span class="p">)</span>
 </span><span id="L-278"><a href="#L-278"><span class="linenos">278</span></a>
 </span><span id="L-279"><a href="#L-279"><span class="linenos">279</span></a>
-</span><span id="L-280"><a href="#L-280"><span class="linenos">280</span></a><span class="k">def</span> <span class="nf">smallest_angle</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+</span><span id="L-280"><a href="#L-280"><span class="linenos">280</span></a><span class="k">def</span> <span class="nf">smallest_angle</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="L-281"><a href="#L-281"><span class="linenos">281</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get smallest angle between a unit `vector` and a bidirectional `axis`.</span>
 </span><span id="L-282"><a href="#L-282"><span class="linenos">282</span></a>
 </span><span id="L-283"><a href="#L-283"><span class="linenos">283</span></a><span class="sd">    The axis is specified using either of its two parallel unit vectors.</span>
-</span><span id="L-284"><a href="#L-284"><span class="linenos">284</span></a>
-</span><span id="L-285"><a href="#L-285"><span class="linenos">285</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-286"><a href="#L-286"><span class="linenos">286</span></a>    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
-</span><span id="L-287"><a href="#L-287"><span class="linenos">287</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span> <span class="o">*</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">)))</span>
-</span><span id="L-288"><a href="#L-288"><span class="linenos">288</span></a>    <span class="p">)</span>
-</span><span id="L-289"><a href="#L-289"><span class="linenos">289</span></a>    <span class="k">if</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
-</span><span id="L-290"><a href="#L-290"><span class="linenos">290</span></a>        <span class="k">return</span> <span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span>
-</span><span id="L-291"><a href="#L-291"><span class="linenos">291</span></a>    <span class="k">return</span> <span class="n">angle</span>
+</span><span id="L-284"><a href="#L-284"><span class="linenos">284</span></a><span class="sd">    Optionally project the vector onto the `plane` (given by its unit normal)</span>
+</span><span id="L-285"><a href="#L-285"><span class="linenos">285</span></a><span class="sd">    before calculating the angle.</span>
+</span><span id="L-286"><a href="#L-286"><span class="linenos">286</span></a>
+</span><span id="L-287"><a href="#L-287"><span class="linenos">287</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-288"><a href="#L-288"><span class="linenos">288</span></a>    <span class="k">if</span> <span class="n">plane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-289"><a href="#L-289"><span class="linenos">289</span></a>        <span class="n">_plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span>
+</span><span id="L-290"><a href="#L-290"><span class="linenos">290</span></a>        <span class="n">_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span> <span class="o">-</span> <span class="n">_plane</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">_plane</span><span class="p">)</span>
+</span><span id="L-291"><a href="#L-291"><span class="linenos">291</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="L-292"><a href="#L-292"><span class="linenos">292</span></a>        <span class="n">_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span>
+</span><span id="L-293"><a href="#L-293"><span class="linenos">293</span></a>    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
+</span><span id="L-294"><a href="#L-294"><span class="linenos">294</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">_vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">_vector</span><span class="p">)</span> <span class="o">*</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">)))</span>
+</span><span id="L-295"><a href="#L-295"><span class="linenos">295</span></a>    <span class="p">)</span>
+</span><span id="L-296"><a href="#L-296"><span class="linenos">296</span></a>    <span class="k">if</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
+</span><span id="L-297"><a href="#L-297"><span class="linenos">297</span></a>        <span class="k">return</span> <span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span>
+</span><span id="L-298"><a href="#L-298"><span class="linenos">298</span></a>    <span class="k">return</span> <span class="n">angle</span>
 </span></pre></div>
 
 
@@ -851,30 +858,39 @@ rotation quaternions.</p>
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">smallest_angle</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">vector</span>, </span><span class="param"><span class="n">axis</span></span><span class="return-annotation">):</span></span>
+        <span class="name">smallest_angle</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">vector</span>, </span><span class="param"><span class="n">axis</span>, </span><span class="param"><span class="n">plane</span><span class="o">=</span><span class="kc">None</span></span><span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="smallest_angle-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#smallest_angle"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="smallest_angle-281"><a href="#smallest_angle-281"><span class="linenos">281</span></a><span class="k">def</span> <span class="nf">smallest_angle</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="smallest_angle-281"><a href="#smallest_angle-281"><span class="linenos">281</span></a><span class="k">def</span> <span class="nf">smallest_angle</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="smallest_angle-282"><a href="#smallest_angle-282"><span class="linenos">282</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get smallest angle between a unit `vector` and a bidirectional `axis`.</span>
 </span><span id="smallest_angle-283"><a href="#smallest_angle-283"><span class="linenos">283</span></a>
 </span><span id="smallest_angle-284"><a href="#smallest_angle-284"><span class="linenos">284</span></a><span class="sd">    The axis is specified using either of its two parallel unit vectors.</span>
-</span><span id="smallest_angle-285"><a href="#smallest_angle-285"><span class="linenos">285</span></a>
-</span><span id="smallest_angle-286"><a href="#smallest_angle-286"><span class="linenos">286</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="smallest_angle-287"><a href="#smallest_angle-287"><span class="linenos">287</span></a>    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
-</span><span id="smallest_angle-288"><a href="#smallest_angle-288"><span class="linenos">288</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span> <span class="o">*</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">)))</span>
-</span><span id="smallest_angle-289"><a href="#smallest_angle-289"><span class="linenos">289</span></a>    <span class="p">)</span>
-</span><span id="smallest_angle-290"><a href="#smallest_angle-290"><span class="linenos">290</span></a>    <span class="k">if</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
-</span><span id="smallest_angle-291"><a href="#smallest_angle-291"><span class="linenos">291</span></a>        <span class="k">return</span> <span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span>
-</span><span id="smallest_angle-292"><a href="#smallest_angle-292"><span class="linenos">292</span></a>    <span class="k">return</span> <span class="n">angle</span>
+</span><span id="smallest_angle-285"><a href="#smallest_angle-285"><span class="linenos">285</span></a><span class="sd">    Optionally project the vector onto the `plane` (given by its unit normal)</span>
+</span><span id="smallest_angle-286"><a href="#smallest_angle-286"><span class="linenos">286</span></a><span class="sd">    before calculating the angle.</span>
+</span><span id="smallest_angle-287"><a href="#smallest_angle-287"><span class="linenos">287</span></a>
+</span><span id="smallest_angle-288"><a href="#smallest_angle-288"><span class="linenos">288</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="smallest_angle-289"><a href="#smallest_angle-289"><span class="linenos">289</span></a>    <span class="k">if</span> <span class="n">plane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="smallest_angle-290"><a href="#smallest_angle-290"><span class="linenos">290</span></a>        <span class="n">_plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span>
+</span><span id="smallest_angle-291"><a href="#smallest_angle-291"><span class="linenos">291</span></a>        <span class="n">_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span> <span class="o">-</span> <span class="n">_plane</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">_plane</span><span class="p">)</span>
+</span><span id="smallest_angle-292"><a href="#smallest_angle-292"><span class="linenos">292</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="smallest_angle-293"><a href="#smallest_angle-293"><span class="linenos">293</span></a>        <span class="n">_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">vector</span><span class="p">)</span>
+</span><span id="smallest_angle-294"><a href="#smallest_angle-294"><span class="linenos">294</span></a>    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
+</span><span id="smallest_angle-295"><a href="#smallest_angle-295"><span class="linenos">295</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">_vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">_vector</span><span class="p">)</span> <span class="o">*</span> <span class="n">la</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">)))</span>
+</span><span id="smallest_angle-296"><a href="#smallest_angle-296"><span class="linenos">296</span></a>    <span class="p">)</span>
+</span><span id="smallest_angle-297"><a href="#smallest_angle-297"><span class="linenos">297</span></a>    <span class="k">if</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
+</span><span id="smallest_angle-298"><a href="#smallest_angle-298"><span class="linenos">298</span></a>        <span class="k">return</span> <span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span>
+</span><span id="smallest_angle-299"><a href="#smallest_angle-299"><span class="linenos">299</span></a>    <span class="k">return</span> <span class="n">angle</span>
 </span></pre></div>
 
 
             <div class="docstring"><p>Get smallest angle between a unit <code>vector</code> and a bidirectional <code>axis</code>.</p>
 
-<p>The axis is specified using either of its two parallel unit vectors.</p>
+<p>The axis is specified using either of its two parallel unit vectors.
+Optionally project the vector onto the <code>plane</code> (given by its unit normal)
+before calculating the angle.</p>
 </div>
 
 
