@@ -2,7 +2,7 @@
 import contextlib as cl
 import functools as ft
 from multiprocessing import Pool
-from time import perf_counter, process_time
+from time import process_time
 
 import numpy as np
 import pytest
@@ -266,7 +266,6 @@ class TestOlivineA:
             labels = []
 
         with optional_logging:
-            wall_start = perf_counter()
             clock_start = process_time()
             for p, params in enumerate(
                 (
@@ -310,10 +309,6 @@ class TestOlivineA:
                         postfix=f"M{params['gbm_mobility']}",
                     )
 
-            _log.info(
-                "elapsed walltime: %s",
-                _utils.readable_timestamp(np.abs(perf_counter() - wall_start)),
-            )
             _log.info(
                 "elapsed CPU time: %s",
                 _utils.readable_timestamp(np.abs(process_time() - clock_start)),
@@ -416,7 +411,6 @@ class TestOlivineA:
             labels = []
 
         with optional_logging:
-            wall_start = perf_counter()
             clock_start = process_time()
             for p, params in enumerate(
                 (
@@ -461,17 +455,13 @@ class TestOlivineA:
                     )
 
             _log.info(
-                "elapsed walltime: %s",
-                _utils.readable_timestamp(np.abs(perf_counter() - wall_start)),
-            )
-            _log.info(
                 "elapsed CPU time: %s",
                 _utils.readable_timestamp(np.abs(process_time() - clock_start)),
             )
 
         # Take ensemble means and optionally plot figure.
         strains = timestamps * strain_rate
-        res = self.postprocess_ensemble(
+        res = self.postprocess(
             strains,
             angles,
             point100_symmetry,
