@@ -277,14 +277,21 @@ def misorientation_angles(combinations):
     )
 
 
-def smallest_angle(vector, axis):
+def smallest_angle(vector, axis, plane=None):
     """Get smallest angle between a unit `vector` and a bidirectional `axis`.
 
     The axis is specified using either of its two parallel unit vectors.
+    Optionally project the vector onto the `plane` (given by its unit normal)
+    before calculating the angle.
 
     """
+    if plane is not None:
+        _plane = np.asarray(plane)
+        _vector = np.asarray(vector) - _plane * np.dot(vector, _plane)
+    else:
+        _vector = np.asarray(vector)
     angle = np.rad2deg(
-        np.arccos(np.dot(vector, axis) / (la.norm(vector) * la.norm(axis)))
+        np.arccos(np.dot(_vector, axis) / (la.norm(_vector) * la.norm(axis)))
     )
     if angle > 90:
         return 180 - angle
