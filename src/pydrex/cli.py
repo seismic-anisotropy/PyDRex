@@ -3,6 +3,7 @@ import argparse
 import os
 from collections import namedtuple
 from dataclasses import dataclass
+from zipfile import ZipFile
 
 import numpy as np
 
@@ -14,6 +15,36 @@ from pydrex import stats as _stats
 from pydrex import visualisation as _vis
 
 # NOTE: Register all cli handlers in the namedtuple at the end of the file.
+
+
+@dataclass
+class NPZFileInspector:
+    """PyDRex script to show information about serialized CPO data.
+
+    Lists the keys that should be used for the `postfix` in `pydrex.Mineral.load` and
+    `pydrex.Mineral.from_file`.
+
+    """
+
+    def __call__(self):
+        args = self._get_args()
+        with ZipFile(args.input) as npz:
+            names = npz.namelist()
+            print("NPZ file with keys:")
+            for name in names:
+                if not (
+                    name.startswith("meta")
+                    or name.startswith("fractions")
+                    or name.startswith("orientations")
+                ):
+                    _log.warning(f"found unknown NPZ key '{name}' in '{args.input}'")
+                print(f" - {name}")
+
+    def _get_args(self) -> argparse.Namespace:
+        description, epilog = self.__doc__.split(os.linesep + os.linesep, 1)
+        parser = argparse.ArgumentParser(description=description, epilog=epilog)
+        parser.add_argument("input", help="input file (.npz)")
+        return parser.parse_args()
 
 
 @dataclass
@@ -141,6 +172,9 @@ _CLI_HANDLERS = namedtuple(
     "CLI_HANDLERS",
     {
         "pole_figure_visualiser",
+        "npz_file_inspector",
     },
 )
-CLI_HANDLERS = _CLI_HANDLERS(pole_figure_visualiser=PoleFigureVisualiser())
+CLI_HANDLERS = _CLI_HANDLERS(
+    pole_figure_visualiser=PoleFigureVisualiser(), npz_file_inspector=NPZFileInspector()
+)
