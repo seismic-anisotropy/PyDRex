@@ -45,7 +45,7 @@ def update_orientations_Kaminski2001(
         else:
             assert False
 
-        for n in n_iter:
+        for n in range(n_iter):
             fsei = deformation_gradient
             odfi = mineral.fractions[-1]
             acsi = mineral.orientations[-1]
