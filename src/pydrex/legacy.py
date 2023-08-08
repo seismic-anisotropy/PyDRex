@@ -28,7 +28,7 @@ def update_orientations_Kaminski2001(
 
     """
     time_start, time_end, get_position = pathline
-    timestamps = np.linspace(time_start, time_end, n_steps + 1)
+    timestamps = np.linspace(time_start, time_end, n_steps)
     for time in timestamps:
         position = get_position(time)
         velocity_gradient = get_velocity_gradient(position)
@@ -56,8 +56,8 @@ def update_orientations_Kaminski2001(
                 mineral.n_grains,
                 mineral.orientations[-1],
                 mineral.fractions[-1],
-                strain_rate,
-                velocity_gradient,
+                strain_rate / strain_rate_max,
+                velocity_gradient / strain_rate_max,
                 config["stress_exponent"],
                 config["deformation_exponent"],
                 config["nucleation_efficiency"],
@@ -93,8 +93,8 @@ def update_orientations_Kaminski2001(
                 mineral.n_grains,
                 mineral.orientations[-1],
                 mineral.fractions[-1],
-                strain_rate,
-                velocity_gradient,
+                strain_rate / strain_rate_max,
+                velocity_gradient / strain_rate_max,
                 config["stress_exponent"],
                 config["deformation_exponent"],
                 config["nucleation_efficiency"],
@@ -130,8 +130,8 @@ def update_orientations_Kaminski2001(
                 mineral.n_grains,
                 mineral.orientations[-1],
                 mineral.fractions[-1],
-                strain_rate,
-                velocity_gradient,
+                strain_rate / strain_rate_max,
+                velocity_gradient / strain_rate_max,
                 config["stress_exponent"],
                 config["deformation_exponent"],
                 config["nucleation_efficiency"],
