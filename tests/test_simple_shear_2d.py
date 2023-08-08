@@ -54,7 +54,7 @@ class TestOlivineA:
         mineral = _minerals.Mineral(n_grains=params["number_of_grains"], seed=seed)
         deformation_gradient = np.eye(3)  # Undeformed initial state.
 
-        n_timestamps = len(timestamps)
+        n_timestamps = len(timestamps) - 1
         if return_fse:
             θ_fse = np.empty(n_timestamps)
             θ_fse[0] = 45
@@ -74,7 +74,7 @@ class TestOlivineA:
             if seed is not None:
                 msg_start += f"# {seed}; "
 
-            _log.info(msg_start + "step %s/%s (t = %s)", t, n_timestamps - 1, time)
+            _log.info(msg_start + "step %s/%s (t = %s)", t, n_timestamps, time)
 
             deformation_gradient = mineral.update_orientations(
                 params,
@@ -249,7 +249,7 @@ class TestOlivineA:
         """
         strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
         timestamps = np.linspace(0, 2e5, 201)  # Solve until D₀t=1 ('shear' γ=2).
-        n_timestamps = len(timestamps)
+        n_timestamps = len(timestamps) - 1
         i_strain_50p = [0, 50, 100, 150, 200]  # Indices for += 50% strain.
 
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
@@ -394,7 +394,7 @@ class TestOlivineA:
         """
         strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
         timestamps = np.linspace(0, 5e5, 251)  # Solve until D₀t=2.5 ('shear' γ=5).
-        n_timestamps = len(timestamps)
+        n_timestamps = len(timestamps) - 1
         i_strain_100p = [0, 50, 100, 150, 200]  # Indices for += 100% strain.
 
         shear_direction = [1, 0, 0]  # Used to calculate the angular diagnostics.

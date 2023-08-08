@@ -11,17 +11,17 @@ def update_orientations_Kaminski2001(
     deformation_gradient,
     get_velocity_gradient,
     pathline,
-    faux_gridres,
+    gridstep,
     velocity_magnitude,
     n_steps,
     **kwargs,
 ):
     """Implements the original RK45 approach (subroutine STRAIN).
 
-    Almost a drop-in replacement for `pdyrex.Mineral.update_orientations`,
+    Almost a drop-in replacement for `pydrex.Mineral.update_orientations`,
     but requires a few additional arguments:
-    - `faux_gridres`: local 'grid resolution' or an approximation of the spatial
-      resolution
+    - `gridstep`: local 'grid resolution' or an approximation of the spatial
+      distance between local simulation grid nodes
     - `velocity_magnitude`: estimate of average local velocity magnitude along the
       pathline
     - `n_steps`: number of steps used for the streamline
@@ -34,7 +34,7 @@ def update_orientations_Kaminski2001(
         velocity_gradient = get_velocity_gradient(position)
         strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
         strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
-        _step = faux_gridres / velocity_magnitude
+        _step = gridstep / velocity_magnitude
         step = min(_step, 1e-2 / strain_rate_max)
         n_iter = int(_step / step)
 
