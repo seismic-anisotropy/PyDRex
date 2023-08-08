@@ -29,6 +29,10 @@ def update_orientations_Kaminski2001(
     """
     time_start, time_end, get_position = pathline
     timestamps = np.linspace(time_start, time_end, n_steps)
+
+    orientations = mineral.orientations[-1]
+    fractions = mineral.fractions[-1]
+
     for time in timestamps:
         position = get_position(time)
         velocity_gradient = get_velocity_gradient(position)
@@ -47,15 +51,15 @@ def update_orientations_Kaminski2001(
 
         for n in range(n_iter):
             fsei = deformation_gradient
-            odfi = mineral.fractions[-1]
-            acsi = mineral.orientations[-1]
+            odfi = fractions
+            acsi = orientations
 
             orientations_diff, fractions_diff = _core.derivatives(
                 mineral.phase,
                 mineral.fabric,
                 mineral.n_grains,
-                mineral.orientations[-1],
-                mineral.fractions[-1],
+                orientations,
+                fractions,
                 strain_rate / strain_rate_max,
                 velocity_gradient / strain_rate_max,
                 config["stress_exponent"],
@@ -70,8 +74,8 @@ def update_orientations_Kaminski2001(
             kac1 = orientations_diff * step * strain_rate_max
 
             fsei = deformation_gradient + 0.5 * kfse1
-            odfi = mineral.fractions[-1] + 0.5 * kodf1
-            acsi = mineral.orientations[-1] + 0.50 * kac1
+            odfi = fractions + 0.5 * kodf1
+            acsi = orientations + 0.50 * kac1
 
             for j in range(mineral.n_grains):
                 for j1 in range(3):
@@ -91,8 +95,8 @@ def update_orientations_Kaminski2001(
                 mineral.phase,
                 mineral.fabric,
                 mineral.n_grains,
-                mineral.orientations[-1],
-                mineral.fractions[-1],
+                orientations,
+                fractions,
                 strain_rate / strain_rate_max,
                 velocity_gradient / strain_rate_max,
                 config["stress_exponent"],
@@ -107,8 +111,8 @@ def update_orientations_Kaminski2001(
             kac2 = orientations_diff * step * strain_rate_max
 
             fsei = deformation_gradient + 0.5 * kfse2
-            odfi = mineral.fractions[-1] + 0.5 * kodf2
-            acsi = mineral.orientations[-1] + 0.50 * kac2
+            odfi = fractions + 0.5 * kodf2
+            acsi = orientations + 0.50 * kac2
 
             for j in range(mineral.n_grains):
                 for j1 in range(3):
@@ -128,8 +132,8 @@ def update_orientations_Kaminski2001(
                 mineral.phase,
                 mineral.fabric,
                 mineral.n_grains,
-                mineral.orientations[-1],
-                mineral.fractions[-1],
+                orientations,
+                fractions,
                 strain_rate / strain_rate_max,
                 velocity_gradient / strain_rate_max,
                 config["stress_exponent"],
@@ -144,8 +148,8 @@ def update_orientations_Kaminski2001(
             kac3 = orientations_diff * step * strain_rate_max
 
             fsei = deformation_gradient + kfse3
-            odfi = mineral.fractions[-1] + kodf3
-            acsi = mineral.orientations[-1] + kac3
+            odfi = fractions + kodf3
+            acsi = orientations + kac3
 
             for j in range(mineral.n_grains):
                 for j1 in range(3):
@@ -165,16 +169,9 @@ def update_orientations_Kaminski2001(
             kodf4 = fractions_diff * step * strain_rate_max
             kac4 = orientations_diff * step * strain_rate_max
 
-            deformation_gradient = (
-                deformation_gradient + (kfse1 / 2.0 + kfse2 + kfse3 + kfse4 / 2.0) / 3.0
-            )
-            mineral.orientations.append(
-                mineral.orientations[-1] + (kac1 / 2.0 + kac2 + kac3 + kac4 / 2.0) / 3.0
-            )
-            mineral.fractions.append(
-                mineral.fractions[-1]
-                + (kodf1 / 2.0 + kodf2 + kodf3 + kodf4 / 2.0) / 3.0
-            )
+            deformation_gradient += (kfse1 / 2.0 + kfse2 + kfse3 + kfse4 / 2.0) / 3.0
+            orientations += (kac1 / 2.0 + kac2 + kac3 + kac4 / 2.0) / 3.0
+            fractions += (kodf1 / 2.0 + kodf2 + kodf3 + kodf4 / 2.0) / 3.0
 
             for j in range(mineral.n_grains):
                 for j1 in range(3):
@@ -190,6 +187,8 @@ def update_orientations_Kaminski2001(
 
             deformation_gradient = deformation_gradient / np.sum(deformation_gradient)
 
+    mineral.fractions.append(fractions)
+    mineral.orientations.append(orientations)
     return deformation_gradient
 
 
