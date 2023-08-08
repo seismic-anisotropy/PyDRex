@@ -191,3 +191,113 @@ def update_orientations_Kaminski2001(
             deformation_gradient = deformation_gradient / np.sum(deformation_gradient)
 
     return deformation_gradient
+
+
+def eigh_Kaminski2001(matrix, n=3, np=3):
+    """Calculate eigenvalues and eigenvectors of a real-valued symmetric matrix.
+
+    Implementation according to JACOBI in the Fortran DRexV2b.f90.
+
+    """
+    v = np.empty((np, np))  # Eigenvectors.
+    d = np.empty(np)  # Eigenvalues.
+    b = np.empty(n * (n - 1))
+    z = np.empty(n * (n - 1))
+
+    for ip in range(n):
+        for iq in range(n):
+            v[ip, iq] = 0.0
+        v[ip, ip] = 1.0
+
+    for ip in range(n):
+        b[ip] = matrix[ip, ip]
+        d[ip] = b[ip]
+        z[ip] = 0.0
+
+    for i in range(50):
+        sm = 0.0
+        for ip in range(n - 1):
+            for iq in range(ip, n):  # Zero-indexing: ip+1 -> ip.
+                sm = sm + abs(matrix[ip, iq])
+        if sm == 0.0:
+            return
+        if i < 3:  # Zero-indexing: 4 -> 3.
+            tresh = 0.2 * sm / n**2.0
+        else:
+            tresh = 0.0
+
+        for ip in range(n - 1):
+            for iq in range(ip, n):  # Zero-indexing: ip+1 -> ip.
+                g = 100.0 * abs(matrix[ip, iq])
+                if (
+                    (i > 3)  # Zero-indexing: 4 -> 3.
+                    and (abs(d[ip]) + g == abs(d[ip]))
+                    and (abs(d[iq]) + g == abs(d[iq]))
+                ):
+                    matrix[ip, iq] = 0.0
+                elif abs(matrix[ip, iq]) > tresh:
+                    h = d[iq] - d[ip]
+                    if abs(h) + g == abs(h):
+                        t = matrix[ip, iq] / h
+                    else:
+                        theta = 0.5 * h / matrix[ip, iq]
+                        t = 1.0 / (abs(theta) + np.sqrt(1.0 + theta**2.0))
+                        if theta < 0.0:
+                            t = -t
+                    c = 1.0 / np.sqrt(1.0 + t**2.0)
+                    s = t * c
+                    tau = s / (1.0 + c)
+                    h = t * matrix[ip, iq]
+                    z[ip] = z[ip] - h
+                    z[iq] = z[iq] + h
+                    d[ip] = d[ip] - h
+                    d[iq] = d[iq] + h
+                    matrix[ip, iq] = 0.0
+
+                    for j in range(ip - 1):
+                        g = matrix[j, ip]
+                        h = matrix[j, iq]
+                        matrix[j, ip] = g - s * (h + g * tau)
+                        matrix[j, iq] = h + s * (g - h * tau)
+
+                    for j in range(ip, iq - 1):  # Zero-indexing: ip+1 -> ip.
+                        g = matrix[ip, j]
+                        h = matrix[j, iq]
+                        matrix[ip, j] = g - s * (h + g * tau)
+                        matrix[j, iq] = h + s * (g - h * tau)
+
+                    for j in range(iq, n):  # Zero-indexing: iq+1 -> iq.
+                        g = matrix[ip, j]
+                        h = matrix[iq, j]
+                        matrix[ip, j] = g - s * (h + g * tau)
+                        matrix[iq, j] = h + s * (g - h * tau)
+
+                    for j in range(n):
+                        g = v[j, ip]
+                        h = v[j, iq]
+                        v[j, ip] = g - s * (h + g * tau)
+                        v[j, iq] = h + s * (g - h * tau)
+
+            for ip in range(n):
+                b[ip] = b[ip] + z[ip]
+                d[ip] = b[ip]
+                z[ip] = 0.0
+    return _eigsort(d, v, n, np)
+
+
+def _eigsort(d, v, n, np):
+    for i in range(n - 1):
+        k = i
+        p = d[i]
+        for j in range(i, n):  # Zero-indexing: i+1 -> i.
+            if d[j] >= p:
+                k = j
+                p = d[j]
+        if k != i:
+            d[k] = d[i]
+            d[i] = p
+            for j in range(n):
+                p = v[j, i]
+                v[j, i] = v[j, k]
+                v[j, k] = p
+    return d, v
