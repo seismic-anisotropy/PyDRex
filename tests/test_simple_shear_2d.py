@@ -54,9 +54,8 @@ class TestOlivineA:
         mineral = _minerals.Mineral(n_grains=params["number_of_grains"], seed=seed)
         deformation_gradient = np.eye(3)  # Undeformed initial state.
 
-        n_timestamps = len(timestamps) - 1
         if return_fse:
-            θ_fse = np.empty(n_timestamps)
+            θ_fse = np.empty_like(timestamps)
             θ_fse[0] = 45
 
         for t, time in enumerate(timestamps[:-1], start=1):
@@ -74,7 +73,7 @@ class TestOlivineA:
             if seed is not None:
                 msg_start += f"# {seed}; "
 
-            _log.info(msg_start + "step %s/%s (t = %s)", t, n_timestamps, time)
+            _log.info(msg_start + "step %s/%s (t = %s)", t, len(timestamps) - 1, time)
 
             deformation_gradient = mineral.update_orientations(
                 params,
@@ -98,9 +97,9 @@ class TestOlivineA:
                 θ_fse[t] = _diagnostics.smallest_angle(fse_v, shear_direction)
 
         # Compute texture diagnostics.
-        texture_symmetry = np.zeros(n_timestamps)
+        texture_symmetry = np.zeros_like(timestamps)
         if use_bingham_average:
-            mean_angles = np.zeros(n_timestamps)
+            mean_angles = np.zeros_like(timestamps)
         for idx, matrices in enumerate(mineral.orientations):
             orientations_resampled, _ = _stats.resample_orientations(
                 matrices, mineral.fractions[idx], seed=seed
@@ -249,14 +248,14 @@ class TestOlivineA:
         """
         strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
         timestamps = np.linspace(0, 2e5, 201)  # Solve until D₀t=1 ('shear' γ=2).
-        n_timestamps = len(timestamps) - 1
+        n_timestamps = len(timestamps)
         i_strain_50p = [0, 50, 100, 150, 200]  # Indices for += 50% strain.
 
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
         get_velocity_gradient = _dv.simple_shear_2d("Y", "X", strain_rate)
 
         # Output setup with optional logging and data series labels.
-        θ_fse = np.empty(n_timestamps)
+        θ_fse = np.empty_like(timestamps)
         angles = np.empty((3, len(seeds_nearX45), n_timestamps))
         point100_symmetry = np.empty_like(angles)
         optional_logging = cl.nullcontext()
@@ -394,14 +393,14 @@ class TestOlivineA:
         """
         strain_rate = 5e-6  # Strain rate from Fraters & Billen, 2021, fig. 3.
         timestamps = np.linspace(0, 5e5, 251)  # Solve until D₀t=2.5 ('shear' γ=5).
-        n_timestamps = len(timestamps) - 1
+        n_timestamps = len(timestamps)
         i_strain_100p = [0, 50, 100, 150, 200]  # Indices for += 100% strain.
 
         shear_direction = [1, 0, 0]  # Used to calculate the angular diagnostics.
         get_velocity_gradient = _dv.simple_shear_2d("X", "Z", strain_rate)
 
         # Output setup with optional logging and data series labels.
-        θ_fse = np.empty(n_timestamps)
+        θ_fse = np.empty_like(timestamps)
         angles = np.empty((3, len(seeds_nearX45), n_timestamps))
         point100_symmetry = np.empty_like(angles)
         optional_logging = cl.nullcontext()
