@@ -59,7 +59,8 @@ def update_orientations_Kaminski2001(
                 strain_rate,
                 velocity_gradient,
                 config["stress_exponent"],
-                config["nucleation_exponent"],
+                config["deformation_exponent"],
+                config["nucleation_efficiency"],
                 config["gbm_mobility"],
                 volume_fraction,
             )
@@ -95,7 +96,8 @@ def update_orientations_Kaminski2001(
                 strain_rate,
                 velocity_gradient,
                 config["stress_exponent"],
-                config["nucleation_exponent"],
+                config["deformation_exponent"],
+                config["nucleation_efficiency"],
                 config["gbm_mobility"],
                 volume_fraction,
             )
@@ -131,7 +133,8 @@ def update_orientations_Kaminski2001(
                 strain_rate,
                 velocity_gradient,
                 config["stress_exponent"],
-                config["nucleation_exponent"],
+                config["deformation_exponent"],
+                config["nucleation_efficiency"],
                 config["gbm_mobility"],
                 volume_fraction,
             )
