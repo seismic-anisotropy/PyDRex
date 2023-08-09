@@ -160,6 +160,21 @@ def update_orientations_Kaminski2001(
 
         odfi = odfi / np.sum(odfi)
 
+        orientations_diff, fractions_diff = _core.derivatives(
+            mineral.phase,
+            mineral.fabric,
+            mineral.n_grains,
+            orientations,
+            fractions,
+            strain_rate / strain_rate_max,
+            velocity_gradient / strain_rate_max,
+            config["stress_exponent"],
+            config["deformation_exponent"],
+            config["nucleation_efficiency"],
+            config["gbm_mobility"],
+            volume_fraction,
+        )
+
         kfse4 = velocity_gradient @ fsei * step
         kodf4 = fractions_diff * step * strain_rate_max
         kac4 = orientations_diff * step * strain_rate_max
@@ -176,11 +191,12 @@ def update_orientations_Kaminski2001(
                     if acsi[j, j1, j2] < -1.0:
                         acsi[j, j1, j2] = -1.0
 
-        for j in range(mineral.n_grains):
-            if odfi[j] < 0:
-                odfi[j] = 0.0
+        # NOTE: Not included after the last call to DERIV in the original Fortran.
+        # for j in range(mineral.n_grains):
+        #     if odfi[j] < 0:
+        #         odfi[j] = 0.0
 
-        deformation_gradient = deformation_gradient / np.sum(deformation_gradient)
+        odfi = odfi / np.sum(odfi)
 
     mineral.fractions.append(fractions)
     mineral.orientations.append(orientations)
