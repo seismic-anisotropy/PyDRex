@@ -1,4 +1,4 @@
-!!! DREX forward advected, for pure A-type olvine only.
+!!! DRex forward advection, for pure A-type olivine only.
 !!! Parameter values and initial conditions are set in the subroutine `init0`.
 
 module comvar
@@ -157,7 +157,7 @@ subroutine init0
     S0(2, 1) = S0(1, 2); S0(2, 2) = 197.25d0; S0(2, 3) = 74.8d0
     S0(3, 1) = S0(1, 3); S0(3, 2) = S0(2, 3); S0(3, 3) = 234.32d0
     S0(4, 4) = 63.77d0; S0(5, 5) = 77.67d0; S0(6, 6) = 78.36d0
-    ! Stiffness matrix for Olivine (GigaPascals)
+    ! Stiffness matrix for Olivine (GPa)
 
     allocate (xe1(size), xe2(size), xe3(size))
     allocate (odf(size), odfi(size), dotodf(size))
@@ -174,7 +174,7 @@ subroutine init0
         xe3(i) = (real(j3) - ran0(i + 2*size))/real(size3)*acos(-1d0)
         i = i + 1
     end do; end do; end do
-    ! initialization of orientations - uniformally random distribution
+    ! initialization of orientations - uniformly random distribution
     ! Rmq cos(theta) used to sample the metric Eulerian space
 
     ! xe1 = - PI / 2
@@ -326,7 +326,7 @@ subroutine deriv
     integer, dimension(1) :: ti ! reordering array
 
     double precision :: Emean, rt1, rt2, rt3
-    ! surface averaged aggregate NRJ
+    ! surface averaged aggregate energy
     ! dislocation density for each slip system
 
     double precision :: gam0
