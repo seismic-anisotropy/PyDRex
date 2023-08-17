@@ -97,6 +97,10 @@ subroutine init0
     integer :: i, j1, j2, j3 ! loop counters
     double precision, dimension(:), allocatable :: ran0
     ! vector of random numbers used to generate initial random CPO
+    integer, parameter :: n_discard = 10
+    integer :: state_size, s
+    integer, allocatable, dimension(:) :: state
+    ! Intermediaries for setting up seeded RNG.
 
     double precision :: phi1, theta, phi2  ! eulerian angles
     double precision, dimension(:), allocatable :: xe1, xe2, xe3
@@ -160,6 +164,12 @@ subroutine init0
     allocate (ran0(3*size))
     allocate (acs(size, 3, 3), dotacs(size, 3, 3), acsi(size, 3, 3), acs0(size, 3, 3))
     allocate (phi_fse(n_steps), ln_fse(n_steps), phi_a(n_steps), perc_a(n_steps))
+
+    call random_seed(size=state_size)
+    allocate(state(state_size))
+    state = 21512
+    call random_seed(put=state)
+    ! Seed the RNG.
 
     call random_number(ran0)
     i = 1
