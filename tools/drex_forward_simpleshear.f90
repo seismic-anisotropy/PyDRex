@@ -90,15 +90,6 @@ program DREX
 end program DREX
 
 
-subroutine show(Aij, d)  ! Pretty print square matrix in C order.
-    integer :: d
-    double precision, dimension(d, d) :: Aij
-    do i = 1,ubound(Aij,1)
-        write(6, *) Aij(i,:)
-    end do
-end subroutine show
-
-
 subroutine init0
     use comvar
     implicit none
@@ -115,7 +106,7 @@ subroutine init0
     ! PI = acos(-1d0)
     ! Used for setting initial orientations if not random.
 
-    Mob = 0d0  ! grain boundary mobility
+    Mob = 125d0  ! grain boundary mobility
     chi = 0d0  ! threshold for grain boundary sliding
     stressexp = 3.5d0 ! stress exponent
     lambda = 5d0 ! nucleation efficiency parameter
@@ -123,16 +114,20 @@ subroutine init0
     size = size3**3
     ! number of (unrecrystallized, initial) grains, really just number of samples in SO(3)
 
-    n_steps = 200
-    t_loc = 0.005d0
+    n_steps = 500
+    t_loc = 1d5
+    ! Number of steps and time spent at each step.
 
     tau = reshape((/ 1d0, 2d0, 3d0, 1d60 /), shape(tau))  ! CRSS
 
-    Lij = reshape((/ 0, 0, 0, 0, 0, 0, 2, 0, 0 /), shape(Lij))  ! dv_x/dz is nonzero, simple shear
-    Dij = reshape((/ 0, 0, 1, 0, 0, 0, 1, 0, 0 /), shape(Dij))  ! D = 1/2 L + L^T
-    epsnot = 1d0
+    epsnot = 5d-7  ! Strain rate
+    Lij = reshape((/ 0d0, 0d0, 0d0, 0d0, 0d0, 0d0, 2*epsnot, 0d0, 0d0 /), shape(Lij))
+    ! dv_x/dz is nonzero, simple shear
+    Dij = reshape((/ 0d0, 0d0, epsnot, 0d0, 0d0, 0d0, epsnot, 0d0, 0d0 /), shape(Dij))
+    ! D = 1/2 L + L^T
 
-    Fij = reshape((/ 1, 0, 0, 0, 1, 0, 0, 0, 1 /), shape(Fij))  ! identity, undeformed initial state
+    Fij = reshape((/ 1d0, 0d0, 0d0, 0d0, 1d0, 0d0, 0d0, 0d0, 1d0 /), shape(Fij))
+    ! identity, undeformed initial state
 
     alt = 0d0
     alt(1, 2, 3) = 1d0; alt(2, 3, 1) = 1d0; alt(3, 1, 2) = 1d0
@@ -307,6 +302,7 @@ subroutine update_orientations(fse)
         ! do j = 1, size
         ! if (odfi(j) .le. 0) odfi(j) = 0d0
         ! end do
+        ! Clipping negative values in the odf after fourth RK step missing in original!
 
         odf = odf/sum(odf)
 
