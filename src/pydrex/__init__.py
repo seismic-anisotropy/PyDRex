@@ -27,9 +27,9 @@ The following features are provided:
 - Input/output of "SCSV" files, plain text CSV files with a YAML frontmatter for small
   scientific datasets
 - Voigt averaging to calculate the average elastic tensor of a multiphase polycrystal
-- Texture diagnostics (M-index, bingham average, Point-Girdle-Random symmetry, coaxial
+- Texture diagnostics [work in progress] (M-index, bingham average, Point-Girdle-Random symmetry, coaxial
   a.k.a "BA" index, etc.)
-- Seismic anisotropy diagnostics (% anisotropy, hexagonal symmetry a.k.a transverse
+- Seismic anisotropy diagnostics [work in progress] (% anisotropy, hexagonal symmetry a.k.a transverse
   isotropy angle)
 
 The core CPO solver is based on the original Fortran 90 implementation by Édouard Kaminski,
@@ -41,9 +41,9 @@ and an open-access paper which discusses the model is [Fraters & Billen 2021](ht
 ## Install
 
 The minimum required Python version is set using `requires-python` in the
-[`pyproject.toml`](https://github.com/Patol75/PyDRex/blob/main/pyproject.toml) file.
+[`pyproject.toml`](https://github.com/seismic-anisotropy/PyDRex/blob/main/pyproject.toml) file.
 For installation instructions,
-see [the README](https://github.com/Patol75/PyDRex/blob/main/README.md) file.
+see [the README](https://github.com/seismic-anisotropy/PyDRex/blob/main/README.md) file.
 
 ## Documentation
 
@@ -173,7 +173,6 @@ from pydrex.diagnostics import (
     coaxial_index,
     finite_strain,
     misorientation_angles,
-    misorientation_index,
     smallest_angle,
     symmetry,
 )

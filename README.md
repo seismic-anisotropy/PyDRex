@@ -1,11 +1,15 @@
 # PyDRex
 
+<p align="center" style="margin:4%;">
+    <img alt="PyDRex logo" src="./docs/assets/pydrex.png" width="40%"/>
+</p>
+
 #### Simulate crystallographic preferred orientation evolution in polycrystals
 
 This repository contains a Python 3 reimplementation of the D-Rex model
 for the evolution of crystallographic preferred orientation in polycrystals.
 The code is available for use under the [GNU GPL v3](LICENSE) license.
-Documentation is accessible via Python's REPL `help()` and also [online](https://patol75.github.io/PyDRex/).
+Documentation is accessible via Python's REPL `help()` and also [online](https://seismic-anisotropy.github.io/PyDRex/).
 
 ## Install
 
@@ -18,7 +22,7 @@ Install the package with Python's `pip`:
 
     pip install git+https://github.com/adigitoleo/PyDRex#egg=pydrex
 
-Alternatively, clone the [source code](https://github.com/Patol75/PyDRex).
+Alternatively, clone the [source code](https://github.com/seismic-anisotropy/PyDRex).
 and execute `pip install $PWD` in the top-level folder.
 To install additional dependencies required only for the test suite,
 use `pip install $PWD[test]`.

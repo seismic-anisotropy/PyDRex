@@ -48,8 +48,8 @@ dev = ["pytest", "matplotlib", "pdoc", "ruff", "black", "h5py", "isort", "ipytho
 lsp = ["python-lsp-server", "pyls-isort", "python-lsp-black", "python-lsp-ruff"]
 
 [project.urls]
-repository = "https://github.com/Patol75/PyDRex/"
-documentation = "https://patol75.github.io/PyDRex/"
+repository = "https://github.com/seismic-anisotropy/PyDRex"
+documentation = "https://seismic-anisotropy.github.io/PyDRex/"
 
 [project.scripts]
 pydrex-polefigures = "pydrex.cli:CLI_HANDLERS.pole_figure_visualiser"

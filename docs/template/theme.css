@@ -60,3 +60,5 @@
     background-color: var(--text);
     color: var(--active);
 }
+
+.katex-display { overflow: auto hidden }
