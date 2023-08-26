@@ -4,28 +4,54 @@ r"""
 ---
 
 .. warning::
-    **This software is currently in early development.
-    Only modules that have tests are anywhere close to being stable.**
+    **This software is currently in early development (pre-alpha)
+    and therefore subject to breaking changes without notice.**
 
 ## About
 
-The core routines are based on the original implementation by Édouard Kaminski,
-which can be [downloaded from this link (~90KB)](http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz).
-The reference paper is [Kaminski & Ribe 2001](https://doi.org/10.1016/s0012-821x(01)00356-9),
-and an open-access paper which discusses the model is [Fraters & Billen 2021](https://doi.org/10.1029/2021gc009846). [TODO: Add our paper]
+Viscoplastic deformation of minerals, e.g. in Earth's mantle,
+leads to distinct signatures in the mineral texture.
+Many minerals naturally occur in polycrystalline form,
+which means that they are composed of many grains with different volumes
+and lattice orientations.
+Preferential alignment of the average lattice orientation is called
+crystallographic preferred orientation (CPO).
+PyDRex simulates the development and evolution of CPO in deforming polycrystals,
+as well as tracking macroscopic finite strain measures.
+Currently, the code supports olivine and enstatite mineral phases.
+The following features are provided:
+- JIT-compiled CPO solver, based on D-Rex, to update the polycrystal orientation distribution based
+  on the macroscopic velocity gradients
+- Crystallographic pole figure visualisation
+- Conversion of elastic tensors to/from Voigt representation
+- Input/output of "SCSV" files, plain text CSV files with a YAML frontmatter for small
+  scientific datasets
+- Voigt averaging to calculate the average elastic tensor of a multiphase polycrystal
+- Texture diagnostics [work in progress] (M-index, bingham average, Point-Girdle-Random symmetry, coaxial
+  a.k.a "BA" index, etc.)
+- Seismic anisotropy diagnostics [work in progress] (% anisotropy, hexagonal symmetry a.k.a transverse
+  isotropy angle)
 
-The package is currently not available on PyPi,
-and must be installed by cloning the [source code](https://github.com/Patol75/PyDRex).
-and using `pip install .` (with the dot) in the top-level folder.
-Multiprocessing is not yet available in the packaged version.
-Running the tests requires [pytest](https://docs.pytest.org/en/stable/),
-and the custom pytest flag `--outdir="OUT"` can be used to save output figures
-to the folder called OUT (or the current folder, using `"."`).
+The core CPO solver is based on the original Fortran 90 implementation by Édouard Kaminski,
+which can be [downloaded from this link (~90KB)](http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz).
+The reference papers are [Kaminski & Ribe, 2001](https://doi.org/10.1016/s0012-821x(01)00356-9)
+and [Kaminski & Ribe, 2004](https://doi.org/10.1111%2Fj.1365-246x.2004.02308.x),
+and an open-access paper which discusses the model is [Fraters & Billen 2021](https://doi.org/10.1029/2021gc009846).
+
+## Install
+
+The minimum required Python version is set using `requires-python` in the
+[`pyproject.toml`](https://github.com/seismic-anisotropy/PyDRex/blob/main/pyproject.toml) file.
+For installation instructions,
+see [the README](https://github.com/seismic-anisotropy/PyDRex/blob/main/README.md) file.
+
+## Documentation
 
 The submodule sidebar on the left can be used
 to discover the public API of this package.
 Some of the tests are also documented and can serve as usage examples.
-They can be viewed in the module index (modules starting with `test_`).
+Their docstrings can also be viewed in the module index
+(top left, modules starting with `test_`).
 
 ## The D-Rex kinematic CPO model
 
@@ -147,7 +173,6 @@ from pydrex.diagnostics import (
     coaxial_index,
     finite_strain,
     misorientation_angles,
-    misorientation_index,
     smallest_angle,
     symmetry,
 )

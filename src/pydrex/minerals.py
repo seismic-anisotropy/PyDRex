@@ -1,4 +1,11 @@
-"""> PyDRex: Computations of mineral texture and elasticity."""
+"""> PyDRex: Computations of mineral texture and elasticity.
+
+**Acronyms:**
+- CPO = Crystallographic preferred orientation,
+    i.e. preferential clustering of polycrystal grain orientations in SO(3),
+    leading to an overall anisotropic orientation distribution
+
+"""
 import io
 from dataclasses import dataclass, field
 from zipfile import ZipFile
@@ -200,6 +207,9 @@ class Mineral:
     >>> )
     Mineral(phase=0, fabric=0, regime=1, n_grains=2000, ...)
 
+    Note that minerals can also be constructed from serialized data,
+    see `Mineral.load` and `Mineral.from_file`.
+
     **Attributes:**
     - `phase` (`pydrex.core.MineralPhase`) — ordinal number of the mineral phase
     - `fabric` (`pydrex.core.MineralFabric`) — ordinal number of the fabric type
@@ -298,7 +308,8 @@ class Mineral:
         """Update orientations and volume distribution for the `Mineral`.
 
         Update crystalline orientations and grain volume distribution
-        for minerals undergoing plastic deformation.
+        for minerals undergoing plastic deformation. Return the updated deformation
+        gradient measuring the corresponding macroscopic deformation.
 
         Args:
         - `config` (dict) — PyDRex configuration dictionary

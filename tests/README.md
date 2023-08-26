@@ -7,14 +7,15 @@ use the flag `pytest -v`.
 The custom optional flag `--outdir="OUT"` can be used
 to produce output figures, data dumps and logs and save them in the directory `"OUT"`.
 The value `"."` can be used to save these in the current directory.
-Long tests/examples are disabled by default to prevent clogging up the CI,
-they can be enabled with `--runslow`.
+Long tests/examples are disabled by default to prevent
+clogging up the automatic testing suite, they can be enabled with `--runslow`.
 To mark a test as slow,
 add the `@pytest.mark.slow` decorator above its method definition.
 
 Tests should not produce persistent output by default.
-If a test method can produce such output for debugging, it should accept the `outdir`
-positional argument, and check if its value is not `None`.
+If a test method can produce such output for debugging or visualisation,
+it should accept the `outdir` positional argument,
+and check if its value is not `None`.
 If `outdir is None` then no persistent output should be produced.
 If `outdir` is a directory path (string):
 - logs can be saved by using the `pydrex.logger.logfile_enable` context manager,
