@@ -5,6 +5,7 @@ from numpy import random as rn
 from scipy.spatial.transform import Rotation
 
 from pydrex import diagnostics as _diagnostics
+from pydrex import geometry as _geo
 from pydrex import stats as _stats
 
 
@@ -40,14 +41,16 @@ class TestElasticityComponents:
         np.testing.assert_allclose(out["hexagonal_axis"][0], [0, 0, 1])
 
     def test_enstatite_Browaeys2004(self):
-        C = np.array([
-            [225, 54, 72, 0, 0, 0],
-            [54, 214, 53, 0, 0, 0],
-            [72, 53, 178, 0, 0, 0],
-            [0, 0, 0, 78, 0, 0],
-            [0, 0, 0, 0, 82, 0],
-            [0, 0, 0, 0, 0, 76],
-        ])
+        C = np.array(
+            [
+                [225, 54, 72, 0, 0, 0],
+                [54, 214, 53, 0, 0, 0],
+                [72, 53, 178, 0, 0, 0],
+                [0, 0, 0, 78, 0, 0],
+                [0, 0, 0, 0, 82, 0],
+                [0, 0, 0, 0, 0, 76],
+            ]
+        )
         out = _diagnostics.elasticity_components([C])
         # FIXME: Test remaining percentages when I figure out how they get the values.
         expected = {
@@ -233,21 +236,28 @@ class TestBinghamStats:
 class TestMIndex:
     """Tests for the M-index texture strength diagnostic."""
 
-    def test_texture_uniform(self):
-        """Test M-index for random (uniform distribution) grain orientations."""
-        orientations = Rotation.random(1000).as_matrix()
+    # TODO: Add tests for other (non-orthorhombic) lattice symmetries.
+
+    def test_texture_uniform_ortho(self, seed):
+        """Test with random (uniform distribution) orthorhombic grain orientations."""
+        orientations = Rotation.random(1000, random_state=seed).as_matrix()
         assert np.isclose(
-            _diagnostics.misorientation_index(orientations), 0.29, atol=1e-2
+            _diagnostics.misorientation_index(
+                orientations, _geo.LatticeSystem.orthorhombic
+            ),
+            0.05,
+            atol=1e-2,
+            rtol=0,
         )
 
-    def test_texture_spread10X(self):
-        """Test M-index for grains spread within 10° of the ±X axis."""
+    def test_texture_spread10X_ortho(self, seed):
+        """Test for orthorhombic grains spread within 10° of the ±X axis."""
         orientations = (
             Rotation.from_rotvec(
                 np.stack(
                     [
                         [0, x * np.pi / 18 - np.pi / 36, x * np.pi / 18 - np.pi / 36]
-                        for x in rn.default_rng().random(100)
+                        for x in rn.default_rng(seed=seed).random(1000)
                     ]
                 )
             )
@@ -255,59 +265,69 @@ class TestMIndex:
             .as_matrix()
         )
         assert np.isclose(
-            _diagnostics.misorientation_index(orientations), 0.99, atol=1e-2
+            _diagnostics.misorientation_index(
+                orientations, _geo.LatticeSystem.orthorhombic
+            ),
+            0.99,
+            atol=1e-2,
+            rtol=0,
         )
 
-    def test_texture_spread30X(self):
-        """Test M-index for grains spread within 45° of the ±X axis."""
-        orientations = (
-            Rotation.from_rotvec(
-                np.stack(
-                    [
-                        [0, x * np.pi / 4 - np.pi / 8, x * np.pi / 4 - np.pi / 8]
-                        for x in rn.default_rng().random(100)
-                    ]
-                )
+    def test_texture_spread45X_ortho(self, seed):
+        """Test for orthorhombic grains spread within 45° of the ±X axis."""
+        orientations = Rotation.from_rotvec(
+            np.stack(
+                [
+                    [0, x * np.pi / 2 - np.pi / 4, x * np.pi / 2 - np.pi / 4]
+                    for x in rn.default_rng(seed=seed).random(1000)
+                ]
             )
-            .inv()
-            .as_matrix()
-        )
+        ).as_matrix()
         assert np.isclose(
-            _diagnostics.misorientation_index(orientations), 0.82, atol=0.1
+            _diagnostics.misorientation_index(
+                orientations, _geo.LatticeSystem.orthorhombic
+            ),
+            0.81,
+            atol=1e-2,
+            rtol=0,
         )
 
-    def test_textures_increasing(self):
+    def test_textures_increasing_ortho(self, seed):
         """Test M-index for textures of increasing strength."""
         M_vals = np.empty(4)
-        factors = (2, 4, 8, 16)
+        factors = (2, 3, 4, 5)
         for i, factor in enumerate(factors):
-            orientations = (
-                Rotation.from_rotvec(
-                    np.stack(
+            orientations = Rotation.from_rotvec(
+                np.stack(
+                    [
                         [
-                            [
-                                0,
-                                x * np.pi / factor - np.pi / factor / 2,
-                                x * np.pi / factor - np.pi / factor / 2,
-                            ]
-                            for x in rn.default_rng().random(500)
+                            0,
+                            x * np.pi / factor - np.pi / factor / 2,
+                            x * np.pi / factor - np.pi / factor / 2,
                         ]
-                    )
+                        for x in rn.default_rng(seed=seed).random(1000)
+                    ]
                 )
-                .inv()
-                .as_matrix()
+            ).as_matrix()
+            M_vals[i] = _diagnostics.misorientation_index(
+                orientations, _geo.LatticeSystem.orthorhombic
             )
-            M_vals[i] = _diagnostics.misorientation_index(orientations)
         assert np.all(
             np.diff(M_vals) >= 0
         ), f"M-index values {M_vals} are not increasing"
 
-    def test_texture_girdle(self):
+    def test_texture_girdle_ortho(self, seed):
         """Test M-index for girdled texture."""
-        rng = rn.default_rng()
+        rng = rn.default_rng(seed=seed)
         a = np.zeros(1000)
         b = np.zeros(1000)
         c = rng.normal(0, 1.0, size=1000)
         d = rng.normal(0, 1.0, size=1000)
         orientations = Rotation.from_quat(np.column_stack([a, b, c, d])).as_matrix()
-        np.isclose(_diagnostics.misorientation_index(orientations), 0.37, atol=0.03)
+        assert np.isclose(
+            _diagnostics.misorientation_index(
+                orientations, _geo.LatticeSystem.orthorhombic
+            ),
+            0.67,
+            atol=1e-2,
+        )

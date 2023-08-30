@@ -1,6 +1,7 @@
 """> PyDRex: Miscellaneous utility methods."""
 from datetime import datetime
 
+import numba as nb
 import numpy as np
 
 
@@ -54,12 +55,13 @@ def lag_2d_corner_flow(θ):
     )
 
 
+@nb.njit(fastmath=True)
 def quat_product(q1, q2):
     """Quaternion product, q1, q2 and output are in scalar-last (x,y,z,w) format."""
-    return (
+    return [
         *q1[-1] * q2[:3] + q2[-1] * q1[:3] + np.cross(q1[:3], q1[:3]),
         q1[-1] * q2[-1] - np.dot(q1[:3], q2[:3]),
-    )
+    ]
 
 
 def __run_doctests():

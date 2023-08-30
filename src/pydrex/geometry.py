@@ -77,8 +77,7 @@ def misorientation_angles(q1_array, q2_array):
         NxAx4               NxBx4               N
 
     .. warning ::
-        This method must be able to allocate an array of shape Nx(A*B) and will
-        generally take ~1min for N = 499500 (1000 choose 2).
+        This method must be able to allocate a floating point array of shape Nx(A*B)
 
     Uses ~25% less memory than the same operation with rotation matrices.
 
@@ -88,34 +87,37 @@ def misorientation_angles(q1_array, q2_array):
 
 
     """
-    if q1_array.shape != q2_array.shape:
+    if q1_array.shape[0] != q2_array.shape[0]:
         raise ValueError(
-            "input arrays must have identical shape,"
-            + f" but {q1_array.shape} != {q2_array.shape}"
+            "the first dimensions of q1_array and q2_array must be of equal length"
+            + f" but {q1_array.shape[0]} != {q2_array.shape[0]}"
         )
-    angles = [
-        2
-        * np.rad2deg(
-            np.arccos(
-                np.abs(
-                    np.clip(
-                        np.sum(q1_array[:, i] * q2_array[:, j], axis=1),
-                        -1.0,
-                        1.0,
+    angles = np.empty((q1_array.shape[0], q1_array.shape[1] * q2_array.shape[1]))
+    k = 0
+    for i in range(q1_array.shape[1]):
+        for j in range(q2_array.shape[1]):
+            angles[:, k] = 2 * np.rad2deg(
+                np.arccos(
+                    np.abs(
+                        np.clip(
+                            np.sum(q1_array[:, i] * q2_array[:, j], axis=1),
+                            -1.0,
+                            1.0,
+                        )
                     )
                 )
             )
-        )
-        for j in range(q2_array.shape[1])
-        for i in range(q1_array.shape[1])
-    ]
+            k += 1
     return np.min(angles, axis=1)
 
 
 def symmetry_operations(system: LatticeSystem):
     """Get sequence of symmetry operations for the given `LatticeSystem`.
 
-    Transforms are
+    Returned transforms are either quaternions (for rotations of the lattice) or 4x4
+    matrices which pre-multiply a quaternion to give a reflected variant (reflections
+    are *improper* rotations and cannot be represented as quaternions or SciPy rotation
+    matrices).
 
     """
     match system:
@@ -299,3 +301,9 @@ def shirley_concentric_squaredisk(xvals, yvals):
         ],
     ).transpose()
     return x_disk, y_disk
+
+
+def __run_doctests():
+    import doctest
+
+    return doctest.testmod()

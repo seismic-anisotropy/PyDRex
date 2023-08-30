@@ -51,6 +51,7 @@ from scipy.spatial.transform import Rotation
 
 from pydrex import core as _core
 from pydrex import diagnostics as _diagnostics
+from pydrex import geometry as _geo
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
@@ -202,7 +203,7 @@ class TestOlivineA:
                         [1, 0, 0],
                     )
                     misorient_indices[idx] = _diagnostics.misorientation_index(
-                        matrices
+                        matrices, _geo.LatticeSystem.orthorhombic
                     )
                     bingham_vectors[idx] = direction_mean
 

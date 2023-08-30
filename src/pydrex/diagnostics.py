@@ -305,7 +305,7 @@ def misorientation_index(orientations, system: _geo.LatticeSystem, bins=None):
     .. warning ::
         This method must be able to allocate an array of shape (N choose 2)x(M**2) for N
         the length of `orientations` and M the number of symmetry operations for the
-        given `system`, and generally takes ~1min for N = 1000.
+        given `system`.
 
     See [Skemer et al. 2005](https://doi.org/10.1016/j.tecto.2005.08.023).
 
