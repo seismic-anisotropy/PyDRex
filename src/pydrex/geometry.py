@@ -1,6 +1,34 @@
 """> PyDRex: Functions for geometric coordinate conversions and projections."""
+from enum import Enum, unique
 import numpy as np
 from scipy import linalg as la
+from scipy.spatial.transform import Rotation
+
+
+@unique
+class LatticeSystem(Enum):
+    """Crystallographic lattice systems supported by postprocessing methods.
+
+    The value of a member is `(a, b)` with `a` and `b` as given in the table below.
+    The additional row lists the maximum misorientation angle between two crystallites
+    for the given lattice system.
+
+                triclinic  monoclinic  orthorhombic  rhombohedral tetragonal hexagonal
+        ------------------------------------------------------------------------------
+        a       1          2           2             3            4          6
+        b       1          2           4             6            8          12
+        θmax    180°       180°        120°          120°         90°        90°
+
+    This is identically Table 1 in [Grimmer 1979](https://doi.org/10.1016/0036-9748(79)90058-9).
+
+    """
+
+    triclinic = (1, 1)
+    monoclinic = (2, 2)
+    orthorhombic = (2, 4)
+    rhombohedral = (3, 6)
+    tetragonal = (4, 8)
+    hexagonal = (6, 12)
 
 
 def to_cartesian(ϕ, θ, r=1):
@@ -35,6 +63,111 @@ def to_spherical(x, y, z):
     z = np.atleast_1d(z).astype(float)
     r = np.sqrt(x**2 + y**2 + z**2)
     return (r, np.arctan2(y, x), np.sign(y) * np.arccos(x / np.sqrt(x**2 + y**2)))
+
+
+def misorientation_angles(q1_array, q2_array):
+    """Calculate minimum misorientation angles for collections of rotation quaternions.
+
+    Calculate the smallest angular distance between any quaterions `q1_array[:, i]` and
+    `q2_array[:, j]`, where i == j and the first dimensions of `q1_array` and `q2_array`
+    are of equal length (the output will also be this long):
+
+        q1_array.shape      q2_array.shape      len(output)
+        ---------------------------------------------------
+        NxAx4               NxBx4               N
+
+    .. warning ::
+        This method must be able to allocate an array of shape Nx(A*B) and will
+        generally take ~1min for N = 499500 (1000 choose 2).
+
+    Uses ~25% less memory than the same operation with rotation matrices.
+
+    See also:
+    - <https://math.stackexchange.com/questions/90081/quaternion-distance>
+    - <https://link.springer.com/article/10.1007/s10851-009-0161-2>
+
+
+    """
+    if q1_array.shape != q2_array.shape:
+        raise ValueError(
+            "input arrays must have identical shape,"
+            + f" but {q1_array.shape} != {q2_array.shape}"
+        )
+    angles = [
+        2
+        * np.rad2deg(
+            np.arccos(
+                np.abs(
+                    np.clip(
+                        np.sum(q1_array[:, i] * q2_array[:, j], axis=1),
+                        -1.0,
+                        1.0,
+                    )
+                )
+            )
+        )
+        for j in range(q2_array.shape[1])
+        for i in range(q1_array.shape[1])
+    ]
+    return np.min(angles, axis=1)
+
+
+def symmetry_operations(system: LatticeSystem):
+    """Get sequence of symmetry operations for the given `LatticeSystem`.
+
+    Transforms are
+
+    """
+    match system:
+        case LatticeSystem.triclinic:  # Triclinic lattice, no additional symmetry.
+            return [Rotation.identity().as_quat()]
+        case LatticeSystem.monoclinic | LatticeSystem.orthorhombic:
+            # Rotation by π around any of the Cartesian axes.
+            rotations = [
+                Rotation.from_rotvec(np.pi * np.asarray(vector)).as_quat()
+                for vector in [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
+            ]
+            # Reflections around any of the Cartesian planes.
+            # Quaternion space matrix equivalents for the R^3 operations:
+            #   np.diag(x) for x in ([1, 1, -1], [1, -1, 1], [-1, 1, 1])
+            # https://stackoverflow.com/a/33999726/12519962
+            # NOTE: Don't use scipy Rotation, it silently converts to proper rotations.
+            # There is maybe <https://github.com/matthew-brett/transforms3d>,
+            # but another dependency just for this might not be worth it.
+            reflections = [
+                np.diag(x) for x in ([1, -1, -1, 1], [1, -1, 1, -1], [1, 1, -1, -1])
+            ]
+            return [*rotations, *reflections]
+        case LatticeSystem.rhombohedral:
+            # Rotations by n * π/3, n ∈ {1, 2} around any of the Cartesian axes.
+            return [
+                Rotation.from_rotvec(i * np.pi / 3 * np.asarray(vector)).as_quat()
+                for vector in [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
+                for i in (1, 2)
+            ]
+        case LatticeSystem.tetragonal:
+            # Rotations by n * π/2, n ∈ {1, 2, 3} around any of the Cartesian axes.
+            return [
+                Rotation.from_rotvec(i * np.pi / 2 * np.asarray(vector)).as_quat()
+                for vector in [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
+                for i in (1, 2, 3)
+            ]
+        case LatticeSystem.hexagonal:
+            # Rotations by n * π/3, n ∈ {1, 2} around any of the Cartesian axes.
+            rotations3 = [
+                Rotation.from_rotvec(i * np.pi / 3 * np.asarray(vector)).as_quat()
+                for vector in [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
+                for i in (1, 2)
+            ]
+            # Rotations by n * π/6, n ∈ {1, ..., 5} around any of the Cartesian axes.
+            rotations6 = [
+                Rotation.from_rotvec(i * np.pi / 3 * np.asarray(vector)).as_quat()
+                for vector in [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
+                for i in (1, 2, 3, 4, 5, 6)
+            ]
+            return [*rotations3, rotations6]
+        case _:
+            raise ValueError(f"unsupported lattice system: {system}")
 
 
 def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):

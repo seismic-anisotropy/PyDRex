@@ -5,23 +5,50 @@ from pydrex import geometry as _geo
 
 
 def resample_orientations(orientations, fractions, n_samples=None, seed=None):
-    """Generate new samples from `orientations` weighed by the volume distribution.
+    """Return new samples from `orientations` weighted by the volume distribution.
 
-    If the optional number of samples `n_samples` is not specified,
-    it will be set to the number of original "grains" (length of `fractions`).
-    The argument `seed` can be used to seed the random number generator.
+    Args:
+    - `orientations` (array) — NxMx3x3 array of orientations
+    - `fractions` (array) — NxM array of grain volume fractions
+    - `n_samples` (int) — optional number of samples to return, default is M
+    - `seed` (int) — optional seed for the random number generator, which is used to
+      pick random grain volume samples from the discrete distribution
+
+    Returns the Nx`n_samples`x3x3 orientations and associated sorted (ascending) grain
+    volumes.
 
     """
+    # Allow lists of Rotation.as_matrix() inputs.
+    _orientations = np.asarray(orientations)
+    _fractions = np.asarray(fractions)
+    # Fail early to prevent possibly expensive data processing on incorrect data arrays.
+    if (
+        len(_orientations.shape) != 4
+        or len(_fractions.shape) != 2
+        or _orientations.shape[0] != _fractions.shape[0]
+        or _orientations.shape[1] != _fractions.shape[1]
+        or _orientations.shape[2] != _orientations.shape[3] != 3
+    ):
+        raise ValueError(
+            "invalid shape of input arrays,"
+            + f" got orientations of shape {_orientations.shape}"
+            + f" and fractions of shape {_fractions.shape}"
+        )
     rng = np.random.default_rng(seed=seed)
     if n_samples is None:
-        n_samples = len(fractions)
-    sort_ascending = np.argsort(fractions)
-    # Cumulative volume fractions
-    fractions_ascending = fractions[sort_ascending]
-    cumfrac = fractions_ascending.cumsum()
-    # Number of new samples with volume less than each cumulative fraction.
-    count_less = np.searchsorted(cumfrac, rng.random(n_samples))
-    return orientations[sort_ascending][count_less], fractions_ascending[count_less]
+        n_samples = len(_fractions)
+    out_orientations = np.empty((len(_fractions), n_samples, 3, 3))
+    out_fractions = np.empty((len(_fractions), n_samples))
+    for i, (frac, orient) in enumerate(zip(_fractions, _orientations)):
+        sort_ascending = np.argsort(frac)
+        # Cumulative volume fractions.
+        frac_ascending = frac[sort_ascending]
+        cumfrac = frac_ascending.cumsum()
+        # Number of new samples with volume less than each cumulative fraction.
+        count_less = np.searchsorted(cumfrac, rng.random(n_samples))
+        out_orientations[i, ...] = orient[sort_ascending][count_less]
+        out_fractions[i, ...] = frac_ascending[count_less]
+    return out_orientations, out_fractions
 
 
 def _scatter_matrix(orientations, row):
@@ -40,30 +67,20 @@ def _scatter_matrix(orientations, row):
     return scatter
 
 
-def misorientations_random(low, high, system=(2, 4)):
+def misorientations_random(low, high, system: _geo.LatticeSystem):
     """Get expected count of misorientation angles for an isotropic aggregate.
 
     Estimate the expected number of misorientation angles between grains
     that would fall within $($`low`, `high`$)$ in degrees for an aggregate
     with randomly oriented grains, where `low` $∈ [0, $`high`$)$,
     and `high` is bounded by the maximum theoretical misorientation angle
-    for the given symmetry system.
-
-    The optional argument `system` accepts a tuple of integers (a, b)
-    that specifies the crystal symmetry system according to:
-
-        system  triclinic  monoclinic  orthorhombic  rhombohedral tetragonal hexagonal
-        ------------------------------------------------------------------------------
-        a       1          2           2             3            4          6
-        b       1          2           4             6            8          12
-        θmax    180°       180°        120°          120°         90°        90°
-
-    This is identically Table 1 in [Grimmer 1979](https://doi.org/10.1016/0036-9748(79)90058-9).
-    The orthorhombic system (olivine) is selected by default.
+    for the given lattice symmetry system.
+    See `_geo.LatticeSystem` for supported systems.
 
     """
+    # TODO: Add cubic system: [Handscomb 1958](https://doi.org/10.4153/CJM-1958-010-0)
     max_θ = _max_misorientation(system)
-    M, N = system
+    M, N = system.value
     if not 0 <= low <= high <= max_θ:
         raise ValueError(
             f"bounds must obey `low` ∈ [0, `high`) and `high` < {max_θ}.\n"
@@ -124,16 +141,17 @@ def misorientations_random(low, high, system=(2, 4)):
 
 
 def _max_misorientation(system):
-    # Maximum misorientation angle for two grains of the given symmetry system.
+    # Maximum misorientation angle for two grains of the given lattice symmetry system.
+    s = _geo.LatticeSystem
     match system:
-        case (2, 4) | (3, 6):
+        case s.orthorhombic | s.rhombohedral:
             max_θ = 120
-        case (4, 8) | (6, 12):
+        case s.tetragonal | s.hexagonal:
             max_θ = 90
-        case (1, 1) | (2, 2):
+        case s.triclinic | s.monoclinic:
             max_θ = 180
         case _:
-            raise ValueError(f"incorrect system values (M, N) = {system}")
+            raise ValueError(f"unsupported lattice system: {system}")
     return max_θ
 
 

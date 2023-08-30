@@ -170,13 +170,15 @@ from pydrex.core import (
 )
 from pydrex.diagnostics import (
     bingham_average,
+    misorientation_index,
+    misorientation_indices,
     coaxial_index,
     finite_strain,
-    misorientation_angles,
     smallest_angle,
     symmetry,
 )
 from pydrex.geometry import (
+    misorientation_angles,
     lambert_equal_area,
     poles,
     shirley_concentric_squaredisk,

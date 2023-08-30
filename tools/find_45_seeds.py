@@ -11,9 +11,9 @@ for i in range(10000):
         if (
             np.abs(
                 _d.smallest_angle(
-                    _d.anisotropy(_m.voigt_averages([m], {"olivine_fraction": 1})[0])[
-                        1
-                    ][2, :],
+                    _d.elasticity_components(
+                        _m.voigt_averages([m], {"olivine_fraction": 1})[0]
+                    )["hexagonal_axis"][0],
                     [1, 0, 0],
                 )
                 - 45

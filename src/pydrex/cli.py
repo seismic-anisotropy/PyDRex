@@ -5,8 +5,6 @@ from collections import namedtuple
 from dataclasses import dataclass
 from zipfile import ZipFile
 
-import numpy as np
-
 from pydrex import exceptions as _err
 from pydrex import io as _io
 from pydrex import logger as _log
@@ -80,12 +78,10 @@ class PoleFigureVisualiser:
                     )
                     i_range = range(0, 25)
 
-            orientations_resampled = [
-                _stats.resample_orientations(
-                    mineral.orientations[i], mineral.fractions[i]
-                )[0]
-                for i in np.arange(i_range.start, i_range.stop, i_range.step, dtype=int)
-            ]
+            orientations_resampled, _ = _stats.resample_orientations(
+                mineral.orientations[i_range.start:i_range.stop:i_range.step],
+                mineral.fractions[i_range.start:i_range.stop:i_range.step],
+            )
             _vis.polefigures(
                 orientations_resampled,
                 ref_axes=args.ref_axes,

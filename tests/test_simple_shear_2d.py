@@ -100,20 +100,20 @@ class TestOlivineA:
         texture_symmetry = np.zeros_like(timestamps)
         if use_bingham_average:
             mean_angles = np.zeros_like(timestamps)
-        for idx, matrices in enumerate(mineral.orientations):
-            orientations_resampled, _ = _stats.resample_orientations(
-                matrices, mineral.fractions[idx], seed=seed
-            )
+        orientations_resampled, _ = _stats.resample_orientations(
+            mineral.orientations, mineral.fractions, seed=seed
+        )
+        for idx, matrices in enumerate(orientations_resampled):
             if use_bingham_average:
                 direction_mean = _diagnostics.bingham_average(
-                    orientations_resampled,
+                    matrices,
                     axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
                 )
                 mean_angles[idx] = _diagnostics.smallest_angle(
                     direction_mean, shear_direction
                 )
             texture_symmetry[idx] = _diagnostics.symmetry(
-                orientations_resampled,
+                matrices,
                 axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
             )[0]
 
@@ -121,10 +121,10 @@ class TestOlivineA:
             # Use SCCS axis (hexagonal symmetry) for the angle instead (opt).
             mean_angles = np.array(
                 [
-                    _diagnostics.smallest_angle(
-                        _diagnostics.anisotropy(v)[1][2, :], shear_direction
-                    )
-                    for v in _minerals.voigt_averages([mineral], params)
+                    _diagnostics.smallest_angle(hex_axis, shear_direction)
+                    for hex_axis in _diagnostics.elasticity_components(
+                        _minerals.voigt_averages([mineral], params)
+                    )["hexagonal_axis"]
                 ]
             )
 

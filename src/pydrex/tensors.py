@@ -22,10 +22,14 @@ PERMUTATION_SYMBOL = np.array(
 def voigt_decompose(matrix):
     """Decompose elastic tensor (as 6x6 Voigt matrix) into distinct contractions.
 
-    Return the only two independent contractions of the elastic tensor, given as a 6x6
-    Voigt `matrix`. For the equivalent 4-th order elastic tensor, the contractions are:
+    Return the only two independent contractions of the elastic tensor given as a 6x6
+    Voigt `matrix`. With reference to the full 4-th order elastic tensor, the
+    contractions are defined as:
     - $d_{ij} = C_{ijkk}$ (dilatational stiffness tensor)
-    - $v_{ij} = C_{ijkj}$
+    - $v_{ij} = C_{ijkj}$ (deviatoric stiffness tensor)
+
+    Any vector which is an eigenvector of both $d_{ij}$ and $v_{ij}$ is always normal to
+    a symmetry plane of the elastic medium.
 
     See Equations 3.4 & 3.5 in [Browaeys & Chevrot](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
 
@@ -38,34 +42,85 @@ def voigt_decompose(matrix):
     stiffness_dilat[0, 1] = stiffness_dilat[1, 0] = matrix[:3, 5].sum()
     stiffness_dilat[0, 2] = stiffness_dilat[2, 0] = matrix[:3, 4].sum()
     stiffness_dilat[1, 2] = stiffness_dilat[2, 1] = matrix[:3, 3].sum()
-    # 2. Compose vᵢⱼ = Cᵢⱼₖⱼ
+    # 2. Compose vᵢⱼ = Cᵢⱼₖⱼ (deviatoric stiffness tensor)
     # Eq. 3.5, Browaeys & Chevrot, 2004.
-    stiffness_voigt = np.empty((3, 3))
-    stiffness_voigt[0, 0] = matrix[0, 0] + matrix[4, 4] + matrix[5, 5]
-    stiffness_voigt[1, 1] = matrix[1, 1] + matrix[3, 3] + matrix[5, 5]
-    stiffness_voigt[2, 2] = matrix[2, 2] + matrix[3, 3] + matrix[4, 4]
-    stiffness_voigt[0, 1] = matrix[0, 5] + matrix[1, 5] + matrix[3, 4]
-    stiffness_voigt[0, 2] = matrix[0, 4] + matrix[2, 4] + matrix[3, 5]
-    stiffness_voigt[1, 2] = matrix[1, 3] + matrix[2, 3] + matrix[4, 5]
-    stiffness_voigt = upper_tri_to_symmetric(stiffness_voigt)
-    return stiffness_dilat, stiffness_voigt
+    stiffness_deviat = np.empty((3, 3))
+    stiffness_deviat[0, 0] = matrix[0, 0] + matrix[4, 4] + matrix[5, 5]
+    stiffness_deviat[1, 1] = matrix[1, 1] + matrix[3, 3] + matrix[5, 5]
+    stiffness_deviat[2, 2] = matrix[2, 2] + matrix[3, 3] + matrix[4, 4]
+    stiffness_deviat[0, 1] = matrix[0, 5] + matrix[1, 5] + matrix[3, 4]
+    stiffness_deviat[0, 2] = matrix[0, 4] + matrix[2, 4] + matrix[3, 5]
+    stiffness_deviat[1, 2] = matrix[1, 3] + matrix[2, 3] + matrix[4, 5]
+    stiffness_deviat = upper_tri_to_symmetric(stiffness_deviat)
+    return stiffness_dilat, stiffness_deviat
 
 
 @nb.njit(fastmath=True)
-def hex_projector(x):
-    """Projector p₄ onto hexagonal (a.k.a. transverse isotropy) symmetry.
+def mono_project(voigt_vector):
+    """Project 21-component `voigt_vector` onto monoclinic symmetry subspace.
+
+    Monoclinic symmetry is characterised by 13 independent elasticity components.
 
     See [Browaeys & Chevrot](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
 
     """
-    y = np.zeros(21)
-    y[0] = y[1] = 3 / 8 * (x[0] + x[1]) + x[5] / 4 / np.sqrt(2) + x[8] / 4
-    y[2] = x[2]
-    y[3] = y[4] = (x[3] + x[4]) / 2
-    y[5] = (x[0] + x[1]) / 4 / np.sqrt(2) + 3 / 4 * x[5] - x[8] / 2 / np.sqrt(2)
-    y[6] = y[7] = (x[6] + x[7]) / 2
-    y[8] = (x[0] + x[1]) / 4 - x[5] / 2 / np.sqrt(2) + x[8] / 2
-    return np.linalg.norm(x - y, ord=2)
+    out = voigt_vector.copy()
+    inds = (9, 10, 12, 13, 15, 16, 18, 19)
+    for i in inds:
+        out[i] = 0
+    return out
+
+
+@nb.njit(fastmath=True)
+def ortho_project(voigt_vector):
+    """Project 21-component `voigt_vector` onto orthorhombic symmetry subspace.
+
+    Orthorhombic symmetry is characterised by 9 independent elasticity components.
+
+    See [Browaeys & Chevrot](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
+
+    """
+    out = voigt_vector.copy()
+    out[9:] = 0
+    return out
+
+
+@nb.njit(fastmath=True)
+def tetr_project(voigt_vector):
+    """Project 21-component `voigt_vector` onto tetragonal symmetry subspace.
+
+    Tetragonal symmetry is characterised by 6 independent elasticity components.
+
+    See [Browaeys & Chevrot](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
+
+    """
+    out = voigt_vector.copy()
+    out[9:] = 0
+    for i, j in ((0, 1), (3, 4), (6, 7)):
+        for k in range(2):
+            out[i+k] = 0.5 * (voigt_vector[i] + voigt_vector[j])
+    return out
+
+
+@nb.njit(fastmath=True)
+def hex_project(voigt_vector):
+    """Project 21-component `voigt_vector` onto hexagonal symmetry subspace.
+
+    Hexagonal symmetry (a.k.a. transverse isotropy) is characterised by 5 independent
+    elasticity components.
+
+    See [Browaeys & Chevrot](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
+
+    """
+    x = voigt_vector
+    out = np.zeros(21)
+    out[0] = out[1] = 3 / 8 * (x[0] + x[1]) + x[5] / 4 / np.sqrt(2) + x[8] / 4
+    out[2] = x[2]
+    out[3] = out[4] = (x[3] + x[4]) / 2
+    out[5] = (x[0] + x[1]) / 4 / np.sqrt(2) + 3 / 4 * x[5] - x[8] / 2 / np.sqrt(2)
+    out[6] = out[7] = (x[6] + x[7]) / 2
+    out[8] = (x[0] + x[1]) / 4 - x[5] / 2 / np.sqrt(2) + x[8] / 2
+    return out
 
 
 @nb.njit(fastmath=True)

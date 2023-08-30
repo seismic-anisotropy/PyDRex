@@ -1,10 +1,68 @@
 """> PyDRex: tests for texture diagnostics."""
+import pytest
 import numpy as np
 from numpy import random as rn
 from scipy.spatial.transform import Rotation
 
 from pydrex import diagnostics as _diagnostics
 from pydrex import stats as _stats
+
+
+class TestElasticityComponents:
+    """Test symmetry decomposition of elastic tensors."""
+
+    def test_olivine_Browaeys2004(self):
+        C = np.array(
+            [
+                [192, 66, 60, 0, 0, 0],
+                [66, 160, 56, 0, 0, 0],
+                [60, 56, 272, 0, 0, 0],
+                [0, 0, 0, 60, 0, 0],
+                [0, 0, 0, 0, 62, 0],
+                [0, 0, 0, 0, 0, 49],
+            ]
+        )
+        out = _diagnostics.elasticity_components([C])
+        # FIXME: How do they get 15.2% for hexagonal? It isn't the ratio of the norms
+        # nor the ratio of the squared norms...
+        expected = {
+            "bulk_modulus": 109.8,
+            "shear_modulus": 63.7,
+            "percent_anisotropy": 20.7,
+            # "percent_hexagonal": 15.2,
+            # "percent_tetragonal": 0.625,
+            # "percent_orthorhombic": 4.875,
+            "percent_monoclinic": 0,
+            "percent_triclinic": 0,
+        }
+        for k, v in expected.items():
+            assert np.isclose(out[k][0], v, atol=0.1, rtol=0), f"{k}: {out[k]} != {v}"
+        np.testing.assert_allclose(out["hexagonal_axis"][0], [0, 0, 1])
+
+    def test_enstatite_Browaeys2004(self):
+        C = np.array([
+            [225, 54, 72, 0, 0, 0],
+            [54, 214, 53, 0, 0, 0],
+            [72, 53, 178, 0, 0, 0],
+            [0, 0, 0, 78, 0, 0],
+            [0, 0, 0, 0, 82, 0],
+            [0, 0, 0, 0, 0, 76],
+        ])
+        out = _diagnostics.elasticity_components([C])
+        # FIXME: Test remaining percentages when I figure out how they get the values.
+        expected = {
+            "bulk_modulus": 108.3,
+            "shear_modulus": 76.4,
+            "percent_anisotropy": 9.2,
+            # "percent_hexagonal": 4.3,
+            # "percent_tetragonal": ?,  # + ortho = 4.9
+            # "percent_orthorhombic": ?,  # + tetra = 4.9
+            "percent_monoclinic": 0,
+            "percent_triclinic": 0,
+        }
+        for k, v in expected.items():
+            assert np.isclose(out[k][0], v, atol=0.1, rtol=0), f"{k}: {out[k]} != {v}"
+        np.testing.assert_allclose(out["hexagonal_axis"][0], [0, 0, 1])
 
 
 class TestSymmetryPGR:
@@ -66,12 +124,12 @@ class TestVolumeWeighting:
             .as_matrix()
         )
         fractions = np.array([0.25, 0.6, 0.15])
-        new_orientations = _stats.resample_orientations(
-            orientations,
-            fractions,
+        new_orientations, _ = _stats.resample_orientations(
+            [orientations],
+            [fractions],
             25,
         )
-        assert np.all(a in orientations for a in new_orientations)
+        assert np.all(a in orientations for a in new_orientations[0])
 
     def test_downsample(self):
         """Test downsampling of orientation data."""
@@ -88,11 +146,34 @@ class TestVolumeWeighting:
         )
         fractions = np.array([0.25, 0.6, 0.15])
         new_orientations = _stats.resample_orientations(
-            orientations,
-            fractions,
+            [orientations],
+            [fractions],
             2,
         )
-        assert np.all(a in orientations for a in new_orientations)
+        assert np.all(a in orientations for a in new_orientations[0])
+
+    def test_common_input_errors(self):
+        """Test that exceptions are raised for bad input data."""
+        orientations = Rotation.from_rotvec(
+            [
+                [0, 0, 0],
+                [0, 0, np.pi / 6],
+                [np.pi / 6, 0, 0],
+            ]
+        )
+        fractions = np.array([0.25, 0.6, 0.15])
+        with pytest.raises(ValueError):
+            # SciPy Rotation instance is not valid input.
+            _stats.resample_orientations(orientations, fractions)
+            # Input must be a stack of orientations.
+            _stats.resample_orientations(orientations.as_matrix(), fractions)
+            # Input must be a stack of fractions.
+            _stats.resample_orientations([orientations.as_matrix()], fractions)
+            # First two dimensions of inputs must match.
+            _stats.resample_orientations([orientations.as_matrix()], [fractions[:-1]])
+
+        # This is the proper way to do it:
+        _stats.resample_orientations([orientations.as_matrix()], [fractions])
 
 
 class TestBinghamStats:
