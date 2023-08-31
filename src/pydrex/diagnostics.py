@@ -18,17 +18,12 @@ r"""> PyDRex: Methods to calculate texture and strain diagnostics.
 import os
 import functools as ft
 from multiprocessing import Pool
-import itertools as it
 
 import numpy as np
 import scipy.linalg as la
-import scipy.special as sp
-from scipy.spatial.transform import Rotation
 
-from pydrex import logger as _log
-from pydrex import stats as _st
+from pydrex import stats as _stats
 from pydrex import tensors as _tensors
-from pydrex import utils as _utils
 from pydrex import geometry as _geo
 
 
@@ -205,7 +200,9 @@ def bingham_average(orientations, axis="a"):
     # Eigenvector corresponding to largest eigenvalue is the mean direction.
     # SciPy returns eigenvalues in ascending order (same order for vectors).
     # SciPy uses lower triangular entries by default, no need for all components.
-    mean_vector = la.eigh(_st._scatter_matrix(np.asarray(orientations), row))[1][:, -1]
+    mean_vector = la.eigh(_stats._scatter_matrix(np.asarray(orientations), row))[1][
+        :, -1
+    ]
     return mean_vector / la.norm(mean_vector)
 
 
@@ -255,7 +252,7 @@ def symmetry(orientations, axis="a"):
         case _:
             raise ValueError(f"axis must be 'a', 'b', or 'c', not {axis}")
 
-    scatter = _st._scatter_matrix(orientations, row)
+    scatter = _stats._scatter_matrix(orientations, row)
     # SciPy uses lower triangular entries by default, no need for all components.
     eigvals_descending = la.eigvalsh(scatter)[::-1]
     sum_eigvals = np.sum(eigvals_descending)
@@ -314,43 +311,18 @@ def misorientation_index(orientations, system: _geo.LatticeSystem, bins=None):
     See [Skemer et al. 2005](https://doi.org/10.1016/j.tecto.2005.08.023).
 
     """
-    symmetry_ops = _geo.symmetry_operations(system)
-    # Compute and bin misorientation angles from orientation data.
-    q1_array = np.empty(
-        (sp.comb(len(orientations), 2, exact=True), len(symmetry_ops), 4)
+    θmax = _stats._max_misorientation(system)
+    misorientations_count, bin_edges = _stats.misorientation_hist(
+        orientations, system, bins
     )
-    q2_array = np.empty(
-        (sp.comb(len(orientations), 2, exact=True), len(symmetry_ops), 4)
-    )
-    for i, e in enumerate(
-        it.combinations(Rotation.from_matrix(orientations).as_quat(), 2)
-    ):
-        q1, q2 = list(e)
-        for j, qs in enumerate(symmetry_ops):
-            if qs.shape == (4, 4):  # Reflection, not a proper rotation.
-                q1_array[i, j] = qs @ q1
-                q2_array[i, j] = qs @ q2
-            else:
-                q1_array[i, j] = _utils.quat_product(qs, q1)
-                q2_array[i, j] = _utils.quat_product(qs, q2)
-
-    _log.debug("Largest array size: %s GB", q1_array.nbytes / 1e9)
-
-    misorientations_data = _geo.misorientation_angles(q1_array, q2_array)
-    θmax = _st._max_misorientation(system)
-    misorientations_count, bin_edges = np.histogram(
-        misorientations_data, bins=θmax, range=(0, θmax), density=True
-    )
-
     # Compute counts of theoretical misorientation for an isotropic aggregate,
     # using the same bins (Skemer 2005 recommend 1° bins).
     misorientations_theory = np.array(
         [
-            _st.misorientations_random(bin_edges[i], bin_edges[i + 1], system)
+            _stats.misorientations_random(bin_edges[i], bin_edges[i + 1], system)
             for i in range(len(misorientations_count))
         ]
     )
-
     # Equation 2 in Skemer 2005.
     return (θmax / (2 * len(misorientations_count))) * np.sum(
         np.abs(misorientations_theory - misorientations_count)

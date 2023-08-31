@@ -1,7 +1,14 @@
 """> PyDRex: Statistical methods for orientation and elasticity data."""
+import itertools as it
+
+from scipy.spatial.transform import Rotation
 import numpy as np
+import scipy.special as sp
 
 from pydrex import geometry as _geo
+from pydrex import logger as _log
+from pydrex import stats as _stats
+from pydrex import utils as _utils
 
 
 def resample_orientations(orientations, fractions, n_samples=None, seed=None):
@@ -65,6 +72,51 @@ def _scatter_matrix(orientations, row):
     scatter[2, 0] = np.sum(orientations[:, row, 0] * orientations[:, row, 2])
     scatter[2, 1] = np.sum(orientations[:, row, 1] * orientations[:, row, 2])
     return scatter
+
+
+def misorientation_hist(orientations, system: _geo.LatticeSystem, bins=None):
+    """Calculate misorientation histogram for polycrystal orientations.
+
+    The `bins` argument is passed to `numpy.histogram`.
+    If left as `None`, 1° bins will be used as recommended by the reference paper.
+    The `symmetry` argument specifies the lattice system which determines intrinsic
+    symmetry degeneracies and the maximum allowable misorientation angle.
+    See `_geo.LatticeSystem` for supported systems.
+
+    .. warning::
+        This method must be able to allocate an array of shape (N choose 2)x(M**2) for N
+        the length of `orientations` and M the number of symmetry operations for the
+        given `system`.
+
+    See [Skemer et al. 2005](https://doi.org/10.1016/j.tecto.2005.08.023).
+
+    """
+    symmetry_ops = _geo.symmetry_operations(system)
+    # Compute and bin misorientation angles from orientation data.
+    q1_array = np.empty(
+        (sp.comb(len(orientations), 2, exact=True), len(symmetry_ops), 4)
+    )
+    q2_array = np.empty(
+        (sp.comb(len(orientations), 2, exact=True), len(symmetry_ops), 4)
+    )
+    for i, e in enumerate(
+        it.combinations(Rotation.from_matrix(orientations).as_quat(), 2)
+    ):
+        q1, q2 = list(e)
+        for j, qs in enumerate(symmetry_ops):
+            if qs.shape == (4, 4):  # Reflection, not a proper rotation.
+                q1_array[i, j] = qs @ q1
+                q2_array[i, j] = qs @ q2
+            else:
+                q1_array[i, j] = _utils.quat_product(qs, q1)
+                q2_array[i, j] = _utils.quat_product(qs, q2)
+
+    _log.debug("calculating misorientations...")
+    _log.debug("largest array size: %s GB", q1_array.nbytes / 1e9)
+
+    misorientations_data = _geo.misorientation_angles(q1_array, q2_array)
+    θmax = _stats._max_misorientation(system)
+    return np.histogram(misorientations_data, bins=θmax, range=(0, θmax), density=True)
 
 
 def misorientations_random(low, high, system: _geo.LatticeSystem):
