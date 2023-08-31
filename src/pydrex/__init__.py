@@ -9,28 +9,29 @@ r"""
 
 ## About
 
-Viscoplastic deformation of minerals, e.g. in Earth's mantle,
-leads to distinct signatures in the mineral texture.
-Many minerals naturally occur in polycrystalline form,
-which means that they are composed of many grains with different volumes
-and lattice orientations.
-Preferential alignment of the average lattice orientation is called
-crystallographic preferred orientation (CPO).
-PyDRex simulates the development and evolution of CPO in deforming polycrystals,
-as well as tracking macroscopic finite strain measures.
-Currently, the code supports olivine and enstatite mineral phases.
-The following features are provided:
-- JIT-compiled CPO solver, based on D-Rex, to update the polycrystal orientation distribution based
-  on the macroscopic velocity gradients
-- Crystallographic pole figure visualisation
-- Conversion of elastic tensors to/from Voigt representation
-- Input/output of "SCSV" files, plain text CSV files with a YAML frontmatter for small
-  scientific datasets
-- Voigt averaging to calculate the average elastic tensor of a multiphase polycrystal
-- Texture diagnostics [work in progress] (M-index, bingham average, Point-Girdle-Random symmetry, coaxial
-  a.k.a "BA" index, etc.)
-- Seismic anisotropy diagnostics [work in progress] (% anisotropy, hexagonal symmetry a.k.a transverse
-  isotropy angle)
+Viscoplastic deformation of minerals, e.g. in Earth's mantle, leads to distinct
+signatures in the mineral texture. Many minerals naturally occur in
+polycrystalline form, which means that they are composed of many grains with
+different volumes and lattice orientations. Preferential alignment of the
+average lattice orientation is called crystallographic preferred orientation
+(CPO). PyDRex simulates the development and evolution of CPO in deforming
+polycrystals, as well as tracking macroscopic finite strain measures.
+Currently, the code supports olivine and enstatite mineral phases. The
+following features are provided:
+- JIT-compiled CPO solver, based on the D-Rex model, which updates the
+  polycrystal orientation distribution depending on the macroscopic velocity
+  gradients
+- `Mineral` class which stores attributes of a distinct mineral phase in the
+  polycrystal and its texture snapshots
+- Voigt averaging to calculate the average elastic tensor of a textured,
+  multiphase polycrystal
+- Decomposition of average elastic tensors into components attributed to
+  minerals with distinct lattice symmetries
+- Crystallographic pole figure visualisation (contouring is a work in progress)
+- [work in progress] Texture diagnostics: M-index, bingham average,
+  Point-Girdle-Random symmetry, coaxial a.k.a "BA" index, etc.
+- [work in progress] Seismic anisotropy diagnostics: % tensorial anisotropy,
+  hexagonal symmetry a.k.a transverse isotropy direction, etc.
 
 The core CPO solver is based on the original Fortran 90 implementation by Édouard Kaminski,
 which can be [downloaded from this link (~90KB)](http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz).
@@ -38,7 +39,7 @@ The reference papers are [Kaminski & Ribe, 2001](https://doi.org/10.1016/s0012-8
 and [Kaminski & Ribe, 2004](https://doi.org/10.1111%2Fj.1365-246x.2004.02308.x),
 and an open-access paper which discusses the model is [Fraters & Billen 2021](https://doi.org/10.1029/2021gc009846).
 
-## Install
+## Installation
 
 The minimum required Python version is set using `requires-python` in the
 [`pyproject.toml`](https://github.com/seismic-anisotropy/PyDRex/blob/main/pyproject.toml) file.
@@ -47,25 +48,24 @@ see [the README](https://github.com/seismic-anisotropy/PyDRex/blob/main/README.m
 
 ## Documentation
 
-The submodule sidebar on the left can be used
-to discover the public API of this package.
+The website menu can be used to discover the public API of this package.
 Some of the tests are also documented and can serve as usage examples.
-Their docstrings can also be viewed in the module index
-(top left, modules starting with `test_`).
+Their docstrings can be viewed [in this section](../tests.html).
+Documentation is also available from the Python REPL via the `help()` method.
 
 ## The D-Rex kinematic CPO model
 
 The D-Rex model is used to compute crystallographic preferred orientation (CPO)
-for polycrystals deforming by dislocation creep and dynamic recrystallization.
+for polycrystals deforming by plastic deformation and dynamic recrystallization.
 Polycrystals are discretized into "grains" which represent fractional volumes
 of the total crystal that are characterised by a particular crystal lattice
 orientation. For numerical efficiency, the number of grains in the model does
 not change, and should only be interpreted as an approximation of the number
-of physical grains. Dynamic recrystallization is modelled using statistical
-expressions which approximate the interaction of each grain with an effective
-medium based on the averaged dislocation energy of all other grains.
-Note that the model is not suited to situations where static recrystallization
-processes are significant.
+of (unrecrystallised) physical grains. Dynamic recrystallization is modelled using
+statistical expressions which approximate the interaction of each grain with an
+effective medium based on the averaged dislocation energy of all other grains. Note that
+the model is not suited to situations where static recrystallization processes are
+significant.
 
 The primary microphysical mechanism for plastic deformation of the polycrystal
 is dislocation creep, which involves dislocation glide ("slip") along symmetry
@@ -82,7 +82,7 @@ $$
 where $b$ is the length of the Burgers' vector, $σ$ is the stress
 and $μ$ is the shear modulus. The value of the exponent $p$ is given by the
 `stress_exponent` input parameter. For an overview of available parameters,
-see [the `tests/conftest.py` source code, for now...]
+see [the `pydrex.mock` source code, for now...]
 
 The effects of dynamic recrystallization are twofold. Grains with a higher than
 average dislocation density may be affected by either grain nucleation, which is
@@ -105,60 +105,13 @@ texture strength.
 
 ## Parameter reference
 
-Model parameters will eventually be provided in an `.ini` file.
-[For now just pass a dictionary to `config` in the `Mineral.update_orientations` method]
-The file must contain section headers enclosed by square braces
-and key-value assignments, for example:
+Model parameters will eventually be provided in a `.toml` file.
+For now just pass a dictionary to `config` in the `Mineral.update_orientations` method.
+A draft of the input file spec is shown below:
 
+```toml
+.. include:: data/specs/spec.toml
 ```
-[Output]
-olivine = volume_distribution, orientations
-
-[D-Rex]
-olivine_fraction = 1
-stress_exponent = 1.5
-...
-```
-
-The following reference describes the available sections and their parameters.
-
-### Geometry
-
-This section allows for specifying the geometry of the model domain,
-including any interpolation meshes.
-
-| Parameter | Description |
-| ---       | ---
-| `meshfile`  | [not implemented]
-
-### Output
-
-Parameters in the output section control which variables are stored to files,
-as well as any options for automatic postprocessing.
-
-| Parameter | Description | Default
-| ---       | ---         | ---
-| `simulation_name` | a short name (without spaces) used for the output folder and metadata | `pydrex_example`
-| `olivine` | the choice of olivine mineral outputs, from {`volume_distribution`, `orientations`} with multiple choices separated by a comma | `volume_distribution,orientations`
-| `enstatite` | the choice of enstatite mineral outputs, from {`volume_distribution`, `orientations`} with multiple choices separated by a comma | `volume_distribution,orientations`
-
-### D-Rex
-
-Parameters in the D-Rex section specify the runtime configuration for the D-Rex model.
-Read [the D-Rex introduction section](#the-d-rex-kinematic-cpo-model) for more details.
-
-| Parameter | Description | Default
-| ---       | ---         | ---
-| `stress_exponent` | the stress exponent $p$ that characterises the relationship between dislocation density and stress | `1.5`
-| `deformation_exponent` | the exponent $n$ that characterises the relationship between stress and rate of deformation | `3.5`
-| `gbm_mobility` | the dimensionless grain boundary mobility $M^{∗}$ which controls the chance for growth of grains with lower than average dislocation energy | `125`
-| `gbs_threshold` | a threshold ratio of current to original volume below which small grains move by sliding rather than rotation | `0.3`
-| `nucleation_efficiency` | the dimensionless nucleation efficiency which controls the chance for new, small, strain-free sub-grains to be created inside high dislocation energy grains | `5`
-| `number_of_grains` | the number of initial grains per crystal| `2500`
-| `olivine_fabric` | [not implemented] | `A`
-| `minerals` | a tuple of mineral phase names that specify the composition of the polycrystal | `("olivine",)`
-| `olivine_fraction` | the volume fraction of olivine compared to other phases (1 for pure olivine) | `1`
-| `<phase>_fraction` | the volume fraction of any other phases (sum of all volume fractions must sum to 1) | N/A
 
 """
 from pydrex.core import (
