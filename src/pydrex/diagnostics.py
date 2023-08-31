@@ -15,6 +15,7 @@ r"""> PyDRex: Methods to calculate texture and strain diagnostics.
     grain axis and the j-th external axis (in the global Eulerian frame).
 
 """
+import os
 import functools as ft
 from multiprocessing import Pool
 import itertools as it
@@ -174,7 +175,8 @@ def elasticity_components(voigt_matrices):
                 out["percent_orthorhombic"][m] = la.norm(ortho_vector) * percent
                 out["percent_tetragonal"][m] = la.norm(tetr_vector) * percent
                 out["percent_hexagonal"][m] = la.norm(hex_vector) * percent
-                out["hexagonal_axis"][m, ...] = permuted_SCCS[2, :]
+                # Last SCCS axis is always the hexagonal symmetry axis.
+                out["hexagonal_axis"][m, ...] = permuted_SCCS[:, 2]
     return out
 
 
@@ -287,6 +289,8 @@ def misorientation_indices(
         system=system,
         bins=bins,
     )
+    if ncpus is None:
+        ncpus = os.sched_getaffinity(0) - 1
     with Pool(processes=ncpus) as pool:
         for i, out in enumerate(pool.imap_unordered(_run, orientation_stack)):
             m_indices[i] = out
@@ -302,7 +306,7 @@ def misorientation_index(orientations, system: _geo.LatticeSystem, bins=None):
     symmetry degeneracies and the maximum allowable misorientation angle.
     See `_geo.LatticeSystem` for supported systems.
 
-    .. warning ::
+    .. warning::
         This method must be able to allocate an array of shape (N choose 2)x(M**2) for N
         the length of `orientations` and M the number of symmetry operations for the
         given `system`.
@@ -384,7 +388,7 @@ def smallest_angle(vector, axis, plane=None):
         _vector = np.asarray(vector)
     angle = np.rad2deg(
         np.arccos(
-            np.clip(np.dot(_vector, axis), -1, 1) / (la.norm(_vector) * la.norm(axis))
+            np.clip(np.dot(_vector, axis) / (la.norm(_vector) * la.norm(axis)), -1, 1)
         )
     )
     if angle > 90:

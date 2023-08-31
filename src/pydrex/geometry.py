@@ -76,7 +76,7 @@ def misorientation_angles(q1_array, q2_array):
         ---------------------------------------------------
         NxAx4               NxBx4               N
 
-    .. warning ::
+    .. warning::
         This method must be able to allocate a floating point array of shape Nx(A*B)
 
     Uses ~25% less memory than the same operation with rotation matrices.
@@ -139,21 +139,23 @@ def symmetry_operations(system: LatticeSystem):
             reflections = [
                 np.diag(x) for x in ([1, -1, -1, 1], [1, -1, 1, -1], [1, 1, -1, -1])
             ]
-            return [*rotations, *reflections]
+            return [Rotation.identity().as_quat(), *rotations, *reflections]
         case LatticeSystem.rhombohedral:
             # Rotations by n * π/3, n ∈ {1, 2} around any of the Cartesian axes.
-            return [
+            rotations = [
                 Rotation.from_rotvec(i * np.pi / 3 * np.asarray(vector)).as_quat()
                 for vector in [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
                 for i in (1, 2)
             ]
+            return [Rotation.identity().as_quat(), *rotations]
         case LatticeSystem.tetragonal:
             # Rotations by n * π/2, n ∈ {1, 2, 3} around any of the Cartesian axes.
-            return [
+            rotations = [
                 Rotation.from_rotvec(i * np.pi / 2 * np.asarray(vector)).as_quat()
                 for vector in [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
                 for i in (1, 2, 3)
             ]
+            return [Rotation.identity().as_quat(), *rotations]
         case LatticeSystem.hexagonal:
             # Rotations by n * π/3, n ∈ {1, 2} around any of the Cartesian axes.
             rotations3 = [
@@ -167,7 +169,7 @@ def symmetry_operations(system: LatticeSystem):
                 for vector in [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
                 for i in (1, 2, 3, 4, 5, 6)
             ]
-            return [*rotations3, rotations6]
+            return [Rotation.identity().as_quat(), *rotations3, *rotations6]
         case _:
             raise ValueError(f"unsupported lattice system: {system}")
 
