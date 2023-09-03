@@ -19,7 +19,7 @@ class LatticeSystem(Enum):
         b       1          2           4             6            8          12
         θmax    180°       180°        120°          120°         90°        90°
 
-    This is identically Table 1 in [Grimmer 1979](https://doi.org/10.1016/0036-9748(79)90058-9).
+    This is identically Table 1 in [Grimmer (1979)](https://doi.org/10.1016/0036-9748(79)90058-9).
 
     """
 
@@ -68,7 +68,7 @@ def to_spherical(x, y, z):
 def misorientation_angles(q1_array, q2_array):
     """Calculate minimum misorientation angles for collections of rotation quaternions.
 
-    Calculate the smallest angular distance between any quaterions `q1_array[:, i]` and
+    Calculate the smallest angular distance between any quaternions `q1_array[:, i]` and
     `q2_array[:, j]`, where i == j and the first dimensions of `q1_array` and `q2_array`
     are of equal length (the output will also be this long):
 
@@ -83,7 +83,7 @@ def misorientation_angles(q1_array, q2_array):
 
     See also:
     - <https://math.stackexchange.com/questions/90081/quaternion-distance>
-    - <https://link.springer.com/article/10.1007/s10851-009-0161-2>
+    - [Huynh (2009)](https://link.springer.com/article/10.1007/s10851-009-0161-2)
 
 
     """
@@ -163,11 +163,12 @@ def symmetry_operations(system: LatticeSystem):
                 for vector in [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
                 for i in (1, 2)
             ]
-            # Rotations by n * π/6, n ∈ {1, ..., 5} around any of the Cartesian axes.
+            # Rotations by n * π/6, n ∈ {1, 3, 5} around any of the Cartesian axes.
+            # The other three π/6 rotations are identical to the π/3 rotations.
             rotations6 = [
-                Rotation.from_rotvec(i * np.pi / 3 * np.asarray(vector)).as_quat()
+                Rotation.from_rotvec(i * np.pi / 6 * np.asarray(vector)).as_quat()
                 for vector in [[0, 0, 1], [0, 1, 0], [1, 0, 0]]
-                for i in (1, 2, 3, 4, 5, 6)
+                for i in (1, 3, 5)
             ]
             return [Rotation.identity().as_quat(), *rotations3, *rotations6]
         case _:
@@ -243,8 +244,8 @@ def lambert_equal_area(xvals, yvals, zvals):
 def shirley_concentric_squaredisk(xvals, yvals):
     """Project points from a square onto a disk using the concentric Shirley method.
 
-    The concentric method of Shirley & Chiu 1997 is optimised to preserve area.
-    See also: <http://marc-b-reynolds.github.io/math/2017/01/08/SquareDisc.html>.
+    The concentric method of [Shirley & Chiu (1997)](https://doi.org/10.1080/10867651.1997.10487479)
+    is optimised to preserve area. See also: <http://marc-b-reynolds.github.io/math/2017/01/08/SquareDisc.html>.
 
     This can be used to set up uniform grids on a disk, e.g.
 

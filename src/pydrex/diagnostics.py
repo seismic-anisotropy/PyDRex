@@ -182,7 +182,7 @@ def bingham_average(orientations, axis="a"):
     of the given crystallographic `axis`, or the a-axis by default.
     Valid axis specifiers are "a" for [100], "b" for [010] and "c" for [001].
 
-    See also: [Watson 1966](https://doi.org/10.1086%2F627211),
+    See also: [Watson (1966)](https://doi.org/10.1086%2F627211),
     [Mardia & Jupp, “Directional Statistics”](https://doi.org/10.1002/9780470316979).
 
     """
@@ -239,7 +239,7 @@ def symmetry(orientations, axis="a"):
     with $N$ the sum of the eigenvalues $λ_{1} ≥ λ_{2} ≥ λ_{3}$
     of the scatter (inertia) matrix.
 
-    See e.g. [Vollmer 1990](https://doi.org/10.1130/0016-7606(1990)102%3C0786:AAOEMT%3E2.3.CO;2).
+    See e.g. [Vollmer (1990)](https://doi.org/10.1130/0016-7606(1990)102%3C0786:AAOEMT%3E2.3.CO;2).
 
     """
     match axis:
@@ -295,7 +295,7 @@ def misorientation_indices(
 
 
 def misorientation_index(orientations, system: _geo.LatticeSystem, bins=None):
-    """Calculate M-index for polycrystal orientations.
+    r"""Calculate M-index for polycrystal orientations.
 
     The `bins` argument is passed to `numpy.histogram`.
     If left as `None`, 1° bins will be used as recommended by the reference paper.
@@ -304,11 +304,12 @@ def misorientation_index(orientations, system: _geo.LatticeSystem, bins=None):
     See `_geo.LatticeSystem` for supported systems.
 
     .. warning::
-        This method must be able to allocate an array of shape (N choose 2)x(M**2) for N
-        the length of `orientations` and M the number of symmetry operations for the
-        given `system`.
+        This method must be able to allocate an array of shape 
+        $ \frac{N!}{2(N-2)!}× M^{2} $
+        for N the length of `orientations` and M the number of symmetry operations for
+        the given `system`.
 
-    See [Skemer et al. 2005](https://doi.org/10.1016/j.tecto.2005.08.023).
+    See [Skemer et al. (2005)](https://doi.org/10.1016/j.tecto.2005.08.023).
 
     """
     θmax = _stats._max_misorientation(system)
@@ -332,7 +333,7 @@ def misorientation_index(orientations, system: _geo.LatticeSystem, bins=None):
 def coaxial_index(orientations, axis1="b", axis2="a"):
     r"""Calculate coaxial “BA” index for a combination of two crystal axes.
 
-    The BA index of [Mainprice et al. 2015](https://doi.org/10.1144/SP409.8)
+    The BA index of [Mainprice et al. (2015)](https://doi.org/10.1144/SP409.8)
     is derived from the eigenvalue `symmetry` diagnostics and measures point vs girdle
     symmetry in the aggregate. $BA ∈ [0, 1]$ where $BA = 0$ corresponds to a perfect
     axial girdle texture and $BA = 1$ represents a point symmetry texture assuming that

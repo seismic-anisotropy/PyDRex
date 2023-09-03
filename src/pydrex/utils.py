@@ -48,7 +48,11 @@ def angle_fse_simpleshear(strain):
 
 
 def lag_2d_corner_flow(θ):
-    # Predicted grain orientation lag for 2D corner flow, eq. 11 in Kaminski 2002.
+    """Get predicted grain orientation lag for 2D corner flow.
+
+    See eq. 11 in [Kaminski & Ribe (2002)](https://doi.org/10.1029/2001GC000222).
+
+    """
     _θ = np.ma.masked_less(θ, 1e-15)
     return (_θ * (_θ**2 + np.cos(_θ) ** 2)) / (
         np.tan(_θ) * (_θ**2 + np.cos(_θ) ** 2 - _θ * np.sin(2 * _θ))

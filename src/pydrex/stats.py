@@ -75,7 +75,7 @@ def _scatter_matrix(orientations, row):
 
 
 def misorientation_hist(orientations, system: _geo.LatticeSystem, bins=None):
-    """Calculate misorientation histogram for polycrystal orientations.
+    r"""Calculate misorientation histogram for polycrystal orientations.
 
     The `bins` argument is passed to `numpy.histogram`.
     If left as `None`, 1° bins will be used as recommended by the reference paper.
@@ -84,11 +84,12 @@ def misorientation_hist(orientations, system: _geo.LatticeSystem, bins=None):
     See `_geo.LatticeSystem` for supported systems.
 
     .. warning::
-        This method must be able to allocate an array of shape (N choose 2)x(M**2) for N
-        the length of `orientations` and M the number of symmetry operations for the
-        given `system`.
+        This method must be able to allocate an array of shape
+        $ \frac{N!}{2(N-2)!}× M^{2} $
+        for N the length of `orientations` and M the number of symmetry operations for
+        the given `system`.
 
-    See [Skemer et al. 2005](https://doi.org/10.1016/j.tecto.2005.08.023).
+    See [Skemer et al. (2005)](https://doi.org/10.1016/j.tecto.2005.08.023).
 
     """
     symmetry_ops = _geo.symmetry_operations(system)

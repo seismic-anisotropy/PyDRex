@@ -31,7 +31,7 @@ def voigt_decompose(matrix):
     Any vector which is an eigenvector of both $d_{ij}$ and $v_{ij}$ is always normal to
     a symmetry plane of the elastic medium.
 
-    See Equations 3.4 & 3.5 in [Browaeys & Chevrot](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
+    See Equations 3.4 & 3.5 in [Browaeys & Chevrot (2004)](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
 
     """
     # 1. Compose dᵢⱼ = Cᵢⱼₖₖ (dilatational stiffness tensor)
@@ -61,7 +61,7 @@ def mono_project(voigt_vector):
 
     Monoclinic symmetry is characterised by 13 independent elasticity components.
 
-    See [Browaeys & Chevrot](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
+    See [Browaeys & Chevrot (2004)](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
 
     """
     out = voigt_vector.copy()
@@ -77,7 +77,7 @@ def ortho_project(voigt_vector):
 
     Orthorhombic symmetry is characterised by 9 independent elasticity components.
 
-    See [Browaeys & Chevrot](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
+    See [Browaeys & Chevrot (2004)](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
 
     """
     out = voigt_vector.copy()
@@ -91,11 +91,10 @@ def tetr_project(voigt_vector):
 
     Tetragonal symmetry is characterised by 6 independent elasticity components.
 
-    See [Browaeys & Chevrot](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
+    See [Browaeys & Chevrot (2004)](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
 
     """
-    out = voigt_vector.copy()
-    out[9:] = 0
+    out = ortho_project(voigt_vector)
     for i, j in ((0, 1), (3, 4), (6, 7)):
         for k in range(2):
             out[i+k] = 0.5 * (voigt_vector[i] + voigt_vector[j])
@@ -109,7 +108,7 @@ def hex_project(voigt_vector):
     Hexagonal symmetry (a.k.a. transverse isotropy) is characterised by 5 independent
     elasticity components.
 
-    See [Browaeys & Chevrot](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
+    See [Browaeys & Chevrot (2004)](https://doi.org/10.1111/j.1365-246X.2004.02415.x).
 
     """
     x = voigt_vector

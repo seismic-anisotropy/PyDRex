@@ -251,7 +251,7 @@ def corner_flow_2d(
 ):
     """Plot diagnostics for prescribed path 2D corner flow tests.
 
-    .. warning :: This method is in need of repair.
+    .. warning:: This method is in need of repair.
 
     """
     fig = plt.figure(figsize=(12, 8), dpi=300)

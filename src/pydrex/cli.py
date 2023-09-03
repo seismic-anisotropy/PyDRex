@@ -51,7 +51,7 @@ class PoleFigureVisualiser:
 
     Produces [100], [010] and [001] pole figures for serialized `pydrex.Mineral`s.
     If the range of indices is not specified,
-    a maximum of 25 of each pole figure will be produced.
+    a maximum of 25 of each pole figure will be produced by default.
 
     """
 

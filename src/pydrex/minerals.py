@@ -219,15 +219,17 @@ class Mineral:
     - `fractions` (list of arrays) — grain volume fractions for each texture snapshot
     - `orientations` (list of arrays) — grain orientation matrices for each texture
       snapshot
-    - `seed` (`int`) — seed used by the random number generator to set up the isotropic
+    - `seed` (int) — seed used by the random number generator to set up the isotropic
       initial condition when `fractions_init` or `orientations_init` are not provided
+    - `lband` (int) — passed to the `scipy.integrate.LSODA` solver
+    - `uband` (int) — passed to the `scipy.integrate.LSODA` solver
 
     """
 
     phase: int = _core.MineralPhase.olivine
     fabric: int = _core.MineralFabric.olivine_A
     regime: int = _core.DeformationRegime.dislocation
-    n_grains: int = 1000
+    n_grains: int = _io.DEFAULT_PARAMS["number_of_grains"]
     # Initial condition, randomised if not given.
     fractions_init: np.ndarray = None
     orientations_init: np.ndarray = None

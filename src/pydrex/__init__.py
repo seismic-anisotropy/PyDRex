@@ -35,9 +35,9 @@ following features are provided:
 
 The core CPO solver is based on the original Fortran 90 implementation by Édouard Kaminski,
 which can be [downloaded from this link (~90KB)](http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz).
-The reference papers are [Kaminski & Ribe, 2001](https://doi.org/10.1016/s0012-821x(01)00356-9)
-and [Kaminski & Ribe, 2004](https://doi.org/10.1111%2Fj.1365-246x.2004.02308.x),
-and an open-access paper which discusses the model is [Fraters & Billen 2021](https://doi.org/10.1029/2021gc009846).
+The reference papers are [Kaminski & Ribe (2001)](https://doi.org/10.1016/s0012-821x(01)00356-9)
+and [Kaminski & Ribe (2004)](https://doi.org/10.1111%2Fj.1365-246x.2004.02308.x),
+and an open-access paper which discusses the model is [Fraters & Billen (2021)](https://doi.org/10.1029/2021gc009846).
 
 ## Installation
 
