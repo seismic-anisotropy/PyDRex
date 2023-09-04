@@ -98,7 +98,7 @@ class TestOlivineA:
                 θ_fse[t] = _diagnostics.smallest_angle(fse_v, shear_direction)
 
         # Compute texture diagnostics.
-        _log.info("computing texture diagnostics...")
+        _log.info(msg_start + "computing texture diagnostics...")
         orientations_resampled, _ = _stats.resample_orientations(
             mineral.orientations, mineral.fractions, n_samples=500, seed=seed
         )
