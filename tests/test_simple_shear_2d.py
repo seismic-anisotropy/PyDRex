@@ -98,6 +98,7 @@ class TestOlivineA:
                 θ_fse[t] = _diagnostics.smallest_angle(fse_v, shear_direction)
 
         # Compute texture diagnostics.
+        _log.info("computing texture diagnostics...")
         orientations_resampled, _ = _stats.resample_orientations(
             mineral.orientations, mineral.fractions, n_samples=500, seed=seed
         )
@@ -116,15 +117,17 @@ class TestOlivineA:
                 mean_angles[idx] = _diagnostics.smallest_angle(
                     direction_mean, shear_direction
                 )
-            else:  # Use SCCS axis (hexagonal symmetry) for the angle instead (opt).
-                mean_angles = np.array(
-                    [
-                        _diagnostics.smallest_angle(hex_axis, shear_direction)
-                        for hex_axis in _diagnostics.elasticity_components(
-                            _minerals.voigt_averages([mineral], params)
-                        )["hexagonal_axis"]
-                    ]
-                )
+
+        # Use SCCS axis (hexagonal symmetry) for the angle instead (optional).
+        if not use_bingham_average:
+            mean_angles = np.array(
+                [
+                    _diagnostics.smallest_angle(hex_axis, shear_direction)
+                    for hex_axis in _diagnostics.elasticity_components(
+                        _minerals.voigt_averages([mineral], params)
+                    )["hexagonal_axis"]
+                ]
+            )
 
         if return_fse:
             return mineral, mean_angles, texture_symmetry, θ_fse
