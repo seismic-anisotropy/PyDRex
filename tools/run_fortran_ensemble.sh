@@ -25,8 +25,8 @@ is_command tr || exit 1
 main() {
     seed=$(shuf -i 100000-999999 -n 1)
     sed -i -E "s/state = [0-9]+/state = $seed/" drex_forward_simpleshear.f90
-    gfortran drex_forward_simpleshear.f90 -o drex_"$1"
-    ./drex_"$1"|tr -s ' '>"${OUTDIR%%/}"/out_"$1".txt
+    gfortran drex_forward_simpleshear.f90 -o run_drex_"$1"
+    ./run_drex_"$1"|tr -s ' '>"${OUTDIR%%/}"/out_"$1".txt
 }
 
 N_RUNS=10
@@ -54,4 +54,4 @@ for run in $(seq 1 $N_RUNS); do
 done
 wait
 rm *.mod
-rm drex_*
+rm run_drex_*
