@@ -53,6 +53,7 @@ documentation = "https://seismic-anisotropy.github.io/PyDRex/"
 
 [project.scripts]
 pydrex-polefigures = "pydrex.cli:CLI_HANDLERS.pole_figure_visualiser"
+npzshow = "pydrex.cli:CLI_HANDLERS.npz_file_inspector"
 
 # Make setuptools include datafiles in wheels/packages.
 # Data files must be inside the package directory.
