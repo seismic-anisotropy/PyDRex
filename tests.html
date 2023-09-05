@@ -66,7 +66,6 @@
                     <li><a href="tests/test_scsv.html">test_scsv</a></li>
                     <li><a href="tests/test_simple_shear_2d.html">test_simple_shear_2d</a></li>
                     <li><a href="tests/test_tensors.html">test_tensors</a></li>
-                    <li><a href="tests/test_vtk_helpers.html">test_vtk_helpers</a></li>
             </ul>
 
 
@@ -109,7 +108,7 @@ If <code>outdir</code> is a directory path (string):</p>
 which accepts a path name and an optional logging level as per Python's <code>logging</code> module
 (the default is <code>logging.DEBUG</code> which implies the most verbose output),</li>
 <li>figures can be saved by (implementing and) calling a helper from <code><a href="pydrex/visualisation.html">pydrex.visualisation</a></code>, and</li>
-<li>data dumps can be saved to <code>outdir</code>, e.g. in <code>.npz</code> format (see the <code>Mineral.save</code> method)
+<li>data dumps can be saved to <code>outdir</code>, e.g. in <code>.npz</code> format (see the <code><a href="pydrex/minerals.html#Mineral.save">pydrex.minerals.Mineral.save</a></code> method)
 In all cases, saving to <code>outdir</code> should handle creation of parent directories.
 To handle this as well as relative paths, we provide <code><a href="pydrex/io.html#resolve_path">pydrex.io.resolve_path</a></code>,
 which is a thin wrapper around some <code>pathlib</code> methods.</li>
