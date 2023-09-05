@@ -152,7 +152,8 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
     - `θ_fse` (array, optional) — an array of angles from the long axis of the finite
       strain ellipsoid to the reference direction (e.g. shear direction)
 
-    Returns the set of colors used for the data series plots.
+    Returns a tuple of the figure handle, the axis handle and the set of colors used for
+    the data series plots.
 
     """
     _angles = np.atleast_2d(angles)
@@ -166,6 +167,8 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
     if ax is None:
         fig = plt.figure(dpi=300)
         ax = fig.add_subplot(111)
+    else:
+        fig = ax.get_figure()
     ax.set_ylabel(f"Mean angle ∈ [0, {θ_max}]°")
     ax.set_ylim((0, θ_max))
     ax.set_xlabel(r"Strain ($D_0 t = γ/2$)")
@@ -187,7 +190,7 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
         ax.plot(strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE")
     if labels is not None:
         ax.legend()
-    return colors
+    return fig, ax, colors
 
 
 def _get_marker_and_label(data, seq_index, markers, labels=None):

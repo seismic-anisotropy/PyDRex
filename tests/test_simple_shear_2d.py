@@ -14,6 +14,7 @@ from pydrex import diagnostics as _diagnostics
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
+from pydrex import stats as _stats
 from pydrex import utils as _utils
 from pydrex import velocity_gradients as _dv
 from pydrex import visualisation as _vis
@@ -286,7 +287,7 @@ class TestOlivineA:
                 schema,
                 [[int(D * 200) for D in strains]],  # Shear strain % is 200 * D₀.
             )
-            _vis.alignment(
+            fig, ax, colors = _vis.alignment(
                 None,
                 strains,
                 result_angles,
@@ -296,6 +297,7 @@ class TestOlivineA:
                 θ_max=60,
                 θ_fse=θ_fse,
             )
+            fig.savefig(_io.resolve_path(f"{out_basepath}.pdf"))
 
     def test_boundary_mobility(self, seed, ncpus, outdir):
         """Test that the grain boundary mobility parameter has an effect."""
@@ -319,9 +321,9 @@ class TestOlivineA:
             labels = []
 
         with optional_logging:
-            for i, M in enumerate(gbm_mobilities):
-                params["gbm_mobility"] = M
-                out = self.run(
+            for m, gbm_mobility in enumerate(gbm_mobilities):
+                params["gbm_mobility"] = gbm_mobility
+                mineral, fse_angles = self.run(
                     params,
                     timestamps,
                     strain_rate,
@@ -329,27 +331,41 @@ class TestOlivineA:
                     shear_direction,
                     seed=seed,
                     return_fse=True,
-                    ncpus=ncpus,
                 )
-                minerals.append(out[0])
-                angles[i] = out[1]
-                symmetry[i] = out[2]
-                θ_fse[i] = out[3]
+                minerals.append(mineral)
+                angles[m] = [
+                    _diagnostics.smallest_angle(v, shear_direction)
+                    for v in _diagnostics.elasticity_components(
+                        _minerals.voigt_averages([mineral], params)
+                    )["hexagonal_axis"]
+                ]
+                symmetry[m] = [
+                    _diagnostics.symmetry(
+                        o, axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric]
+                    )[0]  # P_[100] diagnostic.
+                    for o in _stats.resample_orientations(
+                        mineral.orientations,
+                        mineral.fractions,
+                        n_samples=1000,
+                        seed=seed,
+                    )
+                ]
+                θ_fse[m] = fse_angles
                 if outdir is not None:
                     labels.append(f"$M^∗$ = {params['gbm_mobility']}")
 
         if outdir is not None:
             strains = timestamps * strain_rate
-            self.postprocess(
+            fig, ax, colors = _vis.alignment(
+                None,
                 strains,
                 angles,
-                symmetry,
-                np.mean(θ_fse, axis=0),
-                labels,
                 markers,
-                outdir,
-                out_basepath,
+                labels,
+                θ_max=60,
+                θ_fse=np.mean(θ_fse, axis=0),
             )
+            fig.savefig(_io.resolve_path(f"{out_basepath}.png"))
             # Save mineral for the M*=125 run, for polefigs.
             minerals[-2].save(f"{out_basepath}.npz")
 
@@ -419,9 +435,9 @@ class TestOlivineA:
             labels = []
 
         with optional_logging:
-            for i, f in enumerate(gbs_thresholds):
-                params["gbs_threshold"] = f
-                out = self.run(
+            for f, gbs_threshold in enumerate(gbs_thresholds):
+                params["gbs_threshold"] = gbs_threshold
+                mineral, fse_angles = self.run(
                     params,
                     timestamps,
                     strain_rate,
@@ -429,27 +445,41 @@ class TestOlivineA:
                     shear_direction,
                     seed=seed,
                     return_fse=True,
-                    ncpus=ncpus,
                 )
-                minerals.append(out[0])
-                angles[i] = out[1]
-                symmetry[i] = out[2]
-                θ_fse[i] = out[3]
+                minerals.append(mineral)
+                angles[f] = [
+                    _diagnostics.smallest_angle(v, shear_direction)
+                    for v in _diagnostics.elasticity_components(
+                        _minerals.voigt_averages([mineral], params)
+                    )["hexagonal_axis"]
+                ]
+                symmetry[f] = [
+                    _diagnostics.symmetry(
+                        o, axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric]
+                    )[0]  # P_[100] diagnostic.
+                    for o in _stats.resample_orientations(
+                        mineral.orientations,
+                        mineral.fractions,
+                        n_samples=1000,
+                        seed=seed,
+                    )
+                ]
+                θ_fse[f] = fse_angles
                 if outdir is not None:
                     labels.append(f"$f_{{gbs}}$ = {params['gbs_threshold']}")
 
         if outdir is not None:
             strains = timestamps * strain_rate
-            self.postprocess(
+            fig, ax, colors = _vis.alignment(
+                None,
                 strains,
                 angles,
-                symmetry,
-                np.mean(θ_fse, axis=0),
-                labels,
                 markers,
-                outdir,
-                out_basepath,
+                labels,
+                θ_max=60,
+                θ_fse=np.mean(θ_fse, axis=0),
             )
+            fig.savefig(_io.resolve_path(f"{out_basepath}.png"))
             # Save mineral for the X=0.2 run, for polefigs.
             minerals[2].save(f"{out_basepath}.npz")
 
