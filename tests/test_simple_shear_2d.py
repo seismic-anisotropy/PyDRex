@@ -348,7 +348,7 @@ class TestOlivineA:
                         mineral.fractions,
                         n_samples=1000,
                         seed=seed,
-                    )
+                    )[0]
                 ]
                 θ_fse[m] = fse_angles
                 if outdir is not None:
@@ -462,7 +462,7 @@ class TestOlivineA:
                         mineral.fractions,
                         n_samples=1000,
                         seed=seed,
-                    )
+                    )[0]
                 ]
                 θ_fse[f] = fse_angles
                 if outdir is not None:
