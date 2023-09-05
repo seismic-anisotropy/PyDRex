@@ -328,7 +328,6 @@ class TestOlivineA:
                     get_velocity_gradient,
                     shear_direction,
                     seed=seed,
-                    log_param="gbm_mobility",
                     return_fse=True,
                     ncpus=ncpus,
                 )
@@ -429,7 +428,6 @@ class TestOlivineA:
                     get_velocity_gradient,
                     shear_direction,
                     seed=seed,
-                    log_param="gbs_threshold",
                     return_fse=True,
                     ncpus=ncpus,
                 )
@@ -516,6 +514,5 @@ class TestOlivineA:
                     get_velocity_gradient,
                     shear_direction,
                     seed=seed,
-                    log_param="number_of_grains",
                     return_fse=True,
                 )
