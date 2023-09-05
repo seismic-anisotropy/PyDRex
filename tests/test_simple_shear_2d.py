@@ -106,7 +106,7 @@ class TestOlivineA:
         mean_angles = np.zeros_like(timestamps)
         for idx, matrices in enumerate(orientations_resampled):
             texture_symmetry[idx] = _diagnostics.symmetry(
-                orientations_resampled,
+                matrices,
                 axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
             )[0]
             if use_bingham_average:
