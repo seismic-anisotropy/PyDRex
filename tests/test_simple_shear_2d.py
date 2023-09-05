@@ -43,9 +43,9 @@ class TestOlivineA:
         seed=None,
         return_fse=None,
     ):
-        """Reusable logic for 2D olivine A simple shear tests.
+        """Reusable logic for 2D olivine (A-type) simple shear tests.
 
-        Returns a tuple with the mineral and the FSE angle (or `` if `return_fse` is
+        Returns a tuple with the mineral and the FSE angle (or `None` if `return_fse` is
         `None`).
 
         """
