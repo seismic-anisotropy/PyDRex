@@ -53,9 +53,9 @@ class MineralFabric(IntEnum):
 
     The following fabric types are supported:
     - olivine A-E type fabrics according to e.g.
-      [Karato et al., 2008](https://doi.org/10.1146%2Fannurev.earth.36.031207.124120).
+      [Karato et al. (2008)](https://doi.org/10.1146%2Fannurev.earth.36.031207.124120).
     - enstatite AB fabric, see
-      [Bernard et al., 2021](https://doi.org/10.1016/j.tecto.2021.228954).
+      [Bernard et al. (2021)](https://doi.org/10.1016/j.tecto.2021.228954).
 
     """
 

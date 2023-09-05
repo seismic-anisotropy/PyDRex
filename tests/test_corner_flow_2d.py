@@ -51,6 +51,7 @@ from scipy.spatial.transform import Rotation
 
 from pydrex import core as _core
 from pydrex import diagnostics as _diagnostics
+from pydrex import geometry as _geo
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
@@ -188,13 +189,13 @@ class TestOlivineA:
                 misorient_angles = np.zeros(n_timesteps)
                 misorient_indices = np.zeros(n_timesteps)
                 bingham_vectors = np.zeros((n_timesteps, 3))
-                # Loop over first dimension (time steps) of orientations.
-                for idx, matrices in enumerate(mineral.orientations):
-                    orientations_resampled, _ = _stats.resample_orientations(
-                        matrices, mineral.fractions[idx], seed=seed
-                    )
+                # Loop over first dimension (time steps) of resampled orientations.
+                orientations_resampled, _ = _stats.resample_orientations(
+                    mineral.orientations, mineral.fractions, seed=seed
+                )
+                for idx, matrices in enumerate(orientations_resampled):
                     direction_mean = _diagnostics.bingham_average(
-                        orientations_resampled,
+                        matrices,
                         axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
                     )
                     misorient_angles[idx] = _diagnostics.smallest_angle(
@@ -202,7 +203,7 @@ class TestOlivineA:
                         [1, 0, 0],
                     )
                     misorient_indices[idx] = _diagnostics.misorientation_index(
-                        orientations_resampled
+                        matrices, _geo.LatticeSystem.orthorhombic
                     )
                     bingham_vectors[idx] = direction_mean
 

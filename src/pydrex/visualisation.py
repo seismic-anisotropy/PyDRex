@@ -7,6 +7,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from pydrex import axes as _axes
 from pydrex import io as _io
 from pydrex import logger as _log
+from pydrex import utils as _utils
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
@@ -231,15 +232,6 @@ def simple_shear_stationary_2d(
     fig.savefig(_io.resolve_path(savefile))
 
 
-# TODO: Move to utils.py
-def _lag_2d_corner_flow(θ):
-    # Predicted grain orientation lag for 2D corner flow, eq. 11 in Kaminski 2002.
-    _θ = np.ma.masked_less(θ, 1e-15)
-    return (_θ * (_θ**2 + np.cos(_θ) ** 2)) / (
-        np.tan(_θ) * (_θ**2 + np.cos(_θ) ** 2 - _θ * np.sin(2 * _θ))
-    )
-
-
 def corner_flow_2d(
     x_paths,
     z_paths,
@@ -257,7 +249,11 @@ def corner_flow_2d(
     Π_levels=(0.1, 0.5, 1, 2, 3),
     tick_formatter=lambda x, pos: f"{x/1e3:.1f} km",
 ):
-    """Plot diagnostics for prescribed path 2D corner flow tests."""
+    """Plot diagnostics for prescribed path 2D corner flow tests.
+
+    .. warning:: This method is in need of repair.
+
+    """
     fig = plt.figure(figsize=(12, 8), dpi=300)
     grid = fig.add_gridspec(2, 2, hspace=-0.2, wspace=0.025)
     ax_domain = fig.add_subplot(grid[0, :])
@@ -289,9 +285,8 @@ def corner_flow_2d(
         x_series = np.array(x_series)
         z_series = np.array(z_series)
         # Π := grain orientation lag, dimensionless, see Kaminski 2002.
-        Π_series = _lag_2d_corner_flow(np.arctan2(x_series, -z_series))
+        Π_series = _utils.lag_2d_corner_flow(np.arctan2(x_series, -z_series))
         Π_max_step = np.argmax(Π_series)
-        # TODO: Fix the rest.
         # Index of timestamp where Π ≈ 1 (corner).
         corner_step = Π_max_step + np.argmin(np.abs(Π_series[Π_max_step:] - 1.0))
 
@@ -384,7 +379,7 @@ def corner_flow_2d(
     Π_contours = ax_domain.contourf(
         x_ticks,
         z_ticks,
-        _lag_2d_corner_flow(θ_grid),
+        _utils.lag_2d_corner_flow(θ_grid),
         levels=Π_levels,
         extend="min",
         cmap="copper_r",

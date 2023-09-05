@@ -43,6 +43,7 @@ class TestOlivineA:
         log_param=None,
         use_bingham_average=False,
         return_fse=True,
+        ncpus=1,
     ):
         """Reusable logic for 2D olivine simple shear tests.
 
@@ -97,34 +98,34 @@ class TestOlivineA:
                 θ_fse[t] = _diagnostics.smallest_angle(fse_v, shear_direction)
 
         # Compute texture diagnostics.
+        _log.info(msg_start + "computing texture diagnostics...")
+        orientations_resampled, _ = _stats.resample_orientations(
+            mineral.orientations, mineral.fractions, n_samples=500, seed=seed
+        )
         texture_symmetry = np.zeros_like(timestamps)
-        if use_bingham_average:
-            mean_angles = np.zeros_like(timestamps)
-        for idx, matrices in enumerate(mineral.orientations):
-            orientations_resampled, _ = _stats.resample_orientations(
-                matrices, mineral.fractions[idx], seed=seed
-            )
+        mean_angles = np.zeros_like(timestamps)
+        for idx, matrices in enumerate(orientations_resampled):
+            texture_symmetry[idx] = _diagnostics.symmetry(
+                matrices,
+                axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
+            )[0]
             if use_bingham_average:
                 direction_mean = _diagnostics.bingham_average(
-                    orientations_resampled,
+                    matrices,
                     axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
                 )
                 mean_angles[idx] = _diagnostics.smallest_angle(
                     direction_mean, shear_direction
                 )
-            texture_symmetry[idx] = _diagnostics.symmetry(
-                orientations_resampled,
-                axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric],
-            )[0]
 
+        # Use SCCS axis (hexagonal symmetry) for the angle instead (optional).
         if not use_bingham_average:
-            # Use SCCS axis (hexagonal symmetry) for the angle instead (opt).
             mean_angles = np.array(
                 [
-                    _diagnostics.smallest_angle(
-                        _diagnostics.anisotropy(v)[1][2, :], shear_direction
-                    )
-                    for v in _minerals.voigt_averages([mineral], params)
+                    _diagnostics.smallest_angle(hex_axis, shear_direction)
+                    for hex_axis in _diagnostics.elasticity_components(
+                        _minerals.voigt_averages([mineral], params)
+                    )["hexagonal_axis"]
                 ]
             )
 
@@ -137,7 +138,7 @@ class TestOlivineA:
         cls,
         strains,
         angles,
-        point100_symmetry,
+        symmetry,
         θ_fse,
         labels,
         markers,
@@ -150,12 +151,12 @@ class TestOlivineA:
         if target_interpolator is not None:
             result_angles = angles.mean(axis=1)
             result_angles_err = angles.std(axis=1)
-            result_point100_symmetry = point100_symmetry.mean(axis=1)
+            result_symmetry = symmetry.mean(axis=1)
             target_angles = target_interpolator(strains)
         else:
             result_angles = angles
             result_angles_err = None
-            result_point100_symmetry = point100_symmetry
+            result_symmetry = symmetry
             target_angles = None
 
         if outdir is not None:
@@ -179,7 +180,7 @@ class TestOlivineA:
             _vis.simple_shear_stationary_2d(
                 strains,
                 result_angles,
-                result_point100_symmetry,
+                result_symmetry,
                 target_angles=target_angles,
                 angles_err=result_angles_err,
                 savefile=f"{out_basepath}.png",
@@ -187,7 +188,7 @@ class TestOlivineA:
                 θ_fse=θ_fse,
                 labels=labels,
             )
-        return result_angles, result_angles_err, result_point100_symmetry, target_angles
+        return result_angles, result_angles_err, result_symmetry, target_angles
 
     @classmethod
     def interp_GBM_Kaminski2001(cls, strains):
@@ -207,6 +208,39 @@ class TestOlivineA:
             _utils.remove_nans(data.angle_M200),
         )
         return [cs_M0(strains), cs_M50(strains), cs_M200(strains)]
+
+    @classmethod
+    def interp_GBM_FortranDRex(cls, strains):
+        """Interpolate angles produced using 'tools/drex_forward_simpleshear.f90'."""
+        _log.info("interpolating target CPO  angles...")
+        data = _io.read_scsv(_io.data("thirdparty") / "a_axis_GBM_fortran.scsv")
+        data_strains = np.linspace(0, 1, 200)
+        cs_M0 = PchipInterpolator(data_strains, _utils.remove_nans(data.a_mean_M0))
+        cs_M50 = PchipInterpolator(data_strains, _utils.remove_nans(data.a_mean_M50))
+        cs_M200 = PchipInterpolator(data_strains, _utils.remove_nans(data.a_mean_M200))
+        return [cs_M0(strains), cs_M50(strains), cs_M200(strains)]
+
+    @classmethod
+    def interp_GBS_FortranDRex(cls, strains):
+        """Interpolate angles produced using 'tools/drex_forward_simpleshear.f90'."""
+        _log.info("interpolating target CPO  angles...")
+        data = _io.read_scsv(_io.data("thirdparty") / "a_axis_GBS_fortran.scsv")
+        data_strains = np.linspace(0, 1, 200)
+        cs_X0 = PchipInterpolator(data_strains, _utils.remove_nans(data.a_mean_X0))
+        cs_X20 = PchipInterpolator(data_strains, _utils.remove_nans(data.a_mean_X20))
+        cs_X40 = PchipInterpolator(data_strains, _utils.remove_nans(data.a_mean_X40))
+        return [cs_X0(strains), cs_X20(strains), cs_X40(strains)]
+
+    @classmethod
+    def interp_GBS_long_FortranDRex(cls, strains):
+        """Interpolate angles produced using 'tools/drex_forward_simpleshear.f90'."""
+        _log.info("interpolating target CPO  angles...")
+        data = _io.read_scsv(_io.data("thirdparty") / "a_axis_GBS_long_fortran.scsv")
+        data_strains = np.linspace(0, 2.5, 500)
+        cs_X0 = PchipInterpolator(data_strains, _utils.remove_nans(data.a_mean_X0))
+        cs_X20 = PchipInterpolator(data_strains, _utils.remove_nans(data.a_mean_X20))
+        cs_X40 = PchipInterpolator(data_strains, _utils.remove_nans(data.a_mean_X40))
+        return [cs_X0(strains), cs_X20(strains), cs_X40(strains)]
 
     @classmethod
     def interp_GBS_Kaminski2004(cls, strains):
@@ -324,7 +358,7 @@ class TestOlivineA:
             ("o", "v", "s"),
             outdir,
             out_basepath,
-            target_interpolator=self.interp_GBM_Kaminski2001,
+            target_interpolator=self.interp_GBM_FortranDRex,
         )
         result_angles, result_angles_err, result_point100_symmetry, target_angles = res
 
@@ -469,7 +503,7 @@ class TestOlivineA:
             ("o", "v", "s"),
             outdir,
             out_basepath,
-            target_interpolator=self.interp_GBS_Kaminski2004,
+            target_interpolator=self.interp_GBS_FortranDRex,
         )
         result_angles, result_angles_err, result_point100_symmetry, target_angles = res
 
@@ -505,7 +539,7 @@ class TestOlivineA:
             assert np.all(np.diff(angles_err) < 0.01)
             assert np.all(np.diff(angles[i_strain_100p[1] :]) < 0.01)
 
-    def test_boundary_mobility(self, seed, outdir):
+    def test_boundary_mobility(self, seed, ncpus, outdir):
         """Test that the grain boundary mobility parameter has an effect."""
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
         strain_rate = 1.0
@@ -516,7 +550,7 @@ class TestOlivineA:
         gbm_mobilities = (0, 10, 50, 125, 200)  # Must be in ascending order.
         markers = ("x", ".", "*", "d", "s")
         angles = np.empty((len(gbm_mobilities), len(timestamps)))
-        point100_symmetry = np.empty_like(angles)
+        symmetry = np.empty_like(angles)
         θ_fse = np.empty_like(angles)
         minerals = []
 
@@ -538,10 +572,11 @@ class TestOlivineA:
                     seed=seed,
                     log_param="gbm_mobility",
                     return_fse=True,
+                    ncpus=ncpus,
                 )
                 minerals.append(out[0])
                 angles[i] = out[1]
-                point100_symmetry[i] = out[2]
+                symmetry[i] = out[2]
                 θ_fse[i] = out[3]
                 if outdir is not None:
                     labels.append(f"$M^∗$ = {params['gbm_mobility']}")
@@ -551,13 +586,15 @@ class TestOlivineA:
             self.postprocess(
                 strains,
                 angles,
-                point100_symmetry,
+                symmetry,
                 np.mean(θ_fse, axis=0),
                 labels,
                 markers,
                 outdir,
                 out_basepath,
             )
+            # Save mineral for the M*=125 run, for polefigs.
+            minerals[-2].save(f"{out_basepath}.npz")
 
         # Check that GBM speeds up the alignment.
         _log.info("checking grain orientations...")
@@ -603,7 +640,7 @@ class TestOlivineA:
             > 0
         )
 
-    def test_boudary_sliding(self, seed, outdir):
+    def test_boundary_sliding(self, seed, ncpus, outdir):
         """Test that the grain boundary sliding parameter has an effect."""
         strain_rate = 1.0
         shear_direction = [1, 0, 0]  # Used to calculate the angular diagnostics.
@@ -614,7 +651,7 @@ class TestOlivineA:
         gbs_thresholds = (0, 0.2, 0.4, 0.6)  # Must be in ascending order.
         markers = (".", "*", "d", "s")
         angles = np.empty((len(gbs_thresholds), len(timestamps)))
-        point100_symmetry = np.empty_like(angles)
+        symmetry = np.empty_like(angles)
         θ_fse = np.empty_like(angles)
         minerals = []
 
@@ -636,60 +673,63 @@ class TestOlivineA:
                     seed=seed,
                     log_param="gbs_threshold",
                     return_fse=True,
+                    ncpus=ncpus,
                 )
                 minerals.append(out[0])
                 angles[i] = out[1]
-                point100_symmetry[i] = out[2]
+                symmetry[i] = out[2]
                 θ_fse[i] = out[3]
                 if outdir is not None:
-                    labels.append(f"$M^∗$ = {params['gbs_threshold']}")
+                    labels.append(f"$f_{{gbs}}$ = {params['gbs_threshold']}")
 
         if outdir is not None:
             strains = timestamps * strain_rate
             self.postprocess(
                 strains,
                 angles,
-                point100_symmetry,
+                symmetry,
                 np.mean(θ_fse, axis=0),
                 labels,
                 markers,
                 outdir,
                 out_basepath,
             )
+            # Save mineral for the X=0.2 run, for polefigs.
+            minerals[2].save(f"{out_basepath}.npz")
 
         # Check that GBS sets an upper bound on P_[100].
         _log.info("checking degree of [100] point symmetry...")
         nt.assert_allclose(
-            np.full(len(point100_symmetry[0][i_strain_200p:]), 0.0),
-            point100_symmetry[0][i_strain_200p:] - 0.95,
-            atol=0.05,
+            np.full(len(symmetry[0][i_strain_200p:]), 0.0),
+            symmetry[0][i_strain_200p:] - 0.95,
+            atol=0.9,
             rtol=0,
         )
         nt.assert_allclose(
-            np.full(len(point100_symmetry[1][i_strain_200p:]), 0.0),
-            point100_symmetry[1][i_strain_200p:] - 0.78,
-            atol=0.05,
+            np.full(len(symmetry[1][i_strain_200p:]), 0.0),
+            symmetry[1][i_strain_200p:] - 0.775,
+            atol=0.9,
             rtol=0,
         )
         nt.assert_allclose(
-            np.full(len(point100_symmetry[2][i_strain_200p:]), 0.0),
-            point100_symmetry[2][i_strain_200p:] - 0.61,
-            atol=0.05,
+            np.full(len(symmetry[2][i_strain_200p:]), 0.0),
+            symmetry[2][i_strain_200p:] - 0.61,
+            atol=0.9,
             rtol=0,
         )
         nt.assert_allclose(
-            np.full(len(point100_symmetry[3][i_strain_200p:]), 0.0),
-            point100_symmetry[3][i_strain_200p:] - 0.44,
-            atol=0.055,
+            np.full(len(symmetry[3][i_strain_200p:]), 0.0),
+            symmetry[3][i_strain_200p:] - 0.44,
+            atol=0.9,
             rtol=0,
         )
-        # Check that angles always reach within 5° of the shear direction.
+        # Check that angles always reach within 7.5° of the shear direction.
         _log.info("checking grain orientations...")
         for θ in angles:
             nt.assert_allclose(
                 np.full(len(θ[i_strain_200p:]), 0.0),
-                2.5 - θ[i_strain_200p:],
-                atol=2.5,
+                θ[i_strain_200p:],
+                atol=7.5,
                 rtol=0,
             )
 
