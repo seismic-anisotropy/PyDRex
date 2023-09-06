@@ -131,6 +131,68 @@ def polefigures(
     fig.savefig(_io.resolve_path(savefile))
 
 
+def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=None):
+    """Plot `angles` (in degrees) versus `strains` on the given axis.
+
+    Alignment angles could be either bingham averages or the a-axis in the hexagonal
+    symmetry projection, measured from e.g. the shear direction. They should be
+    calculated from resampled grain orientations. Expects as many `markers` and `labels`
+    as there are data series in `angles`.
+
+    If `ax` is None, a new figure is created for the axes with default Matplotlib
+    settings except for the custom setting of `dpi=300`.
+
+    Args:
+    - `strains` (array) — X-values, accumulated strain (tensorial) during CPO evolution
+    - `angles` (array) — Y-values, may be a 2D array of multiple angle series
+    - `markers` (sequence) — MatPlotLib markers to use for the data series
+    - `labels` (sequence) — labels to use for the data series
+    - `err` (array, optional) — standard errors for the `angles`, shapes must match
+    - `θ_max` (int) — maximum angle (°) to show on the plot, should be less than 90
+    - `θ_fse` (array, optional) — an array of angles from the long axis of the finite
+      strain ellipsoid to the reference direction (e.g. shear direction)
+
+    Returns a tuple of the figure handle, the axis handle and the set of colors used for
+    the data series plots.
+
+    """
+    _angles = np.atleast_2d(angles)
+    if len(strains) != len(_angles) != len(markers) != len(labels):
+        raise ValueError("mismatch in input dimensions")
+    if err is not None:
+        _angles_err = np.atleast_2d(err)
+        if not np.all(_angles.shape == _angles_err.shape):
+            raise ValueError("mismatch in shapes of `angles` and `angles_err`")
+
+    if ax is None:
+        fig = plt.figure(dpi=300)
+        ax = fig.add_subplot(111)
+    else:
+        fig = ax.get_figure()
+    ax.set_ylabel(f"Mean angle ∈ [0, {θ_max}]°")
+    ax.set_ylim((0, θ_max))
+    ax.set_xlabel(r"Strain ($D_0 t = γ/2$)")
+    ax.set_xlim((strains[0], strains[-1]))
+    colors = []
+    for i, (θ_cpo, marker, label) in enumerate(zip(angles, markers, labels)):
+        lines = ax.plot(strains, θ_cpo, marker, markersize=5, alpha=0.33)
+        colors.append(lines[0].get_color())
+        if err is not None:
+            ax.fill_between(
+                strains,
+                θ_cpo - _angles_err[i],
+                θ_cpo + _angles_err[i],
+                alpha=0.22,
+                color=colors[i],
+            )
+
+    if θ_fse is not None:
+        ax.plot(strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE")
+    if labels is not None:
+        ax.legend()
+    return fig, ax, colors
+
+
 def _get_marker_and_label(data, seq_index, markers, labels=None):
     marker = markers[int(seq_index / (len(data) / len(markers)))]
     label = None
