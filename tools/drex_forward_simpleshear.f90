@@ -118,13 +118,13 @@ subroutine init0
     size = size3**3
     ! number of (unrecrystallized, initial) grains, really just number of samples in SO(3)
 
-    n_steps = 500
-    t_loc = 1d5
+    n_steps = 200
+    t_loc = 50
     ! Number of steps and time spent at each step.
 
     tau = reshape((/ 1d0, 2d0, 3d0, 1d60 /), shape(tau))  ! CRSS
 
-    epsnot = 5d-7  ! Strain rate
+    epsnot = 1e-4  ! Strain rate
     Lij = reshape((/ 0d0, 0d0, 0d0, 0d0, 0d0, 0d0, 2*epsnot, 0d0, 0d0 /), shape(Lij))
     ! dv_x/dz is nonzero, simple shear
     Dij = reshape((/ 0d0, 0d0, epsnot, 0d0, 0d0, 0d0, epsnot, 0d0, 0d0 /), shape(Dij))
