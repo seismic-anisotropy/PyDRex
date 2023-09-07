@@ -441,8 +441,8 @@ class TestOlivineA:
         nt.assert_allclose(
             result_angles[0][i_strain_40p:],
             M0_drexF90[i_strain_40p:],
-            atol=0.1,
-            rtol=1,
+            atol=0,
+            rtol=0.1,  # At 40% strain the match is worse than at higher strain.
         )
         nt.assert_allclose(
             result_angles[2][i_strain_40p:],
