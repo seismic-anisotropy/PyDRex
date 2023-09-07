@@ -169,13 +169,13 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
         ax = fig.add_subplot(111)
     else:
         fig = ax.get_figure()
-    ax.set_ylabel(f"Mean angle ∈ [0, {θ_max}]°")
+    ax.set_ylabel("Mean angle ∈ [0, 90]°")
     ax.set_ylim((0, θ_max))
     ax.set_xlabel(r"Strain ($D_0 t = γ/2$)")
     ax.set_xlim((strains[0], strains[-1]))
     colors = []
     for i, (θ_cpo, marker, label) in enumerate(zip(angles, markers, labels)):
-        lines = ax.plot(strains, θ_cpo, marker, markersize=5, alpha=0.33)
+        lines = ax.plot(strains, θ_cpo, marker, markersize=5, alpha=0.33, label=label)
         colors.append(lines[0].get_color())
         if err is not None:
             ax.fill_between(
@@ -188,8 +188,7 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
 
     if θ_fse is not None:
         ax.plot(strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE")
-    if labels is not None:
-        ax.legend()
+    ax.legend()
     return fig, ax, colors
 
 
