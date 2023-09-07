@@ -166,7 +166,7 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
 
     if ax is None:
         fig = plt.figure(dpi=300)
-        ax = fig.add_subplot(111)
+        ax = fig.add_subplot()
     else:
         fig = ax.get_figure()
     ax.set_ylabel("Mean angle ∈ [0, 90]°")
@@ -188,7 +188,51 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
 
     if θ_fse is not None:
         ax.plot(strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE")
-    ax.legend()
+    _utils.redraw_legend(ax)
+    return fig, ax, colors
+
+
+def show_Skemer2016_ShearStrainAngles(ax, studies, markers, colors, fillstyles, labels):
+    """Show data from `src/pydrex/data/thirdparty/Skemer2016_ShearStrainAngles.scsv`.
+
+    Plot data from the Skemer 2016 datafile on the axis given by `ax`. Select the
+    studies from which to plot the data, which must be a list of strings with exact
+    matches in the `study` column in the datafile.
+
+    If `ax` is None, a new figure is created for the axes with default Matplotlib
+    settings except for the custom setting of `dpi=300`.
+
+    Returns a tuple of the figure handle, the axis handle and the set of colors used for
+    the data series plots.
+
+    """
+    if len(studies) != len(markers) != len(colors) != len(fillstyles) != len(labels):
+        raise ValueError("mismatch in lengths of inputs")
+    if ax is None:
+        fig = plt.figure(dpi=300)
+        ax = fig.add_subplot()
+    else:
+        fig = ax.get_figure()
+
+    data_Skemer2016 = _io.read_scsv(
+        _io.data("thirdparty") / "Skemer2016_ShearStrainAngles.scsv"
+    )
+    for study, marker, color, fillstyle, label in zip(
+        studies, markers, colors, fillstyles, labels
+    ):
+        # Note: np.nonzero returns a tuple.
+        indices = np.nonzero(np.asarray(data_Skemer2016.study) == study)[0]
+        ax.plot(
+            np.take(data_Skemer2016.shear_strain, indices) / 200,
+            np.take(data_Skemer2016.angle, indices),
+            marker=marker,
+            fillstyle=fillstyle,
+            linestyle="none",
+            markersize=5,
+            color=color,
+            label=label,
+        )
+    _utils.redraw_legend(ax)
     return fig, ax, colors
 
 

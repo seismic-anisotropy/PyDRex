@@ -68,6 +68,14 @@ def quat_product(q1, q2):
     ]
 
 
+def redraw_legend(ax):
+    """Redraw legend on matplotlib axis with new labels since last `ax.legend()`."""
+    legend = ax.get_legend()
+    if legend is not None:
+        legend.remove()
+    ax.legend()
+
+
 def __run_doctests():
     import doctest
 
