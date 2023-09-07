@@ -120,11 +120,11 @@ class TestOlivineA:
     def interp_GBM_FortranDRex(cls, strains):
         """Interpolate angles produced using 'tools/drex_forward_simpleshear.f90'."""
         _log.info("interpolating target CPO  angles...")
-        data = _io.read_scsv(_io.data("thirdparty") / "a_axis_GBM_fortran.scsv")
+        data = _io.read_scsv(_io.data("drexF90") / "olA_D1E4_dt50_X0_L5.scsv")
         data_strains = np.linspace(0, 1, 200)
-        cs_M0 = PchipInterpolator(data_strains, _utils.remove_nans(data.a_mean_M0))
-        cs_M50 = PchipInterpolator(data_strains, _utils.remove_nans(data.a_mean_M50))
-        cs_M200 = PchipInterpolator(data_strains, _utils.remove_nans(data.a_mean_M200))
+        cs_M0 = PchipInterpolator(data_strains, _utils.remove_nans(data.M0_angle))
+        cs_M50 = PchipInterpolator(data_strains, _utils.remove_nans(data.M50_angle))
+        cs_M200 = PchipInterpolator(data_strains, _utils.remove_nans(data.M200_angle))
         return [cs_M0(strains), cs_M50(strains), cs_M200(strains)]
 
     @classmethod
@@ -172,7 +172,7 @@ class TestOlivineA:
     @pytest.mark.parametrize("gbs_threshold", [0, 0.2, 0.4])
     @pytest.mark.parametrize("nucleation_efficiency", [3, 5, 10])
     def test_dvdx_ensemble(
-        self, outdir, seeds_near45X, ncpus, gbs_threshold, nucleation_efficiency
+        self, outdir, seeds_nearX45, ncpus, gbs_threshold, nucleation_efficiency
     ):
         r"""Test a-axis alignment to shear in Y direction (init. SCCS near 45° from X).
 
@@ -184,7 +184,7 @@ class TestOlivineA:
         timestamps = np.linspace(0, 1, 201)  # Solve until D₀t=1 ('shear' γ=2).
         n_timestamps = len(timestamps)
         # Use `seeds` instead of `seeds_nearX45` if you have even more RAM and CPU time.
-        _seeds = seeds_near45X
+        _seeds = seeds_nearX45
         n_seeds = len(_seeds)
 
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
@@ -299,20 +299,36 @@ class TestOlivineA:
             )
             fig.savefig(_io.resolve_path(f"{out_basepath}.pdf"))
 
-    def test_boundary_mobility(self, seed, ncpus, outdir):
-        """Test that the grain boundary mobility parameter has an effect."""
+    @pytest.mark.slow
+    def test_dvdx_GBM(self, outdir, seeds_nearX45, ncpus):
+        r"""Test a-axis alignment to shear in Y direction (init. SCCS near 45° from X).
+
+        Velocity gradient:
+        $$
+        \bm{L} = 10^{-4} ×
+            \begin{bmatrix} 0 & 0 & 0 \cr 2 & 0 & 0 \cr 0 & 0 & 0 \end{bmatrix}
+        $$
+
+        Results are compared to the Fortran 90 output.
+
+        """
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
-        strain_rate = 1.0
+        strain_rate = 1e-4
         get_velocity_gradient = _dv.simple_shear_2d("Y", "X", strain_rate)
-        timestamps = np.linspace(0, 1, 201)  # Solve until D₀t=1 ('shear' γ=2).
-        i_strain_50p = 50  # Index of 50% strain.
+        timestamps = np.linspace(0, 1e4, 51)  # Solve until D₀t=1 ('shear' γ=2).
+        i_strain_40p = 10  # Index of 40% strain, lower strains are not relevant here.
+        i_strain_100p = 25  # Index of 100% strain, when M*=0 matches FSE.
         params = _io.DEFAULT_PARAMS
+        params["gbs_threshold"] = 0  # No GBS, to match the Fortran parameters.
         gbm_mobilities = (0, 10, 50, 125, 200)  # Must be in ascending order.
         markers = ("x", ".", "*", "d", "s")
-        angles = np.empty((len(gbm_mobilities), len(timestamps)))
-        symmetry = np.empty_like(angles)
-        θ_fse = np.empty_like(angles)
-        minerals = []
+        # Use `seeds` instead of `seeds_nearX45` if you have even more RAM and CPU time.
+        _seeds = seeds_nearX45
+        n_seeds = len(_seeds)
+        angles = np.empty((len(gbm_mobilities), n_seeds, len(timestamps)))
+        θ_fse = np.empty_like(timestamps)
+        strains = timestamps * strain_rate
+        M0_drexF90, M50_drexF90, M200_drexF90 = self.interp_GBM_FortranDRex(strains)
 
         optional_logging = cl.nullcontext()
         if outdir is not None:
@@ -321,97 +337,147 @@ class TestOlivineA:
             labels = []
 
         with optional_logging:
+            clock_start = process_time()
             for m, gbm_mobility in enumerate(gbm_mobilities):
+                if m == 0:
+                    return_fse = True
+                else:
+                    return_fse = False
                 params["gbm_mobility"] = gbm_mobility
-                mineral, fse_angles = self.run(
+
+                _run = ft.partial(
+                    self.run,
                     params,
                     timestamps,
                     strain_rate,
                     get_velocity_gradient,
                     shear_direction,
-                    seed=seed,
                     return_fse=True,
                 )
-                minerals.append(mineral)
-                angles[m] = [
-                    _diagnostics.smallest_angle(v, shear_direction)
-                    for v in _diagnostics.elasticity_components(
-                        _minerals.voigt_averages([mineral], params)
-                    )["hexagonal_axis"]
-                ]
-                symmetry[m] = [
-                    _diagnostics.symmetry(
-                        o, axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric]
-                    )[0]  # P_[100] diagnostic.
-                    for o in _stats.resample_orientations(
-                        mineral.orientations,
-                        mineral.fractions,
-                        n_samples=1000,
-                        seed=seed,
-                    )[0]
-                ]
-                θ_fse[m] = fse_angles
+                with Pool(processes=ncpus) as pool:
+                    for s, out in enumerate(pool.imap_unordered(_run, _seeds)):
+                        mineral, fse_angles = out
+                        angles[m, s, :] = [
+                            _diagnostics.smallest_angle(v, shear_direction)
+                            for v in _diagnostics.elasticity_components(
+                                _minerals.voigt_averages([mineral], params)
+                            )["hexagonal_axis"]
+                        ]
+                        # Save the whole mineral for the first seed only.
+                        if outdir is not None and s == 0:
+                            mineral.save(
+                                f"{out_basepath}.npz",
+                                postfix=f"M{_io.stringify(gbm_mobility)}",
+                            )
+                        if return_fse:
+                            θ_fse += fse_angles
+
+                if return_fse:
+                    θ_fse /= n_seeds
+
                 if outdir is not None:
                     labels.append(f"$M^∗$ = {params['gbm_mobility']}")
 
+            _log.info(
+                "elapsed CPU time: %s",
+                _utils.readable_timestamp(np.abs(process_time() - clock_start)),
+            )
+
+        # Take ensemble means and optionally plot figure.
+        _log.info("postprocessing results...")
+        result_angles = angles.mean(axis=1)
+        result_angles_err = angles.std(axis=1)
+
         if outdir is not None:
-            strains = timestamps * strain_rate
+            schema = {
+                "delimiter": ",",
+                "missing": "-",
+                "fields": [
+                    {
+                        "name": "strain",
+                        "type": "integer",
+                        "unit": "percent",
+                        "fill": 999999,
+                    }
+                ],
+            }
+            _io.save_scsv(
+                f"{out_basepath}_strains.scsv",
+                schema,
+                [[int(D * 200) for D in strains]],  # Shear strain % is 200 * D₀.
+            )
             fig, ax, colors = _vis.alignment(
                 None,
                 strains,
-                angles,
+                result_angles,
                 markers,
                 labels,
+                err=result_angles_err,
                 θ_max=60,
-                θ_fse=np.mean(θ_fse, axis=0),
+                θ_fse=θ_fse,
             )
-            fig.savefig(_io.resolve_path(f"{out_basepath}.png"))
-            # Save mineral for the M*=125 run, for polefigs.
-            minerals[-2].save(f"{out_basepath}.npz")
+            ax.plot(strains, M0_drexF90, c=colors[0])
+            ax.plot(strains, M50_drexF90, c=colors[2])
+            ax.plot(strains, M200_drexF90, c=colors[4])
+            fig.savefig(_io.resolve_path(f"{out_basepath}.pdf"))
 
-        # Check that GBM speeds up the alignment.
+        # Check that GBM speeds up the alignment between 40% and 100% strain.
         _log.info("checking grain orientations...")
-        halfway = int(len(timestamps) / 2)
-        assert np.all(
-            np.array(
-                [
-                    θ[halfway] - angles[i][halfway]
-                    for i, θ in enumerate(angles[:-1], start=1)
-                ]
+        for i, θ in enumerate(result_angles[:-1], start=1):
+            nt.assert_array_less(
+                result_angles[i][i_strain_40p:i_strain_100p],
+                θ[i_strain_40p:i_strain_100p],
             )
-            > 0
-        )
-        assert np.all(
-            np.array(
-                [θ[-1] - angles[i][-1] for i, θ in enumerate(angles[:-1], start=1)]
-            )
-            > 0
-        )
-        # Check that M*=0 doesn't affect grain sizes.
-        _log.info("checking grain sizes...")
-        for i, time in enumerate(timestamps):
-            nt.assert_allclose(
-                minerals[0].fractions[i],
-                np.full(params["number_of_grains"], 1 / params["number_of_grains"]),
-            )
-        # Check that M*=0 matches FSE past 100% strain.
+
+        # Check that M*=0 matches FSE (±1°) past 100% strain.
         nt.assert_allclose(
-            angles[0][i_strain_50p:],
-            np.mean(θ_fse, axis=0)[i_strain_50p:],
+            result_angles[0][i_strain_100p:],
+            θ_fse[i_strain_100p:],
             atol=1,
             rtol=0,
         )
-        # Check that GBM causes decreasing grain size median.
-        assert np.all(
-            np.array(
-                [
-                    np.median(m.fractions[halfway])
-                    - np.median(minerals[i].fractions[halfway])
-                    for i, m in enumerate(minerals[:-1], start=1)
-                ]
-            )
-            > 0
+
+        # Check that results match Fortran output past 40% strain.
+        nt.assert_allclose(
+            result_angles[0][i_strain_40p:],
+            M0_drexF90[i_strain_40p:],
+            atol=0.1,
+            rtol=1,
         )
+        nt.assert_allclose(
+            result_angles[2][i_strain_40p:],
+            M50_drexF90[i_strain_40p:],
+            atol=1,
+            rtol=0,
+        )
+        nt.assert_allclose(
+            result_angles[4][i_strain_40p:],
+            M200_drexF90[i_strain_40p:],
+            atol=1.5,
+            rtol=0,
+        )
+
+        # TODO: Make this into a separate non-ensemble test.
+        # # Check that M*=0 doesn't affect grain sizes.
+        # _log.info("checking grain sizes...")
+        # for i, time in enumerate(timestamps):
+        #     nt.assert_allclose(
+        #         minerals[0].fractions[i],
+        #         np.full(params["number_of_grains"], 1 / params["number_of_grains"]),
+        #     )
+
+        # TODO: Make this into a separate non-ensemble test.
+        # # Check that GBM causes decreasing grain size median.
+        # assert np.all(
+        #     np.array(
+        #         [
+        #             np.median(m.fractions[halfway])
+        #             - np.median(minerals[i].fractions[halfway])
+        #             for i, m in enumerate(minerals[:-1], start=1)
+        #         ]
+        #     )
+        #     > 0
+        # )
 
     def test_boundary_sliding(self, seed, ncpus, outdir):
         """Test that the grain boundary sliding parameter has an effect."""
@@ -456,7 +522,9 @@ class TestOlivineA:
                 symmetry[f] = [
                     _diagnostics.symmetry(
                         o, axis=_minerals.OLIVINE_PRIMARY_AXIS[mineral.fabric]
-                    )[0]  # P_[100] diagnostic.
+                    )[
+                        0
+                    ]  # P_[100] diagnostic.
                     for o in _stats.resample_orientations(
                         mineral.orientations,
                         mineral.fractions,
