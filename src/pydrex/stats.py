@@ -43,7 +43,7 @@ def resample_orientations(orientations, fractions, n_samples=None, seed=None):
         )
     rng = np.random.default_rng(seed=seed)
     if n_samples is None:
-        n_samples = len(_fractions)
+        n_samples = _fractions.shape[1]
     out_orientations = np.empty((len(_fractions), n_samples, 3, 3))
     out_fractions = np.empty((len(_fractions), n_samples))
     for i, (frac, orient) in enumerate(zip(_fractions, _orientations)):

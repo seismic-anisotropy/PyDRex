@@ -113,6 +113,26 @@ class TestSymmetryPGR:
 class TestVolumeWeighting:
     """Tests for volumetric resampling of orientation data."""
 
+    def test_output_shape(self):
+        """Test that we get the correct output shape."""
+        orientations = [
+            Rotation.random(1000).as_matrix(),
+            Rotation.random(1000).as_matrix(),
+        ]
+        fractions = [np.full(1000, 1 / 1000), np.full(1000, 1 / 1000)]
+        new_orientations, new_fractions = _stats.resample_orientations(
+            orientations, fractions
+        )
+        np.testing.assert_array_equal(
+            np.asarray(orientations).shape, new_orientations.shape
+        )
+        np.testing.assert_array_equal(np.asarray(fractions).shape, new_fractions.shape)
+        new_orientations, new_fractions = _stats.resample_orientations(
+            orientations, fractions, n_samples=500
+        )
+        assert new_orientations.shape[1] == 500
+        assert new_fractions.shape[1] == 500
+
     def test_upsample(self):
         """Test upsampling of the raw orientation data."""
         orientations = (
