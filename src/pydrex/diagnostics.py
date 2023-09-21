@@ -287,7 +287,7 @@ def misorientation_indices(
         bins=bins,
     )
     if ncpus is None:
-        ncpus = os.sched_getaffinity(0) - 1
+        ncpus = len(os.sched_getaffinity(0)) - 1
     with Pool(processes=ncpus) as pool:
         for i, out in enumerate(pool.imap_unordered(_run, orientation_stack)):
             m_indices[i] = out
