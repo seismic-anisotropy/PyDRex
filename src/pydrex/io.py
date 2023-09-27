@@ -15,12 +15,13 @@ the `data/` folder of the source repository. For supported cell types, see
 import collections as c
 import csv
 import functools as ft
+import io
 import os
 import pathlib
 import tomllib
 from importlib.resources import files
 
-import frontmatter as fm
+import yaml
 import meshio
 import numpy as np
 
@@ -58,11 +59,32 @@ _SCSV_DEFAULT_FILL = ""
 def read_scsv(file):
     """Read data from an SCSV file.
 
-    See also `save_scsv`, `read_scsv_header`.
+    Prints the YAML header section to output and returns a NamedTuple with columns of
+    the csv data. See also `save_scsv`.
 
     """
     with open(resolve_path(file)) as fileref:
-        metadata, content = fm.parse(fileref.read())
+        yaml_lines = []
+        csv_lines = []
+
+        is_yaml = False
+        for line in fileref:
+            if line == "\n":  # Empty lines are skipped.
+                continue
+            if line == "---\n":
+                if is_yaml:
+                    is_yaml = False  # Second --- ends YAML section.
+                    continue
+                else:
+                    is_yaml = True  # First --- begins YAML section.
+                    continue
+
+            if is_yaml:
+                yaml_lines.append(line)
+            else:
+                csv_lines.append(line)
+
+        metadata = yaml.safe_load(io.StringIO("".join(yaml_lines)))
         schema = metadata["schema"]
         if not _validate_scsv_schema(schema):
             raise _err.SCSVError(
@@ -70,7 +92,7 @@ def read_scsv(file):
                 + " Check logging output for details."
             )
         reader = csv.reader(
-            content.splitlines(), delimiter=schema["delimiter"], skipinitialspace=True
+            csv_lines, delimiter=schema["delimiter"], skipinitialspace=True
         )
 
         schema_colnames = [d["name"] for d in schema["fields"]]
@@ -88,6 +110,8 @@ def read_scsv(file):
         ]
         missingstr = schema["missing"]
         fillvals = [d.get("fill", _SCSV_DEFAULT_FILL) for d in schema["fields"]]
+        for line in yaml_lines:
+            print(line, end="")
         return Columns._make(
             [
                 tuple(
@@ -116,7 +140,10 @@ def write_scsv_header(stream, schema, comments=None):
 
     """
     if not _validate_scsv_schema(schema):
-        raise _err.SCSVError("refusing to write invalid schema to stream")
+        raise _err.SCSVError(
+            "refusing to write invalid schema to stream."
+            + " Check logging output for details."
+        )
 
     stream.write("---" + os.linesep)
     if comments is not None:
@@ -154,34 +181,57 @@ def save_scsv(file, schema, data, **kwargs):
     Optional keyword arguments are passed to `write_scsv_header`. See also `read_scsv`.
 
     """
-    with open(resolve_path(file), mode="w") as stream:
-        write_scsv_header(stream, schema, **kwargs)
-        writer = csv.writer(
-            stream, delimiter=schema["delimiter"], lineterminator=os.linesep
-        )
-        writer.writerow([field["name"] for field in schema["fields"]])
-        fills = [field.get("fill", _SCSV_DEFAULT_FILL) for field in schema["fields"]]
-        types = [
-            SCSV_TYPEMAP[field.get("type", _SCSV_DEFAULT_TYPE)]
-            for field in schema["fields"]
-        ]
-        for col in zip(*data):
-            row = []
-            for d, t, f in zip(col, types, fills):
-                if t == bool:
-                    row.append(d)
-                elif t in (float, complex):
-                    if np.isnan(d) and np.isnan(t(f)):
-                        row.append(schema["missing"])
-                    elif d == t(f):
+    path = resolve_path(file)
+    n_rows = len(data[0])
+    for col in data[1:]:
+        if len(col) != n_rows:
+            raise _err.SCSVError(
+                "refusing to write data columns of unequal length to SCSV file"
+            )
+
+    try:  # Check that the output is valid by attempting to parse.
+        with open(path, mode="w") as stream:
+            write_scsv_header(stream, schema, **kwargs)
+            fills = [
+                field.get("fill", _SCSV_DEFAULT_FILL) for field in schema["fields"]
+            ]
+            types = [
+                SCSV_TYPEMAP[field.get("type", _SCSV_DEFAULT_TYPE)]
+                for field in schema["fields"]
+            ]
+            names = [field["name"] for field in schema["fields"]]
+            writer = csv.writer(
+                stream, delimiter=schema["delimiter"], lineterminator=os.linesep
+            )
+            writer.writerow(names)
+            for col in zip(*data):
+                row = []
+                for i, (d, t, f) in enumerate(zip(col, types, fills)):
+                    try:
+                        _parse_scsv_cell(
+                            t, str(d), missingstr=schema["missing"], fillval=f
+                        )
+                    except ValueError:
+                        raise _err.SCSVError(
+                            f"invalid data for column '{names[i]}'."
+                            + f" Cannot parse {d} as type '{t.__qualname__}'."
+                        ) from None
+                    if t == bool:
+                        row.append(d)
+                    elif t in (float, complex):
+                        if np.isnan(d) and np.isnan(t(f)):
+                            row.append(schema["missing"])
+                        elif d == t(f):
+                            row.append(schema["missing"])
+                        else:
+                            row.append(d)
+                    elif t in (int, str) and d == t(f):
                         row.append(schema["missing"])
                     else:
                         row.append(d)
-                elif t in (int, str) and d == t(f):
-                    row.append(schema["missing"])
-                else:
-                    row.append(d)
-            writer.writerow(row)
+                writer.writerow(row)
+    except ValueError:
+        path.unlink(missing_ok=True)
 
 
 def parse_config(path):
@@ -429,6 +479,10 @@ def stringify(s):
     return "".join(filter(lambda c: str.isidentifier(c) or str.isdecimal(c), str(s)))
 
 
-def data(folder):
-    """Get resolved path to a pydrex data folder."""
-    return resolve_path(files("pydrex.data") / folder)
+def data(directory):
+    """Get resolved path to a pydrex data directory."""
+    resources = files("pydrex.data")
+    if (resources / directory).is_dir():
+        return resolve_path(resources / directory)
+    else:
+        raise NotADirectoryError(f"{resources / directory} is not a directory")

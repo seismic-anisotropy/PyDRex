@@ -141,7 +141,7 @@ def test_save_specfile(outdir):
     ]
 
     # The test writes two variants of the file, with identical CSV contents but
-    # different YAML header specs. Contents after thhe header must match.
+    # different YAML header specs. Contents after the header must match.
     if outdir is not None:
         _io.save_scsv(f"{outdir}/spec_out.scsv", schema, data)
         _io.save_scsv(f"{outdir}/spec_out_alt.scsv", schema_alt, data_alt)
@@ -179,6 +179,31 @@ def test_read_Kaminski2002():
         ),
     )
     # fmt: on
+
+
+def test_save_scsv_errors():
+    """Check that we raise errors when attempting to write bad SCSV data."""
+    schema = {
+        "delimiter": ",",
+        "missing": "-",
+        "fields": [
+            {
+                "name": "foo",
+                "type": "integer",
+                "fill": 999999,
+            }
+        ],
+    }
+    temp = tempfile.NamedTemporaryFile()
+    with pytest.raises(_err.SCSVError):
+        foo = [1, 5, 0.2]
+        _io.save_scsv(temp.name, schema, [foo])
+        foo = [1, "foo"]
+        _io.save_scsv(temp.name, schema, [foo])
+        foo = ["foo"]
+        _io.save_scsv(temp.name, schema, [foo])
+        foo = [True]
+        _io.save_scsv(temp.name, schema, [foo])
 
 
 def test_read_Kaminski2004():
