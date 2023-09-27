@@ -135,12 +135,11 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
     """Plot `angles` (in degrees) versus `strains` on the given axis.
 
     Alignment angles could be either bingham averages or the a-axis in the hexagonal
-    symmetry projection, measured from e.g. the shear direction. They should be
-    calculated from resampled grain orientations. Expects as many `markers` and `labels`
-    as there are data series in `angles`.
+    symmetry projection, measured from e.g. the shear direction. In the first case,
+    they should be calculated from resampled grain orientations. Expects as many
+    `markers` and `labels` as there are data series in `angles`.
 
-    If `ax` is None, a new figure is created for the axes with default Matplotlib
-    settings except for the custom setting of `dpi=300`.
+    If `ax` is None, a new figure and axes are created with `figure_unless`.
 
     Args:
     - `strains` (array) — X-values, accumulated strain (tensorial) during CPO evolution
@@ -152,7 +151,7 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
     - `θ_fse` (array, optional) — an array of angles from the long axis of the finite
       strain ellipsoid to the reference direction (e.g. shear direction)
 
-    Returns a tuple of the figure handle, the axis handle and the set of colors used for
+    Returns a tuple of the figure handle, the axes handle and the set of colors used for
     the data series plots.
 
     """
@@ -164,11 +163,7 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
         if not np.all(_angles.shape == _angles_err.shape):
             raise ValueError("mismatch in shapes of `angles` and `angles_err`")
 
-    if ax is None:
-        fig = plt.figure(dpi=300)
-        ax = fig.add_subplot(111)
-    else:
-        fig = ax.get_figure()
+    fig, ax = figure_unless(ax)
     ax.set_ylabel("Mean angle ∈ [0, 90]°")
     ax.set_ylim((0, θ_max))
     ax.set_xlabel(r"Strain ($D_0 t = γ/2$)")
@@ -188,8 +183,142 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
 
     if θ_fse is not None:
         ax.plot(strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE")
-    ax.legend()
+    _utils.redraw_legend(ax)
     return fig, ax, colors
+
+
+def show_Skemer2016_ShearStrainAngles(ax, studies, markers, colors, fillstyles, labels):
+    """Show data from `src/pydrex/data/thirdparty/Skemer2016_ShearStrainAngles.scsv`.
+
+    Plot data from the Skemer 2016 datafile on the axis given by `ax`. Select the
+    studies from which to plot the data, which must be a list of strings with exact
+    matches in the `study` column in the datafile.
+
+    If `ax` is None, a new figure and axes are created with `figure_unless`.
+
+    Returns a tuple of the figure handle, the axes handle and the set of colors used for
+    the data series plots.
+
+    """
+    if len(studies) != len(markers) != len(colors) != len(fillstyles) != len(labels):
+        raise ValueError("mismatch in lengths of inputs")
+    fig, ax = figure_unless(ax)
+
+    data_Skemer2016 = _io.read_scsv(
+        _io.data("thirdparty") / "Skemer2016_ShearStrainAngles.scsv"
+    )
+    for study, marker, color, fillstyle, label in zip(
+        studies, markers, colors, fillstyles, labels
+    ):
+        # Note: np.nonzero returns a tuple.
+        indices = np.nonzero(np.asarray(data_Skemer2016.study) == study)[0]
+        ax.plot(
+            np.take(data_Skemer2016.shear_strain, indices) / 200,
+            np.take(data_Skemer2016.angle, indices),
+            marker=marker,
+            fillstyle=fillstyle,
+            linestyle="none",
+            markersize=5,
+            color=color,
+            label=label,
+        )
+    _utils.redraw_legend(ax)
+    return fig, ax, colors
+
+
+def spin(ax, initial_angles, rotation_rates, target_rotation_rates=None):
+    """Plot rotation rates of grains with known, unique initial [100] angles from X.
+
+    If `ax` is None, a new figure and axes are created with `figure_unless`.
+
+    Returns a tuple of the figure handle, the axes handle and the set of colors used for
+    the data series plots.
+
+    """
+    if len(initial_angles) != len(rotation_rates) or (
+        target_rotation_rates is not None
+        and len(target_rotation_rates) != len(rotation_rates)
+    ):
+        raise ValueError("mismatch in lengths of inputs")
+    fig, ax = figure_unless(ax)
+    ax.set_ylabel("rotation rate")
+    ax.set_xlabel("initial [100] angle (°)")
+    ax.set_xlim((0, 360))
+    ax.set_xticks(np.linspace(0, 360, 9))
+    colors = []
+    if target_rotation_rates is not None:
+        lines = ax.plot(
+            initial_angles,
+            target_rotation_rates,
+            c="tab:orange",
+            lw=1,
+            label="target spins",
+        )
+        colors.append(lines[0].get_color())
+    series = ax.scatter(
+        initial_angles,
+        rotation_rates,
+        facecolors="none",
+        edgecolors="k",
+        s=8,
+        lw=1,
+        label="computed spins",
+    )
+    colors.append(series.get_edgecolors()[0])
+    _utils.redraw_legend(ax)
+    return fig, ax, colors
+
+
+def growth(ax, initial_angles, fractions_diff, target_fractions_diff=None):
+    if len(initial_angles) != len(fractions_diff) or (
+        target_fractions_diff is not None
+        and len(target_fractions_diff) != len(fractions_diff)
+    ):
+        raise ValueError("mismatch in lengths of inputs")
+    fig, ax = figure_unless(ax)
+    ax.set_ylabel("grain growth rate")
+    ax.set_xlabel("initial [100] angle (°)")
+    ax.set_xlim((0, 360))
+    ax.set_xticks(np.linspace(0, 360, 9))
+    colors = []
+    if target_fractions_diff is not None:
+        lines = ax.plot(
+            initial_angles,
+            target_fractions_diff,
+            c="tab:orange",
+            lw=1,
+            label="target growth",
+        )
+        colors.append(lines[0].get_color())
+    series = ax.scatter(
+        initial_angles,
+        fractions_diff,
+        facecolors="none",
+        edgecolors="k",
+        s=8,
+        lw=1,
+        label="computed growth",
+    )
+    colors.append(series.get_edgecolors()[0])
+    _utils.redraw_legend(ax)
+    return fig, ax, colors
+
+
+def figure_unless(ax):
+    """Create figure and axes if `ax` is None, or return existing figure for `ax`.
+
+    If `ax` is None, a new figure is created for the axes with default Matplotlib
+    settings except for the custom resolution of `dpi=300`.
+
+    Returns a tuple containing the figure handle and the axes object.
+
+    """
+    if ax is None:
+        fig = plt.figure(dpi=300)
+        ax = fig.add_subplot()
+    else:
+        fig = ax.get_figure()
+    return fig, ax
 
 
 def _get_marker_and_label(data, seq_index, markers, labels=None):

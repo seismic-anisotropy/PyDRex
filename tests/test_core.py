@@ -1,7 +1,9 @@
-"""> PyDRex: tests for core D-Rex routines."""
+"""> PyDRex: Tests for core D-Rex routines."""
 import contextlib as cl
 
 import numpy as np
+from matplotlib import pyplot as plt
+from numpy import testing as nt
 from scipy.spatial.transform import Rotation
 
 from pydrex import core as _core
@@ -13,10 +15,10 @@ from pydrex import visualisation as _vis
 SUBDIR = "core"
 
 
-class TestSimpleShearOPX:
+class TestDislocationCreepOPX:
     """Single-grain orthopyroxene crystallographic rotation rate tests."""
 
-    class_id = "simple_shear_OPX"
+    class_id = "dislocation_creep_OPX"
 
     def test_shear_dudz(self, outdir):
         test_id = "dudz"
@@ -97,13 +99,13 @@ class TestSimpleShearOPX:
                 assert np.isclose(np.sum(fractions_diff), 0.0)
 
 
-class TestSimpleShearOlivineA:
+class TestDislocationCreepOlivineA:
     """Single-grain A-type olivine analytical rotation rate tests."""
 
-    class_id = "simple_shear_Ol"
+    class_id = "dislocation_creep_Ol"
 
     def test_shear_dvdx_slip_010_100(self, outdir):
-        r"""Single grain of olivine A-type, simple shear on (010)[100].
+        r"""Single grain of A-type olivine, slip on (010)[100].
 
         Velocity gradient:
         $$\bm{L} = \begin{bmatrix} 0 & 0 & 0 \cr 2 & 0 & 0 \cr 0 & 0 & 0 \end{bmatrix}$$
@@ -201,7 +203,7 @@ class TestSimpleShearOlivineA:
             )
 
     def test_shear_dudz_slip_001_100(self, outdir):
-        r"""Single grain of olivine A-type, simple shear on (001)[100].
+        r"""Single grain of A-type olivine, slip on (001)[100].
 
         Velocity gradient:
         $$\bm{L} = \begin{bmatrix} 0 & 0 & 2 \cr 0 & 0 & 0 \cr 0 & 0 & 0 \end{bmatrix}$$
@@ -279,7 +281,7 @@ class TestSimpleShearOlivineA:
                 assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_shear_dwdx_slip_001_100(self, outdir):
-        r"""Single grain of olivine A-type, simple shear on (001)[100].
+        r"""Single grain of A-type olivine, slip on (001)[100].
 
         Velocity gradient:
         $$\bm{L} = \begin{bmatrix} 0 & 0 & 0 \cr 0 & 0 & 0 \cr 2 & 0 & 0 \end{bmatrix}$$
@@ -357,7 +359,7 @@ class TestSimpleShearOlivineA:
                 assert np.isclose(np.sum(fractions_diff), 0.0)
 
     def test_shear_dvdz_slip_010_001(self, outdir):
-        r"""Single grain of olivine A-type, simple shear on (010)[001].
+        r"""Single grain of A-type olivine, slip on (010)[001].
 
         Velocity gradient:
         $$\bm{L} = \begin{bmatrix} 0 & 0 & 0 \cr 0 & 0 & 2 \cr 0 & 0 & 0 \end{bmatrix}$$
@@ -433,3 +435,184 @@ class TestSimpleShearOlivineA:
                     orientations_diff[0], target_orientations_diff
                 )
                 assert np.isclose(np.sum(fractions_diff), 0.0)
+
+
+class TestRecrystallisation2D:
+    """Basic recrystallisation tests for 2D simple shear."""
+
+    class_id = "recrystallisation_2D"
+
+    def test_shear_dvdx_circle_inplane(self, outdir):
+        r"""360000 grains of A-type olivine with uniform spread of a-axes on a circle.
+
+        Grain growth rates are compared to analytical calculations.
+        The a-axes are distributed in the YX plane (i.e.\ rotated around Z).
+
+        Velocity gradient:
+        $$\bm{L} = \begin{bmatrix} 0 & 0 & 0 \cr 2 & 0 & 0 \cr 0 & 0 & 0 \end{bmatrix}$$
+
+        """
+        test_id = "dvdx_circle_inplane"
+
+        optional_logging = cl.nullcontext()
+        # Initial uniform distribution of orientations on a 2D circle.
+        initial_angles = np.mgrid[0 : 2 * np.pi : 360000j]
+        cos2θ = np.cos(2 * initial_angles)
+        if outdir is not None:
+            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}"
+            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+
+        with optional_logging:
+            initial_orientations = Rotation.from_rotvec(
+                [[0, 0, θ] for θ in initial_angles]
+            )
+            orientations_diff, fractions_diff = _core.derivatives(
+                phase=_core.MineralPhase.olivine,
+                fabric=_core.MineralFabric.olivine_A,
+                n_grains=360000,
+                orientations=initial_orientations.as_matrix(),
+                fractions=np.full(360000, 1 / 360000),
+                strain_rate=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]]),
+                velocity_gradient=np.array([[0, 0, 0], [2, 0, 0], [0, 0, 0]]),
+                stress_exponent=1.5,
+                deformation_exponent=3.5,
+                nucleation_efficiency=5,
+                gbm_mobility=125,
+                volume_fraction=1.0,
+            )
+            ρ = np.abs(cos2θ) ** (1.5 / 3.5)
+            # No need to sum over slip systems, only (010)[100] can activate in this
+            # 2D simple shear deformation geometry (ρₛ=ρ).
+            target_strain_energies = ρ * np.exp(-5 * ρ**2)
+            target_fractions_diff = np.array(
+                [  # df/dt* = - M* f (E - E_mean)
+                    -125 * 1 / 360000 * (E - np.mean(target_strain_energies))
+                    for E in target_strain_energies
+                ]
+            )
+
+        if outdir is not None:
+            fig = plt.figure(dpi=300)
+            ax = fig.add_subplot(211)
+            xvals = np.rad2deg(initial_angles)
+            ax.axvline(90, color="k", linestyle="--", alpha=0.5)
+            ax.axvline(
+                270, color="k", linestyle="--", alpha=0.5, label="shear direction"
+            )
+            fig, ax, colors = _vis.growth(
+                ax, xvals, fractions_diff, target_fractions_diff
+            )
+            ax.label_outer()
+            ax2 = fig.add_subplot(212, sharex=ax)
+            ax2.axvline(90, color="k", linestyle="--", alpha=0.5)
+            ax2.axvline(
+                270, color="k", linestyle="--", alpha=0.5, label="shear direction"
+            )
+            fig, ax2, colors = _vis.spin(
+                ax2,
+                xvals,
+                np.sqrt(
+                    [
+                        o[0, 0] ** 2 + o[0, 1] ** 2 + o[0, 2] ** 2
+                        for o in orientations_diff
+                    ]
+                ),
+                1 + cos2θ,
+            )
+            fig.savefig(f"{out_basepath}.png")
+
+        nt.assert_allclose(fractions_diff, target_fractions_diff, atol=1e-15, rtol=0)
+
+    def test_shear_dvdx_circle_shearplane(self, outdir):
+        r"""360000 grains of A-type olivine with uniform spread of a-axes on a circle.
+
+        Unlike `test_shear_dvdx_circle_inplane`, two slip systems are active here,
+        with cyclical variety in which one is dominant depending on grain orientation.
+        The a-axes are distributed in the YZ plane
+        (i.e.\ extrinsic rotation around Z by 90° and then around X).
+
+        Velocity gradient:
+        $$\bm{L} = \begin{bmatrix} 0 & 0 & 0 \cr 2 & 0 & 0 \cr 0 & 0 & 0 \end{bmatrix}$$
+
+        """
+        test_id = "dvdx_circle_shearplane"
+
+        optional_logging = cl.nullcontext()
+        # Initial uniform distribution of orientations on a 2D circle.
+        initial_angles = np.mgrid[0 : 2 * np.pi : 360000j]
+        if outdir is not None:
+            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}"
+            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+
+        with optional_logging:
+            initial_orientations = Rotation.from_euler(
+                "zx", [[np.pi/2, θ] for θ in initial_angles]
+            )
+            orientations_diff, fractions_diff = _core.derivatives(
+                phase=_core.MineralPhase.olivine,
+                fabric=_core.MineralFabric.olivine_A,
+                n_grains=360000,
+                orientations=initial_orientations.as_matrix(),
+                fractions=np.full(360000, 1 / 360000),
+                strain_rate=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]]),
+                velocity_gradient=np.array([[0, 0, 0], [2, 0, 0], [0, 0, 0]]),
+                stress_exponent=1.5,
+                deformation_exponent=3.5,
+                nucleation_efficiency=5,
+                gbm_mobility=125,
+                volume_fraction=1.0,
+            )
+
+        if outdir is not None:
+            fig = plt.figure(dpi=300)
+            ax = fig.add_subplot(211)
+            xvals = np.rad2deg(initial_angles)
+            ax.axvline(0, color="k", linestyle="--", alpha=0.5)
+            ax.axvline(180, color="k", linestyle="--", alpha=0.5)
+            ax.axvline(
+                360, color="k", linestyle="--", alpha=0.5, label="shear direction"
+            )
+            fig, ax, colors = _vis.growth(ax, xvals, fractions_diff)
+            ax.label_outer()
+            ax2 = fig.add_subplot(212, sharex=ax)
+            ax2.axvline(0, color="k", linestyle="--", alpha=0.5)
+            ax2.axvline(180, color="k", linestyle="--", alpha=0.5)
+            ax2.axvline(
+                360, color="k", linestyle="--", alpha=0.5, label="shear direction"
+            )
+            fig, ax2, colors = _vis.spin(
+                ax2,
+                xvals,
+                np.sqrt(
+                    [
+                        o[0, 0] ** 2 + o[0, 1] ** 2 + o[0, 2] ** 2
+                        for o in orientations_diff
+                    ]
+                ),
+            )
+            fig.savefig(f"{out_basepath}.png")
+
+        # Check dominant slip system every 1°.
+        for θ in initial_angles[::1000]:
+            slip_invariants = _core._get_slip_invariants(
+                np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]]),
+                Rotation.from_euler("zx", [np.pi/2, θ]).as_matrix(),
+            )
+            θ = np.rad2deg(θ)
+            crss = _core.get_crss(
+                _core.MineralPhase.olivine,
+                _core.MineralFabric.olivine_A,
+            )
+            slip_indices = np.argsort(np.abs(slip_invariants / crss))
+            slip_system = _minerals.OLIVINE_SLIP_SYSTEMS[slip_indices[-1]]
+
+            if 0 <= θ < 64:
+                assert slip_system == ([0, 1, 0], [1, 0, 0])
+            elif 64 <= θ < 117:
+                assert slip_system == ([0, 0, 1], [1, 0, 0])
+            elif 117 <= θ < 244:
+                assert slip_system == ([0, 1, 0], [1, 0, 0])
+            elif 244 <= θ < 297:
+                assert slip_system == ([0, 0, 1], [1, 0, 0])
+            else:
+                assert slip_system == ([0, 1, 0], [1, 0, 0])

@@ -419,6 +419,17 @@ class TestOlivineA:
             ax.plot(strains, M0_drexF90, c=colors[0])
             ax.plot(strains, M50_drexF90, c=colors[2])
             ax.plot(strains, M200_drexF90, c=colors[4])
+            _vis.show_Skemer2016_ShearStrainAngles(
+                ax,
+                ["Z&K 1200 C", "Z&K 1300 C"],
+                ["v", "^"],
+                ["k", "k"],
+                ["none", None],
+                [
+                    "Zhang & Karato, 1995\n(1200°C)",
+                    "Zhang & Karato, 1995\n(1300°C)",
+                ],
+            )
             fig.savefig(_io.resolve_path(f"{out_basepath}.pdf"))
 
         # Check that GBM speeds up the alignment between 40% and 100% strain.
