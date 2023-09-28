@@ -46,6 +46,7 @@ import time
 
 import numba as nb
 import numpy as np
+import pytest
 from numpy import testing as nt
 from scipy.spatial.transform import Rotation
 
@@ -79,6 +80,7 @@ def get_velocity_gradient(x, z, plate_velocity):
 class TestOlivineA:
     """Tests for pure A-type olivine polycrystals in 2D corner flows."""
 
+    @pytest.mark.slow
     def test_corner_prescribed_init_isotropic(
         self,
         params_Kaminski2001_fig5_shortdash,
