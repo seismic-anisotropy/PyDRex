@@ -4,7 +4,7 @@
 # The flow field is a static simple shear and the aggregate starts with random (i.e. isotropically distributed) grain orientations.
 # Data is averaged from 500 runs of the Fortran DRex for each GBM case, with
 # - gbs_threshold (X) = 0
-# - nucleation_efficiency (λ) = 5
+# - nucleation_efficiency (λ*) = 5
 # and a timestep of 50 with a strain rate of 1e-4 (final accumulated strain is 1).
 
 schema:
