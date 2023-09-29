@@ -244,7 +244,7 @@ normalised to the stress required to initiate slip on the softest slip system</l
 </span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>    <span class="k">elif</span> <span class="n">phase</span> <span class="o">==</span> <span class="n">MineralPhase</span><span class="o">.</span><span class="n">enstatite</span><span class="p">:</span>
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>        <span class="k">if</span> <span class="n">fabric</span> <span class="o">==</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">enstatite_AB</span><span class="p">:</span>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unsupported enstatite fabric&quot;</span><span class="p">)</span>
+</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unsupported enstatite fabric&quot;</span><span class="p">)</span>
 </span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;phase must be a valid `MineralPhase`&quot;</span><span class="p">)</span>
 </span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>
 </span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>
@@ -576,20 +576,16 @@ normalised to the stress required to initiate slip on the softest slip system</l
 </span><span id="L-425"><a href="#L-425"><span class="linenos">425</span></a>        <span class="n">deformation_rate</span><span class="p">,</span>
 </span><span id="L-426"><a href="#L-426"><span class="linenos">426</span></a>        <span class="n">slip_rate_softest</span><span class="p">,</span>
 </span><span id="L-427"><a href="#L-427"><span class="linenos">427</span></a>    <span class="p">)</span>
-</span><span id="L-428"><a href="#L-428"><span class="linenos">428</span></a>
-</span><span id="L-429"><a href="#L-429"><span class="linenos">429</span></a>    <span class="k">if</span> <span class="n">phase</span> <span class="o">==</span> <span class="n">MineralPhase</span><span class="o">.</span><span class="n">enstatite</span><span class="p">:</span>
-</span><span id="L-430"><a href="#L-430"><span class="linenos">430</span></a>        <span class="n">slip_rate_softest</span> <span class="o">/=</span> <span class="n">crss</span><span class="p">[</span><span class="n">slip_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">**</span> <span class="n">stress_exponent</span>
-</span><span id="L-431"><a href="#L-431"><span class="linenos">431</span></a>
-</span><span id="L-432"><a href="#L-432"><span class="linenos">432</span></a>    <span class="n">strain_energy</span> <span class="o">=</span> <span class="n">_get_strain_energy</span><span class="p">(</span>
-</span><span id="L-433"><a href="#L-433"><span class="linenos">433</span></a>        <span class="n">crss</span><span class="p">,</span>
-</span><span id="L-434"><a href="#L-434"><span class="linenos">434</span></a>        <span class="n">slip_rates</span><span class="p">,</span>
-</span><span id="L-435"><a href="#L-435"><span class="linenos">435</span></a>        <span class="n">slip_indices</span><span class="p">,</span>
-</span><span id="L-436"><a href="#L-436"><span class="linenos">436</span></a>        <span class="n">slip_rate_softest</span><span class="p">,</span>
-</span><span id="L-437"><a href="#L-437"><span class="linenos">437</span></a>        <span class="n">stress_exponent</span><span class="p">,</span>
-</span><span id="L-438"><a href="#L-438"><span class="linenos">438</span></a>        <span class="n">deformation_exponent</span><span class="p">,</span>
-</span><span id="L-439"><a href="#L-439"><span class="linenos">439</span></a>        <span class="n">nucleation_efficiency</span><span class="p">,</span>
-</span><span id="L-440"><a href="#L-440"><span class="linenos">440</span></a>    <span class="p">)</span>
-</span><span id="L-441"><a href="#L-441"><span class="linenos">441</span></a>    <span class="k">return</span> <span class="n">orientation_change</span><span class="p">,</span> <span class="n">strain_energy</span>
+</span><span id="L-428"><a href="#L-428"><span class="linenos">428</span></a>    <span class="n">strain_energy</span> <span class="o">=</span> <span class="n">_get_strain_energy</span><span class="p">(</span>
+</span><span id="L-429"><a href="#L-429"><span class="linenos">429</span></a>        <span class="n">crss</span><span class="p">,</span>
+</span><span id="L-430"><a href="#L-430"><span class="linenos">430</span></a>        <span class="n">slip_rates</span><span class="p">,</span>
+</span><span id="L-431"><a href="#L-431"><span class="linenos">431</span></a>        <span class="n">slip_indices</span><span class="p">,</span>
+</span><span id="L-432"><a href="#L-432"><span class="linenos">432</span></a>        <span class="n">slip_rate_softest</span><span class="p">,</span>
+</span><span id="L-433"><a href="#L-433"><span class="linenos">433</span></a>        <span class="n">stress_exponent</span><span class="p">,</span>
+</span><span id="L-434"><a href="#L-434"><span class="linenos">434</span></a>        <span class="n">deformation_exponent</span><span class="p">,</span>
+</span><span id="L-435"><a href="#L-435"><span class="linenos">435</span></a>        <span class="n">nucleation_efficiency</span><span class="p">,</span>
+</span><span id="L-436"><a href="#L-436"><span class="linenos">436</span></a>    <span class="p">)</span>
+</span><span id="L-437"><a href="#L-437"><span class="linenos">437</span></a>    <span class="k">return</span> <span class="n">orientation_change</span><span class="p">,</span> <span class="n">strain_energy</span>
 </span></pre></div>
 
 
@@ -969,7 +965,7 @@ normalised to the stress required to initiate slip on the softest slip system</l
 </span><span id="get_crss-94"><a href="#get_crss-94"><span class="linenos">94</span></a>    <span class="k">elif</span> <span class="n">phase</span> <span class="o">==</span> <span class="n">MineralPhase</span><span class="o">.</span><span class="n">enstatite</span><span class="p">:</span>
 </span><span id="get_crss-95"><a href="#get_crss-95"><span class="linenos">95</span></a>        <span class="k">if</span> <span class="n">fabric</span> <span class="o">==</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">enstatite_AB</span><span class="p">:</span>
 </span><span id="get_crss-96"><a href="#get_crss-96"><span class="linenos">96</span></a>            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-</span><span id="get_crss-97"><a href="#get_crss-97"><span class="linenos">97</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unsupported enstatite fabric&quot;</span><span class="p">)</span>
+</span><span id="get_crss-97"><a href="#get_crss-97"><span class="linenos">97</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unsupported enstatite fabric&quot;</span><span class="p">)</span>
 </span><span id="get_crss-98"><a href="#get_crss-98"><span class="linenos">98</span></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;phase must be a valid `MineralPhase`&quot;</span><span class="p">)</span>
 </span></pre></div>
 
