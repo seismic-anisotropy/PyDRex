@@ -362,6 +362,13 @@ class Mineral:
             #     velocity_gradient.flatten(),
             # )
 
+            if self.phase == _core.MineralPhase.olivine:
+                volume_fraction = config["olivine_fraction"]
+            elif self.phase == _core.MineralPhase.enstatite:
+                volume_fraction = config["enstatite_fraction"]
+            else:
+                assert False  # Should never happen.
+
             strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
             strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
             deformation_gradient, orientations, fractions = extract_vars(y)
@@ -436,13 +443,6 @@ class Mineral:
                 + " You must provide a callable with signature f(t)"
                 + " that returns a 3-component array."
             )
-
-        if self.phase == _core.MineralPhase.olivine:
-            volume_fraction = config["olivine_fraction"]
-        elif self.phase == _core.MineralPhase.enstatite:
-            volume_fraction = config["enstatite_fraction"]
-        else:
-            assert False  # Should never happen.
 
         y_start = np.hstack(
             (

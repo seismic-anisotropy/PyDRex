@@ -93,7 +93,7 @@ def get_crss(phase, fabric):
     elif phase == MineralPhase.enstatite:
         if fabric == MineralFabric.enstatite_AB:
             return np.array([np.inf, np.inf, np.inf, 1])
-            raise ValueError("unsupported enstatite fabric")
+        raise ValueError("unsupported enstatite fabric")
     raise ValueError("phase must be a valid `MineralPhase`")
 
 
@@ -425,10 +425,6 @@ def _get_rotation_and_strain(
         deformation_rate,
         slip_rate_softest,
     )
-
-    if phase == MineralPhase.enstatite:
-        slip_rate_softest /= crss[slip_indices[-1]] ** stress_exponent
-
     strain_energy = _get_strain_energy(
         crss,
         slip_rates,
