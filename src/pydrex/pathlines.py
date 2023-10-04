@@ -7,19 +7,28 @@ from pydrex import logger as _log
 
 
 def get_pathline(
-    point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
+    final_location,
+    get_velocity,
+    get_velocity_gradient,
+    min_coords,
+    max_coords,
+    max_strain=10,
 ):
     """Determine the pathline for a particle in a steady state flow.
 
     The pathline will intersect the given `point` and follow a curve determined by
-    the interpolated velocity gradient.
+    the interpolated/prescribed velocity gradient.
 
     Args:
-        `point` (NumPy array) — coordinates of the point
-        `interp_velocity` (interpolator) — returns velocity vector at a point
-        `interp_velocity_gradient` (interpolator) — returns ∇v (3x3 matrix) at a point
-        `min_coords` (iterable) — lower bound coordinate of the interpolation grid
-        `max_coords` (iterable) — upper bound coordinate of the interpolation grid
+        `final_location` (NumPy array) — coordinates of the target final location,
+                                         which may not be reached if `max_strain` is
+                                         reached first
+        `get_velocity` (callback) — returns velocity vector at a point
+        `get_velocity_gradient` (callback) — returns ∇v (3x3 matrix) at a point
+        `min_coords` (iterable) — lower bound coordinate of the domain
+        `max_coords` (iterable) — upper bound coordinate of the domain
+        `max_strain` (optional) — strain limit at which to terminate the pathline,
+                                  useful if the pathline does not exit the domain
 
     Returns a tuple containing the time points and an interpolant that can be used
     to evaluate the pathline position (see `scipy.integrate.OdeSolution`).
@@ -27,27 +36,28 @@ def get_pathline(
     """
 
     def _max_strain(
-        time, point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
+        time, point, get_velocity, get_velocity_gradient, min_coords, max_coords
     ):
         nonlocal event_time, event_time_prev, event_strain_prev, event_strain
         nonlocal event_strain_prev, event_flag
-        # TODO: Refactor, move 10 "max strain" parameter to config?
         if event_flag:
-            return (event_strain if time == event_time else event_strain_prev) - 10
+            return (
+                event_strain if time == event_time else event_strain_prev
+            ) - max_strain
 
         if _is_inside(point, min_coords, max_coords):
-            velocity_gradient = interp_velocity_gradient(point)
+            velocity_gradient = get_velocity_gradient(point)
             # Imposed macroscopic strain rate tensor.
             strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
             # Strain rate scale (max. eigenvalue of strain rate).
             strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
             event_strain_prev = event_strain
             event_strain += abs(time - event_time) * strain_rate_max
-            if event_strain >= 10:
+            if event_strain >= max_strain:
                 event_flag = True
             event_time_prev = event_time
             event_time = time
-            return event_strain - 10
+            return event_strain - max_strain
 
         return 0
 
@@ -63,14 +73,14 @@ def get_pathline(
     path = si.solve_ivp(
         _ivp_func,
         [0, -100e6 * 365.25 * 8.64e4],
-        point,
-        method="RK45",
-        first_step=1e10,
-        max_step=np.inf,
+        final_location,
+        method="LSODA",
+        # first_step=1e10,
+        # max_step=np.inf,
         # max_step=1e6,
-        t_eval=None,
+        # t_eval=None,
         events=[_max_strain],
-        args=(interp_velocity, interp_velocity_gradient, min_coords, max_coords),
+        args=(get_velocity, get_velocity_gradient, min_coords, max_coords),
         dense_output=True,
         jac=_ivp_jac,
         atol=1e-8,
@@ -90,20 +100,20 @@ def get_pathline(
 
 
 def _ivp_func(
-    time, point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
+    time, point, get_velocity, get_velocity_gradient, min_coords, max_coords
 ):
     """Internal use only, must have the same signature as `get_pathline`."""
     if _is_inside(point, min_coords, max_coords):
-        return interp_velocity(point)
+        return get_velocity(point)
     return np.zeros_like(point)
 
 
 def _ivp_jac(
-    time, point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
+    time, point, get_velocity, get_velocity_gradient, min_coords, max_coords
 ):
     """Internal use only, must have the same signature as `_ivp_func`."""
     if _is_inside(point, min_coords, max_coords):
-        return interp_velocity_gradient(point)
+        return get_velocity_gradient(point)
     return np.zeros((np.array(point).size,) * 2)
 
 

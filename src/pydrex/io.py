@@ -28,7 +28,7 @@ import numpy as np
 from pydrex import core as _core
 from pydrex import exceptions as _err
 from pydrex import logger as _log
-from pydrex import velocity_gradients as _dv
+from pydrex import velocity as _velocity
 
 DEFAULT_PARAMS = {
     "olivine_fraction": 1.0,
@@ -295,7 +295,7 @@ def parse_config(path):
 
     # Input option 2: velocity gradient callable + initial locations.
     elif "velocity_gradient" in _input:
-        _velocity_gradient_func = getattr(_dv, _input["velocity_gradient"][0])
+        _velocity_gradient_func = getattr(_velocity, _input["velocity_gradient"][0])
         _input["velocity_gradient"] = _velocity_gradient_func(
             *_input["velocity_gradient"][1:]
         )

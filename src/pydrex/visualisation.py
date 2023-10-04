@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib import projections as mproj
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from cmcrameri import cm as cmc
 
 from pydrex import axes as _axes
 from pydrex import io as _io
@@ -11,6 +12,8 @@ from pydrex import utils as _utils
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
+# Always draw grid behind everything else.
+plt.rcParams["axes.axisbelow"] = True
 # Always use constrained layout by default (modern version of tight layout).
 plt.rcParams["figure.constrained_layout.use"] = True
 # Make sure we have the required matplotlib "projections" (really just Axes subclasses).
@@ -129,6 +132,78 @@ def polefigures(
                 cbar.ax.xaxis.set_tick_params(labelsize="xx-small")
 
     fig.savefig(_io.resolve_path(savefile))
+
+
+def pathline_box2d(
+    ax,
+    get_velocity,
+    ref_axes,
+    timestamps,
+    positions,
+    marker,
+    min_coords,
+    max_coords,
+    resolution,
+    scale=1,
+):
+    """Plot pathlines and velocity arrows for a 2D box domain.
+
+    If `ax` is None, a new figure and axes are created with `figure_unless`.
+
+    Args:
+    - `get_velocity` (callable) — object with call signature f(x) that returns
+      the 3D velocity vector at a given 3D position vector
+    - `ref_axes` (two letters from {"X", "Y", "Z"}) — labels for the horizontal and
+      vertical axes (these also define the projection for the 3D velocity/position)
+    - `timestamps` (array) — timestamps along a representative pathline in the flow
+    - `positions` (Nx3 array) — 3D position vectors along the same pathline
+    - `min_coords` (array) — 2D coordinates of the lower left corner of the domain
+    - `max_coords` (array) — 2D coordinates of the upper right corner of the domain
+    - `resolution` (array) — 2D resolution of the velocity arrow grid (i.e. number of
+      grid points in the horizontal and vertical directions)
+    - `scale` (float, optional) — scale factor for the velocity arrows
+
+    """
+    fig, ax = figure_unless(ax)
+    ax.set_xlabel(ref_axes[0])
+    ax.set_ylabel(ref_axes[1])
+
+    x_min, y_min = min_coords
+    x_max, y_max = max_coords
+    ax.set_xlim((x_min, x_max))
+    ax.set_ylim((y_min, y_max))
+
+    x_res, y_res = resolution
+    X = np.linspace(x_min, x_max, x_res)
+    Y = np.linspace(y_min, y_max, y_res)
+    X_grid, Y_grid = np.meshgrid(X, Y)
+
+    dummy_dimension = next(iter({"X", "Y", "Z"} - {ref_axes[0], ref_axes[1]}))
+    U = np.zeros_like(X_grid.ravel())
+    V = np.zeros_like(Y_grid.ravel())
+    match dummy_dimension:
+        case "X":
+            P = np.asarray([[p[1], p[2]] for p in positions])
+            for i, (x, y) in enumerate(zip(X_grid.ravel(), Y_grid.ravel())):
+                v3d = get_velocity(np.asarray([0, x, y]))
+                U[i] = v3d[1]
+                V[i] = v3d[2]
+        case "Y":
+            P = np.asarray([[p[0], p[2]] for p in positions])
+            for i, (x, y) in enumerate(zip(X_grid.ravel(), Y_grid.ravel())):
+                v3d = get_velocity(np.asarray([x, 0, y]))
+                U[i] = v3d[0]
+                V[i] = v3d[2]
+        case "Z":
+            P = np.asarray([[p[0], p[1]] for p in positions])
+            for i, (x, y) in enumerate(zip(X_grid.ravel(), Y_grid.ravel())):
+                v3d = get_velocity(np.asarray([x, y, 0]))
+                U[i] = v3d[0]
+                V[i] = v3d[1]
+
+    q = ax.quiver(X_grid, Y_grid, U.reshape(X_grid.shape), V.reshape(Y_grid.shape))
+    ax.scatter(P[:,0], P[:,1], marker=marker, c=timestamps, cmap=cmc.acton)
+    return fig, ax, q
 
 
 def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=None):
