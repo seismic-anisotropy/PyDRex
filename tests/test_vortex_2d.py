@@ -1,6 +1,8 @@
 """> PyDRex: tests for CPO stability in 2D vortex and Stokes cell flows."""
 import numpy as np
 import pytest
+import functools as ft
+from multiprocessing import Pool
 
 from pydrex import core as _core
 from pydrex import diagnostics as _diagnostics
@@ -73,6 +75,7 @@ class TestCellOlivineA:
 
     @pytest.mark.parametrize("n_grains", [100, 500, 1000, 5000, 10000])
     def test_xz(self, outdir, seed, n_grains):
+        """Test to check that 5000 grains is "enough" to resolve transient features."""
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_xz_N{n_grains}"
 
@@ -149,3 +152,67 @@ class TestCellOlivineA:
                 np.max([np.max(f) for f in mineral.fractions[43:]]) * n_grains
             )
             assert max_size_post_dip > 3, max_size_post_dip
+
+    @pytest.mark.slow
+    def test_xz_ensemble(self, outdir, seeds_nearX45, ncpus):
+        """Test to demonstrate stability of the dip at ε ≈ 3.75 for 10000 grains."""
+        n_grains = 10000
+        _seeds = seeds_nearX45
+        n_seeds = len(_seeds)
+        if outdir is not None:
+            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_xz_N{n_grains}"
+
+        params = _io.DEFAULT_PARAMS
+        params["number_of_grains"] = n_grains
+        get_velocity, get_velocity_gradient = _velocity.cell_2d("X", "Z", 1)
+
+        _run = ft.partial(
+            self.run,
+            params,
+            np.asarray([0.5, 0.0, -0.75]),
+            get_velocity,
+            get_velocity_gradient,
+            np.asarray([-1, 0, -1]),
+            np.asarray([1, 0, 1]),
+            7,
+        )
+        angles = np.empty((n_seeds, 70))
+        max_sizes = np.empty_like(angles)
+        with Pool(processes=ncpus) as pool:
+            for s, out in enumerate(pool.imap_unordered(_run, _seeds)):
+                timestamps, positions, strains, mineral, deformation_gradient = out
+                angles[s] = [
+                    _diagnostics.smallest_angle(
+                        _diagnostics.bingham_average(a, axis="a"), get_velocity(x)
+                    )
+                    for a, x in zip(mineral.orientations, positions)
+                ]
+                max_sizes[s] = np.max(mineral.fractions, axis=1)
+
+        if outdir is not None:
+            # Figure with the angles and max grain sizes (ensemble averages).
+            fig = _vis.figure()
+            axθ = fig.add_subplot(2, 1, 1)
+            fig, axθ, colors = _vis.alignment(
+                axθ,
+                strains,
+                np.mean(angles, axis=0),
+                (".",),
+                (None,),
+                err=np.std(angles, axis=0),
+                colors=[strains],
+                cmaps=["cmc.batlow_r"],
+            )
+            ax_maxsize = fig.add_subplot(2, 1, 2, sharex=axθ)
+            max_sizes_mean = np.mean(max_sizes, axis=0)
+            ax_maxsize.plot(ax_maxsize, strains, max_sizes_mean, color=colors[0])
+            max_sizes_err = np.std(max_sizes, axis=0)
+            ax_maxsize.fill_between(
+                strains,
+                max_sizes_mean - max_sizes_err,
+                max_sizes_mean + max_sizes_err,
+                alpha=0.22,
+                color=colors[0],
+            )
+            axθ.label_outer()
+            fig.savefig(_io.resolve_path(f"{out_basepath}.png"))
