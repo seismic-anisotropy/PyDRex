@@ -160,7 +160,7 @@ class TestCellOlivineA:
         _seeds = seeds_nearX45
         n_seeds = len(_seeds)
         if outdir is not None:
-            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_xz_N{n_grains}"
+            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_xz_ensemble_N{n_grains}"
 
         params = _io.DEFAULT_PARAMS
         params["number_of_grains"] = n_grains
