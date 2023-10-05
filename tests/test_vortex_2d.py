@@ -187,7 +187,7 @@ class TestCellOlivineA:
                     )
                     for a, x in zip(mineral.orientations, positions)
                 ]
-                max_sizes[s] = np.max(mineral.fractions, axis=1)
+                max_sizes[s] = np.log10(np.max(mineral.fractions, axis=1) * n_grains)
 
         if outdir is not None:
             # Figure with the angles and max grain sizes (ensemble averages).
