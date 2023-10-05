@@ -296,7 +296,7 @@ def alignment(
                 θ_cpo - _angles_err[i],
                 θ_cpo + _angles_err[i],
                 alpha=0.22,
-                color=colors[i],
+                color=_colors[i],
             )
 
     if θ_fse is not None:
