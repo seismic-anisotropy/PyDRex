@@ -15,7 +15,7 @@ from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import utils as _utils
-from pydrex import velocity_gradients as _dv
+from pydrex import velocity as _velocity
 from pydrex import visualisation as _vis
 
 # Subdirectory of `outdir` used to store outputs from these tests.
@@ -174,7 +174,7 @@ class TestOlivineA:
         strain_rate = 1
         timestamps = np.linspace(0, 1, 25)  # Solve until D₀t=1 (tensorial strain).
         shear_direction = [0, 1, 0]
-        get_velocity_gradient = _dv.simple_shear_2d("Y", "X", strain_rate)
+        get_velocity_gradient, _ = _velocity.simple_shear_2d("Y", "X", strain_rate)
         mineral, _ = self.run(
             params,
             timestamps,
@@ -196,7 +196,7 @@ class TestOlivineA:
         timestamps = np.linspace(0, 1, 25)  # Solve until D₀t=1 (tensorial strain).
         n_timestamps = len(timestamps)
         shear_direction = [0, 1, 0]
-        get_velocity_gradient = _dv.simple_shear_2d("Y", "X", strain_rate)
+        get_velocity_gradient, _ = _velocity.simple_shear_2d("Y", "X", strain_rate)
         mineral, _ = self.run(
             params,
             timestamps,
@@ -232,7 +232,7 @@ class TestOlivineA:
         n_seeds = len(_seeds)
 
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
-        get_velocity_gradient = _dv.simple_shear_2d("Y", "X", strain_rate)
+        get_velocity_gradient, _ = _velocity.simple_shear_2d("Y", "X", strain_rate)
 
         gbm_mobilities = [0, 50, 125, 200]
         markers = ("x", "*", "d", "s")
@@ -358,7 +358,7 @@ class TestOlivineA:
         """
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
         strain_rate = 1e-4
-        get_velocity_gradient = _dv.simple_shear_2d("Y", "X", strain_rate)
+        get_velocity_gradient, _ = _velocity.simple_shear_2d("Y", "X", strain_rate)
         timestamps = np.linspace(0, 1e4, 51)  # Solve until D₀t=1 ('shear' γ=2).
         i_strain_40p = 10  # Index of 40% strain, lower strains are not relevant here.
         i_strain_100p = 25  # Index of 100% strain, when M*=0 matches FSE.
