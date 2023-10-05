@@ -203,7 +203,7 @@ class TestCellOlivineA:
             )
             ax_maxsize = fig.add_subplot(2, 1, 2, sharex=axθ)
             max_sizes_mean = np.mean(max_sizes, axis=0)
-            ax_maxsize.plot(ax_maxsize, strains, max_sizes_mean, color=colors[0])
+            ax_maxsize.plot(strains, max_sizes_mean, color=colors[0])
             max_sizes_err = np.std(max_sizes, axis=0)
             ax_maxsize.fill_between(
                 strains,
