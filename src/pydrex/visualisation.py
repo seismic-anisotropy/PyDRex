@@ -138,13 +138,14 @@ def pathline_box2d(
     ax,
     get_velocity,
     ref_axes,
-    timestamps,
+    colors,
     positions,
     marker,
     min_coords,
     max_coords,
     resolution,
     scale=1,
+    cmap=cmc.batlow,
 ):
     """Plot pathlines and velocity arrows for a 2D box domain.
 
@@ -155,13 +156,17 @@ def pathline_box2d(
       the 3D velocity vector at a given 3D position vector
     - `ref_axes` (two letters from {"X", "Y", "Z"}) — labels for the horizontal and
       vertical axes (these also define the projection for the 3D velocity/position)
-    - `timestamps` (array) — timestamps along a representative pathline in the flow
+    - `colors` (array) — monotonic values along a representative pathline in the flow
     - `positions` (Nx3 array) — 3D position vectors along the same pathline
     - `min_coords` (array) — 2D coordinates of the lower left corner of the domain
     - `max_coords` (array) — 2D coordinates of the upper right corner of the domain
     - `resolution` (array) — 2D resolution of the velocity arrow grid (i.e. number of
       grid points in the horizontal and vertical directions)
     - `scale` (float, optional) — scale factor for the velocity arrows
+    - `cmap` (Matplotlib color map, optional) — color map for `colors`
+
+    Returns the figure handle, the axes handle, the quiver collection (velocities) and
+    the scatter collection (pathline).
 
     """
     fig, ax = figure_unless(ax)
@@ -174,6 +179,8 @@ def pathline_box2d(
     ax.set_ylim((y_min, y_max))
 
     x_res, y_res = resolution
+    if x_res == y_res:
+        ax.set_aspect("equal")
     X = np.linspace(x_min, x_max, x_res)
     Y = np.linspace(y_min, y_max, y_res)
     X_grid, Y_grid = np.meshgrid(X, Y)
@@ -201,12 +208,30 @@ def pathline_box2d(
                 U[i] = v3d[0]
                 V[i] = v3d[1]
 
-    q = ax.quiver(X_grid, Y_grid, U.reshape(X_grid.shape), V.reshape(Y_grid.shape))
-    ax.scatter(P[:,0], P[:,1], marker=marker, c=timestamps, cmap=cmc.acton)
-    return fig, ax, q
+    q = ax.quiver(
+        X_grid,
+        Y_grid,
+        U.reshape(X_grid.shape),
+        V.reshape(Y_grid.shape),
+        pivot="mid",
+        alpha=0.3,
+    )
+    s = ax.scatter(P[:, 0], P[:, 1], marker=marker, c=colors, cmap=cmap)
+    return fig, ax, q, s
 
 
-def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=None):
+def alignment(
+    ax,
+    strains,
+    angles,
+    markers,
+    labels,
+    err=None,
+    θ_max=90,
+    θ_fse=None,
+    colors=None,
+    cmaps=None,
+):
     """Plot `angles` (in degrees) versus `strains` on the given axis.
 
     Alignment angles could be either bingham averages or the a-axis in the hexagonal
@@ -225,6 +250,11 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
     - `θ_max` (int) — maximum angle (°) to show on the plot, should be less than 90
     - `θ_fse` (array, optional) — an array of angles from the long axis of the finite
       strain ellipsoid to the reference direction (e.g. shear direction)
+    - `colors` (array, optional) — color coordinates for series of angles
+    - `cmaps` (Matplotlib color maps, optional) — color maps for `colors`
+
+    If `colors` and `cmaps` are used, then angle values are colored individually within
+    each angle series.
 
     Returns a tuple of the figure handle, the axes handle and the set of colors used for
     the data series plots.
@@ -241,12 +271,25 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
     fig, ax = figure_unless(ax)
     ax.set_ylabel("Mean angle ∈ [0, 90]°")
     ax.set_ylim((0, θ_max))
-    ax.set_xlabel(r"Strain ($D_0 t = γ/2$)")
+    ax.set_xlabel("Strain (ε = γ/2)")
     ax.set_xlim((strains[0], strains[-1]))
-    colors = []
-    for i, (θ_cpo, marker, label) in enumerate(zip(angles, markers, labels)):
-        lines = ax.plot(strains, θ_cpo, marker, markersize=5, alpha=0.33, label=label)
-        colors.append(lines[0].get_color())
+    _colors = []
+    for i, (θ_cpo, marker, label) in enumerate(zip(_angles, markers, labels)):
+        if colors is not None:
+            ax.scatter(
+                strains,
+                θ_cpo,
+                marker=marker,
+                label=label,
+                c=colors[i],
+                cmap=cmaps[i],
+            )
+            _colors.append(colors[i])
+        else:
+            lines = ax.plot(
+                strains, θ_cpo, marker, markersize=5, alpha=0.33, label=label
+            )
+            _colors.append(lines[0].get_color())
         if err is not None:
             ax.fill_between(
                 strains,
@@ -258,8 +301,32 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
 
     if θ_fse is not None:
         ax.plot(strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE")
-    _utils.redraw_legend(ax)
-    return fig, ax, colors
+    if not all(b is None for b in labels):
+        _utils.redraw_legend(ax)
+    return fig, ax, _colors
+
+
+def grainsizes(ax, strains, fractions):
+    """Plot grain volume `fractions` versus `strains` on the given axis.
+
+    If `ax` is None, a new figure and axes are created with `figure_unless`.
+
+    """
+    n_grains = len(fractions[0])
+    fig, ax = figure_unless(ax)
+    ax.set_ylabel(r"Normalized grain sizes ($log_{10}$)")
+    ax.set_xlabel("Strain (ε = γ/2)")
+    parts = ax.violinplot(
+        [np.log10(f * n_grains) for f in fractions], positions=strains, widths=0.8
+    )
+    for part in parts["bodies"]:
+        part.set_color("black")
+        part.set_alpha(1)
+    parts["cbars"].set_alpha(0)
+    parts["cmins"].set_visible(False)
+    parts["cmaxes"].set_color("red")
+    parts["cmaxes"].set_alpha(0.5)
+    return fig, ax, parts
 
 
 def show_Skemer2016_ShearStrainAngles(ax, studies, markers, colors, fillstyles, labels):
@@ -297,7 +364,8 @@ def show_Skemer2016_ShearStrainAngles(ax, studies, markers, colors, fillstyles, 
             color=color,
             label=label,
         )
-    _utils.redraw_legend(ax)
+    if not all(b is None for b in labels):
+        _utils.redraw_legend(ax)
     return fig, ax, colors
 
 
@@ -396,6 +464,11 @@ def figure_unless(ax):
     return fig, ax
 
 
+def figure():
+    """Create new figure with `dpi=300` and automatic constrained layout, grid etc."""
+    return plt.figure(dpi=300)
+
+
 def _get_marker_and_label(data, seq_index, markers, labels=None):
     marker = markers[int(seq_index / (len(data) / len(markers)))]
     label = None
@@ -428,7 +501,7 @@ def simple_shear_stationary_2d(
     ax_symmetry.set_xlim((strains[0], strains[-1]))
     ax_symmetry.set_ylim((0, 1))
     ax_symmetry.set_ylabel(r"Texture symmetry ($P_{[100]}$)")
-    ax_symmetry.set_xlabel(r"Strain ($D_0 t = γ/2$)")
+    ax_symmetry.set_xlabel("Strain (ε = γ/2)")
 
     angles = np.atleast_2d(angles)
     point100_symmetry = np.atleast_2d(point100_symmetry)

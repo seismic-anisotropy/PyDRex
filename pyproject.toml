@@ -38,6 +38,7 @@ dependencies = [
     "scipy >= 1.2",  # <https://github.com/scipy/scipy/pull/9176>
     "pyyaml",  # For YAML headers of plaintext datafiles.
     "meshio",  # For reading VTK and other meshes.
+    "cmcrameri",  # Matplotlib colormaps using the palettes designed by Fabio Crameri.
 ]
 
 [project.optional-dependencies]

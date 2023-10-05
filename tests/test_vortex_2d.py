@@ -1,13 +1,6 @@
 """> PyDRex: tests for CPO stability in 2D vortex and Stokes cell flows."""
-import contextlib as cl
-import functools as ft
-from multiprocessing import Pool
-from time import process_time
-
 import numpy as np
-from scipy import linalg as la
 import pytest
-from numpy import testing as nt
 
 from pydrex import core as _core
 from pydrex import diagnostics as _diagnostics
@@ -57,9 +50,18 @@ class TestCellOlivineA:
             max_coords,
             max_strain,
         )
-        timestamps = timestamps_back[::-1] - timestamps_back[-1]
+        timestamps = np.linspace(
+            timestamps_back[-1], timestamps_back[0], int(max_strain * 10)
+        )
+        positions = [get_position(t) for t in timestamps]
+        velocity_gradients = [get_velocity_gradient(np.asarray(x)) for x in positions]
+        strains = np.empty_like(timestamps)
+        strains[0] = 0
         for t, time in enumerate(timestamps[:-1], start=1):
-            _log.info("step %d/%d (t = %.2f)", t, len(timestamps) - 1, time)
+            strains[t] = strains[t - 1] + (
+                _utils.strain_increment(timestamps[t] - time, velocity_gradients[t])
+            )
+            _log.info("step %d/%d (ε = %.2f)", t, len(timestamps) - 1, strains[t])
 
             deformation_gradient = mineral.update_orientations(
                 params,
@@ -67,28 +69,25 @@ class TestCellOlivineA:
                 get_velocity_gradient,
                 pathline=(time, timestamps[t], get_position),
             )
-        positions = [get_position(t) for t in timestamps]
-        return timestamps, positions, mineral, deformation_gradient
+        return timestamps, positions, strains, mineral, deformation_gradient
 
-    def test_xz(self, outdir, seed):
+    @pytest.mark.parametrize("n_grains", [100, 500, 1000, 5000, 10000])
+    def test_xz(self, outdir, seed, n_grains):
         if outdir is not None:
-            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_xz"
+            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_xz_N{n_grains}"
 
         params = _io.DEFAULT_PARAMS
-        get_velocity, get_velocity_gradient = _velocity.cell_2d(
-            "X",
-            "Z",
-            1,
-        )
+        params["number_of_grains"] = n_grains
+        get_velocity, get_velocity_gradient = _velocity.cell_2d("X", "Z", 1)
 
-        timestamps, positions, mineral, deformation_gradient = self.run(
+        timestamps, positions, strains, mineral, deformation_gradient = self.run(
             params,
             np.asarray([0.5, 0.0, -0.75]),
             get_velocity,
             get_velocity_gradient,
             np.asarray([-1, 0, -1]),
             np.asarray([1, 0, 1]),
-            25,
+            7,
             seed=seed,
         )
         angles = [
@@ -97,31 +96,56 @@ class TestCellOlivineA:
             )
             for a, x in zip(mineral.orientations, positions)
         ]
-        # velocity_gradients = [get_velocity_gradient(np.asarray(x)) for x in positions]
         if outdir is not None:
-            fig, ax, colors = _vis.alignment(
-                None,
-                # [
-                #     t * la.eigh((grad_v + grad_v.transpose()) / 2)[0][-1]
-                #     for t, grad_v in zip(timestamps, velocity_gradients)
-                # ],
-                timestamps,
-                [angles],
-                (".",),
-                (None,),
-            )
-            fig.savefig(_io.resolve_path(f"{out_basepath}.png"))
-
-            figq, axq, q = _vis.pathline_box2d(
+            # First figure with the domain and pathline.
+            fig_path, ax_path, q, s = _vis.pathline_box2d(
                 None,
                 get_velocity,
                 "XZ",
-                timestamps,
+                strains,
                 positions,
                 ".",
                 [-1, -1],
                 [1, 1],
-                [10, 10],
+                [20, 20],
                 scale=1,
+                cmap="cmc.batlow_r",
             )
-            figq.savefig(_io.resolve_path(f"{out_basepath}_domain.png"))
+            fig_path.colorbar(s, ax=ax_path, aspect=25, label="strain (ε)")
+            fig_path.savefig(_io.resolve_path(f"{out_basepath}_path.png"))
+            # Second figure with the angles and grain sizes at every 10 strain values.
+            fig = _vis.figure()
+            ax_sizes = fig.add_subplot(2, 1, 1)
+            fig, ax_sizes, parts = _vis.grainsizes(
+                ax_sizes, strains[::10], mineral.fractions[::10]
+            )
+            axθ = fig.add_subplot(2, 1, 2, sharex=ax_sizes)
+            fig, axθ, colors = _vis.alignment(
+                axθ,
+                strains,
+                angles,
+                (".",),
+                (None,),
+                colors=[strains],
+                cmaps=["cmc.batlow_r"],
+            )
+            ax_sizes.label_outer()
+            fig.savefig(_io.resolve_path(f"{out_basepath}.png"))
+
+        # Some checks for when we should have "enough" grains.
+        # Based on empirical model outputs, it seems like the dip at ε ≈ 3.75 is the
+        # least sensitive feature to the random state (seed) so we will use that.
+        if n_grains >= 5000:
+            # Can we resolve the temporary alignment to below 20° at ε ≈ 3.75?
+            mean_θ_in_dip = np.mean(angles[34:43])
+            assert mean_θ_in_dip < 20, mean_θ_in_dip
+            # Can we resolve corresponding dip in max grain size (normalized, log_10)?
+            mean_size_in_dip = np.log10(
+                np.mean([np.max(f) for f in mineral.fractions[34:43]]) * n_grains
+            )
+            assert 2 < mean_size_in_dip < 3, mean_size_in_dip
+            # Can we resolve subsequent peak in max grain size (normalized, log_10)?
+            max_size_post_dip = np.log10(
+                np.max([np.max(f) for f in mineral.fractions[43:]]) * n_grains
+            )
+            assert max_size_post_dip > 3, max_size_post_dip
