@@ -203,6 +203,7 @@ class TestCellOlivineA:
                 err=np.std(angles, axis=0),
             )
             ax_maxsize = fig.add_subplot(2, 1, 2, sharex=axθ)
+            ax_maxsize.set_ylabel(r"Maximum normalized grain size ($log_{10}$)")
             max_sizes_mean = np.mean(max_sizes, axis=0)
             ax_maxsize.plot(strains, max_sizes_mean, color=colors[0])
             max_sizes_err = np.std(max_sizes, axis=0)
