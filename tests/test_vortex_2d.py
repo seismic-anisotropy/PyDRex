@@ -73,7 +73,8 @@ class TestCellOlivineA:
             )
         return timestamps, positions, strains, mineral, deformation_gradient
 
-    @pytest.mark.parametrize("n_grains", [100, 500, 1000, 5000, 10000])
+    # NOTE: To run with 10000 grains requires about 14GiB of RAM.
+    @pytest.mark.parametrize("n_grains", [100, 500, 1000, 5000])
     def test_xz(self, outdir, seed, n_grains):
         """Test to check that 5000 grains is "enough" to resolve transient features."""
         if outdir is not None:
