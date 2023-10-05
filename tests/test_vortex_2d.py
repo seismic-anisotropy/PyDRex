@@ -200,8 +200,6 @@ class TestCellOlivineA:
                 (".",),
                 (None,),
                 err=np.std(angles, axis=0),
-                colors=[strains],
-                cmaps=["cmc.batlow_r"],
             )
             ax_maxsize = fig.add_subplot(2, 1, 2, sharex=axθ)
             max_sizes_mean = np.mean(max_sizes, axis=0)
