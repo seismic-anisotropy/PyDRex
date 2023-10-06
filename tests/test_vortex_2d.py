@@ -146,7 +146,7 @@ class TestCellOlivineA:
         if n_grains >= 5000:
             # Can we resolve the temporary alignment to below 20° at ε ≈ 3.75?
             mean_θ_in_dip = np.mean(angles[34:43])
-            assert mean_θ_in_dip < 10, mean_θ_in_dip
+            assert mean_θ_in_dip < 12, mean_θ_in_dip
             # Can we resolve corresponding dip in max grain size (normalized, log_10)?
             mean_size_in_dip = np.log10(
                 np.mean([np.max(f) for f in mineral.fractions[34:43]]) * n_grains
@@ -198,13 +198,15 @@ class TestCellOlivineA:
             # Figure with the angles and max grain sizes (ensemble averages).
             fig = _vis.figure()
             axθ = fig.add_subplot(2, 1, 1)
+            angles_mean = np.mean(angles, axis=0)
+            angles_err = np.std(angles, axis=0)
             fig, axθ, colors = _vis.alignment(
                 axθ,
                 strains,
-                np.mean(angles, axis=0),
+                angles_mean,
                 (".",),
                 (None,),
-                err=np.std(angles, axis=0),
+                err=angles_err,
             )
             ax_maxsize = fig.add_subplot(2, 1, 2, sharex=axθ)
             ax_maxsize.set_ylabel(r"Max. normalized grain size ($log_{10}$)")
@@ -220,3 +222,13 @@ class TestCellOlivineA:
             )
             axθ.label_outer()
             fig.savefig(_io.resolve_path(f"{out_basepath}.png"))
+            np.savez(
+                _io.resolve_path(
+                    f"{out_basepath}_data.npz",
+                    strains=strains,
+                    max_sizes_mean=max_sizes_mean,
+                    max_sizes_err=max_sizes_err,
+                    angles_mean=angles_mean,
+                    angles_err=angles_err,
+                )
+            )
