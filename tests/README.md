@@ -3,14 +3,19 @@
 Running the tests requires [pytest](https://docs.pytest.org).
 From the root of the source tree, run `pytest`.
 To print more verbose information (including INFO level logging),
-use the flag `pytest -v`.
-The custom optional flag `--outdir="OUT"` can be used
+such as detailed test progress, use the flag `pytest -v`.
+The custom optional flag `--outdir="OUT"` is recommended
 to produce output figures, data dumps and logs and save them in the directory `"OUT"`.
 The value `"."` can be used to save these in the current directory.
-Long tests/examples are disabled by default to prevent
-clogging up the automatic testing suite, they can be enabled with `--runslow`.
-To mark a test as slow,
-add the `@pytest.mark.slow` decorator above its method definition.
+
+Tests which require a “significant” amount of memory (<16GB RAM) are disabled by default.
+To fully check the functionality of the code, it is recommended to run these locally
+by using the `--runbig` flag before moving to larger simulations.
+To mark a test as “big”, add the `@pytest.mark.big` decorator above its method definition.
+
+Long tests/examples are also disabled by default and can be enabled with `--runslow`.
+It is recommended to run these on a HPC cluster infrastructure (>100GB RAM, >46 cores).
+To mark a test as slow, add the `@pytest.mark.slow` decorator above its method definition.
 
 Tests should not produce persistent output by default.
 If a test method can produce such output for debugging or visualisation,

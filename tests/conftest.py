@@ -28,6 +28,12 @@ def pytest_addoption(parser):
         help="run slow tests (HPC cluster recommended, large memory requirement)",
     )
     parser.addoption(
+        "--runbig",
+        action="store_true",
+        default=False,
+        help="run tests which are fast enough for home PCs but require 16GB RAM",
+    )
+    parser.addoption(
         "--ncpus",
         default=len(os.sched_getaffinity(0)) - 1,
         type=int,
@@ -61,6 +67,7 @@ class PytestConsoleLogger(LoggingPlugin):
 @pytest.hookimpl(trylast=True)
 def pytest_configure(config):
     config.addinivalue_line("markers", "slow: mark test as slow to run")
+    config.addinivalue_line("markers", "big: mark test as requiring 16GB RAM")
 
     # Hook up our logging plugin last,
     # it relies on terminalreporter and capturemanager.
@@ -78,11 +85,20 @@ def pytest_configure(config):
 
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--runslow"):
-        return  # Don't skip slow tests.
-    skip_slow = pytest.mark.skip(reason="need --runslow option to run")
-    for item in items:
-        if "slow" in item.keywords:
-            item.add_marker(skip_slow)
+        pass  # Don't skip slow tests.
+    else:
+        skip_slow = pytest.mark.skip(reason="need --runslow option to run")
+        for item in items:
+            if "slow" in item.keywords:
+                item.add_marker(skip_slow)
+
+    if config.getoption("--runbig"):
+        pass  # Don't skip big tests.
+    else:
+        skip_big = pytest.mark.skip(reason="need --runbig option to run")
+        for item in items:
+            if "big" in item.keywords:
+                item.add_marker(skip_big)
 
 
 @pytest.fixture(scope="session")

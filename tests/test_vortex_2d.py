@@ -73,7 +73,11 @@ class TestCellOlivineA:
             )
         return timestamps, positions, strains, mineral, deformation_gradient
 
-    # NOTE: To run with 10000 grains requires about 14GiB of RAM.
+    @pytest.mark.big
+    def test_xz_10k(self, outdir, seed):
+        """Run 2D cell test with 10000 grains (~14GiB RAM requirement)."""
+        self.test_xz(outdir, seed, 10000)
+
     @pytest.mark.parametrize("n_grains", [100, 500, 1000, 5000])
     def test_xz(self, outdir, seed, n_grains):
         """Test to check that 5000 grains is "enough" to resolve transient features."""
@@ -142,7 +146,7 @@ class TestCellOlivineA:
         if n_grains >= 5000:
             # Can we resolve the temporary alignment to below 20° at ε ≈ 3.75?
             mean_θ_in_dip = np.mean(angles[34:43])
-            assert mean_θ_in_dip < 20, mean_θ_in_dip
+            assert mean_θ_in_dip < 10, mean_θ_in_dip
             # Can we resolve corresponding dip in max grain size (normalized, log_10)?
             mean_size_in_dip = np.log10(
                 np.mean([np.max(f) for f in mineral.fractions[34:43]]) * n_grains
@@ -203,7 +207,7 @@ class TestCellOlivineA:
                 err=np.std(angles, axis=0),
             )
             ax_maxsize = fig.add_subplot(2, 1, 2, sharex=axθ)
-            ax_maxsize.set_ylabel(r"Maximum normalized grain size ($log_{10}$)")
+            ax_maxsize.set_ylabel(r"Max. normalized grain size ($log_{10}$)")
             max_sizes_mean = np.mean(max_sizes, axis=0)
             ax_maxsize.plot(strains, max_sizes_mean, color=colors[0])
             max_sizes_err = np.std(max_sizes, axis=0)
