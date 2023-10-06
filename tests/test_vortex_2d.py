@@ -159,9 +159,9 @@ class TestCellOlivineA:
             assert max_size_post_dip > 3, max_size_post_dip
 
     @pytest.mark.slow
-    def test_xz_ensemble(self, outdir, seeds_nearX45, ncpus):
-        """Test to demonstrate stability of the dip at ε ≈ 3.75 for 10000 grains."""
-        n_grains = 10000
+    @pytest.mark.parametrize("n_grains", [5000, 10000])
+    def test_xz_ensemble(self, outdir, seeds_nearX45, ncpus, n_grains):
+        """Test to demonstrate stability of the dip at ε ≈ 3.75 for 5000+ grains."""
         _seeds = seeds_nearX45
         n_seeds = len(_seeds)
         if outdir is not None:
