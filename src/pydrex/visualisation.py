@@ -16,6 +16,8 @@ plt.rcParams["axes.grid"] = True
 plt.rcParams["axes.axisbelow"] = True
 # Always use constrained layout by default (modern version of tight layout).
 plt.rcParams["figure.constrained_layout.use"] = True
+# Use 300 DPI by default, NASA can keep their blurry images.
+plt.rcParams["figure.dpi"] = 300
 # Make sure we have the required matplotlib "projections" (really just Axes subclasses).
 if "pydrex.polefigure" not in mproj.get_projection_names():
     _log.warning(
@@ -179,7 +181,7 @@ def pathline_box2d(
     ax.set_ylim((y_min, y_max))
 
     x_res, y_res = resolution
-    if x_res == y_res:
+    if (x_res/y_res - 1) < 0.3:
         ax.set_aspect("equal")
     X = np.linspace(x_min, x_max, x_res)
     Y = np.linspace(y_min, y_max, y_res)
@@ -450,14 +452,14 @@ def growth(ax, initial_angles, fractions_diff, target_fractions_diff=None):
 def figure_unless(ax):
     """Create figure and axes if `ax` is None, or return existing figure for `ax`.
 
-    If `ax` is None, a new figure is created for the axes with default Matplotlib
-    settings except for the custom resolution of `dpi=300`.
+    If `ax` is None, a new figure is created for the axes with a few opinionated default
+    settings (grid, constrained layout, high DPI).
 
     Returns a tuple containing the figure handle and the axes object.
 
     """
     if ax is None:
-        fig = plt.figure(dpi=300)
+        fig = plt.figure()
         ax = fig.add_subplot()
     else:
         fig = ax.get_figure()
@@ -465,8 +467,12 @@ def figure_unless(ax):
 
 
 def figure():
-    """Create new figure with `dpi=300` and automatic constrained layout, grid etc."""
-    return plt.figure(dpi=300)
+    """Create new figure with a few opinionated default settings.
+
+    (e.g. grid, constrained layout, high DPI).
+
+    """
+    return plt.figure()
 
 
 def _get_marker_and_label(data, seq_index, markers, labels=None):
@@ -490,7 +496,7 @@ def simple_shear_stationary_2d(
     a_type=True,
 ):
     """Plot diagnostics for stationary A-type olivine 2D simple shear box tests."""
-    fig = plt.figure(figsize=(5, 8), dpi=300)
+    fig = plt.figure(figsize=(5, 8))
     grid = fig.add_gridspec(2, 1, hspace=0.05)
     ax_mean = fig.add_subplot(grid[0])
     ax_mean.set_ylabel("Mean angle ∈ [0, 90]°")
@@ -592,7 +598,7 @@ def corner_flow_2d(
     .. warning:: This method is in need of repair.
 
     """
-    fig = plt.figure(figsize=(12, 8), dpi=300)
+    fig = plt.figure(figsize=(12, 8))
     grid = fig.add_gridspec(2, 2, hspace=-0.2, wspace=0.025)
     ax_domain = fig.add_subplot(grid[0, :])
     ax_domain.set_ylabel("z")
@@ -751,7 +757,7 @@ def single_olivineA_simple_shear(
     target_rotation_rates,
     savefile="single_olivineA_simple_shear.png",
 ):
-    fig = plt.figure(figsize=(4, 3), dpi=300)
+    fig = plt.figure(figsize=(4, 3))
     ax = fig.subplots(nrows=1, ncols=1)
     ax.set_ylabel("rotation rate")
     ax.set_xlabel("initial angle (°)")

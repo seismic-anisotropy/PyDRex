@@ -19,7 +19,7 @@ def get_pathline(
 
     The pathline will terminate at the given `final_location` and follow a curve
     determined by the velocity gradient. It works for both 2D (rectangular) and 3D
-    (orthopiped) domains, so long as the provided callables expect/return arrays of the
+    (orthopiped¹) domains, so long as the provided callables expect/return arrays of the
     appropriate dimension.
 
     .. note::
@@ -44,6 +44,9 @@ def get_pathline(
     Returns a tuple containing the time points and an interpolant that can be used
     to evaluate the pathline position (see `scipy.integrate.OdeSolution`).
 
+    ¹An “orthopiped” is a 3D rectangle (called a “box” when we are in a hurry), see
+    <https://www.whatistoday.net/2020/04/cuboid-dilemma.html>.
+
     """
 
     def _terminate(
@@ -58,7 +61,7 @@ def get_pathline(
             )
             if time > _time_prev:  # Timestamps jump around for SciPy to find the root.
                 _strain += dε
-            else:  # Subtract strain increment becuase we are going backwards in time.
+            else:  # Subtract strain increment because we are going backwards in time.
                 _strain -= dε
             _time_prev = time
             return _strain
