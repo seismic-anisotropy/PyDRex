@@ -5,6 +5,22 @@ import numba as nb
 import numpy as np
 
 
+@nb.njit(fastmath=True)
+def strain_increment(dt, velocity_gradient):
+    """Calculate strain increment for a given time increment and velocity gradient.
+
+    Returns “tensorial” strain increment ε, which is equal to 2 × γ where γ is the
+    “(engineering) shear strain” increment.
+
+    """
+    return (
+        np.abs(dt)
+        * np.abs(
+            np.linalg.eigvalsh((velocity_gradient + velocity_gradient.transpose()) / 2)
+        ).max()
+    )
+
+
 def remove_nans(a):
     """Remove NaN values from array."""
     a = np.asarray(a)

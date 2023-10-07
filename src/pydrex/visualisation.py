@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib import projections as mproj
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from cmcrameri import cm as cmc
 
 from pydrex import axes as _axes
 from pydrex import io as _io
@@ -11,8 +12,12 @@ from pydrex import utils as _utils
 
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
+# Always draw grid behind everything else.
+plt.rcParams["axes.axisbelow"] = True
 # Always use constrained layout by default (modern version of tight layout).
 plt.rcParams["figure.constrained_layout.use"] = True
+# Use 300 DPI by default, NASA can keep their blurry images.
+plt.rcParams["figure.dpi"] = 300
 # Make sure we have the required matplotlib "projections" (really just Axes subclasses).
 if "pydrex.polefigure" not in mproj.get_projection_names():
     _log.warning(
@@ -131,7 +136,104 @@ def polefigures(
     fig.savefig(_io.resolve_path(savefile))
 
 
-def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=None):
+def pathline_box2d(
+    ax,
+    get_velocity,
+    ref_axes,
+    colors,
+    positions,
+    marker,
+    min_coords,
+    max_coords,
+    resolution,
+    scale=1,
+    cmap=cmc.batlow,
+):
+    """Plot pathlines and velocity arrows for a 2D box domain.
+
+    If `ax` is None, a new figure and axes are created with `figure_unless`.
+
+    Args:
+    - `get_velocity` (callable) — object with call signature f(x) that returns
+      the 3D velocity vector at a given 3D position vector
+    - `ref_axes` (two letters from {"X", "Y", "Z"}) — labels for the horizontal and
+      vertical axes (these also define the projection for the 3D velocity/position)
+    - `colors` (array) — monotonic values along a representative pathline in the flow
+    - `positions` (Nx3 array) — 3D position vectors along the same pathline
+    - `min_coords` (array) — 2D coordinates of the lower left corner of the domain
+    - `max_coords` (array) — 2D coordinates of the upper right corner of the domain
+    - `resolution` (array) — 2D resolution of the velocity arrow grid (i.e. number of
+      grid points in the horizontal and vertical directions)
+    - `scale` (float, optional) — scale factor for the velocity arrows
+    - `cmap` (Matplotlib color map, optional) — color map for `colors`
+
+    Returns the figure handle, the axes handle, the quiver collection (velocities) and
+    the scatter collection (pathline).
+
+    """
+    fig, ax = figure_unless(ax)
+    ax.set_xlabel(ref_axes[0])
+    ax.set_ylabel(ref_axes[1])
+
+    x_min, y_min = min_coords
+    x_max, y_max = max_coords
+    ax.set_xlim((x_min, x_max))
+    ax.set_ylim((y_min, y_max))
+
+    x_res, y_res = resolution
+    if (x_res/y_res - 1) < 0.3:
+        ax.set_aspect("equal")
+    X = np.linspace(x_min, x_max, x_res)
+    Y = np.linspace(y_min, y_max, y_res)
+    X_grid, Y_grid = np.meshgrid(X, Y)
+
+    dummy_dimension = next(iter({"X", "Y", "Z"} - {ref_axes[0], ref_axes[1]}))
+    U = np.zeros_like(X_grid.ravel())
+    V = np.zeros_like(Y_grid.ravel())
+    match dummy_dimension:
+        case "X":
+            P = np.asarray([[p[1], p[2]] for p in positions])
+            for i, (x, y) in enumerate(zip(X_grid.ravel(), Y_grid.ravel())):
+                v3d = get_velocity(np.asarray([0, x, y]))
+                U[i] = v3d[1]
+                V[i] = v3d[2]
+        case "Y":
+            P = np.asarray([[p[0], p[2]] for p in positions])
+            for i, (x, y) in enumerate(zip(X_grid.ravel(), Y_grid.ravel())):
+                v3d = get_velocity(np.asarray([x, 0, y]))
+                U[i] = v3d[0]
+                V[i] = v3d[2]
+        case "Z":
+            P = np.asarray([[p[0], p[1]] for p in positions])
+            for i, (x, y) in enumerate(zip(X_grid.ravel(), Y_grid.ravel())):
+                v3d = get_velocity(np.asarray([x, y, 0]))
+                U[i] = v3d[0]
+                V[i] = v3d[1]
+
+    q = ax.quiver(
+        X_grid,
+        Y_grid,
+        U.reshape(X_grid.shape),
+        V.reshape(Y_grid.shape),
+        pivot="mid",
+        alpha=0.3,
+    )
+    s = ax.scatter(P[:, 0], P[:, 1], marker=marker, c=colors, cmap=cmap)
+    return fig, ax, q, s
+
+
+def alignment(
+    ax,
+    strains,
+    angles,
+    markers,
+    labels,
+    err=None,
+    θ_max=90,
+    θ_fse=None,
+    colors=None,
+    cmaps=None,
+):
     """Plot `angles` (in degrees) versus `strains` on the given axis.
 
     Alignment angles could be either bingham averages or the a-axis in the hexagonal
@@ -150,6 +252,11 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
     - `θ_max` (int) — maximum angle (°) to show on the plot, should be less than 90
     - `θ_fse` (array, optional) — an array of angles from the long axis of the finite
       strain ellipsoid to the reference direction (e.g. shear direction)
+    - `colors` (array, optional) — color coordinates for series of angles
+    - `cmaps` (Matplotlib color maps, optional) — color maps for `colors`
+
+    If `colors` and `cmaps` are used, then angle values are colored individually within
+    each angle series.
 
     Returns a tuple of the figure handle, the axes handle and the set of colors used for
     the data series plots.
@@ -166,25 +273,62 @@ def alignment(ax, strains, angles, markers, labels, err=None, θ_max=90, θ_fse=
     fig, ax = figure_unless(ax)
     ax.set_ylabel("Mean angle ∈ [0, 90]°")
     ax.set_ylim((0, θ_max))
-    ax.set_xlabel(r"Strain ($D_0 t = γ/2$)")
+    ax.set_xlabel("Strain (ε = γ/2)")
     ax.set_xlim((strains[0], strains[-1]))
-    colors = []
-    for i, (θ_cpo, marker, label) in enumerate(zip(angles, markers, labels)):
-        lines = ax.plot(strains, θ_cpo, marker, markersize=5, alpha=0.33, label=label)
-        colors.append(lines[0].get_color())
+    _colors = []
+    for i, (θ_cpo, marker, label) in enumerate(zip(_angles, markers, labels)):
+        if colors is not None:
+            ax.scatter(
+                strains,
+                θ_cpo,
+                marker=marker,
+                label=label,
+                c=colors[i],
+                cmap=cmaps[i],
+            )
+            _colors.append(colors[i])
+        else:
+            lines = ax.plot(
+                strains, θ_cpo, marker, markersize=5, alpha=0.33, label=label
+            )
+            _colors.append(lines[0].get_color())
         if err is not None:
             ax.fill_between(
                 strains,
                 θ_cpo - _angles_err[i],
                 θ_cpo + _angles_err[i],
                 alpha=0.22,
-                color=colors[i],
+                color=_colors[i],
             )
 
     if θ_fse is not None:
         ax.plot(strains, θ_fse, linestyle=(0, (5, 5)), alpha=0.66, label="FSE")
-    _utils.redraw_legend(ax)
-    return fig, ax, colors
+    if not all(b is None for b in labels):
+        _utils.redraw_legend(ax)
+    return fig, ax, _colors
+
+
+def grainsizes(ax, strains, fractions):
+    """Plot grain volume `fractions` versus `strains` on the given axis.
+
+    If `ax` is None, a new figure and axes are created with `figure_unless`.
+
+    """
+    n_grains = len(fractions[0])
+    fig, ax = figure_unless(ax)
+    ax.set_ylabel(r"Normalized grain sizes ($log_{10}$)")
+    ax.set_xlabel("Strain (ε = γ/2)")
+    parts = ax.violinplot(
+        [np.log10(f * n_grains) for f in fractions], positions=strains, widths=0.8
+    )
+    for part in parts["bodies"]:
+        part.set_color("black")
+        part.set_alpha(1)
+    parts["cbars"].set_alpha(0)
+    parts["cmins"].set_visible(False)
+    parts["cmaxes"].set_color("red")
+    parts["cmaxes"].set_alpha(0.5)
+    return fig, ax, parts
 
 
 def show_Skemer2016_ShearStrainAngles(ax, studies, markers, colors, fillstyles, labels):
@@ -222,7 +366,8 @@ def show_Skemer2016_ShearStrainAngles(ax, studies, markers, colors, fillstyles, 
             color=color,
             label=label,
         )
-    _utils.redraw_legend(ax)
+    if not all(b is None for b in labels):
+        _utils.redraw_legend(ax)
     return fig, ax, colors
 
 
@@ -307,18 +452,27 @@ def growth(ax, initial_angles, fractions_diff, target_fractions_diff=None):
 def figure_unless(ax):
     """Create figure and axes if `ax` is None, or return existing figure for `ax`.
 
-    If `ax` is None, a new figure is created for the axes with default Matplotlib
-    settings except for the custom resolution of `dpi=300`.
+    If `ax` is None, a new figure is created for the axes with a few opinionated default
+    settings (grid, constrained layout, high DPI).
 
     Returns a tuple containing the figure handle and the axes object.
 
     """
     if ax is None:
-        fig = plt.figure(dpi=300)
+        fig = plt.figure()
         ax = fig.add_subplot()
     else:
         fig = ax.get_figure()
     return fig, ax
+
+
+def figure():
+    """Create new figure with a few opinionated default settings.
+
+    (e.g. grid, constrained layout, high DPI).
+
+    """
+    return plt.figure()
 
 
 def _get_marker_and_label(data, seq_index, markers, labels=None):
@@ -342,7 +496,7 @@ def simple_shear_stationary_2d(
     a_type=True,
 ):
     """Plot diagnostics for stationary A-type olivine 2D simple shear box tests."""
-    fig = plt.figure(figsize=(5, 8), dpi=300)
+    fig = plt.figure(figsize=(5, 8))
     grid = fig.add_gridspec(2, 1, hspace=0.05)
     ax_mean = fig.add_subplot(grid[0])
     ax_mean.set_ylabel("Mean angle ∈ [0, 90]°")
@@ -353,7 +507,7 @@ def simple_shear_stationary_2d(
     ax_symmetry.set_xlim((strains[0], strains[-1]))
     ax_symmetry.set_ylim((0, 1))
     ax_symmetry.set_ylabel(r"Texture symmetry ($P_{[100]}$)")
-    ax_symmetry.set_xlabel(r"Strain ($D_0 t = γ/2$)")
+    ax_symmetry.set_xlabel("Strain (ε = γ/2)")
 
     angles = np.atleast_2d(angles)
     point100_symmetry = np.atleast_2d(point100_symmetry)
@@ -444,7 +598,7 @@ def corner_flow_2d(
     .. warning:: This method is in need of repair.
 
     """
-    fig = plt.figure(figsize=(12, 8), dpi=300)
+    fig = plt.figure(figsize=(12, 8))
     grid = fig.add_gridspec(2, 2, hspace=-0.2, wspace=0.025)
     ax_domain = fig.add_subplot(grid[0, :])
     ax_domain.set_ylabel("z")
@@ -603,7 +757,7 @@ def single_olivineA_simple_shear(
     target_rotation_rates,
     savefile="single_olivineA_simple_shear.png",
 ):
-    fig = plt.figure(figsize=(4, 3), dpi=300)
+    fig = plt.figure(figsize=(4, 3))
     ax = fig.subplots(nrows=1, ncols=1)
     ax.set_ylabel("rotation rate")
     ax.set_xlabel("initial angle (°)")

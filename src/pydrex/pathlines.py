@@ -1,109 +1,125 @@
 """> PyDRex: Functions for pathline construction."""
 import numpy as np
 from scipy import integrate as si
-from scipy import linalg as la
 
 from pydrex import logger as _log
+from pydrex import utils as _utils
 
 
 def get_pathline(
-    point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
+    final_location,
+    get_velocity,
+    get_velocity_gradient,
+    min_coords,
+    max_coords,
+    max_strain,
+    **kwargs,
 ):
     """Determine the pathline for a particle in a steady state flow.
 
-    The pathline will intersect the given `point` and follow a curve determined by
-    the interpolated velocity gradient.
+    The pathline will terminate at the given `final_location` and follow a curve
+    determined by the velocity gradient. It works for both 2D (rectangular) and 3D
+    (orthopiped¹) domains, so long as the provided callables expect/return arrays of the
+    appropriate dimension.
+
+    .. note::
+        The pathline is calculated backwards in time (t < 0) from the given endpoint.
+        Therefore, the returned position callable should be evaluated at negative times.
 
     Args:
-        `point` (NumPy array) — coordinates of the point
-        `interp_velocity` (interpolator) — returns velocity vector at a point
-        `interp_velocity_gradient` (interpolator) — returns ∇v (3x3 matrix) at a point
-        `min_coords` (iterable) — lower bound coordinate of the interpolation grid
-        `max_coords` (iterable) — upper bound coordinate of the interpolation grid
+    - `final_location` (array) — coordinates of the final location
+    - `get_velocity` (callable) — returns velocity vector at a point
+    - `get_velocity_gradient` (callable) — returns velocity gradient matrix at a point
+    - `min_coords` (array) — lower bound coordinates of the box
+    - `max_coords` (array) — upper bound coordinates of the box
+    - `max_strain` (float) — target strain (given as “tensorial” strain ε) at the final
+      location, useful if the pathline never inflows into the domain (the pathline will
+      only be traced backwards until a strain of 0 is reached, unless a domain boundary
+      is reached first)
+
+    Optional keyword arguments will be passed to `scipy.integrate.solve_ivp`. However,
+    some of the arguments to the `solve_ivp` call may not be modified, and a warning
+    will be raised if they are provided.
 
     Returns a tuple containing the time points and an interpolant that can be used
     to evaluate the pathline position (see `scipy.integrate.OdeSolution`).
 
+    ¹An “orthopiped” is a 3D rectangle (called a “box” when we are in a hurry), see
+    <https://www.whatistoday.net/2020/04/cuboid-dilemma.html>.
+
     """
 
-    def _max_strain(
-        time, point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
+    def _terminate(
+        time, point, get_velocity, get_velocity_gradient, min_coords, max_coords
     ):
-        nonlocal event_time, event_time_prev, event_strain_prev, event_strain
-        nonlocal event_strain_prev, event_flag
-        # TODO: Refactor, move 10 "max strain" parameter to config?
-        if event_flag:
-            return (event_strain if time == event_time else event_strain_prev) - 10
+        # Track “previous” (last seen) timestamp and total strain value.
+        nonlocal _time_prev, _strain
 
         if _is_inside(point, min_coords, max_coords):
-            velocity_gradient = interp_velocity_gradient(point)
-            # Imposed macroscopic strain rate tensor.
-            strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
-            # Strain rate scale (max. eigenvalue of strain rate).
-            strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
-            event_strain_prev = event_strain
-            event_strain += abs(time - event_time) * strain_rate_max
-            if event_strain >= 10:
-                event_flag = True
-            event_time_prev = event_time
-            event_time = time
-            return event_strain - 10
-
+            dε = _utils.strain_increment(
+                time - _time_prev, get_velocity_gradient(point)
+            )
+            if time > _time_prev:  # Timestamps jump around for SciPy to find the root.
+                _strain += dε
+            else:  # Subtract strain increment because we are going backwards in time.
+                _strain -= dε
+            _time_prev = time
+            return _strain
+        # If we are outside the domain, always terminate.
         return 0
 
-    _max_strain.terminal = True
-    event_strain = event_time = 0
-    event_strain_prev = event_time_prev = None
-    event_flag = False
+    _terminate.terminal = True
+    _strain = max_strain
+    _time_prev = 0
+    _event_flag = False
 
-    # Initial condition is the final position of the crystal.
-    # Solve backwards in time until outside the domain or max. strain reached.
+    # Illegal keyword args, check the call below. Remove them and warn about it.
+    for key in ("events", "jac", "dense_output", "args"):
+        try:
+            kwargs.pop(key)
+        except KeyError:
+            continue
+        else:
+            _log.warning("ignoring illegal keyword argument: %s", key)
+
     # We don't want to stop at a particular time,
-    # so integrate time for 100 Myr, in seconds (forever).
+    # so integrate time for 100 Myr, in seconds (“forever”).
     path = si.solve_ivp(
         _ivp_func,
         [0, -100e6 * 365.25 * 8.64e4],
-        point,
-        method="RK45",
-        first_step=1e10,
-        max_step=np.inf,
-        # max_step=1e6,
-        t_eval=None,
-        events=[_max_strain],
-        args=(interp_velocity, interp_velocity_gradient, min_coords, max_coords),
+        final_location,
+        method=kwargs.pop("method", "LSODA"),
+        events=[_terminate],
+        args=(get_velocity, get_velocity_gradient, min_coords, max_coords),
         dense_output=True,
         jac=_ivp_jac,
-        atol=1e-8,
-        rtol=1e-5,
+        atol=kwargs.pop("atol", 1e-8),
+        rtol=kwargs.pop("rtol", 1e-5),
+        **kwargs,
     )
     _log.info(
-        "calculated pathline from %s (t=%e) to %s (t=%e)",
+        "calculated pathline from %s (t = %e) to %s (t = %e)",
         path.sol(path.t[0]),
         path.t[0],
         path.sol(path.t[-2]),
         path.t[-2],
     )
 
-    # Remove the last timestep, because the position will be outside the domain.
-    # The integration only stops AFTER the event is triggered.
+    # Remove the last timestep — integration stops one step after a terminal event.
     return path.t[:-1], path.sol
 
 
-def _ivp_func(
-    time, point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
-):
+def _ivp_func(time, point, get_velocity, get_velocity_gradient, min_coords, max_coords):
     """Internal use only, must have the same signature as `get_pathline`."""
     if _is_inside(point, min_coords, max_coords):
-        return interp_velocity(point)
+        return get_velocity(point)
     return np.zeros_like(point)
 
 
-def _ivp_jac(
-    time, point, interp_velocity, interp_velocity_gradient, min_coords, max_coords
-):
+def _ivp_jac(time, point, get_velocity, get_velocity_gradient, min_coords, max_coords):
     """Internal use only, must have the same signature as `_ivp_func`."""
     if _is_inside(point, min_coords, max_coords):
-        return interp_velocity_gradient(point)
+        return get_velocity_gradient(point)
     return np.zeros((np.array(point).size,) * 2)
 
 
