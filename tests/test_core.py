@@ -2,7 +2,6 @@
 import contextlib as cl
 
 import numpy as np
-from matplotlib import pyplot as plt
 from numpy import testing as nt
 from scipy.spatial.transform import Rotation
 
@@ -492,7 +491,7 @@ class TestRecrystallisation2D:
             )
 
         if outdir is not None:
-            fig = plt.figure(dpi=300)
+            fig = _vis.figure()
             ax = fig.add_subplot(211)
             xvals = np.rad2deg(initial_angles)
             ax.axvline(90, color="k", linestyle="--", alpha=0.5)
@@ -564,7 +563,7 @@ class TestRecrystallisation2D:
             )
 
         if outdir is not None:
-            fig = plt.figure(dpi=300)
+            fig = _vis.figure()
             ax = fig.add_subplot(211)
             xvals = np.rad2deg(initial_angles)
             ax.axvline(0, color="k", linestyle="--", alpha=0.5)
