@@ -66,6 +66,7 @@
                     <li><a href="tests/test_scsv.html">test_scsv</a></li>
                     <li><a href="tests/test_simple_shear_2d.html">test_simple_shear_2d</a></li>
                     <li><a href="tests/test_tensors.html">test_tensors</a></li>
+                    <li><a href="tests/test_vortex_2d.html">test_vortex_2d</a></li>
             </ul>
 
 
@@ -87,14 +88,19 @@ tests    </h1>
 <p>Running the tests requires <a href="https://docs.pytest.org">pytest</a>.
 From the root of the source tree, run <code>pytest</code>.
 To print more verbose information (including INFO level logging),
-use the flag <code>pytest -v</code>.
-The custom optional flag <code>--outdir="OUT"</code> can be used
+such as detailed test progress, use the flag <code>pytest -v</code>.
+The custom optional flag <code>--outdir="OUT"</code> is recommended
 to produce output figures, data dumps and logs and save them in the directory <code>"OUT"</code>.
-The value <code>"."</code> can be used to save these in the current directory.
-Long tests/examples are disabled by default to prevent
-clogging up the automatic testing suite, they can be enabled with <code>--runslow</code>.
-To mark a test as slow,
-add the <code>@pytest.mark.slow</code> decorator above its method definition.</p>
+The value <code>"."</code> can be used to save these in the current directory.</p>
+
+<p>Tests which require a “significant” amount of memory (&lt;16GB RAM) are disabled by default.
+To fully check the functionality of the code, it is recommended to run these locally
+by using the <code>--runbig</code> flag before moving to larger simulations.
+To mark a test as “big”, add the <code>@pytest.mark.big</code> decorator above its method definition.</p>
+
+<p>Long tests/examples are also disabled by default and can be enabled with <code>--runslow</code>.
+It is recommended to run these on a HPC cluster infrastructure (&gt;100GB RAM, &gt;46 cores).
+To mark a test as slow, add the <code>@pytest.mark.slow</code> decorator above its method definition.</p>
 
 <p>Tests should not produce persistent output by default.
 If a test method can produce such output for debugging or visualisation,

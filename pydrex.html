@@ -74,7 +74,7 @@
                     <li><a href="pydrex/stats.html">stats</a></li>
                     <li><a href="pydrex/tensors.html">tensors</a></li>
                     <li><a href="pydrex/utils.html">utils</a></li>
-                    <li><a href="pydrex/velocity_gradients.html">velocity_gradients</a></li>
+                    <li><a href="pydrex/velocity.html">velocity</a></li>
                     <li><a href="pydrex/visualisation.html">visualisation</a></li>
             </ul>
 
@@ -225,7 +225,7 @@ A draft of the input file spec is shown below:</p>
 <span class="c1">#    In this case, polycrystals will first be back-propagated along flow pathlines,</span>
 <span class="c1">#    and then forward-propagated while the CPO is calculated.</span>
 <span class="c1">#    The SCSV file should have column names &#39;X&#39;, &#39;Y&#39;, &#39;Z&#39; for 3D or any two of those for 2D.</span>
-<span class="c1"># 2. A built-in (analytical) velocity gradient function from `<a href="pydrex/velocity_gradients.html">pydrex.velocity_gradients</a>`,</span>
+<span class="c1"># 2. A built-in (analytical) velocity gradient function from `pydrex.velocity_gradients`,</span>
 <span class="c1">#    its arguments, and INITIAL locations of the polycrystals. In this case,</span>
 <span class="c1">#    polycrystals will immediately be forward-advected in the specified field.</span>
 <span class="c1"># 3. Pre-computed pathline files with velocity gradients at each point.</span>
