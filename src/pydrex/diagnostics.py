@@ -25,6 +25,7 @@ import scipy.linalg as la
 from pydrex import stats as _stats
 from pydrex import tensors as _tensors
 from pydrex import geometry as _geo
+from pydrex import logger as _log
 
 
 def elasticity_components(voigt_matrices):
@@ -264,7 +265,7 @@ def symmetry(orientations, axis="a"):
 
 
 def misorientation_indices(
-    orientation_stack, system: _geo.LatticeSystem, bins=None, ncpus=None
+    orientation_stack, system: _geo.LatticeSystem, bins=None, ncpus=None, pool=None,
 ):
     """Calculate M-indices for a series of polycrystal textures.
 
@@ -275,21 +276,28 @@ def misorientation_indices(
     Uses the multiprocessing library to calculate texture indices for multiple snapshots
     simultaneously. If `ncpus` is `None` the number of CPU cores to use is chosen
     automatically based on the maximum number available to the Python interpreter,
-    otherwise the specified number of cores is requested.
+    otherwise the specified number of cores is requested. Alternatively, an existing
+    instance of `multiprocessing.Pool` can be provided.
 
     See `misorientation_index` for documentation of the remaining arguments.
 
     """
+    if ncpus is not None and pool is not None:
+        _log.warning("ignoring `ncpus` argument because a Pool was provided")
     m_indices = np.empty(len(orientation_stack))
     _run = ft.partial(
         misorientation_index,
         system=system,
         bins=bins,
     )
-    if ncpus is None:
-        ncpus = len(os.sched_getaffinity(0)) - 1
-    with Pool(processes=ncpus) as pool:
-        for i, out in enumerate(pool.map(_run, orientation_stack)):
+    if pool is None:
+        if ncpus is None:
+            ncpus = len(os.sched_getaffinity(0)) - 1
+        with Pool(processes=ncpus) as pool:
+            for i, out in enumerate(pool.imap(_run, orientation_stack)):
+                m_indices[i] = out
+    else:
+        for i, out in enumerate(pool.imap(_run, orientation_stack)):
             m_indices[i] = out
     return m_indices
 

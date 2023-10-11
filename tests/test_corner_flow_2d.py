@@ -94,6 +94,7 @@ class TestCornerOlivineA:
         domain_height = 2.0e5  # Represents the depth of olivine-spinel transition.
         domain_width = 1.0e6
         params = params_Kaminski2001_fig5_shortdash
+        params["number_of_grains"] = 5000
         n_timesteps = 50  # Number of places along the pathline to compute CPO.
         get_velocity, get_velocity_gradient = _velocity.corner_2d("X", "Z", plate_speed)
         # Z-values at the end of each pathline.
@@ -105,14 +106,13 @@ class TestCornerOlivineA:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_prescribed"
             optional_logging = _log.logfile_enable(f"{out_basepath}.log")
             npzpath = pl.Path(f"{out_basepath}.npz")
-            # Clean up existing output file to prevent appending to it.
-            # npzpath.unlink(missing_ok=True)  # missing_ok: Python 3.8
             labels = []
             angles = []
             indices = []
-            x_paths = []
-            z_paths = []
+            paths = []
+            path_strains = []
             directions = []
+            max_grainsizes = []
             timestamps = []
 
         _run = ft.partial(
@@ -131,7 +131,7 @@ class TestCornerOlivineA:
         with optional_logging:
             _begin = perf_counter()
             with Pool(processes=ncpus) as pool:
-                for i, out in enumerate(pool.map(_run, final_locations)):
+                for i, out in enumerate(pool.imap(_run, final_locations)):
                     times, positions, strains, mineral, deformation_gradient = out
                     _log.info("final deformation gradient:\n%s", deformation_gradient)
                     z_exit = z_ends[i]
@@ -140,13 +140,13 @@ class TestCornerOlivineA:
 
                     misorient_angles = np.zeros(n_timesteps)
                     bingham_vectors = np.zeros((n_timesteps, 3))
-                    orientations_resampled, _ = _stats.resample_orientations(
+                    orientations_resampled, f_resampled = _stats.resample_orientations(
                         mineral.orientations, mineral.fractions, seed=seed
                     )
                     misorient_indices = _diagnostics.misorientation_indices(
                         orientations_resampled,
                         _geo.LatticeSystem.orthorhombic,
-                        ncpus=ncpus,
+                        pool=pool,
                     )
                     for idx, matrices in enumerate(orientations_resampled):
                         direction_mean = _diagnostics.bingham_average(
@@ -165,27 +165,62 @@ class TestCornerOlivineA:
                     )
 
                     if outdir is not None:
-                        mineral.save(npzpath, postfix=_io.stringify(z_exit))
                         labels.append(rf"$z_{{f}}$ = {z_exit/1e3:.1f} km")
                         angles.append(misorient_angles)
                         indices.append(misorient_indices)
-                        x_paths.append([p[0] for p in positions])
-                        z_paths.append([p[2] for p in positions])
+                        paths.append(positions)
+                        max_grainsizes.append(
+                            np.asarray([np.max(f) for f in f_resampled])
+                        )
+                        path_strains.append(strains)
                         timestamps.append(times)
                         directions.append(bingham_vectors)
 
         if outdir is not None:
-            _vis.corner_flow_2d(
-                x_paths,
-                z_paths,
-                angles,
+            markers = ("o", "v", "s", "p")
+            cmaps = ["cmc.batlow_r"] * len(markers)
+            fig_domain = _vis.figure(figsize=(10, 3))
+            ax_domain = fig_domain.add_subplot()
+            for i, z_exit in enumerate(z_ends):
+                if i == 0:
+                    resolution = [25, 5]
+                else:
+                    resolution = None
+                _vis.pathline_box2d(
+                    ax_domain,
+                    get_velocity,
+                    "xz",
+                    path_strains[i],
+                    paths[i],
+                    markers[i],
+                    [0, -domain_height],
+                    [domain_width + 1e5, 0],
+                    resolution,
+                    cmap=cmaps[i],
+                    cpo_vectors=directions[i],
+                    cpo_strengths=indices[i],
+                )
+
+            fig_strength, ax_strength, colors = _vis.strengths(
+                None,
+                path_strains,
                 indices,
-                directions,
-                timestamps,
-                xlabel=f"x ⇀ ({plate_speed:.2e} m/s)",
-                savefile=f"{out_basepath}.png",
-                markers=("o", "v", "s", "p"),
-                labels=labels,
-                xlims=(0, domain_width + 0.25 * domain_height),
-                zlims=(-domain_height, 0),
+                "CPO strength (M-index)",
+                markers,
+                labels,
+                colors=path_strains,
+                cmaps=cmaps,
             )
+            fig_alignment, ax_alignment, colors = _vis.alignment(
+                None,
+                path_strains,
+                angles,
+                markers,
+                labels,
+                colors=path_strains,
+                cmaps=cmaps,
+            )
+
+            fig_domain.savefig(_io.resolve_path(f"{out_basepath}_path.png"))
+            fig_strength.savefig(_io.resolve_path(f"{out_basepath}_strength.png"))
+            fig_alignment.savefig(_io.resolve_path(f"{out_basepath}_angles.png"))

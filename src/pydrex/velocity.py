@@ -55,6 +55,8 @@ def _cell_2d(x, horizontal=0, vertical=2, velocity_edge=1):
 def _corner_2d(x, horizontal=0, vertical=2, plate_speed=1):
     h = x[horizontal]
     v = x[vertical]
+    if np.abs(h) < 1e-15 and np.abs(v) < 1e-15:
+        return np.full(3, np.nan)
     out = np.zeros(3)
     prefactor = 2 * plate_speed / np.pi
     out[horizontal] = prefactor * (np.arctan2(h, -v) + h * v / (h**2 + v**2))
@@ -66,6 +68,8 @@ def _corner_2d(x, horizontal=0, vertical=2, plate_speed=1):
 def _corner_2d_grad(x, horizontal=0, vertical=2, plate_speed=1):
     h = x[horizontal]
     v = x[vertical]
+    if np.abs(h) < 1e-15 and np.abs(v) < 1e-15:
+        return np.full((3, 3), np.nan)
     grad_v = np.zeros((3, 3))
     prefactor = 4 * plate_speed / (np.pi * (h**2 + v**2)**2)
     grad_v[horizontal, horizontal] = -(h**2) * v
@@ -123,7 +127,7 @@ def simple_shear_2d(direction, deformation_plane, strain_rate):
 
 
 def cell_2d(horizontal, vertical, velocity_edge):
-    r"""Return velocity and velocity gradient callable for a steady-state 2D Stokes cell.
+    r"""Get velocity and velocity gradient callables for a steady-state 2D Stokes cell.
 
     The velocity field is defined by:
     $$
@@ -177,7 +181,7 @@ def cell_2d(horizontal, vertical, velocity_edge):
 
 
 def corner_2d(horizontal, vertical, plate_speed):
-    r"""Return velocity and velocity gradient callable for a steady-state 2D Stokes cell.
+    r"""Get velocity and velocity gradient callables for a steady-state 2D corner flow.
 
     The velocity field is defined by:
     $$
