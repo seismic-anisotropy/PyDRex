@@ -8,6 +8,7 @@ from scipy.spatial.transform import Rotation
 from pydrex import core as _core
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
+from pydrex import io as _io
 from pydrex import visualisation as _vis
 
 # Subdirectory of `outdir` used to store outputs from these tests.
@@ -194,11 +195,14 @@ class TestDislocationCreepOlivineA:
                 assert np.isclose(np.sum(fractions_diff), 0.0)
 
         if outdir is not None:
-            _vis.single_olivineA_simple_shear(
+            fig, ax, colors = _vis.spin(
+                None,
                 initial_angles,
                 rotation_rates,
                 target_rotation_rates,
-                savefile=f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.png",
+            )
+            fig.savefig(
+                _io.resolve_path(f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.png")
             )
 
     def test_shear_dudz_slip_001_100(self, outdir):
@@ -545,7 +549,7 @@ class TestRecrystallisation2D:
 
         with optional_logging:
             initial_orientations = Rotation.from_euler(
-                "zx", [[np.pi/2, θ] for θ in initial_angles]
+                "zx", [[np.pi / 2, θ] for θ in initial_angles]
             )
             orientations_diff, fractions_diff = _core.derivatives(
                 phase=_core.MineralPhase.olivine,
@@ -595,7 +599,7 @@ class TestRecrystallisation2D:
         for θ in initial_angles[::1000]:
             slip_invariants = _core._get_slip_invariants(
                 np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]]),
-                Rotation.from_euler("zx", [np.pi/2, θ]).as_matrix(),
+                Rotation.from_euler("zx", [np.pi / 2, θ]).as_matrix(),
             )
             θ = np.rad2deg(θ)
             crss = _core.get_crss(

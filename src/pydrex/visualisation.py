@@ -525,7 +525,7 @@ def spin(ax, initial_angles, rotation_rates, target_rotation_rates=None):
         initial_angles,
         rotation_rates,
         facecolors="none",
-        edgecolors="k",
+        edgecolors=plt.rcParams["axes.edgecolor"],
         s=8,
         lw=1,
         label="computed spins",
@@ -560,7 +560,7 @@ def growth(ax, initial_angles, fractions_diff, target_fractions_diff=None):
         initial_angles,
         fractions_diff,
         facecolors="none",
-        edgecolors="k",
+        edgecolors=plt.rcParams["axes.edgecolor"],
         s=8,
         lw=1,
         label="computed growth",
@@ -594,22 +594,3 @@ def figure(**kwargs):
 
     """
     return plt.figure()
-
-
-def single_olivineA_simple_shear(
-    initial_angles,
-    rotation_rates,
-    target_rotation_rates,
-    savefile="single_olivineA_simple_shear.png",
-):
-    fig = plt.figure(figsize=(4, 3))
-    ax = fig.subplots(nrows=1, ncols=1)
-    ax.set_ylabel("rotation rate")
-    ax.set_xlabel("initial angle (°)")
-    ax.set_xlim((0, 360))
-    ax.set_xticks(np.linspace(0, 360, 5))
-    ax.plot(initial_angles, target_rotation_rates, c="tab:orange", lw=1)
-    ax.scatter(
-        initial_angles, rotation_rates, facecolors="none", edgecolors="k", s=8, lw=1
-    )
-    fig.savefig(_io.resolve_path(savefile))
