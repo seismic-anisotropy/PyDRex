@@ -224,12 +224,10 @@ class TestCellOlivineA:
             axθ.label_outer()
             fig.savefig(_io.resolve_path(f"{out_basepath}.png"))
             np.savez(
-                _io.resolve_path(
-                    f"{out_basepath}_data.npz",
-                    strains=strains,
-                    max_sizes_mean=max_sizes_mean,
-                    max_sizes_err=max_sizes_err,
-                    angles_mean=angles_mean,
-                    angles_err=angles_err,
-                )
+                _io.resolve_path(f"{out_basepath}_data.npz"),
+                strains=strains,
+                max_sizes_mean=max_sizes_mean,
+                max_sizes_err=max_sizes_err,
+                angles_mean=angles_mean,
+                angles_err=angles_err,
             )
