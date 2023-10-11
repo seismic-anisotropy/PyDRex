@@ -78,7 +78,7 @@ class TestCornerOlivineA:
         return timestamps, positions, strains, mineral, deformation_gradient
 
     @pytest.mark.slow
-    def test_prescribed(self, outdir, params_Kaminski2001_fig5_shortdash, seed, ncpus):
+    def test_prescribed(self, outdir, seed, ncpus):
         """Test CPO evolution in prescribed 2D corner flow.
 
         Initial condition: random orientations and uniform volumes in all `Mineral`s.
@@ -93,7 +93,7 @@ class TestCornerOlivineA:
         plate_speed = 2.0 / (100.0 * 365.0 * 86400.0)
         domain_height = 2.0e5  # Represents the depth of olivine-spinel transition.
         domain_width = 1.0e6
-        params = params_Kaminski2001_fig5_shortdash
+        params = _io.DEFAULT_PARAMS
         params["number_of_grains"] = 5000
         n_timesteps = 50  # Number of places along the pathline to compute CPO.
         get_velocity, get_velocity_gradient = _velocity.corner_2d("X", "Z", plate_speed)
