@@ -117,8 +117,8 @@ class TestCellOlivineA:
                 [-1, -1],
                 [1, 1],
                 [20, 20],
-                scale=1,
                 cmap="cmc.batlow_r",
+                tick_formatter=lambda x, pos: str(x),
             )
             fig_path.colorbar(s, ax=ax_path, aspect=25, label="strain (ε)")
             fig_path.savefig(_io.resolve_path(f"{out_basepath}_path.png"))
