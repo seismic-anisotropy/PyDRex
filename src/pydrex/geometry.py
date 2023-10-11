@@ -188,7 +188,8 @@ def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
     horizontal and vertical axes of pole figures used to plot the directions.
 
     """
-    upward_axes = (set("xyz") - set(ref_axes)).pop()
+    _ref_axes = ref_axes.lower()
+    upward_axes = (set("xyz") - set(_ref_axes)).pop()
     axes_map = {"x": 0, "y": 1, "z": 2}
 
     # Get directions in the right-handed frame.
@@ -198,8 +199,8 @@ def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
 
     # Rotate into the chosen reference frame.
     zvals = directions[:, axes_map[upward_axes]]
-    yvals = directions[:, axes_map[ref_axes[1]]]
-    xvals = directions[:, axes_map[ref_axes[0]]]
+    yvals = directions[:, axes_map[_ref_axes[1]]]
+    xvals = directions[:, axes_map[_ref_axes[0]]]
     return xvals, yvals, zvals
 
 
