@@ -522,7 +522,7 @@ class TestRecrystallisation2D:
                 ),
                 1 + cos2θ,
             )
-            fig.savefig(f"{out_basepath}.png")
+            fig.savefig(f"{out_basepath}.pdf")
 
         nt.assert_allclose(fractions_diff, target_fractions_diff, atol=1e-15, rtol=0)
 
@@ -593,7 +593,7 @@ class TestRecrystallisation2D:
                     ]
                 ),
             )
-            fig.savefig(f"{out_basepath}.png")
+            fig.savefig(f"{out_basepath}.pdf")
 
         # Check dominant slip system every 1°.
         for θ in initial_angles[::1000]:
