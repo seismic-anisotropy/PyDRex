@@ -48,6 +48,7 @@ class TestCornerOlivineA:
             _core.MineralFabric.olivine_A,
             _core.DeformationRegime.dislocation,
             n_grains=params["number_of_grains"],
+            seed=seed,
         )
         deformation_gradient = np.eye(3)
         timestamps_back, get_position = _path.get_pathline(
