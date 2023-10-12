@@ -9,6 +9,10 @@ from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import mock as _mock
 
+
+import test_vortex_2d as _test_vortex_2d
+
+
 matplotlib.use("Agg")  # Stop matplotlib from looking for $DISPLAY in env.
 _log.quiet_aliens()  # Stop imported modules from spamming the logs.
 
@@ -103,7 +107,10 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture(scope="session")
 def outdir(request):
-    return request.config.getoption("--outdir")
+    _outdir = request.config.getoption("--outdir")
+    yield _outdir
+    #  Create combined ensemble figure for 2D cell tests after they have all finished.
+    _test_vortex_2d.TestCellOlivineA._make_ensemble_figure(_outdir)
 
 
 @pytest.fixture(scope="session")
@@ -158,6 +165,11 @@ def params_Kaminski2004_fig4_circles():
 @pytest.fixture
 def params_Hedjazian2017():
     return _mock.PARAMS_HEDJAZIAN2017
+
+
+@pytest.fixture(params=[100, 500, 1000, 5000, 10000])
+def n_grains(request):
+    return request.param
 
 
 @pytest.fixture(params=[[1, 0, 0], [0, 1, 0], [0, 0, 1]])

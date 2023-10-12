@@ -22,6 +22,47 @@ class TestCellOlivineA:
     """Tests for A-type olivine polycrystals in a 2D Stokes cell."""
 
     class_id = "cell_olivineA"
+    _ensemble_n_grains = [100, 500, 1000, 5000, 10000]
+
+    @classmethod
+    def _make_ensemble_figure(cls, outdir):
+        # Create the combined figure from outputs of the parametrized ensemble test.
+        data = []
+        for n_grains in cls._ensemble_n_grains:
+            data.append(
+                np.load(
+                    f"{outdir}/{SUBDIR}/{cls.class_id}_xz_ensemble_N{n_grains}_data.npz"
+                )
+            )
+
+        fig = _vis.figure()
+        axθ = fig.add_subplot(211)
+        axF = fig.add_subplot(212, sharex=axθ)
+        fig, axθ, colors = _vis.alignment(
+            axθ,
+            np.asarray([d["strains"] for d in data]),
+            np.asarray([d["angles_mean"] for d in data]),
+            ("o", "v", "s", "p", "d"),
+            list(map(str, cls._ensemble_n_grains)),
+            err=np.asarray([d["angles_err"] for d in data]),
+        )
+        fig, axF, colors = _vis.alignment(
+            axF,
+            np.asarray([d["strains"] for d in data]),
+            np.asarray([d["max_sizes_mean"] for d in data]),
+            ("o", "v", "s", "p", "d"),
+            list(map(str, cls._ensemble_n_grains)),
+            err=np.asarray([d["max_sizes_err"] for d in data]),
+            θ_max=4,
+        )
+        axF.set_ylabel("Max. normalized grain size ($log_{10}$)")
+        axθ.label_outer()
+        axF.get_legend().remove()
+        fig.savefig(
+            _io.resolve_path(
+                f"{outdir}/{SUBDIR}/{cls.class_id}_xz_ensemble_combined.pdf"
+            )
+        )
 
     @classmethod
     def run(
