@@ -10,7 +10,7 @@ from pydrex import logger as _log
 from pydrex import mock as _mock
 
 
-import test_vortex_2d as _test_vortex_2d
+from tests import test_vortex_2d as _test_vortex_2d
 
 
 matplotlib.use("Agg")  # Stop matplotlib from looking for $DISPLAY in env.
