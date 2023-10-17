@@ -167,34 +167,34 @@ def params_Hedjazian2017():
     return _mock.PARAMS_HEDJAZIAN2017
 
 
-@pytest.fixture(params=[100, 500, 1000, 5000, 10000])
+@pytest.fixture(scope="session", params=[100, 500, 1000, 5000, 10000])
 def n_grains(request):
     return request.param
 
 
-@pytest.fixture(params=[[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+@pytest.fixture(scope="session", params=[[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 def hkl(request):
     return request.param
 
 
-@pytest.fixture(params=["xz", "yz", "xy"])
+@pytest.fixture(scope="session", params=["xz", "yz", "xy"])
 def ref_axes(request):
     return request.param
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def seeds():
     """1000 unique seeds for ensemble runs that need an RNG seed."""
     return _io.read_scsv(_io.data("rng") / "seeds.scsv").seeds
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def seed():
     """Default seed for test RNG."""
     return 8816
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def seeds_nearX45():
     """41 seeds which have the initial hexagonal symmetry axis near 45° from X."""
     return _io.read_scsv(_io.data("rng") / "hexaxis_nearX45_seeds.scsv").seeds
