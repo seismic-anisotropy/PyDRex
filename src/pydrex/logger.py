@@ -54,6 +54,7 @@ with _log.logfile_enable("my_log_file.log"):  # Overwrite existing file unless m
 import contextlib as cl
 import functools as ft
 import logging
+import sys
 
 import numpy as np
 
@@ -97,6 +98,21 @@ LOGGER_CONSOLE.setFormatter(ConsoleFormatter(datefmt="%H:%M"))
 LOGGER_CONSOLE.setLevel(logging.INFO)
 # Turn on console logger by default.
 LOGGER.addHandler(LOGGER_CONSOLE)
+
+
+def handle_exception(exec_type, exec_value, exec_traceback):
+    # Ignore KeyboardInterrupt so ^C (ctrl + C) works as expected.
+    if issubclass(exec_type, KeyboardInterrupt):
+        sys.__excepthook__(exec_type, exec_value, exec_traceback)
+        return
+    # Send other exceptions to the logger.
+    LOGGER.exception(
+        "uncaught exception", exc_info=(exec_type, exec_value, exec_traceback)
+    )
+
+
+# Make our logger handle uncaught exceptions.
+sys.excepthook = handle_exception
 
 
 @cl.contextmanager
