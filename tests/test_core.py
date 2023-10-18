@@ -202,7 +202,7 @@ class TestDislocationCreepOlivineA:
                 target_rotation_rates,
             )
             fig.savefig(
-                _io.resolve_path(f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.png")
+                _io.resolve_path(f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.pdf")
             )
 
     def test_shear_dudz_slip_001_100(self, outdir):
