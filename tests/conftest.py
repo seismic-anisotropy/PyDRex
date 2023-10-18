@@ -8,6 +8,7 @@ from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import mock as _mock
+from pydrex import utils as _utils
 
 
 from tests import test_vortex_2d as _test_vortex_2d
@@ -39,7 +40,7 @@ def pytest_addoption(parser):
     )
     parser.addoption(
         "--ncpus",
-        default=len(os.sched_getaffinity(0)) - 1,
+        default=_utils.default_ncpus(),
         type=int,
         help="number of CPUs to use for tests that support multiprocessing",
     )

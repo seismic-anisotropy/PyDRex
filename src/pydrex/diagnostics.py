@@ -26,6 +26,7 @@ from pydrex import stats as _stats
 from pydrex import tensors as _tensors
 from pydrex import geometry as _geo
 from pydrex import logger as _log
+from pydrex import utils as _utils
 
 
 def elasticity_components(voigt_matrices):
@@ -292,7 +293,7 @@ def misorientation_indices(
     )
     if pool is None:
         if ncpus is None:
-            ncpus = len(os.sched_getaffinity(0)) - 1
+            ncpus = _utils.default_ncpus()
         with Pool(processes=ncpus) as pool:
             for i, out in enumerate(pool.imap(_run, orientation_stack)):
                 m_indices[i] = out
