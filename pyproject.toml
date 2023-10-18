@@ -71,9 +71,9 @@ where = ["src"]
 # <https://github.com/pytest-dev/pytest/issues/10298>.
 testpaths = ["tests"]
 # --tb=short : Use short tracebacks, terminal scrollback is precious.
-# --show-capture=no : Don't show captured output (stdout/stderr/logs) for failed tests.
+# --show-capture=stderr : Don't show captured output (stdout/logs), only errors for failed tests.
 # --doctest-modules : Run doctest snippets in docstrings
-addopts = "--tb=short --show-capture=no --doctest-modules"
+addopts = "--tb=short --show-capture=stderr --doctest-modules"
 
 # Global linter and devtools settings.
 [tool.isort]
