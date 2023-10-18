@@ -222,6 +222,6 @@ class TestCornerOlivineA:
                 cmaps=cmaps,
             )
 
-            fig_domain.savefig(_io.resolve_path(f"{out_basepath}_path.png"))
-            fig_strength.savefig(_io.resolve_path(f"{out_basepath}_strength.png"))
-            fig_alignment.savefig(_io.resolve_path(f"{out_basepath}_angles.png"))
+            fig_domain.savefig(_io.resolve_path(f"{out_basepath}_path.pdf"))
+            fig_strength.savefig(_io.resolve_path(f"{out_basepath}_strength.pdf"))
+            fig_alignment.savefig(_io.resolve_path(f"{out_basepath}_angles.pdf"))

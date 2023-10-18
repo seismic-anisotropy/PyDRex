@@ -28,12 +28,15 @@ class TestCellOlivineA:
     def _make_ensemble_figure(cls, outdir):
         # Create the combined figure from outputs of the parametrized ensemble test.
         data = []
-        for n_grains in cls._ensemble_n_grains:
-            data.append(
-                np.load(
-                    f"{outdir}/{SUBDIR}/{cls.class_id}_xz_ensemble_N{n_grains}_data.npz"
-                )
+        out_basepath = f"{outdir}/{SUBDIR}/{cls.class_id}"
+        try:
+            for n_grains in cls._ensemble_n_grains:
+                data.append(np.load(f"{out_basepath}_xz_ensemble_N{n_grains}_data.npz"))
+        except FileNotFoundError:
+            _log.debug(
+                "skipping visualisation of 2D cell ensemble results (missing datafiles)"
             )
+            return
 
         fig = _vis.figure()
         axθ = fig.add_subplot(211)
@@ -162,7 +165,7 @@ class TestCellOlivineA:
                 tick_formatter=lambda x, pos: str(x),
             )
             fig_path.colorbar(s, ax=ax_path, aspect=25, label="strain (ε)")
-            fig_path.savefig(_io.resolve_path(f"{out_basepath}_path.png"))
+            fig_path.savefig(_io.resolve_path(f"{out_basepath}_path.pdf"))
             # Second figure with the angles and grain sizes at every 10 strain values.
             fig = _vis.figure()
             ax_sizes = fig.add_subplot(2, 1, 1)
