@@ -46,7 +46,7 @@ def resample_orientations(orientations, fractions, n_samples=None, seed=None):
         n_samples = _fractions.shape[1]
     out_orientations = np.empty((len(_fractions), n_samples, 3, 3))
     out_fractions = np.empty((len(_fractions), n_samples))
-    for i, (frac, orient) in enumerate(zip(_fractions, _orientations)):
+    for i, (frac, orient) in enumerate(zip(_fractions, _orientations, strict=True)):
         sort_ascending = np.argsort(frac)
         # Cumulative volume fractions.
         frac_ascending = frac[sort_ascending]

@@ -147,7 +147,7 @@ class TestCellOlivineA:
             _diagnostics.smallest_angle(
                 _diagnostics.bingham_average(a, axis="a"), get_velocity(x)
             )
-            for a, x in zip(mineral.orientations, positions)
+            for a, x in zip(mineral.orientations, positions, strict=True)
         ]
         if outdir is not None:
             # First figure with the domain and pathline.
@@ -235,7 +235,7 @@ class TestCellOlivineA:
                     _diagnostics.smallest_angle(
                         _diagnostics.bingham_average(a, axis="a"), get_velocity(x)
                     )
-                    for a, x in zip(mineral.orientations, positions)
+                    for a, x in zip(mineral.orientations, positions, strict=True)
                 ]
                 max_sizes[s] = np.log10(np.max(mineral.fractions, axis=1) * n_grains)
 
