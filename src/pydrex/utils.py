@@ -47,7 +47,7 @@ def default_ncpus():
     try:
         match platform.system():
             case "Linux":
-                return len(os.sched_getaffinity()) - 1  # May raise AttributeError.
+                return len(os.sched_getaffinity(0)) - 1  # May raise AttributeError.
             case "Darwin":
                 # May raise CalledProcessError.
                 out = subprocess.run(
