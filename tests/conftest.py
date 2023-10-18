@@ -14,7 +14,6 @@ from pydrex import utils as _utils
 from tests import test_vortex_2d as _test_vortex_2d
 
 
-matplotlib.use("Agg")  # Stop matplotlib from looking for $DISPLAY in env.
 _log.quiet_aliens()  # Stop imported modules from spamming the logs.
 
 
@@ -43,6 +42,12 @@ def pytest_addoption(parser):
         default=_utils.default_ncpus(),
         type=int,
         help="number of CPUs to use for tests that support multiprocessing",
+    )
+    parser.addoption(
+        "--fontsize",
+        default=None,
+        type=int,
+        help="set explicit font size for output figures",
     )
 
 
@@ -73,6 +78,10 @@ class PytestConsoleLogger(LoggingPlugin):
 def pytest_configure(config):
     config.addinivalue_line("markers", "slow: mark test as slow to run")
     config.addinivalue_line("markers", "big: mark test as requiring 16GB RAM")
+
+    # Set Matplotlib font size.
+    if config.option.fontsize is not None:
+        matplotlib.rcParams["font.size"] = config.option.fontsize
 
     # Hook up our logging plugin last,
     # it relies on terminalreporter and capturemanager.

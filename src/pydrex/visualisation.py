@@ -1,5 +1,6 @@
 """> PyDRex: Visualisation functions for test outputs and examples."""
 import numpy as np
+import matplotlib as mpl
 from matplotlib import projections as mproj
 from matplotlib import pyplot as plt
 from cmcrameri import cm as cmc
@@ -9,6 +10,10 @@ from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import utils as _utils
 
+# Use PGF backend for smaller PDF file size.
+mpl.use("pgf")
+# Use LuaLaTeX as the TeX engine, it's more common than XeLaTeX (and often newer).
+plt.rcParams["pgf.texsystem"] = "lualatex"
 # Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
 # Always draw grid behind everything else.
