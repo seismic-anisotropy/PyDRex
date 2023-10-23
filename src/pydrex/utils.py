@@ -1,5 +1,8 @@
 """> PyDRex: Miscellaneous utility methods."""
 from datetime import datetime
+import subprocess
+import os
+import platform
 
 import numba as nb
 import numpy as np
@@ -30,6 +33,31 @@ def remove_nans(a):
 def readable_timestamp(timestamp, tformat="%H:%M:%S"):
     """Convert timestamp in fractional seconds to human readable format."""
     return datetime.fromtimestamp(timestamp).strftime(tformat)
+
+
+def default_ncpus():
+    """Get a safe default number of CPUs available for multiprocessing.
+
+    On Linux platforms that support it, the method `os.sched_getaffinity()` is used.
+    On Mac OS, the command `sysctl -n hw.ncpu` is used.
+    On Windows, the environment variable `NUMBER_OF_PROCESSORS` is queried.
+    If any of these fail, a fallback of 1 is used and a warning is logged.
+
+    """
+    try:
+        match platform.system():
+            case "Linux":
+                return len(os.sched_getaffinity(0)) - 1  # May raise AttributeError.
+            case "Darwin":
+                # May raise CalledProcessError.
+                out = subprocess.run(
+                    ["sysctl", "-n", "hw.ncpu"], capture_output=True, check=True
+                )
+                return int(out.stdout.strip()) - 1
+            case "Windows":
+                return int(os.environ["NUMBER_OF_PROCESSORS"]) - 1
+    except AttributeError or CalledProcessError or KeyError:
+        return 1
 
 
 def get_steps(a):

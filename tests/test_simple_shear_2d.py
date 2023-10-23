@@ -428,87 +428,87 @@ class TestOlivineA:
                 _utils.readable_timestamp(np.abs(process_time() - clock_start)),
             )
 
-        # Take ensemble means and optionally plot figure.
-        _log.info("postprocessing results...")
-        result_angles = angles.mean(axis=1)
-        result_angles_err = angles.std(axis=1)
+            # Take ensemble means and optionally plot figure.
+            _log.info("postprocessing results...")
+            result_angles = angles.mean(axis=1)
+            result_angles_err = angles.std(axis=1)
 
-        if outdir is not None:
-            schema = {
-                "delimiter": ",",
-                "missing": "-",
-                "fields": [
-                    {
-                        "name": "strain",
-                        "type": "integer",
-                        "unit": "percent",
-                        "fill": 999999,
-                    }
-                ],
-            }
-            _io.save_scsv(
-                f"{out_basepath}_strains.scsv",
-                schema,
-                [[int(D * 200) for D in strains]],  # Shear strain % is 200 * D₀.
-            )
-            fig, ax, colors = _vis.alignment(
-                None,
-                strains,
-                result_angles,
-                markers,
-                labels,
-                err=result_angles_err,
-                θ_max=60,
-                θ_fse=θ_fse,
-            )
-            ax.plot(strains, M0_drexF90, c=colors[0])
-            ax.plot(strains, M50_drexF90, c=colors[2])
-            ax.plot(strains, M200_drexF90, c=colors[4])
-            _vis.show_Skemer2016_ShearStrainAngles(
-                ax,
-                ["Z&K 1200 C", "Z&K 1300 C"],
-                ["v", "^"],
-                ["k", "k"],
-                ["none", None],
-                [
-                    "Zhang & Karato, 1995\n(1200°C)",
-                    "Zhang & Karato, 1995\n(1300°C)",
-                ],
-            )
-            fig.savefig(_io.resolve_path(f"{out_basepath}.pdf"))
+            if outdir is not None:
+                schema = {
+                    "delimiter": ",",
+                    "missing": "-",
+                    "fields": [
+                        {
+                            "name": "strain",
+                            "type": "integer",
+                            "unit": "percent",
+                            "fill": 999999,
+                        }
+                    ],
+                }
+                _io.save_scsv(
+                    f"{out_basepath}_strains.scsv",
+                    schema,
+                    [[int(D * 200) for D in strains]],  # Shear strain % is 200 * D₀.
+                )
+                fig, ax, colors = _vis.alignment(
+                    None,
+                    strains,
+                    result_angles,
+                    markers,
+                    labels,
+                    err=result_angles_err,
+                    θ_max=60,
+                    θ_fse=θ_fse,
+                )
+                ax.plot(strains, M0_drexF90, c=colors[0])
+                ax.plot(strains, M50_drexF90, c=colors[2])
+                ax.plot(strains, M200_drexF90, c=colors[4])
+                _vis.show_Skemer2016_ShearStrainAngles(
+                    ax,
+                    ["Z&K 1200 C", "Z&K 1300 C"],
+                    ["v", "^"],
+                    ["k", "k"],
+                    ["none", None],
+                    [
+                        "Zhang & Karato, 1995\n(1200°C)",
+                        "Zhang & Karato, 1995\n(1300°C)",
+                    ],
+                )
+                fig.savefig(_io.resolve_path(f"{out_basepath}.pdf"))
 
-        # Check that GBM speeds up the alignment between 40% and 100% strain.
-        _log.info("checking grain orientations...")
-        for i, θ in enumerate(result_angles[:-1], start=1):
-            nt.assert_array_less(
-                result_angles[i][i_strain_40p:i_strain_100p],
-                θ[i_strain_40p:i_strain_100p],
+            # Check that GBM speeds up the alignment between 40% and 100% strain.
+            _log.info("checking grain orientations...")
+            for i, θ in enumerate(result_angles[:-1], start=1):
+                nt.assert_array_less(
+                    result_angles[i][i_strain_40p:i_strain_100p],
+                    θ[i_strain_40p:i_strain_100p],
+                )
+
+            # Check that M*=0 matches FSE (±1°) past 100% strain.
+            nt.assert_allclose(
+                result_angles[0][i_strain_100p:],
+                θ_fse[i_strain_100p:],
+                atol=1,
+                rtol=0,
             )
 
-        # Check that M*=0 matches FSE (±1°) past 100% strain.
-        nt.assert_allclose(
-            result_angles[0][i_strain_100p:],
-            θ_fse[i_strain_100p:],
-            atol=1,
-            rtol=0,
-        )
-
-        # Check that results match Fortran output past 40% strain.
-        nt.assert_allclose(
-            result_angles[0][i_strain_40p:],
-            M0_drexF90[i_strain_40p:],
-            atol=0,
-            rtol=0.1,  # At 40% strain the match is worse than at higher strain.
-        )
-        nt.assert_allclose(
-            result_angles[2][i_strain_40p:],
-            M50_drexF90[i_strain_40p:],
-            atol=1,
-            rtol=0,
-        )
-        nt.assert_allclose(
-            result_angles[4][i_strain_40p:],
-            M200_drexF90[i_strain_40p:],
-            atol=1.5,
-            rtol=0,
-        )
+            # Check that results match Fortran output past 40% strain.
+            nt.assert_allclose(
+                result_angles[0][i_strain_40p:],
+                M0_drexF90[i_strain_40p:],
+                atol=0,
+                rtol=0.1,  # At 40% strain the match is worse than at higher strain.
+            )
+            nt.assert_allclose(
+                result_angles[2][i_strain_40p:],
+                M50_drexF90[i_strain_40p:],
+                atol=1,
+                rtol=0,
+            )
+            nt.assert_allclose(
+                result_angles[4][i_strain_40p:],
+                M200_drexF90[i_strain_40p:],
+                atol=1.5,
+                rtol=0,
+            )

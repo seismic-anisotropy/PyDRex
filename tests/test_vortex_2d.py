@@ -22,6 +22,50 @@ class TestCellOlivineA:
     """Tests for A-type olivine polycrystals in a 2D Stokes cell."""
 
     class_id = "cell_olivineA"
+    _ensemble_n_grains = [100, 500, 1000, 5000, 10000]
+
+    @classmethod
+    def _make_ensemble_figure(cls, outdir):
+        # Create the combined figure from outputs of the parametrized ensemble test.
+        data = []
+        out_basepath = f"{outdir}/{SUBDIR}/{cls.class_id}"
+        try:
+            for n_grains in cls._ensemble_n_grains:
+                data.append(np.load(f"{out_basepath}_xz_ensemble_N{n_grains}_data.npz"))
+        except FileNotFoundError:
+            _log.debug(
+                "skipping visualisation of 2D cell ensemble results (missing datafiles)"
+            )
+            return
+
+        fig = _vis.figure()
+        axθ = fig.add_subplot(211)
+        axF = fig.add_subplot(212, sharex=axθ)
+        fig, axθ, colors = _vis.alignment(
+            axθ,
+            np.asarray([d["strains"] for d in data]),
+            np.asarray([d["angles_mean"] for d in data]),
+            ("o", "v", "s", "p", "d"),
+            list(map(str, cls._ensemble_n_grains)),
+            err=np.asarray([d["angles_err"] for d in data]),
+        )
+        fig, axF, colors = _vis.alignment(
+            axF,
+            np.asarray([d["strains"] for d in data]),
+            np.asarray([d["max_sizes_mean"] for d in data]),
+            ("o", "v", "s", "p", "d"),
+            list(map(str, cls._ensemble_n_grains)),
+            err=np.asarray([d["max_sizes_err"] for d in data]),
+            θ_max=4,
+        )
+        axF.set_ylabel("Max. normalized grain size ($log_{10}$)")
+        axθ.label_outer()
+        axF.get_legend().remove()
+        fig.savefig(
+            _io.resolve_path(
+                f"{outdir}/{SUBDIR}/{cls.class_id}_xz_ensemble_combined.pdf"
+            )
+        )
 
     @classmethod
     def run(
@@ -103,7 +147,7 @@ class TestCellOlivineA:
             _diagnostics.smallest_angle(
                 _diagnostics.bingham_average(a, axis="a"), get_velocity(x)
             )
-            for a, x in zip(mineral.orientations, positions)
+            for a, x in zip(mineral.orientations, positions, strict=True)
         ]
         if outdir is not None:
             # First figure with the domain and pathline.
@@ -121,7 +165,7 @@ class TestCellOlivineA:
                 tick_formatter=lambda x, pos: str(x),
             )
             fig_path.colorbar(s, ax=ax_path, aspect=25, label="strain (ε)")
-            fig_path.savefig(_io.resolve_path(f"{out_basepath}_path.png"))
+            fig_path.savefig(_io.resolve_path(f"{out_basepath}_path.pdf"))
             # Second figure with the angles and grain sizes at every 10 strain values.
             fig = _vis.figure()
             ax_sizes = fig.add_subplot(2, 1, 1)
@@ -191,7 +235,7 @@ class TestCellOlivineA:
                     _diagnostics.smallest_angle(
                         _diagnostics.bingham_average(a, axis="a"), get_velocity(x)
                     )
-                    for a, x in zip(mineral.orientations, positions)
+                    for a, x in zip(mineral.orientations, positions, strict=True)
                 ]
                 max_sizes[s] = np.log10(np.max(mineral.fractions, axis=1) * n_grains)
 

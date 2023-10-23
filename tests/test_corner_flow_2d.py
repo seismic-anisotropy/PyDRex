@@ -48,6 +48,7 @@ class TestCornerOlivineA:
             _core.MineralFabric.olivine_A,
             _core.DeformationRegime.dislocation,
             n_grains=params["number_of_grains"],
+            seed=seed,
         )
         deformation_gradient = np.eye(3)
         timestamps_back, get_position = _path.get_pathline(
@@ -221,6 +222,6 @@ class TestCornerOlivineA:
                 cmaps=cmaps,
             )
 
-            fig_domain.savefig(_io.resolve_path(f"{out_basepath}_path.png"))
-            fig_strength.savefig(_io.resolve_path(f"{out_basepath}_strength.png"))
-            fig_alignment.savefig(_io.resolve_path(f"{out_basepath}_angles.png"))
+            fig_domain.savefig(_io.resolve_path(f"{out_basepath}_path.pdf"))
+            fig_strength.savefig(_io.resolve_path(f"{out_basepath}_strength.pdf"))
+            fig_alignment.savefig(_io.resolve_path(f"{out_basepath}_angles.pdf"))

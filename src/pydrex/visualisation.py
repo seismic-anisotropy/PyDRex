@@ -1,5 +1,6 @@
 """> PyDRex: Visualisation functions for test outputs and examples."""
 import numpy as np
+import matplotlib as mpl
 from matplotlib import projections as mproj
 from matplotlib import pyplot as plt
 from cmcrameri import cm as cmc
@@ -9,7 +10,6 @@ from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import utils as _utils
 
-# Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
 # Always draw grid behind everything else.
 plt.rcParams["axes.axisbelow"] = True
@@ -122,7 +122,9 @@ def polefigures(
             density_kwargs=kwargs,
         )
         if density:
-            for ax, pf in zip((ax100, ax010, ax001), (pf100, pf010, pf001)):
+            for ax, pf in zip(
+                (ax100, ax010, ax001), (pf100, pf010, pf001), strict=True
+            ):
                 cbar = fig.colorbar(
                     pf,
                     ax=ax,
@@ -205,7 +207,7 @@ def pathline_box2d(
 
         U = np.zeros_like(X_grid.ravel())
         V = np.zeros_like(Y_grid.ravel())
-        for i, (x, y) in enumerate(zip(X_grid.ravel(), Y_grid.ravel())):
+        for i, (x, y) in enumerate(zip(X_grid.ravel(), Y_grid.ravel(), strict=True)):
             p = np.zeros(3)
             p[horizontal] = x
             p[vertical] = y
@@ -230,7 +232,7 @@ def pathline_box2d(
         C = np.asarray(
             [
                 f * np.asarray([c[horizontal], c[vertical]])
-                for f, c in zip(cpo_strengths, cpo_vectors)
+                for f, c in zip(cpo_strengths, cpo_vectors, strict=True)
             ]
         )
         cpo = ax.quiver(
@@ -294,12 +296,11 @@ def alignment(
     """
     _strains = np.atleast_2d(strains)
     _angles = np.atleast_2d(angles)
-    if len(_strains) != len(_angles) != len(markers) != len(labels):
-        raise ValueError("mismatch in input dimensions")
     if err is not None:
         _angles_err = np.atleast_2d(err)
-        if not np.all(_angles.shape == _angles_err.shape):
-            raise ValueError("mismatch in shapes of `angles` and `err`")
+    if not np.all(_strains.shape == _angles.shape):
+        # Assume strains are all the same for each series in `angles`, try np.tile().
+        _strains = np.tile(_strains, (len(_angles), 1))
 
     fig, ax = figure_unless(ax)
     ax.set_ylabel("Mean angle ∈ [0, 90]°")
@@ -308,7 +309,7 @@ def alignment(
     ax.set_xlim((np.min(strains), np.max(strains)))
     _colors = []
     for i, (strains, θ_cpo, marker, label) in enumerate(
-        zip(_strains, _angles, markers, labels)
+        zip(_strains, _angles, markers, labels, strict=True)
     ):
         if colors is not None:
             ax.scatter(
@@ -379,12 +380,11 @@ def strengths(
     """
     _strains = np.atleast_2d(strains)
     _strengths = np.atleast_2d(strengths)
-    if len(_strains) != len(_strengths) != len(markers) != len(labels):
-        raise ValueError("mismatch in input dimensions")
     if err is not None:
         _strengths_err = np.atleast_2d(err)
-        if not np.all(_strengths.shape == _strengths_err.shape):
-            raise ValueError("mismatch in shapes of `strengths` and `err`")
+    if not np.all(_strains.shape == _strengths_err.shape):
+        # Assume strains are all the same for each series in `strengths`, try np.tile().
+        _strains = np.tile(_strains, (len(_strengths), 1))
 
     fig, ax = figure_unless(ax)
     ax.set_ylabel(ylabel)
@@ -396,7 +396,7 @@ def strengths(
 
     _colors = []
     for i, (strains, strength, marker, label) in enumerate(
-        zip(_strains, _strengths, markers, labels)
+        zip(_strains, _strengths, markers, labels, strict=True)
     ):
         if colors is not None:
             ax.scatter(
@@ -465,15 +465,12 @@ def show_Skemer2016_ShearStrainAngles(ax, studies, markers, colors, fillstyles, 
     the data series plots.
 
     """
-    if len(studies) != len(markers) != len(colors) != len(fillstyles) != len(labels):
-        raise ValueError("mismatch in lengths of inputs")
     fig, ax = figure_unless(ax)
-
     data_Skemer2016 = _io.read_scsv(
         _io.data("thirdparty") / "Skemer2016_ShearStrainAngles.scsv"
     )
     for study, marker, color, fillstyle, label in zip(
-        studies, markers, colors, fillstyles, labels
+        studies, markers, colors, fillstyles, labels, strict=True
     ):
         # Note: np.nonzero returns a tuple.
         indices = np.nonzero(np.asarray(data_Skemer2016.study) == study)[0]
@@ -525,7 +522,7 @@ def spin(ax, initial_angles, rotation_rates, target_rotation_rates=None):
         initial_angles,
         rotation_rates,
         facecolors="none",
-        edgecolors="k",
+        edgecolors=plt.rcParams["axes.edgecolor"],
         s=8,
         lw=1,
         label="computed spins",
@@ -560,7 +557,7 @@ def growth(ax, initial_angles, fractions_diff, target_fractions_diff=None):
         initial_angles,
         fractions_diff,
         facecolors="none",
-        edgecolors="k",
+        edgecolors=plt.rcParams["axes.edgecolor"],
         s=8,
         lw=1,
         label="computed growth",
@@ -594,22 +591,3 @@ def figure(**kwargs):
 
     """
     return plt.figure()
-
-
-def single_olivineA_simple_shear(
-    initial_angles,
-    rotation_rates,
-    target_rotation_rates,
-    savefile="single_olivineA_simple_shear.png",
-):
-    fig = plt.figure(figsize=(4, 3))
-    ax = fig.subplots(nrows=1, ncols=1)
-    ax.set_ylabel("rotation rate")
-    ax.set_xlabel("initial angle (°)")
-    ax.set_xlim((0, 360))
-    ax.set_xticks(np.linspace(0, 360, 5))
-    ax.plot(initial_angles, target_rotation_rates, c="tab:orange", lw=1)
-    ax.scatter(
-        initial_angles, rotation_rates, facecolors="none", edgecolors="k", s=8, lw=1
-    )
-    fig.savefig(_io.resolve_path(savefile))

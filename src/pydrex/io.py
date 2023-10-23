@@ -122,7 +122,9 @@ def read_scsv(file):
                         x,
                     )
                 )
-                for f, fill, x in zip(coltypes, fillvals, zip(*list(reader)))
+                for f, fill, x in zip(
+                    coltypes, fillvals, zip(*list(reader), strict=True), strict=True
+                )
             ]
         )
 
@@ -204,9 +206,9 @@ def save_scsv(file, schema, data, **kwargs):
                 stream, delimiter=schema["delimiter"], lineterminator=os.linesep
             )
             writer.writerow(names)
-            for col in zip(*data):
+            for col in zip(*data, strict=True):
                 row = []
-                for i, (d, t, f) in enumerate(zip(col, types, fills)):
+                for i, (d, t, f) in enumerate(zip(col, types, fills, strict=True)):
                     try:
                         _parse_scsv_cell(
                             t, str(d), missingstr=schema["missing"], fillval=f

@@ -8,8 +8,12 @@ from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import mock as _mock
+from pydrex import utils as _utils
 
-matplotlib.use("Agg")  # Stop matplotlib from looking for $DISPLAY in env.
+
+from tests import test_vortex_2d as _test_vortex_2d
+
+
 _log.quiet_aliens()  # Stop imported modules from spamming the logs.
 
 
@@ -35,9 +39,15 @@ def pytest_addoption(parser):
     )
     parser.addoption(
         "--ncpus",
-        default=len(os.sched_getaffinity(0)) - 1,
+        default=_utils.default_ncpus(),
         type=int,
         help="number of CPUs to use for tests that support multiprocessing",
+    )
+    parser.addoption(
+        "--fontsize",
+        default=None,
+        type=int,
+        help="set explicit font size for output figures",
     )
 
 
@@ -69,6 +79,10 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "slow: mark test as slow to run")
     config.addinivalue_line("markers", "big: mark test as requiring 16GB RAM")
 
+    # Set Matplotlib font size.
+    if config.option.fontsize is not None:
+        matplotlib.rcParams["font.size"] = config.option.fontsize
+
     # Hook up our logging plugin last,
     # it relies on terminalreporter and capturemanager.
     if config.option.verbose > 0:
@@ -85,7 +99,8 @@ def pytest_configure(config):
 
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--runslow"):
-        pass  # Don't skip slow tests.
+        # Don't skip slow tests.
+        _log.info("running slow tests with %d CPUs", config.getoption("--ncpus"))
     else:
         skip_slow = pytest.mark.skip(reason="need --runslow option to run")
         for item in items:
@@ -103,7 +118,10 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture(scope="session")
 def outdir(request):
-    return request.config.getoption("--outdir")
+    _outdir = request.config.getoption("--outdir")
+    yield _outdir
+    #  Create combined ensemble figure for 2D cell tests after they have all finished.
+    _test_vortex_2d.TestCellOlivineA._make_ensemble_figure(_outdir)
 
 
 @pytest.fixture(scope="session")
@@ -160,29 +178,34 @@ def params_Hedjazian2017():
     return _mock.PARAMS_HEDJAZIAN2017
 
 
-@pytest.fixture(params=[[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+@pytest.fixture(scope="session", params=[100, 500, 1000, 5000, 10000])
+def n_grains(request):
+    return request.param
+
+
+@pytest.fixture(scope="session", params=[[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 def hkl(request):
     return request.param
 
 
-@pytest.fixture(params=["xz", "yz", "xy"])
+@pytest.fixture(scope="session", params=["xz", "yz", "xy"])
 def ref_axes(request):
     return request.param
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def seeds():
     """1000 unique seeds for ensemble runs that need an RNG seed."""
     return _io.read_scsv(_io.data("rng") / "seeds.scsv").seeds
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def seed():
     """Default seed for test RNG."""
     return 8816
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def seeds_nearX45():
     """41 seeds which have the initial hexagonal symmetry axis near 45° from X."""
     return _io.read_scsv(_io.data("rng") / "hexaxis_nearX45_seeds.scsv").seeds
