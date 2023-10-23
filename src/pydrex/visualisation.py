@@ -10,11 +10,6 @@ from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import utils as _utils
 
-# Use PGF backend for smaller PDF file size.
-mpl.use("pgf")
-# Use LuaLaTeX as the TeX engine, it's more common than XeLaTeX (and often newer).
-plt.rcParams["pgf.texsystem"] = "lualatex"
-# Always show XY grid by default.
 plt.rcParams["axes.grid"] = True
 # Always draw grid behind everything else.
 plt.rcParams["axes.axisbelow"] = True
