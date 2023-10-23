@@ -27,7 +27,7 @@ To install additional dependencies required only for the test suite,
 use `pip install "$PWD[test]"`.
 
 For a complete development install, including documentation generator dependencies,
-use `pip install -e "$PWD[test,dev]"`.
+use `pip install -e "$PWD[dev]"`.
 
 The package metadata and full list of dependencies are specified in [`pyproject.toml`](pyproject.toml).
 

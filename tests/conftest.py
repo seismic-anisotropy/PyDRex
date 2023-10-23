@@ -99,7 +99,8 @@ def pytest_configure(config):
 
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--runslow"):
-        pass  # Don't skip slow tests.
+        # Don't skip slow tests.
+        _log.info("running slow tests with %d CPUs", config.getoption("--ncpus"))
     else:
         skip_slow = pytest.mark.skip(reason="need --runslow option to run")
         for item in items:

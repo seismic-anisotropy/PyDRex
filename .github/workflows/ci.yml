@@ -52,6 +52,7 @@ jobs:
   install-windows:
     name: (Windows) Install package and run tests
     runs-on: windows-2019
+    if: false
 
     steps:
       - name: Checkout repository

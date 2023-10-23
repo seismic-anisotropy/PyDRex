@@ -27,7 +27,7 @@ upgrade() {
     . .venv-"${PWD##*/}"/bin/activate
     [ -f requirements.txt ] && mv -i requirements.txt requirements.bak
     pip install --upgrade pip pip-tools && pip-compile --resolver=backtracking && pip-sync
-    pip install -e "$PWD"\[dev\]
+    pip install -e "$PWD[dev]"
 }
 
 if [ $# -eq 0 ]; then  # first install
