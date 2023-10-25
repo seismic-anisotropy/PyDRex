@@ -451,6 +451,11 @@ class TestOlivineA:
                     schema,
                     [[int(D * 200) for D in strains]],  # Shear strain % is 200 * D₀.
                 )
+                np.savez(
+                    f"{out_basepath}_angles.npz",
+                    angles=result_angles,
+                    err=result_angles_err
+                )
                 fig, ax, colors = _vis.alignment(
                     None,
                     strains,
@@ -475,7 +480,14 @@ class TestOlivineA:
                         "Zhang & Karato, 1995\n(1300°C)",
                     ],
                 )
-                fig.savefig(_io.resolve_path(f"{out_basepath}.pdf"))
+                # There is a lot of stuff on this legend, so put it outside the axes.
+                # These values might need to be tweaked depending on the font size, etc.
+                _legend = _utils.redraw_legend(ax, fig=fig, bbox_to_anchor=(1.66, 0.99))
+                fig.savefig(
+                    _io.resolve_path(f"{out_basepath}.pdf"),
+                    bbox_extra_artists=(_legend,),
+                    bbox_inches="tight",
+                )
 
             # Check that GBM speeds up the alignment between 40% and 100% strain.
             _log.info("checking grain orientations...")

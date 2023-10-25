@@ -4,6 +4,9 @@ import subprocess
 import os
 import platform
 
+from matplotlib.pyplot import Line2D
+from matplotlib.collections import PathCollection
+from matplotlib.legend_handler import HandlerPathCollection, HandlerLine2D
 import numba as nb
 import numpy as np
 
@@ -56,7 +59,7 @@ def default_ncpus():
                 return int(out.stdout.strip()) - 1
             case "Windows":
                 return int(os.environ["NUMBER_OF_PROCESSORS"]) - 1
-    except AttributeError or CalledProcessError or KeyError:
+    except AttributeError or subprocess.CalledProcessError or KeyError:
         return 1
 
 
@@ -112,12 +115,53 @@ def quat_product(q1, q2):
     ]
 
 
-def redraw_legend(ax):
-    """Redraw legend on matplotlib axis with new labels since last `ax.legend()`."""
-    legend = ax.get_legend()
-    if legend is not None:
-        legend.remove()
-    ax.legend()
+def redraw_legend(ax, fig=None, remove_all=True, **kwargs):
+    """Redraw legend on matplotlib axis or figure.
+
+    Transparency is removed from legend symbols.
+    If `fig` is not None and `remove_all` is True,
+    all legends are first removed from the parent figure.
+    Optional keyword arguments are passed to `matplotlib.axes.Axes.legend` by default,
+    or `matplotlib.figure.Figure.legend` if `fig` is not None.
+
+    .. warning::
+        Note that if `fig` is not `None`, the legend may be cropped from the saved
+        figure due to a Matplotlib bug. In this case, it is required to add the
+        arguments `bbox_extra_artists=(legend,)` and `bbox_inches="tight"` to `savefig`,
+        where `legend` is the object returned by this function. To prevent the legend
+        from consuming axes/subplot space, it is further required to add the lines:
+        `legend.set_in_layout(False)`, `fig.canvas.draw()`, `legend.set_layout(True)`
+        and `fig.set_layout_engine("none")` before saving the figure.
+
+    """
+    handler_map={
+        PathCollection: HandlerPathCollection(
+            update_func=_remove_legend_symbol_transparency
+        ),
+        Line2D: HandlerLine2D(update_func=_remove_legend_symbol_transparency)
+    }
+    if fig is None:
+        legend = ax.get_legend()
+        if legend is not None:
+            legend.remove()
+        return ax.legend(handler_map=handler_map, **kwargs)
+    else:
+        for legend in fig.legends:
+            if legend is not None:
+                legend.remove()
+        if remove_all:
+            for ax in fig.axes:
+                legend = ax.get_legend()
+                if legend is not None:
+                    legend.remove()
+        return fig.legend(handler_map=handler_map, **kwargs)
+
+
+def _remove_legend_symbol_transparency(handle, orig):
+    """Remove transparency from symbols used in a Matplotlib legend."""
+    # https://stackoverflow.com/a/59629242/12519962
+    handle.update_from(orig)
+    handle.set_alpha(1)
 
 
 def __run_doctests():

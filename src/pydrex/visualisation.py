@@ -1,6 +1,5 @@
 """> PyDRex: Visualisation functions for test outputs and examples."""
 import numpy as np
-import matplotlib as mpl
 from matplotlib import projections as mproj
 from matplotlib import pyplot as plt
 from cmcrameri import cm as cmc
