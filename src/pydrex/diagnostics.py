@@ -15,7 +15,6 @@ r"""> PyDRex: Methods to calculate texture and strain diagnostics.
     grain axis and the j-th external axis (in the global Eulerian frame).
 
 """
-import os
 import functools as ft
 from multiprocessing import Pool
 

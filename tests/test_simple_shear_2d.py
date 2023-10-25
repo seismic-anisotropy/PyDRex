@@ -652,7 +652,6 @@ class TestOlivineA:
                     ],
                 )
                 # There is a lot of stuff on this legend, so put it outside the axes.
-                # The 'loc' argument doesn't seem to work, use `bbox_to_anchor` instead.
                 # These values might need to be tweaked depending on the font size, etc.
                 _legend = _utils.redraw_legend(ax, fig=fig, bbox_to_anchor=(1.66, 0.99))
                 fig.savefig(
