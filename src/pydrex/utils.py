@@ -130,7 +130,7 @@ def redraw_legend(ax, fig=None, remove_all=True, **kwargs):
         arguments `bbox_extra_artists=(legend,)` and `bbox_inches="tight"` to `savefig`,
         where `legend` is the object returned by this function. To prevent the legend
         from consuming axes/subplot space, it is further required to add the lines:
-        `legend.set_in_leyout(False)`, `fig.canvas.draw()`, `legend.set_layout(True)`
+        `legend.set_in_layout(False)`, `fig.canvas.draw()`, `legend.set_layout(True)`
         and `fig.set_layout_engine("none")` before saving the figure.
 
     """
