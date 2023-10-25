@@ -327,6 +327,11 @@ class TestOlivineA:
                     }
                 ],
             }
+            np.savez(
+                f"{out_basepath}.npz",
+                angles=result_angles,
+                angles_err=result_angles_err,
+            )
             _io.save_scsv(
                 f"{out_basepath}_strains.scsv",
                 schema,
@@ -650,6 +655,7 @@ class TestOlivineA:
                         "Webber et al., 2010",
                         "Hansen & Warren, 2015",
                     ],
+                    fabric=_core.MineralFabric.olivine_A,
                 )
                 # There is a lot of stuff on this legend, so put it outside the axes.
                 # These values might need to be tweaked depending on the font size, etc.
