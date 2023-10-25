@@ -550,7 +550,8 @@ class TestOlivineA:
         _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", strain_rate)
         timestamps = np.linspace(0, 5.5, 251)  # Solve until D₀t=5.5 ('shear' γ=11).
         params = _io.DEFAULT_PARAMS
-        gbm_mobilities = (10, 50, 125, 200)  # Must be in ascending order.
+        params["number_of_grains"] = 5000
+        gbm_mobilities = (1, 10, 50, 125)  # Must be in ascending order.
         markers = (".", "*", "d", "s")
         # Uses 100 seeds by default; use all 1000 if you have more RAM and CPU time.
         _seeds = seeds[:100]
@@ -631,6 +632,7 @@ class TestOlivineA:
                     markers,
                     labels,
                     err=result_angles_err,
+                    θ_max=80,
                 )
                 _vis.show_Skemer2016_ShearStrainAngles(
                     ax,
@@ -659,7 +661,7 @@ class TestOlivineA:
                 )
                 # There is a lot of stuff on this legend, so put it outside the axes.
                 # These values might need to be tweaked depending on the font size, etc.
-                _legend = _utils.redraw_legend(ax, fig=fig, bbox_to_anchor=(1.66, 0.99))
+                _legend = _utils.redraw_legend(ax, fig=fig, bbox_to_anchor=(1.77, 0.99))
                 fig.savefig(
                     _io.resolve_path(f"{out_basepath}.pdf"),
                     bbox_extra_artists=(_legend,),
