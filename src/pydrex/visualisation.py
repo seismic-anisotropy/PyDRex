@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib as mpl
 from matplotlib import projections as mproj
 from matplotlib import pyplot as plt
+from matplotlib.collections import PathCollection
+from matplotlib.legend_handler import HandlerPathCollection, HandlerLine2D
 from cmcrameri import cm as cmc
 
 from pydrex import axes as _axes

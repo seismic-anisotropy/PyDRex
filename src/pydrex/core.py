@@ -289,7 +289,7 @@ def _get_orientation_change(
     Args:
     - `orientation` (array) — 3x3 orientation matrix (direction cosines)
     - `velocity_gradient` (array) — 3x3 dimensionless velocity gradient matrix
-    - `deformation_rate` (float) — 3x3 dimensionless strain rate matrix
+    - `deformation_rate` (float) — 3x3 dimensionless deformation rate matrix
     - `slip_rate_softest` (float) — slip rate on the softest (most active) slip system
 
     """
