@@ -541,9 +541,9 @@ class TestOlivineA:
 
         """
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
-        strain_rate = 1e-4
+        strain_rate = 1
         _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", strain_rate)
-        timestamps = np.linspace(0, 1e4, 51)  # Solve until D₀t=1 ('shear' γ=2).
+        timestamps = np.linspace(0, 5.5, 251)  # Solve until D₀t=5.5 ('shear' γ=11).
         params = _io.DEFAULT_PARAMS
         gbm_mobilities = (10, 50, 125, 200)  # Must be in ascending order.
         markers = (".", "*", "d", "s")
@@ -651,4 +651,12 @@ class TestOlivineA:
                         "Hansen & Warren, 2015",
                     ],
                 )
-                fig.savefig(_io.resolve_path(f"{out_basepath}.pdf"))
+                # There is a lot of stuff on this legend, so put it outside the axes.
+                # The 'loc' argument doesn't seem to work, use `bbox_to_anchor` instead.
+                # These values might need to be tweaked depending on the font size, etc.
+                _legend = _utils.redraw_legend(ax, fig=fig, bbox_to_anchor=(1.66, 0.99))
+                fig.savefig(
+                    _io.resolve_path(f"{out_basepath}.pdf"),
+                    bbox_extra_artists=(_legend,),
+                    bbox_inches="tight",
+                )

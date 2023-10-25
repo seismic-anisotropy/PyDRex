@@ -4,6 +4,7 @@ from matplotlib import projections as mproj
 from matplotlib import pyplot as plt
 from cmcrameri import cm as cmc
 
+from pydrex import core as _core
 from pydrex import axes as _axes
 from pydrex import io as _io
 from pydrex import logger as _log
@@ -451,12 +452,16 @@ def grainsizes(ax, strains, fractions):
     return fig, ax, parts
 
 
-def show_Skemer2016_ShearStrainAngles(ax, studies, markers, colors, fillstyles, labels):
+def show_Skemer2016_ShearStrainAngles(
+    ax, studies, markers, colors, fillstyles, labels, fabric
+):
     """Show data from `src/pydrex/data/thirdparty/Skemer2016_ShearStrainAngles.scsv`.
 
     Plot data from the Skemer 2016 datafile on the axis given by `ax`. Select the
     studies from which to plot the data, which must be a list of strings with exact
     matches in the `study` column in the datafile.
+    Also filter the data to select only the given `fabric`
+    (see `pydrex.core.MineralFabric`).
 
     If `ax` is None, a new figure and axes are created with `figure_unless`.
 
@@ -464,6 +469,13 @@ def show_Skemer2016_ShearStrainAngles(ax, studies, markers, colors, fillstyles, 
     the data series plots.
 
     """
+    fabric_map = {
+        _core.MineralFabric.olivine_A: "A",
+        _core.MineralFabric.olivine_B: "B",
+        _core.MineralFabric.olivine_C: "C",
+        _core.MineralFabric.olivine_D: "D",
+        _core.MineralFabric.olivine_E: "E",
+    }
     fig, ax = figure_unless(ax)
     data_Skemer2016 = _io.read_scsv(
         _io.data("thirdparty") / "Skemer2016_ShearStrainAngles.scsv"
@@ -472,7 +484,10 @@ def show_Skemer2016_ShearStrainAngles(ax, studies, markers, colors, fillstyles, 
         studies, markers, colors, fillstyles, labels, strict=True
     ):
         # Note: np.nonzero returns a tuple.
-        indices = np.nonzero(np.asarray(data_Skemer2016.study) == study)[0]
+        indices = np.nonzero(
+            np.asarray(data_Skemer2016.study) == study
+            and np.asarray(data_Skemer2016.fabric) == fabric_map[fabric]
+        )[0]
         ax.plot(
             np.take(data_Skemer2016.shear_strain, indices) / 200,
             np.take(data_Skemer2016.angle, indices),
