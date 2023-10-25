@@ -485,8 +485,10 @@ def show_Skemer2016_ShearStrainAngles(
     ):
         # Note: np.nonzero returns a tuple.
         indices = np.nonzero(
-            np.asarray(data_Skemer2016.study) == study
-            and np.asarray(data_Skemer2016.fabric) == fabric_map[fabric]
+            np.logical_and(
+                np.asarray(data_Skemer2016.study) == study,
+                np.asarray(data_Skemer2016.fabric) == fabric_map[fabric],
+            )
         )[0]
         ax.plot(
             np.take(data_Skemer2016.shear_strain, indices) / 200,
