@@ -327,6 +327,11 @@ class TestOlivineA:
                     }
                 ],
             }
+            np.savez(
+                f"{out_basepath}.npz",
+                angles=result_angles,
+                angles_err=result_angles_err,
+            )
             _io.save_scsv(
                 f"{out_basepath}_strains.scsv",
                 schema,
@@ -524,3 +529,141 @@ class TestOlivineA:
                 atol=1.5,
                 rtol=0,
             )
+
+    @pytest.mark.slow
+    def test_GBM_calibration(self, outdir, seeds, ncpus):
+        r"""Compare results for various values of $$M^∗$$ to A-type olivine data.
+
+        Velocity gradient:
+        $$
+        \bm{L} = 10^{-4} ×
+            \begin{bmatrix} 0 & 0 & 0 \cr 2 & 0 & 0 \cr 0 & 0 & 0 \end{bmatrix}
+        $$
+
+        Unlike `test_dvdx_GBM`,
+        grain boudary sliding is enabled here (see `_io.DEFAULT_PARAMS`).
+        Data are provided by [Skemer & Hansen, 2016](http://dx.doi.org/10.1016/j.tecto.2015.12.003).
+
+        """
+        shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
+        strain_rate = 1
+        _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", strain_rate)
+        timestamps = np.linspace(0, 5.5, 251)  # Solve until D₀t=5.5 ('shear' γ=11).
+        params = _io.DEFAULT_PARAMS
+        params["number_of_grains"] = 5000
+        gbm_mobilities = (1, 10, 50, 125)  # Must be in ascending order.
+        markers = (".", "*", "d", "s")
+        # Uses 100 seeds by default; use all 1000 if you have more RAM and CPU time.
+        _seeds = seeds[:100]
+        n_seeds = len(_seeds)
+        angles = np.empty((len(gbm_mobilities), n_seeds, len(timestamps)))
+        strains = timestamps * strain_rate
+
+        optional_logging = cl.nullcontext()
+        if outdir is not None:
+            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_calibration"
+            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            labels = []
+
+        with optional_logging:
+            clock_start = process_time()
+            for m, gbm_mobility in enumerate(gbm_mobilities):
+                params["gbm_mobility"] = gbm_mobility
+                _run = ft.partial(
+                    self.run,
+                    params,
+                    timestamps,
+                    strain_rate,
+                    get_velocity_gradient,
+                    shear_direction,
+                    return_fse=False,
+                )
+                with Pool(processes=ncpus) as pool:
+                    for s, out in enumerate(pool.imap_unordered(_run, _seeds)):
+                        mineral, fse_angles = out
+                        angles[m, s, :] = [
+                            _diagnostics.smallest_angle(v, shear_direction)
+                            for v in _diagnostics.elasticity_components(
+                                _minerals.voigt_averages([mineral], params)
+                            )["hexagonal_axis"]
+                        ]
+                        # Save the whole mineral for the first seed only.
+                        if outdir is not None and s == 0:
+                            mineral.save(
+                                f"{out_basepath}.npz",
+                                postfix=f"M{_io.stringify(gbm_mobility)}",
+                            )
+
+                if outdir is not None:
+                    labels.append(f"$M^∗$ = {params['gbm_mobility']}")
+
+            _log.info(
+                "elapsed CPU time: %s",
+                _utils.readable_timestamp(np.abs(process_time() - clock_start)),
+            )
+
+            # Take ensemble means and optionally plot figure.
+            _log.info("postprocessing results...")
+            result_angles = angles.mean(axis=1)
+            result_angles_err = angles.std(axis=1)
+
+            if outdir is not None:
+                schema = {
+                    "delimiter": ",",
+                    "missing": "-",
+                    "fields": [
+                        {
+                            "name": "strain",
+                            "type": "integer",
+                            "unit": "percent",
+                            "fill": 999999,
+                        }
+                    ],
+                }
+                _io.save_scsv(
+                    f"{out_basepath}_strains.scsv",
+                    schema,
+                    [[int(D * 200) for D in strains]],  # Shear strain % is 200 * D₀.
+                )
+                fig, ax, colors = _vis.alignment(
+                    None,
+                    strains,
+                    result_angles,
+                    markers,
+                    labels,
+                    err=result_angles_err,
+                    θ_max=80,
+                )
+                _vis.show_Skemer2016_ShearStrainAngles(
+                    ax,
+                    [
+                        "Z&K 1200 C",
+                        "Z&K 1300 C",
+                        "Skemer 2011",
+                        "Hansen 2014",
+                        "Warren 2008",
+                        "Webber 2010",
+                        "H&W 2015",
+                    ],
+                    ["v", "^", "o", "s", "v", "o", "s"],
+                    ["k", "k", "k", "k", "k", "k", "k"],
+                    ["none", "none", "none", "none", None, None, None],
+                    [
+                        "Zhang & Karato, 1995 (1473 K)",
+                        "Zhang & Karato, 1995 (1573 K)",
+                        "Skemer et al., 2011 (1500 K)",
+                        "Hansen et al., 2014 (1473 K)",
+                        "Warren et al., 2008",
+                        "Webber et al., 2010",
+                        "Hansen & Warren, 2015",
+                    ],
+                    fabric=_core.MineralFabric.olivine_A,
+                )
+                # There is a lot of stuff on this legend, so put it outside the axes.
+                # These values might need to be tweaked depending on the font size, etc.
+                _legend = _utils.redraw_legend(ax, fig=fig, bbox_to_anchor=(1.77, 0.99))
+                fig.savefig(
+                    _io.resolve_path(f"{out_basepath}.pdf"),
+                    bbox_extra_artists=(_legend,),
+                    bbox_inches="tight",
+                )
