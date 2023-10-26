@@ -105,13 +105,24 @@ def read_scsv(file):
             )
 
         Columns = c.namedtuple("Columns", schema_colnames)
+        # __dict__() and __slots__() of NamedTuples is empty :(
+        # Set up some pretty printing instead to give a quick view of column names.
+        Columns.__str__ = lambda self: f"Columns: {self._fields}"
+        Columns._repr_pretty_ = lambda self, p, _: p.text(f"Columns: {self._fields}")
+        # Also add some extra attributes to inspect the schema and yaml header.
+        Columns._schema = schema
+        Columns._metadata = (
+            "".join(yaml_lines)
+            .replace("# ", "")
+            .replace("-\n", "")
+            .replace("\n", " ")
+            .rsplit("schema:", maxsplit=1)[0]  # Assumes comments are above the schema.
+        )
         coltypes = [
             SCSV_TYPEMAP[d.get("type", _SCSV_DEFAULT_TYPE)] for d in schema["fields"]
         ]
         missingstr = schema["missing"]
         fillvals = [d.get("fill", _SCSV_DEFAULT_FILL) for d in schema["fields"]]
-        for line in yaml_lines:
-            print(line, end="")
         return Columns._make(
             [
                 tuple(
