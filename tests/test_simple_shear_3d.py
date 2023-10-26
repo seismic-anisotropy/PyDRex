@@ -187,8 +187,11 @@ class TestFraters2021:
                     ens_resampled, _ = _stats.resample_orientations(
                         enstatite.orientations, enstatite.fractions, seed=seeds[s]
                     )
-                    ens_mean_vectors = _diagnostics.bingham_average(
-                        ens_resampled, axis="a"
+                    ens_mean_vectors = np.array(
+                        [
+                            _diagnostics.bingham_average(dcm, axis="a")
+                            for dcm in ens_resampled
+                        ]
                     )
                     ens_from_proj_XZ[s, :] = np.array(
                         [
