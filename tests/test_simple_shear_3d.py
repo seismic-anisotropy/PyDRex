@@ -153,7 +153,7 @@ class TestFraters2021:
                 timestamps,
                 get_velocity_gradient_initial,
                 get_velocity_gradient_final,
-                switch_time_Ma,
+                switch_time_Ma * 1e6,
                 _id,
             )
             with Pool(processes=ncpus) as pool:
