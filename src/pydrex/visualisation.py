@@ -612,4 +612,4 @@ def figure(**kwargs):
     (e.g. grid, constrained layout, high DPI).
 
     """
-    return plt.figure()
+    return plt.figure(**kwargs)
