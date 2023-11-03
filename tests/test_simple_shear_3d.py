@@ -103,7 +103,7 @@ class TestFraters2021:
         return olivine, enstatite
 
     @pytest.mark.slow
-    @pytest.mark.parametrize("switch_time_Ma", [0, 0.5, 1.25, np.inf])
+    @pytest.mark.parametrize("switch_time_Ma", [0, 1, 2.5, np.inf])
     def test_direction_change(
         self, outdir, seeds, params_Fraters2021, switch_time_Ma, ncpus
     ):
