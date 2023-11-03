@@ -151,12 +151,12 @@ def pathline_box2d(
     min_coords,
     max_coords,
     resolution,
-    scale=None,
     aspect="equal",
     cmap=cmc.batlow,
     cpo_vectors=None,
     cpo_strengths=None,
     tick_formatter=lambda x, pos: f"{x/1e3:.1f} km",
+    **kwargs,
 ):
     """Plot pathlines and velocity arrows for a 2D box domain.
 
@@ -174,12 +174,14 @@ def pathline_box2d(
     - `resolution` (array) — 2D resolution of the velocity arrow grid (i.e. number of
       grid points in the horizontal and vertical directions) which can be set to None to
       prevent drawing velocity vectors
-    - `scale` (float, optional) — scale factor for the velocity arrows
     - `aspect` (str|float, optional) — see `matplotlib.axes.Axes.set_aspect`
     - `cmap` (Matplotlib color map, optional) — color map for `colors`
     - `cpo_vectors` (array, optional) — vectors to plot as bars at pathline locations
     - `cpo_strengths` (array, optional) — strengths used to scale the cpo bars
     - `tick_formatter` (callable, optional) — function used to format tick labels
+
+    Additional keyword arguments are passed to the `matplotlib.axex.Axes.quiver` call
+    used to plot the velocity vectors.
 
     Returns the figure handle, the axes handle, the quiver collection (velocities) and
     the scatter collection (pathline).
@@ -226,7 +228,7 @@ def pathline_box2d(
             V.reshape(Y_grid.shape),
             pivot="mid",
             alpha=0.25,
-            scale=scale,
+            **kwargs,
         )
 
     P = np.asarray([[p[horizontal], p[vertical]] for p in positions])
