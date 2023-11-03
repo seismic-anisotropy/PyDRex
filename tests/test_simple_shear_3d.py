@@ -157,11 +157,11 @@ class TestFraters2021:
                 _id,
             )
             with Pool(processes=ncpus) as pool:
-                for s, out in enumerate(pool.imap_unordered(_run, seeds)):
+                for s, out in enumerate(pool.imap_unordered(_run, _seeds)):
                     olivine, enstatite = out
-                    _log.info("%s; # %d; postprocessing olivine...", _id, seeds[s])
+                    _log.info("%s; # %d; postprocessing olivine...", _id, _seeds[s])
                     olA_resampled, _ = _stats.resample_orientations(
-                        olivine.orientations, olivine.fractions, seed=seeds[s]
+                        olivine.orientations, olivine.fractions, seed=_seeds[s]
                     )
                     olA_mean_vectors = np.array(
                         [
@@ -183,9 +183,9 @@ class TestFraters2021:
                     )
                     del olivine, olA_resampled, olA_mean_vectors
 
-                    _log.info("%s; # %d; postprocessing enstatite...", _id, seeds[s])
+                    _log.info("%s; # %d; postprocessing enstatite...", _id, _seeds[s])
                     ens_resampled, _ = _stats.resample_orientations(
-                        enstatite.orientations, enstatite.fractions, seed=seeds[s]
+                        enstatite.orientations, enstatite.fractions, seed=_seeds[s]
                     )
                     ens_mean_vectors = np.array(
                         [
