@@ -180,7 +180,7 @@ def pathline_box2d(
     - `cpo_strengths` (array, optional) — strengths used to scale the cpo bars
     - `tick_formatter` (callable, optional) — function used to format tick labels
 
-    Additional keyword arguments are passed to the `matplotlib.axex.Axes.quiver` call
+    Additional keyword arguments are passed to the `matplotlib.axes.Axes.quiver` call
     used to plot the velocity vectors.
 
     Returns the figure handle, the axes handle, the quiver collection (velocities) and
