@@ -82,13 +82,19 @@ class PoleFigureVisualiser:
                 mineral.orientations[i_range.start:i_range.stop:i_range.step],
                 mineral.fractions[i_range.start:i_range.stop:i_range.step],
             )
+            if args.scsv is None:
+                strains = None
+            else:
+                strains = _io.read_scsv(args.scsv).strain[
+                    i_range.start : i_range.stop : i_range.step
+                ]
             _vis.polefigures(
                 orientations_resampled,
                 ref_axes=args.ref_axes,
                 i_range=i_range,
                 density=args.density,
                 savefile=args.out,
-                strains=_io.read_scsv(args.scsv).strain,
+                strains=strains,
                 **density_kwargs,
             )
         except (argparse.ArgumentError, ValueError, _err.Error) as e:

@@ -10,7 +10,7 @@ PARAMS_FRATERS2021 = {
     "gbm_mobility": 125,
     "gbs_threshold": 0.3,
     "nucleation_efficiency": 5,
-    "number_of_grains": 500,
+    "number_of_grains": 5000,
 }
 """Values used for tests 1, 2 and 4 in <https://doi.org/10.1029/2021gc009846>."""
 
