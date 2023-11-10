@@ -200,6 +200,8 @@ class TestCornerOlivineA:
                     cmap=cmaps[i],
                     cpo_vectors=directions[i],
                     cpo_strengths=indices[i],
+                    scale=25,
+                    scale_units="width",
                 )
 
             fig_strength, ax_strength, colors = _vis.strengths(
