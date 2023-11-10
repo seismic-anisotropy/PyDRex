@@ -382,7 +382,7 @@ def strengths(
     _strengths = np.atleast_2d(strengths)
     if err is not None:
         _strengths_err = np.atleast_2d(err)
-    if not np.all(_strains.shape == _strengths_err.shape):
+    if not np.all(_strains.shape == _strengths.shape):
         # Assume strains are all the same for each series in `strengths`, try np.tile().
         _strains = np.tile(_strains, (len(_strengths), 1))
 
