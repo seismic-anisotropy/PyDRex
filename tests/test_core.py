@@ -10,6 +10,7 @@ from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import io as _io
 from pydrex import visualisation as _vis
+from pydrex import utils as _utils
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "core"
@@ -195,11 +196,25 @@ class TestDislocationCreepOlivineA:
                 assert np.isclose(np.sum(fractions_diff), 0.0)
 
         if outdir is not None:
+            fig = _vis.figure(figscale=(1, 2 / 3))
+            axs = fig.subplot_mosaic(  # Put the legend on a special axes.
+                [["legend"], ["spin"]], gridspec_kw={"height_ratios": [0.1, 1]}
+            )
+            ax = axs["spin"]
             fig, ax, colors = _vis.spin(
-                None,
+                ax,
+                initial_angles[::5],
+                rotation_rates[::5],
                 initial_angles,
-                rotation_rates,
                 target_rotation_rates,
+                shear_axis=90,
+            )
+            _utils.redraw_legend(
+                ax,
+                legendax=axs["legend"],
+                loc="upper center",
+                ncols=3,
+                mode="expand",
             )
             fig.savefig(
                 _io.resolve_path(f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.pdf")
@@ -495,33 +510,46 @@ class TestRecrystallisation2D:
             )
 
         if outdir is not None:
-            fig = _vis.figure()
-            ax = fig.add_subplot(211)
+            fig = _vis.figure(figscale=(1, 4 / 3))
+            axs = fig.subplot_mosaic(  # Put the legend on a special axes.
+                [["legend"], ["spin"], ["growth"]],
+                gridspec_kw={"height_ratios": [0.2, 1, 1]},
+                sharex=True,
+            )
+            ax = axs["spin"]
             xvals = np.rad2deg(initial_angles)
-            ax.axvline(90, color="k", linestyle="--", alpha=0.5)
-            ax.axvline(
-                270, color="k", linestyle="--", alpha=0.5, label="shear direction"
-            )
-            fig, ax, colors = _vis.growth(
-                ax, xvals, fractions_diff, target_fractions_diff
-            )
-            ax.label_outer()
-            ax2 = fig.add_subplot(212, sharex=ax)
-            ax2.axvline(90, color="k", linestyle="--", alpha=0.5)
-            ax2.axvline(
-                270, color="k", linestyle="--", alpha=0.5, label="shear direction"
-            )
-            fig, ax2, colors = _vis.spin(
-                ax2,
-                xvals,
+            fig, ax, colors = _vis.spin(
+                ax,
+                xvals[::2500],
                 np.sqrt(
                     [
                         o[0, 0] ** 2 + o[0, 1] ** 2 + o[0, 2] ** 2
                         for o in orientations_diff
-                    ]
+                    ][::2500]
                 ),
+                xvals,
                 1 + cos2θ,
+                shear_axis=90,
             )
+            ax.get_legend().remove()
+            ax.label_outer()
+            ax2 = axs["growth"]
+            fig, ax2, colors = _vis.growth(
+                ax2,
+                xvals[::2500],
+                fractions_diff[::2500],
+                xvals,
+                target_fractions_diff,
+                shear_axis=90,
+            )
+            _utils.redraw_legend(
+                ax2,
+                legendax=axs["legend"],
+                loc="upper center",
+                ncols=3,
+                mode="expand",
+            )
+            # _utils.add_subplot_labels(axs, labelmap={"spin": "a)", "growth": "b)"})
             fig.savefig(f"{out_basepath}.pdf")
 
         nt.assert_allclose(fractions_diff, target_fractions_diff, atol=1e-15, rtol=0)
@@ -567,32 +595,36 @@ class TestRecrystallisation2D:
             )
 
         if outdir is not None:
-            fig = _vis.figure()
-            ax = fig.add_subplot(211)
+            fig = _vis.figure(figscale=(1, 4 / 3))
+            axs = fig.subplot_mosaic(  # Put the legend on a special axes.
+                [["legend"], ["spin"], ["growth"]],
+                gridspec_kw={"height_ratios": [0.2, 1, 1]},
+                sharex=True,
+            )
+            ax = axs["spin"]
             xvals = np.rad2deg(initial_angles)
-            ax.axvline(0, color="k", linestyle="--", alpha=0.5)
-            ax.axvline(180, color="k", linestyle="--", alpha=0.5)
-            ax.axvline(
-                360, color="k", linestyle="--", alpha=0.5, label="shear direction"
-            )
-            fig, ax, colors = _vis.growth(ax, xvals, fractions_diff)
-            ax.label_outer()
-            ax2 = fig.add_subplot(212, sharex=ax)
-            ax2.axvline(0, color="k", linestyle="--", alpha=0.5)
-            ax2.axvline(180, color="k", linestyle="--", alpha=0.5)
-            ax2.axvline(
-                360, color="k", linestyle="--", alpha=0.5, label="shear direction"
-            )
-            fig, ax2, colors = _vis.spin(
-                ax2,
-                xvals,
+            fig, ax, colors = _vis.spin(
+                ax,
+                xvals[::2500],
                 np.sqrt(
                     [
                         o[0, 0] ** 2 + o[0, 1] ** 2 + o[0, 2] ** 2
                         for o in orientations_diff
-                    ]
+                    ][::2500]
                 ),
             )
+            ax.get_legend().remove()
+            ax.label_outer()
+            ax2 = axs["growth"]
+            fig, ax2, colors = _vis.growth(ax2, xvals[::5], fractions_diff[::5])
+            _utils.redraw_legend(
+                ax2,
+                legendax=axs["legend"],
+                loc="upper center",
+                ncols=3,
+                mode="expand",
+            )
+            # _utils.add_subplot_labels(axs, labelmap={"spin": "a)", "growth": "b)"})
             fig.savefig(f"{out_basepath}.pdf")
 
         # Check dominant slip system every 1°.

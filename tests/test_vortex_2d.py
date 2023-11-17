@@ -168,11 +168,7 @@ class TestCellOlivineA:
             fig_path.savefig(_io.resolve_path(f"{out_basepath}_path.pdf"))
             # Second figure with the angles and grain sizes at every 10 strain values.
             fig = _vis.figure()
-            ax_sizes = fig.add_subplot(2, 1, 1)
-            fig, ax_sizes, parts = _vis.grainsizes(
-                ax_sizes, strains[::10], mineral.fractions[::10]
-            )
-            axθ = fig.add_subplot(2, 1, 2, sharex=ax_sizes)
+            axθ = fig.add_subplot(2, 1, 1)
             fig, axθ, colors = _vis.alignment(
                 axθ,
                 strains,
@@ -182,7 +178,11 @@ class TestCellOlivineA:
                 colors=[strains],
                 cmaps=["cmc.batlow_r"],
             )
-            ax_sizes.label_outer()
+            ax_sizes = fig.add_subplot(2, 1, 2, sharex=axθ)
+            fig, ax_sizes, parts = _vis.grainsizes(
+                ax_sizes, strains[::10], mineral.fractions[::10]
+            )
+            axθ.label_outer()
             fig.savefig(_io.resolve_path(f"{out_basepath}.png"))
 
         # Some checks for when we should have "enough" grains.

@@ -10,6 +10,8 @@ from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import utils as _utils
 
+# Get default figure size for easy referencing and scaling.
+DEFAULT_FIG_WIDTH, DEFAULT_FIG_HEIGHT = plt.rcParams["figure.figsize"]
 plt.rcParams["axes.grid"] = True
 # Always draw grid behind everything else.
 plt.rcParams["axes.axisbelow"] = True
@@ -330,9 +332,7 @@ def alignment(
             )
             _colors.append(colors[i])
         else:
-            lines = ax.plot(
-                strains, θ_cpo, marker, markersize=5, alpha=0.33, label=label
-            )
+            lines = ax.plot(strains, θ_cpo, marker, alpha=0.33, label=label)
             _colors.append(lines[0].get_color())
         if err is not None:
             ax.fill_between(
@@ -417,9 +417,7 @@ def strengths(
             )
             _colors.append(colors[i])
         else:
-            lines = ax.plot(
-                strains, strength, marker, markersize=5, alpha=0.33, label=label
-            )
+            lines = ax.plot(strains, strength, marker, alpha=0.33, label=label)
             _colors.append(lines[0].get_color())
         if err is not None:
             ax.fill_between(
@@ -502,7 +500,6 @@ def show_Skemer2016_ShearStrainAngles(
             marker=marker,
             fillstyle=fillstyle,
             linestyle="none",
-            markersize=5,
             color=color,
             label=label,
         )
@@ -511,33 +508,49 @@ def show_Skemer2016_ShearStrainAngles(
     return fig, ax, colors
 
 
-def spin(ax, initial_angles, rotation_rates, target_rotation_rates=None):
+def spin(
+    ax,
+    initial_angles,
+    rotation_rates,
+    target_initial_angles=None,
+    target_rotation_rates=None,
+    labels=None,
+    shear_axis=None,
+):
     """Plot rotation rates of grains with known, unique initial [100] angles from X.
 
     If `ax` is None, a new figure and axes are created with `figure_unless`.
+    The default labels ("target", "computed") can also be overriden.
+    If `shear_axis` is not None, a dashed line will be drawn at the given x-value
+    (and its reflection around 180°).
 
     Returns a tuple of the figure handle, the axes handle and the set of colors used for
     the data series plots.
 
     """
-    if len(initial_angles) != len(rotation_rates) or (
-        target_rotation_rates is not None
-        and len(target_rotation_rates) != len(rotation_rates)
-    ):
-        raise ValueError("mismatch in lengths of inputs")
+    if labels is None:
+        labels = ("target", "computed")
     fig, ax = figure_unless(ax)
     ax.set_ylabel("rotation rate")
     ax.set_xlabel("initial [100] angle (°)")
     ax.set_xlim((0, 360))
     ax.set_xticks(np.linspace(0, 360, 9))
+    if shear_axis is not None:
+        ax.axvline(shear_axis, color="k", linestyle="--", alpha=0.5)
+        ax.axvline(
+            (shear_axis + 180) % 360,
+            color="k",
+            linestyle="--",
+            alpha=0.5,
+            label="shear axis",
+        )
     colors = []
     if target_rotation_rates is not None:
         lines = ax.plot(
-            initial_angles,
+            target_initial_angles,
             target_rotation_rates,
             c="tab:orange",
-            lw=1,
-            label="target spins",
+            label=labels[0],
         )
         colors.append(lines[0].get_color())
     series = ax.scatter(
@@ -545,34 +558,56 @@ def spin(ax, initial_angles, rotation_rates, target_rotation_rates=None):
         rotation_rates,
         facecolors="none",
         edgecolors=plt.rcParams["axes.edgecolor"],
-        s=8,
-        lw=1,
-        label="computed spins",
+        label=labels[1],
     )
     colors.append(series.get_edgecolors()[0])
     _utils.redraw_legend(ax)
     return fig, ax, colors
 
 
-def growth(ax, initial_angles, fractions_diff, target_fractions_diff=None):
-    if len(initial_angles) != len(fractions_diff) or (
-        target_fractions_diff is not None
-        and len(target_fractions_diff) != len(fractions_diff)
-    ):
-        raise ValueError("mismatch in lengths of inputs")
+def growth(
+    ax,
+    initial_angles,
+    fractions_diff,
+    target_initial_angles=None,
+    target_fractions_diff=None,
+    labels=None,
+    shear_axis=None,
+):
+    """Plot grain growth of grains with known, unique initial [100] angles from X.
+
+    If `ax` is None, a new figure and axes are created with `figure_unless`.
+    The default labels ("target", "computed") can also be overriden.
+    If `shear_axis` is not None, a dashed line will be drawn at the given x-value
+    (and its reflection around 180°).
+
+    Returns a tuple of the figure handle, the axes handle and the set of colors used for
+    the data series plots.
+
+    """
+    if labels is None:
+        labels = ("target", "computed")
     fig, ax = figure_unless(ax)
     ax.set_ylabel("grain growth rate")
     ax.set_xlabel("initial [100] angle (°)")
     ax.set_xlim((0, 360))
     ax.set_xticks(np.linspace(0, 360, 9))
+    if shear_axis is not None:
+        ax.axvline(shear_axis, color="k", linestyle="--", alpha=0.5)
+        ax.axvline(
+            (shear_axis + 180) % 360,
+            color="k",
+            linestyle="--",
+            alpha=0.5,
+            label="shear axis",
+        )
     colors = []
     if target_fractions_diff is not None:
         lines = ax.plot(
-            initial_angles,
+            target_initial_angles,
             target_fractions_diff,
             c="tab:orange",
-            lw=1,
-            label="target growth",
+            label=labels[0],
         )
         colors.append(lines[0].get_color())
     series = ax.scatter(
@@ -580,9 +615,7 @@ def growth(ax, initial_angles, fractions_diff, target_fractions_diff=None):
         fractions_diff,
         facecolors="none",
         edgecolors=plt.rcParams["axes.edgecolor"],
-        s=8,
-        lw=1,
-        label="computed growth",
+        label=labels[1],
     )
     colors.append(series.get_edgecolors()[0])
     _utils.redraw_legend(ax)
@@ -606,10 +639,20 @@ def figure_unless(ax):
     return fig, ax
 
 
-def figure(**kwargs):
+def figure(figscale=None, **kwargs):
     """Create new figure with a few opinionated default settings.
 
     (e.g. grid, constrained layout, high DPI).
 
+    The keyword argument `figscale` can be used to scale the figure width and height
+    relative to the default values by passing a tuple. Any additional keyword arguments
+    are passed to `matplotlib.pyplot.figure()`.
+
     """
-    return plt.figure(**kwargs)
+    # NOTE: Opinionated defaults are set using rcParams at the top of this file.
+    if figscale is not None:
+        _figsize = kwargs.pop("figsize", None)
+        if _figsize is not None:
+            _log.warning("ignoring `figsize`, which is incompatible with `figscale`")
+        figsize = (DEFAULT_FIG_WIDTH * figscale[0], DEFAULT_FIG_HEIGHT * figscale[1])
+    return plt.figure(figsize=figsize, **kwargs)

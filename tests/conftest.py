@@ -47,6 +47,18 @@ def pytest_addoption(parser):
         type=int,
         help="set explicit font size for output figures",
     )
+    parser.addoption(
+        "--markersize",
+        default=None,
+        type=int,
+        help="set explicit marker size for output figures",
+    )
+    parser.addoption(
+        "--linewidth",
+        default=None,
+        type=int,
+        help="set explicit line width for output figures",
+    )
 
 
 # The default pytest logging plugin always creates its own handlers...
@@ -77,9 +89,14 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "slow: mark test as slow to run")
     config.addinivalue_line("markers", "big: mark test as requiring 16GB RAM")
 
-    # Set Matplotlib font size.
+    # Set custom Matplotlib parameters.
+    # Alternatively inject a call to `matplotlib.style.use` before starting pytest.
     if config.option.fontsize is not None:
         matplotlib.rcParams["font.size"] = config.option.fontsize
+    if config.option.markersize is not None:
+        matplotlib.rcParams["lines.markersize"] = config.option.markersize
+    if config.option.linewidth is not None:
+        matplotlib.rcParams["lines.linewidth"] = config.option.linewidth
 
     # Hook up our logging plugin last,
     # it relies on terminalreporter and capturemanager.
