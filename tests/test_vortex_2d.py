@@ -183,7 +183,7 @@ class TestCellOlivineA:
                 ax_sizes, strains[::10], mineral.fractions[::10]
             )
             axθ.label_outer()
-            fig.savefig(_io.resolve_path(f"{out_basepath}.png"))
+            fig.savefig(_io.resolve_path(f"{out_basepath}.pdf"))
 
         # Some checks for when we should have "enough" grains.
         # Based on empirical model outputs, it seems like the dip at ε ≈ 3.75 is the
@@ -266,7 +266,7 @@ class TestCellOlivineA:
                 color=colors[0],
             )
             axθ.label_outer()
-            fig.savefig(_io.resolve_path(f"{out_basepath}.png"))
+            fig.savefig(_io.resolve_path(f"{out_basepath}.pdf"))
             np.savez(
                 _io.resolve_path(f"{out_basepath}_data.npz"),
                 strains=strains,
