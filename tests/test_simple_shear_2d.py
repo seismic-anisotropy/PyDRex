@@ -551,7 +551,7 @@ class TestOlivineA:
         timestamps = np.linspace(0, 5.5, 251)  # Solve until D₀t=5.5 ('shear' γ=11).
         params = _io.DEFAULT_PARAMS
         params["number_of_grains"] = 5000
-        gbm_mobilities = (1, 10, 50, 125)  # Must be in ascending order.
+        gbm_mobilities = (5, 10, 15, 20)  # Must be in ascending order.
         markers = (".", "*", "d", "s")
         # Uses 100 seeds by default; use all 1000 if you have more RAM and CPU time.
         _seeds = seeds[:100]
@@ -634,7 +634,13 @@ class TestOlivineA:
                     err=result_angles_err,
                     θ_max=80,
                 )
-                _vis.show_Skemer2016_ShearStrainAngles(
+                (
+                    _,
+                    _,
+                    _,
+                    data_Skemer2016,
+                    indices,
+                ) = _vis.show_Skemer2016_ShearStrainAngles(
                     ax,
                     [
                         "Z&K 1200 C",
@@ -666,4 +672,22 @@ class TestOlivineA:
                     _io.resolve_path(f"{out_basepath}.pdf"),
                     bbox_extra_artists=(_legend,),
                     bbox_inches="tight",
+                )
+                r2vals = []
+                for angles in result_angles:
+                    _angles = PchipInterpolator(strains, angles)
+                    r2 = np.sum(
+                        [
+                            (a - b) ** 2
+                            for a, b in zip(
+                                _angles(
+                                    np.take(data_Skemer2016.shear_strain, indices) / 200
+                                ),
+                                np.take(data_Skemer2016.angle, indices)
+                            )
+                        ]
+                    )
+                    r2vals.append(r2)
+                _log.info(
+                    "Sums of squared residuals (r-values) for each M∗: %s", r2vals
                 )
