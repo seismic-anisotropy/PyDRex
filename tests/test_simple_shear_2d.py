@@ -484,6 +484,7 @@ class TestOlivineA:
                         "Zhang & Karato, 1995\n(1200°C)",
                         "Zhang & Karato, 1995\n(1300°C)",
                     ],
+                    _core.MineralFabric.olivine_A,
                 )
                 # There is a lot of stuff on this legend, so put it outside the axes.
                 # These values might need to be tweaked depending on the font size, etc.
