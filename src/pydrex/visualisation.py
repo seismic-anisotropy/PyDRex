@@ -469,8 +469,12 @@ def show_Skemer2016_ShearStrainAngles(
 
     If `ax` is None, a new figure and axes are created with `figure_unless`.
 
-    Returns a tuple of the figure handle, the axes handle and the set of colors used for
-    the data series plots.
+    Returns a tuple containing:
+    - the figure handle
+    - the axes handle
+    - the set of colors used for the data series plots
+    - the Skemer 2016 dataset
+    - the indices used to select data according to the "studies" and "fabric" filters
 
     """
     fabric_map = {
@@ -505,7 +509,7 @@ def show_Skemer2016_ShearStrainAngles(
         )
     if not all(b is None for b in labels):
         _utils.redraw_legend(ax)
-    return fig, ax, colors
+    return fig, ax, colors, data_Skemer2016, indices
 
 
 def spin(
