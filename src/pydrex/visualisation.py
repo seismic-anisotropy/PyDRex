@@ -157,7 +157,7 @@ def pathline_box2d(
     cmap=cmc.batlow,
     cpo_vectors=None,
     cpo_strengths=None,
-    tick_formatter=lambda x, pos: f"{x/1e3:.1f} km",
+    tick_formatter=lambda x, pos: f"{x/1e3:.1f}",
     **kwargs,
 ):
     """Plot pathlines and velocity arrows for a 2D box domain.
