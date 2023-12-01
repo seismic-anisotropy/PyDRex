@@ -7,7 +7,6 @@ import platform
 from matplotlib.pyplot import Line2D
 from matplotlib.collections import PathCollection
 from matplotlib.legend_handler import HandlerPathCollection, HandlerLine2D
-from matplotlib import transforms as mtrans
 import numba as nb
 import numpy as np
 
