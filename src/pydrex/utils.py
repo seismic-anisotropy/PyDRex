@@ -198,8 +198,11 @@ def add_subplot_labels(
                 _txt,
                 transform=ax.transAxes + trans,
                 fontsize=fontsize,
-                bbox={"facecolor": (1.0, 1.0, 1.0, 0.3), "edgecolor": "none"},
-                pad=3.0,
+                bbox={
+                    "facecolor": (1.0, 1.0, 1.0, 0.3),
+                    "edgecolor": "none",
+                    "pad": 3.0,
+                },
             )
         else:
             ax.set_title(_txt, loc=loc, fontsize=fontsize, **kwargs)
