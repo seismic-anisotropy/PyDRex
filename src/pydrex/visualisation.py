@@ -332,7 +332,7 @@ def alignment(
             )
             _colors.append(colors[i])
         else:
-            lines = ax.plot(strains, θ_cpo, marker, alpha=0.33, label=label)
+            lines = ax.plot(strains, θ_cpo, marker, alpha=0.6, label=label)
             _colors.append(lines[0].get_color())
         if err is not None:
             ax.fill_between(
