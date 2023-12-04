@@ -549,7 +549,9 @@ class TestRecrystallisation2D:
                 ncols=3,
                 mode="expand",
             )
-            # _utils.add_subplot_labels(axs, labelmap={"spin": "a)", "growth": "b)"})
+            _utils.add_subplot_labels(
+                axs, labelmap={"spin": "a)", "growth": "b)"}, internal=True, loc=(0, 1)
+            )
             fig.savefig(f"{out_basepath}.pdf")
 
         nt.assert_allclose(fractions_diff, target_fractions_diff, atol=1e-15, rtol=0)

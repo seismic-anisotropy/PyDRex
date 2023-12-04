@@ -7,6 +7,7 @@ import platform
 from matplotlib.pyplot import Line2D
 from matplotlib.collections import PathCollection
 from matplotlib.legend_handler import HandlerPathCollection, HandlerLine2D
+from matplotlib.transforms import ScaledTranslation
 import numba as nb
 import numpy as np
 
@@ -139,11 +140,11 @@ def redraw_legend(ax, fig=None, legendax=None, remove_all=True, **kwargs):
         and `fig.set_layout_engine("none")` before saving the figure.
 
     """
-    handler_map={
+    handler_map = {
         PathCollection: HandlerPathCollection(
             update_func=_remove_legend_symbol_transparency
         ),
-        Line2D: HandlerLine2D(update_func=_remove_legend_symbol_transparency)
+        Line2D: HandlerLine2D(update_func=_remove_legend_symbol_transparency),
     }
     if fig is None:
         legend = ax.get_legend()
@@ -168,23 +169,40 @@ def redraw_legend(ax, fig=None, legendax=None, remove_all=True, **kwargs):
         return fig.legend(handler_map=handler_map, **kwargs)
 
 
-def add_subplot_labels(axs, labelmap=None, loc="left", fontsize="medium", **kwargs):
-    """Add subplot labels to axes mosaic, using `ax.title()`.
+def add_subplot_labels(
+    mosaic, labelmap=None, loc="left", fontsize="medium", internal=False, **kwargs
+):
+    """Add subplot labels to axes mosaic.
 
-    Use `labelmap` to specify a dictionary that maps keys in `axs` to subplot labels.
+    Use `labelmap` to specify a dictionary that maps keys in `mosaic` to subplot labels.
     If `labelmap` is None, the keys in `axs` will be used as the labels by default.
+
+    If `internal` is `False` (default), the axes titles will be used.
+    Otherwise, internal lables will be drawn with `ax.text`,
+    in which case `loc` must be a tuple of floats.
 
     Any axes in `axs` corresponding to the special key `"legend"` are skipped.
 
     """
-    for txt, ax in axs.items():
+    for txt, ax in mosaic.items():
         if txt.lower() == "legend":
             continue
         if labelmap is not None:
             _txt = labelmap[txt]
         else:
             _txt = txt
-        ax.set_title(_txt, loc=loc, fontsize=fontsize, **kwargs)
+        if internal:
+            trans = ScaledTranslation(10 / 72, -5 / 72, ax.figure.dpi_scale_trans)
+            ax.text(
+                *loc,
+                _txt,
+                transform=ax.transAxes + trans,
+                fontsize=fontsize,
+                bbox={"facecolor": (1.0, 1.0, 1.0, 0.3), "edgecolor": "none"},
+                pad=3.0,
+            )
+        else:
+            ax.set_title(_txt, loc=loc, fontsize=fontsize, **kwargs)
 
 
 def _remove_legend_symbol_transparency(handle, orig):

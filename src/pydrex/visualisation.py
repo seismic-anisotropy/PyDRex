@@ -311,9 +311,9 @@ def alignment(
         _strains = np.tile(_strains, (len(_angles), 1))
 
     fig, ax = figure_unless(ax)
-    ax.set_ylabel("Mean angle ∈ [0, 90]°")
+    ax.set_ylabel(r"\overline{θ} ∈ [0, 90]°")
     ax.set_ylim((0, θ_max))
-    ax.set_xlabel("Strain (ε = γ/2)")
+    ax.set_xlabel("Strain (ε)")
     ax.set_xlim((np.min(strains), np.max(strains)))
     _colors = []
     for i, (strains, θ_cpo, marker, label) in enumerate(
@@ -394,7 +394,7 @@ def strengths(
 
     fig, ax = figure_unless(ax)
     ax.set_ylabel(ylabel)
-    ax.set_xlabel("Strain (ε = γ/2)")
+    ax.set_xlabel("Strain (ε)")
     ax.set_xlim((np.min(strains), np.max(strains)))
 
     if cpo_threshold is not None:
@@ -441,8 +441,8 @@ def grainsizes(ax, strains, fractions):
     """
     n_grains = len(fractions[0])
     fig, ax = figure_unless(ax)
-    ax.set_ylabel(r"Normalized grain sizes ($log_{10}$)")
-    ax.set_xlabel("Strain (ε = γ/2)")
+    ax.set_ylabel(r"$\log_{10}(f × N)$")
+    ax.set_xlabel("Strain (ε)")
     parts = ax.violinplot(
         [np.log10(f * n_grains) for f in fractions], positions=strains, widths=0.8
     )
@@ -451,8 +451,8 @@ def grainsizes(ax, strains, fractions):
         part.set_alpha(1)
     parts["cbars"].set_alpha(0)
     parts["cmins"].set_visible(False)
-    parts["cmaxes"].set_color("red")
-    parts["cmaxes"].set_alpha(0.5)
+    # parts["cmaxes"].set_color("red")
+    # parts["cmaxes"].set_alpha(0.5)
     return fig, ax, parts
 
 
@@ -535,8 +535,8 @@ def spin(
     if labels is None:
         labels = ("target", "computed")
     fig, ax = figure_unless(ax)
-    ax.set_ylabel("rotation rate")
-    ax.set_xlabel("initial [100] angle (°)")
+    ax.set_ylabel("Rotation rate")
+    ax.set_xlabel("Initial [100] angle (°)")
     ax.set_xlim((0, 360))
     ax.set_xticks(np.linspace(0, 360, 9))
     if shear_axis is not None:
@@ -592,8 +592,8 @@ def growth(
     if labels is None:
         labels = ("target", "computed")
     fig, ax = figure_unless(ax)
-    ax.set_ylabel("grain growth rate")
-    ax.set_xlabel("initial [100] angle (°)")
+    ax.set_ylabel("Grain growth rate")
+    ax.set_xlabel("Initial [100] angle (°)")
     ax.set_xlim((0, 360))
     ax.set_xticks(np.linspace(0, 360, 9))
     if shear_axis is not None:
@@ -654,9 +654,7 @@ def figure(figscale=None, **kwargs):
 
     """
     # NOTE: Opinionated defaults are set using rcParams at the top of this file.
+    _figsize = kwargs.pop("figsize", (DEFAULT_FIG_WIDTH, DEFAULT_FIG_HEIGHT))
     if figscale is not None:
-        _figsize = kwargs.pop("figsize", None)
-        if _figsize is not None:
-            _log.warning("ignoring `figsize`, which is incompatible with `figscale`")
-        figsize = (DEFAULT_FIG_WIDTH * figscale[0], DEFAULT_FIG_HEIGHT * figscale[1])
-    return plt.figure(figsize=figsize, **kwargs)
+        _figsize = (DEFAULT_FIG_WIDTH * figscale[0], DEFAULT_FIG_HEIGHT * figscale[1])
+    return plt.figure(figsize=_figsize, **kwargs)
