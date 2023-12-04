@@ -311,7 +311,7 @@ def alignment(
         _strains = np.tile(_strains, (len(_angles), 1))
 
     fig, ax = figure_unless(ax)
-    ax.set_ylabel(r"\overline{θ} ∈ [0, 90]°")
+    ax.set_ylabel(r"$\overline{θ}$ ∈ [0, 90]°")
     ax.set_ylim((0, θ_max))
     ax.set_xlabel("Strain (ε)")
     ax.set_xlim((np.min(strains), np.max(strains)))
