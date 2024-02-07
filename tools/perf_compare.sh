@@ -37,7 +37,7 @@ run_f90() {
     cp drex_forward_simpleshear.f90 "$OUTDIR"
     >/dev/null pushd "$OUTDIR"
     sed -i -E "s/size3 = [0-9]+/size3 = $SIZE3/" drex_forward_simpleshear.f90
-    gfortran drex_forward_simpleshear.f90 -o run_drex
+    gfortran -O3 drex_forward_simpleshear.f90 -o run_drex
     perf stat -r $N_RUNS -o drex.stat ./run_drex >/dev/null
     >/dev/null popd
 }
@@ -81,6 +81,7 @@ shift $(( $OPTIND - 1 ))
 mkdir -p "$OUTDIR"
 cat << EOF > "$OUTDIR/pydrex_forward_shear.py"
 import numpy as np
+import numba as nb
 
 from pydrex import core as _core
 from pydrex import diagnostics as _diagnostics
@@ -90,7 +91,7 @@ from pydrex import utils as _utils
 from pydrex import velocity as _velocity
 
 
-shear_direction = [0, 1, 0]
+shear_direction = np.array([0.0, 1.0, 0.0])
 strain_rate = 1e-4
 _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", strain_rate)
 timestamps = np.linspace(0, 1e4, 201)
@@ -110,12 +111,17 @@ deformation_gradient = np.eye(3)
 θ_fse = np.empty_like(timestamps)
 θ_fse[0] = 45
 
+
+@nb.njit
+def get_position(t):
+    return np.zeros(3)
+
 for t, time in enumerate(timestamps[:-1], start=1):
     deformation_gradient = mineral.update_orientations(
         params,
         deformation_gradient,
         get_velocity_gradient,
-        pathline=(time, timestamps[t], lambda t: np.zeros(3)),
+        pathline=(time, timestamps[t], get_position),
     )
     _, fse_v = _diagnostics.finite_strain(deformation_gradient)
     θ_fse[t] = _diagnostics.smallest_angle(fse_v, shear_direction)
