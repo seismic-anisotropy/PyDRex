@@ -16,7 +16,7 @@ import numpy as np
 def strain_increment(dt, velocity_gradient):
     """Calculate strain increment for a given time increment and velocity gradient.
 
-    Returns “tensorial” strain increment ε, which is equal to 2 × γ where γ is the
+    Returns “tensorial” strain increment ε, which is equal to γ/2 where γ is the
     “(engineering) shear strain” increment.
 
     """
