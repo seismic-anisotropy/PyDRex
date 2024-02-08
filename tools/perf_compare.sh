@@ -44,7 +44,14 @@ run_f90() {
 
 run_py3() {
     >/dev/null pushd "$OUTDIR"
-    NUMBA_NUM_THREADS=1 perf stat -r $N_RUNS -o pydrex.stat python pydrex_forward_shear.py
+    NUMBA_NUM_THREADS=1 python -m timeit \
+        -s 'import numpy as np; import numba as nb' \
+        -s 'from pydrex import core as _core' \
+        -s 'from pydrex import diagnostics as _diagnostics' \
+        -s 'from pydrex import io as _io' \
+        -s 'from pydrex import minerals as _minerals' \
+        -s 'from pydrex import velocity as _velocity' \
+        -n 1 -r $N_RUNS "$(cat pydrex_forward_shear.py)" > pydrex.stat
     >/dev/null popd
 }
 
@@ -80,17 +87,6 @@ shift $(( $OPTIND - 1 ))
 
 mkdir -p "$OUTDIR"
 cat << EOF > "$OUTDIR/pydrex_forward_shear.py"
-import numpy as np
-import numba as nb
-
-from pydrex import core as _core
-from pydrex import diagnostics as _diagnostics
-from pydrex import io as _io
-from pydrex import minerals as _minerals
-from pydrex import utils as _utils
-from pydrex import velocity as _velocity
-
-
 shear_direction = np.array([0.0, 1.0, 0.0])
 strain_rate = 1e-4
 _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", strain_rate)
@@ -127,14 +123,14 @@ for t, time in enumerate(timestamps[:-1], start=1):
     θ_fse[t] = _diagnostics.smallest_angle(fse_v, shear_direction)
 
 
-Cij_and_friends = _diagnostics.elasticity_components(
-    _minerals.voigt_averages([mineral], params)
-)
-angles = [
-    _diagnostics.smallest_angle(v, shear_direction)
-    for v in Cij_and_friends["hexagonal_axis"]
-]
-precent_anisotropy = Cij_and_friends["percent_anisotropy"]
+# Cij_and_friends = _diagnostics.elasticity_components(
+#     _minerals.voigt_averages([mineral], params)
+# )
+# angles = [
+#     _diagnostics.smallest_angle(v, shear_direction)
+#     for v in Cij_and_friends["hexagonal_axis"]
+# ]
+# percent_anisotropy = Cij_and_friends["percent_anisotropy"]
 
 EOF
 
