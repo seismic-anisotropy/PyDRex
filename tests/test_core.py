@@ -237,6 +237,9 @@ class TestDislocationCreepOlivineA:
             optional_logging = _log.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
+            initial_angles = []
+            rotation_rates = []
+            target_rotation_rates = []
 
         with optional_logging:
             for θ in np.mgrid[0 : 2 * np.pi : 360j]:
@@ -296,7 +299,41 @@ class TestDislocationCreepOlivineA:
                 np.testing.assert_allclose(
                     orientations_diff[0], target_orientations_diff
                 )
+                if outdir is not None:
+                    initial_angles.append(np.rad2deg(θ))
+                    rotation_rates.append(
+                        np.sqrt(
+                            orientations_diff[0][0, 0] ** 2
+                            + orientations_diff[0][0, 2] ** 2
+                        )
+                    )
+                    target_rotation_rates.append(1 - cos2θ)
                 assert np.isclose(np.sum(fractions_diff), 0.0)
+
+        if outdir is not None:
+            fig = _vis.figure(figscale=(1, 2 / 3))
+            axs = fig.subplot_mosaic(  # Put the legend on a special axes.
+                [["legend"], ["spin"]], gridspec_kw={"height_ratios": [0.1, 1]}
+            )
+            ax = axs["spin"]
+            fig, ax, colors = _vis.spin(
+                ax,
+                initial_angles[::5],
+                rotation_rates[::5],
+                initial_angles,
+                target_rotation_rates,
+                shear_axis=0,
+            )
+            _utils.redraw_legend(
+                ax,
+                legendax=axs["legend"],
+                loc="upper center",
+                ncols=3,
+                mode="expand",
+            )
+            fig.savefig(
+                _io.resolve_path(f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.pdf")
+            )
 
     def test_shear_dwdx_slip_001_100(self, outdir):
         r"""Single grain of A-type olivine, slip on (001)[100].
@@ -305,7 +342,7 @@ class TestDislocationCreepOlivineA:
         $$\bm{L} = \begin{bmatrix} 0 & 0 & 0 \cr 0 & 0 & 0 \cr 2 & 0 & 0 \end{bmatrix}$$
 
         """
-        test_id = "dudz_001_100"
+        test_id = "dwdx_001_100"
         nondim_velocity_gradient = np.array([[0, 0, 0], [0, 0, 0], [2, 0, 0]])
         # Strain rate is 0.5*(L + Lᵀ).
         nondim_strain_rate = np.array([[0, 0, 1], [0, 0, 0], [1, 0, 0]])
@@ -315,6 +352,9 @@ class TestDislocationCreepOlivineA:
             optional_logging = _log.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
+            initial_angles = []
+            rotation_rates = []
+            target_rotation_rates = []
 
         with optional_logging:
             for θ in np.mgrid[0 : 2 * np.pi : 360j]:
@@ -374,7 +414,41 @@ class TestDislocationCreepOlivineA:
                 np.testing.assert_allclose(
                     orientations_diff[0], target_orientations_diff
                 )
+                if outdir is not None:
+                    initial_angles.append(np.rad2deg(θ))
+                    rotation_rates.append(
+                        np.sqrt(
+                            orientations_diff[0][0, 0] ** 2
+                            + orientations_diff[0][0, 2] ** 2
+                        )
+                    )
+                    target_rotation_rates.append(1 + cos2θ)
                 assert np.isclose(np.sum(fractions_diff), 0.0)
+
+        if outdir is not None:
+            fig = _vis.figure(figscale=(1, 2 / 3))
+            axs = fig.subplot_mosaic(  # Put the legend on a special axes.
+                [["legend"], ["spin"]], gridspec_kw={"height_ratios": [0.1, 1]}
+            )
+            ax = axs["spin"]
+            fig, ax, colors = _vis.spin(
+                ax,
+                initial_angles[::5],
+                rotation_rates[::5],
+                initial_angles,
+                target_rotation_rates,
+                shear_axis=90,
+            )
+            _utils.redraw_legend(
+                ax,
+                legendax=axs["legend"],
+                loc="upper center",
+                ncols=3,
+                mode="expand",
+            )
+            fig.savefig(
+                _io.resolve_path(f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.pdf")
+            )
 
     def test_shear_dvdz_slip_010_001(self, outdir):
         r"""Single grain of A-type olivine, slip on (010)[001].
@@ -393,6 +467,9 @@ class TestDislocationCreepOlivineA:
             optional_logging = _log.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
+            initial_angles = []
+            rotation_rates = []
+            target_rotation_rates = []
 
         with optional_logging:
             for θ in np.mgrid[0 : 2 * np.pi : 360j]:
@@ -452,7 +529,41 @@ class TestDislocationCreepOlivineA:
                 np.testing.assert_allclose(
                     orientations_diff[0], target_orientations_diff
                 )
+                if outdir is not None:
+                    initial_angles.append(np.rad2deg(θ))
+                    rotation_rates.append(
+                        np.sqrt(
+                            orientations_diff[0][1, 1] ** 2
+                            + orientations_diff[0][1, 2] ** 2
+                        )
+                    )
+                    target_rotation_rates.append(1 + cos2θ)
                 assert np.isclose(np.sum(fractions_diff), 0.0)
+
+        if outdir is not None:
+            fig = _vis.figure(figscale=(1, 2 / 3))
+            axs = fig.subplot_mosaic(  # Put the legend on a special axes.
+                [["legend"], ["spin"]], gridspec_kw={"height_ratios": [0.1, 1]}
+            )
+            ax = axs["spin"]
+            fig, ax, colors = _vis.spin(
+                ax,
+                initial_angles[::5],
+                rotation_rates[::5],
+                initial_angles,
+                target_rotation_rates,
+                shear_axis=90,
+            )
+            _utils.redraw_legend(
+                ax,
+                legendax=axs["legend"],
+                loc="upper center",
+                ncols=3,
+                mode="expand",
+            )
+            fig.savefig(
+                _io.resolve_path(f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.pdf")
+            )
 
 
 class TestRecrystallisation2D:
