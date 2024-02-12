@@ -535,7 +535,7 @@ def spin(
     if labels is None:
         labels = ("target", "computed")
     fig, ax = figure_unless(ax)
-    ax.set_ylabel("Rotation rate")
+    ax.set_ylabel("Rotation rate (°/s)")
     ax.set_xlabel("Initial [100] angle (°)")
     ax.set_xlim((0, 360))
     ax.set_xticks(np.linspace(0, 360, 9))
@@ -592,7 +592,7 @@ def growth(
     if labels is None:
         labels = ("target", "computed")
     fig, ax = figure_unless(ax)
-    ax.set_ylabel("Grain growth rate")
+    ax.set_ylabel("Grain growth rate (s⁻¹)")
     ax.set_xlabel("Initial [100] angle (°)")
     ax.set_xlim((0, 360))
     ax.set_xticks(np.linspace(0, 360, 9))

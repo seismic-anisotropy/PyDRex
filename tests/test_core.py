@@ -127,7 +127,7 @@ class TestDislocationCreepOlivineA:
             target_rotation_rates = []
 
         with optional_logging:
-            for θ in np.mgrid[0 : 2 * np.pi : 360j]:
+            for θ in np.mgrid[0 : 2 * np.pi : 3600j]:
                 _log.debug("θ (°): %s", np.rad2deg(θ))
                 # Initial grain rotations around Z (anti-clockwise).
                 initial_orientations = Rotation.from_rotvec([[0, 0, θ]])
@@ -203,8 +203,8 @@ class TestDislocationCreepOlivineA:
             ax = axs["spin"]
             fig, ax, colors = _vis.spin(
                 ax,
-                initial_angles[::5],
-                rotation_rates[::5],
+                initial_angles[::25],
+                rotation_rates[::25],
                 initial_angles,
                 target_rotation_rates,
                 shear_axis=90,
@@ -712,18 +712,18 @@ class TestRecrystallisation2D:
             xvals = np.rad2deg(initial_angles)
             fig, ax, colors = _vis.spin(
                 ax,
-                xvals[::25],
+                xvals[::2500],
                 np.sqrt(
                     [
                         o[0, 0] ** 2 + o[0, 1] ** 2 + o[0, 2] ** 2
                         for o in orientations_diff
-                    ][::25]
+                    ][::2500]
                 ),
             )
             ax.get_legend().remove()
             ax.label_outer()
             ax2 = axs["growth"]
-            fig, ax2, colors = _vis.growth(ax2, xvals[::25], fractions_diff[::25])
+            fig, ax2, colors = _vis.growth(ax2, xvals[::2500], fractions_diff[::2500])
             _utils.add_subplot_labels(axs, labelmap={"spin": "a)", "growth": "b)"})
             fig.savefig(f"{out_basepath}.pdf")
 
