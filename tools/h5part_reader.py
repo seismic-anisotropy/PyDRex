@@ -67,21 +67,21 @@ if __name__ == "__main__":
             outfile = args.output
         else:
             raise ValueError(f"can only save to NPZ format, not {args.output}")
+    # outfile_paths = outfile[:-4] + "_paths.npz"
+
+    option_map = {
+        "olivine": MineralPhase.olivine,
+        "enstatite": MineralPhase.enstatite,
+        "A": MineralFabric.olivine_A,
+        "B": MineralFabric.olivine_B,
+        "C": MineralFabric.olivine_C,
+        "D": MineralFabric.olivine_D,
+        "E": MineralFabric.olivine_E,
+        "N": MineralFabric.enstatite_AB,
+    }
 
     with h5py.File(args.input) as infile:
-
         for particle_id in infile["Step#0/id"][:]:
-            option_map = {
-                "olivine": MineralPhase.olivine,
-                "enstatite": MineralPhase.enstatite,
-                "A": MineralFabric.olivine_A,
-                "B": MineralFabric.olivine_B,
-                "C": MineralFabric.olivine_C,
-                "D": MineralFabric.olivine_D,
-                "E": MineralFabric.olivine_E,
-                "N": MineralFabric.enstatite_AB,
-            }
-
             # Fluidity writes empty arrays after deleting detectors (particles).
             # We need only the timesteps before deletion of this particle.
             steps = []
@@ -129,10 +129,12 @@ if __name__ == "__main__":
             mineral.fractions = _fractions
             mineral.orientations = _orientations
             mineral.save(outfile, postfix=_postfix)
-            archive = ZipFile(outfile, mode="a", allowZip64=True)
-            for key, data in zip(("x", "y", "z"), (x, y, z)):
-                with archive.open(f"{key}_{_postfix}", "w", force_zip64=True) as file:
-                    buffer = io.BytesIO()
-                    np.save(buffer, data)
-                    file.write(buffer.getvalue())
-                    buffer.close()
+            np.savez(outfile[:-4] + f"_path_{_postfix}.npz", x=x, y=y, z=z)
+            # FIXME: Why is this not working??
+            # archive = ZipFile(outfile_paths, mode="a", allowZip64=True)
+            # for key, data in zip(("x", "y", "z"), (x, y, z)):
+            #     with archive.open(f"{key}_{_postfix}", "w", force_zip64=True) as file:
+            #         buffer = io.BytesIO()
+            #         np.save(buffer, data)
+            #         file.write(buffer.getvalue())
+            #         buffer.close()
