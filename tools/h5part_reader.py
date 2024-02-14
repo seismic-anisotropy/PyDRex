@@ -68,12 +68,9 @@ if __name__ == "__main__":
         else:
             raise ValueError(f"can only save to NPZ format, not {args.output}")
 
-    with h5py.File(args.input) as file:
-        # Don't use the last timestep,
-        # fluidity deletes the detector and just writes empty data there.
-        n_timesteps = len(file.keys()) - 1
+    with h5py.File(args.input) as infile:
 
-        for particle_id in file["Step#0/id"][:]:
+        for particle_id in infile["Step#0/id"][:]:
             option_map = {
                 "olivine": MineralPhase.olivine,
                 "enstatite": MineralPhase.enstatite,
@@ -85,23 +82,31 @@ if __name__ == "__main__":
                 "N": MineralFabric.enstatite_AB,
             }
 
+            # Fluidity writes empty arrays after deleting detectors (particles).
+            # We need only the timesteps before deletion of this particle.
+            steps = []
+            for k in sorted(list(infile.keys()), key=lambda s: int(s.lstrip("Step#"))):
+                if infile[f"{k}/x"].shape[0] >= particle_id:
+                    steps.append(k)
+
             # Temporary data arrays.
+            n_timesteps = len(steps)
             x = np.zeros(n_timesteps)
             y = np.zeros(n_timesteps)
             z = np.zeros(n_timesteps)
             orientations = np.empty((n_timesteps, args.ngrains, 3, 3))
             fractions = np.empty((n_timesteps, args.ngrains))
 
-            for t in range(n_timesteps):
+            for t, k in enumerate(steps):
                 # Extract particle position.
-                x[t] = file[f"Step#{t}/x"][particle_id - 1]
-                y[t] = file[f"Step#{t}/y"][particle_id - 1]
-                z[t] = file[f"Step#{t}/z"][particle_id - 1]
+                x[t] = infile[f"{k}/x"][particle_id - 1]
+                y[t] = infile[f"{k}/y"][particle_id - 1]
+                z[t] = infile[f"{k}/z"][particle_id - 1]
 
                 # Extract CPO data.
                 vals = np.empty(args.ngrains * 10)
                 for n in range(len(vals)):
-                    vals[n] = file[f"Step#{t}/CPO{n+1}"][particle_id - 1]
+                    vals[n] = infile[f"{k}/CPO_{n+1}"][particle_id - 1]
 
                 orientations[t] = np.array(
                     [
