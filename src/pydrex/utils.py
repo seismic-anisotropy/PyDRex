@@ -1,4 +1,5 @@
 """> PyDRex: Miscellaneous utility methods."""
+
 from datetime import datetime
 import subprocess
 import os
@@ -27,15 +28,42 @@ def strain_increment(dt, velocity_gradient):
     )
 
 
+@nb.njit
+def apply_gbs(orientations, fractions, gbs_threshold, orientations_prev, n_grains):
+    """Apply grain boundary sliding for small grains."""
+    mask = fractions < (gbs_threshold / n_grains)
+    # _log.debug(
+    #     "grain boundary sliding activity (volume percentage): %s",
+    #     len(np.nonzero(mask)) / len(fractions),
+    # )
+    # No rotation: carry over previous orientations.
+    orientations[mask, :, :] = orientations_prev[mask, :, :]
+    fractions[mask] = gbs_threshold / n_grains
+    fractions /= fractions.sum()
+    # _log.debug(
+    #     "grain volume fractions: median=%e, min=%e, max=%e, sum=%e",
+    #     np.median(fractions),
+    #     np.min(fractions),
+    #     np.max(fractions),
+    #     np.sum(fractions),
+    # )
+    return orientations, fractions
+
+
+@nb.njit
+def extract_vars(y, n_grains):
+    """Extract deformation gradient, orientation matrices and grain sizes from y."""
+    deformation_gradient = y[:9].reshape((3, 3))
+    orientations = y[9 : n_grains * 9 + 9].reshape((n_grains, 3, 3)).clip(-1, 1)
+    fractions = y[n_grains * 9 + 9 : n_grains * 10 + 9].clip(0, None)
+    fractions /= fractions.sum()
+    return deformation_gradient, orientations, fractions
+
+
 def remove_nans(a):
     """Remove NaN values from array."""
     a = np.asarray(a)
     return a[~np.isnan(a)]
-
-
-def readable_timestamp(timestamp, tformat="%H:%M:%S"):
-    """Convert timestamp in fractional seconds to human readable format."""
-    return datetime.fromtimestamp(timestamp).strftime(tformat)
 
 
 def default_ncpus():
@@ -134,11 +162,11 @@ def redraw_legend(ax, fig=None, remove_all=True, **kwargs):
         and `fig.set_layout_engine("none")` before saving the figure.
 
     """
-    handler_map={
+    handler_map = {
         PathCollection: HandlerPathCollection(
             update_func=_remove_legend_symbol_transparency
         ),
-        Line2D: HandlerLine2D(update_func=_remove_legend_symbol_transparency)
+        Line2D: HandlerLine2D(update_func=_remove_legend_symbol_transparency),
     }
     if fig is None:
         legend = ax.get_legend()

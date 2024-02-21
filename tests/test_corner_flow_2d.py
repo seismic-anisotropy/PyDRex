@@ -160,10 +160,7 @@ class TestCornerOlivineA:
                         )
                         bingham_vectors[idx] = direction_mean
 
-                    _log.debug(
-                        "Total walltime: %s",
-                        _utils.readable_timestamp(perf_counter() - _begin),
-                    )
+                    _log.debug("Total walltime: %s", perf_counter() - _begin)
 
                     if outdir is not None:
                         labels.append(rf"$z_{{f}}$ = {z_exit/1e3:.1f} km")
