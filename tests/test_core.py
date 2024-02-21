@@ -1,4 +1,5 @@
 """> PyDRex: Tests for core D-Rex routines."""
+
 import contextlib as cl
 
 import numpy as np
@@ -6,9 +7,9 @@ from numpy import testing as nt
 from scipy.spatial.transform import Rotation
 
 from pydrex import core as _core
+from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
-from pydrex import io as _io
 from pydrex import visualisation as _vis
 
 # Subdirectory of `outdir` used to store outputs from these tests.

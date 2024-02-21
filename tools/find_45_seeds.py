@@ -1,4 +1,5 @@
 """Find seeds that make grains start with an average SCCS direction of 45."""
+
 import numpy as np
 
 from pydrex import diagnostics as _d

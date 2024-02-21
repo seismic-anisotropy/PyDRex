@@ -125,9 +125,9 @@ def voigt_averages(minerals, weights):
                 match mineral.phase:
                     case _core.MineralPhase.olivine:
                         if "olivine" not in elastic_tensors:
-                            elastic_tensors[
-                                "olivine"
-                            ] = _tensors.voigt_to_elastic_tensor(OLIVINE_STIFFNESS)
+                            elastic_tensors["olivine"] = (
+                                _tensors.voigt_to_elastic_tensor(OLIVINE_STIFFNESS)
+                            )
                         average_tensors[i] += _tensors.elastic_tensor_to_voigt(
                             _tensors.rotate(
                                 elastic_tensors["olivine"],
@@ -138,9 +138,9 @@ def voigt_averages(minerals, weights):
                         )
                     case _core.MineralPhase.enstatite:
                         if "enstatite" not in elastic_tensors:
-                            elastic_tensors[
-                                "enstatite"
-                            ] = _tensors.voigt_to_elastic_tensor(ENSTATITE_STIFFNESS)
+                            elastic_tensors["enstatite"] = (
+                                _tensors.voigt_to_elastic_tensor(ENSTATITE_STIFFNESS)
+                            )
                         average_tensors[i] += _tensors.elastic_tensor_to_voigt(
                             _tensors.rotate(
                                 elastic_tensors["enstatite"],

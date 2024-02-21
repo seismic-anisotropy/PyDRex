@@ -1,4 +1,5 @@
 """> PyDRex: tests for configuration file format."""
+
 import pathlib as pl
 
 import numpy as np
@@ -16,7 +17,10 @@ def test_specfile():
     # TODO: Add some example mesh/path files and use them in another test.
     assert _input["mesh"] is None
     assert _input["locations_final"] is None
-    assert _input["velocity_gradient"][1].func == _velocity.simple_shear_2d("Y", "X", 5e-6)[1].func
+    assert (
+        _input["velocity_gradient"][1].func
+        == _velocity.simple_shear_2d("Y", "X", 5e-6)[1].func
+    )
     assert (
         _input["velocity_gradient"][1].keywords
         == _velocity.simple_shear_2d("Y", "X", 5e-6)[1].keywords

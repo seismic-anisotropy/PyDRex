@@ -6,6 +6,7 @@ The vectorial notation uses 21 components which are the independent components o
 symmetric 6x6 matrix.
 
 """
+
 import numba as nb
 import numpy as np
 
@@ -97,7 +98,7 @@ def tetr_project(voigt_vector):
     out = ortho_project(voigt_vector)
     for i, j in ((0, 1), (3, 4), (6, 7)):
         for k in range(2):
-            out[i+k] = 0.5 * (voigt_vector[i] + voigt_vector[j])
+            out[i + k] = 0.5 * (voigt_vector[i] + voigt_vector[j])
     return out
 
 
