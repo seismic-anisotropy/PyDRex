@@ -9,6 +9,9 @@ import numpy as np
 from matplotlib.collections import PathCollection
 from matplotlib.legend_handler import HandlerLine2D, HandlerPathCollection
 from matplotlib.pyplot import Line2D
+from matplotlib.transforms import ScaledTranslation
+
+from pydrex import logger as _log
 
 
 @nb.njit(fastmath=True)
@@ -142,7 +145,7 @@ def quat_product(q1, q2):
     ]
 
 
-def redraw_legend(ax, fig=None, remove_all=True, **kwargs):
+def redraw_legend(ax, fig=None, legendax=None, remove_all=True, **kwargs):
     """Redraw legend on matplotlib axis or figure.
 
     Transparency is removed from legend symbols.
@@ -150,6 +153,9 @@ def redraw_legend(ax, fig=None, remove_all=True, **kwargs):
     all legends are first removed from the parent figure.
     Optional keyword arguments are passed to `matplotlib.axes.Axes.legend` by default,
     or `matplotlib.figure.Figure.legend` if `fig` is not None.
+
+    If `legendax` is not None, the axis legend will be redrawn using the `legendax` axes
+    instead of taking up space in the original axes. This option requires `fig=None`.
 
     .. warning::
         Note that if `fig` is not `None`, the legend may be cropped from the saved
@@ -170,9 +176,15 @@ def redraw_legend(ax, fig=None, remove_all=True, **kwargs):
     if fig is None:
         legend = ax.get_legend()
         if legend is not None:
+            handles, labels = ax.get_legend_handles_labels()
             legend.remove()
+        if legendax is not None:
+            legendax.axis("off")
+            return legendax.legend(handles, labels, handler_map=handler_map, **kwargs)
         return ax.legend(handler_map=handler_map, **kwargs)
     else:
+        if legendax is not None:
+            _log.warning("ignoring `legendax` argument which requires `fig=None`")
         for legend in fig.legends:
             if legend is not None:
                 legend.remove()
@@ -182,6 +194,42 @@ def redraw_legend(ax, fig=None, remove_all=True, **kwargs):
                 if legend is not None:
                     legend.remove()
         return fig.legend(handler_map=handler_map, **kwargs)
+
+
+def add_subplot_labels(
+    mosaic, labelmap=None, loc="left", fontsize="medium", internal=False, **kwargs
+):
+    """Add subplot labels to axes mosaic.
+
+    Use `labelmap` to specify a dictionary that maps keys in `mosaic` to subplot labels.
+    If `labelmap` is None, the keys in `axs` will be used as the labels by default.
+
+    If `internal` is `False` (default), the axes titles will be used.
+    Otherwise, internal labels will be drawn with `ax.text`,
+    in which case `loc` must be a tuple of floats.
+
+    Any axes in `axs` corresponding to the special key `legend` are skipped.
+
+    """
+    for txt, ax in mosaic.items():
+        if txt.lower() == "legend":
+            continue
+        _txt = labelmap[txt] if labelmap is not None else txt
+        if internal:
+            trans = ScaledTranslation(10 / 72, -5 / 72, ax.figure.dpi_scale_trans)
+            ax.text(
+                *loc,
+                _txt,
+                transform=ax.transAxes + trans,
+                fontsize=fontsize,
+                bbox={
+                    "facecolor": (1.0, 1.0, 1.0, 0.3),
+                    "edgecolor": "none",
+                    "pad": 3.0,
+                },
+            )
+        else:
+            ax.set_title(_txt, loc=loc, fontsize=fontsize, **kwargs)
 
 
 def _remove_legend_symbol_transparency(handle, orig):

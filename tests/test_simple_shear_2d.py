@@ -374,7 +374,7 @@ class TestOlivineA:
         _seeds = seeds_nearX45
         n_seeds = len(_seeds)
         angles = np.empty((len(gbm_mobilities), n_seeds, len(timestamps)))
-        θ_fse = np.empty_like(timestamps)
+        θ_fse = np.zeros_like(timestamps)
         strains = timestamps * strain_rate
         M0_drexF90, M50_drexF90, M200_drexF90 = self.interp_GBM_FortranDRex(strains)
 
@@ -476,9 +476,10 @@ class TestOlivineA:
                     ["k", "k"],
                     ["none", None],
                     [
-                        "Zhang & Karato, 1995\n(1200°C)",
-                        "Zhang & Karato, 1995\n(1300°C)",
+                        "Zhang & Karato, 1995\n(1473 K)",
+                        "Zhang & Karato, 1995\n(1573 K)",
                     ],
+                    _core.MineralFabric.olivine_A,
                 )
                 # There is a lot of stuff on this legend, so put it outside the axes.
                 # These values might need to be tweaked depending on the font size, etc.
@@ -543,15 +544,16 @@ class TestOlivineA:
         shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
         strain_rate = 1
         _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", strain_rate)
-        timestamps = np.linspace(0, 5.5, 251)  # Solve until D₀t=5.5 ('shear' γ=11).
+        timestamps = np.linspace(0, 3.2, 65)  # Solve until D₀t=3.2 ('shear' γ=6.4).
         params = _io.DEFAULT_PARAMS
         params["number_of_grains"] = 5000
-        gbm_mobilities = (1, 10, 50, 125)  # Must be in ascending order.
-        markers = (".", "*", "d", "s")
+        gbm_mobilities = (0, 10, 50, 125)  # Must be in ascending order.
+        markers = ("x", "*", "1", ".")
         # Uses 100 seeds by default; use all 1000 if you have more RAM and CPU time.
         _seeds = seeds[:100]
         n_seeds = len(_seeds)
         angles = np.empty((len(gbm_mobilities), n_seeds, len(timestamps)))
+        θ_fse = np.zeros_like(timestamps)
         strains = timestamps * strain_rate
 
         optional_logging = cl.nullcontext()
@@ -563,6 +565,7 @@ class TestOlivineA:
         with optional_logging:
             clock_start = process_time()
             for m, gbm_mobility in enumerate(gbm_mobilities):
+                return_fse = True if m == 0 else False
                 params["gbm_mobility"] = gbm_mobility
                 _run = ft.partial(
                     self.run,
@@ -571,7 +574,7 @@ class TestOlivineA:
                     strain_rate,
                     get_velocity_gradient,
                     shear_direction,
-                    return_fse=False,
+                    return_fse=return_fse,
                 )
                 with Pool(processes=ncpus) as pool:
                     for s, out in enumerate(pool.imap_unordered(_run, _seeds)):
@@ -588,6 +591,11 @@ class TestOlivineA:
                                 f"{out_basepath}.npz",
                                 postfix=f"M{_io.stringify(gbm_mobility)}",
                             )
+                        if return_fse:
+                            θ_fse += fse_angles
+
+                if return_fse:
+                    θ_fse /= n_seeds
 
                 if outdir is not None:
                     labels.append(f"$M^∗$ = {params['gbm_mobility']}")
@@ -617,16 +625,31 @@ class TestOlivineA:
                     schema,
                     [[int(D * 200) for D in strains]],  # Shear strain % is 200 * D₀.
                 )
+                np.savez(
+                    _io.resolve_path(f"{out_basepath}_ensemble_means.npz"),
+                    angles=result_angles,
+                    err=result_angles_err,
+                )
+                fig = _vis.figure(
+                    figsize=(_vis.DEFAULT_FIG_WIDTH * 3, _vis.DEFAULT_FIG_HEIGHT)
+                )
                 fig, ax, colors = _vis.alignment(
-                    None,
+                    fig.add_subplot(),
                     strains,
                     result_angles,
                     markers,
                     labels,
                     err=result_angles_err,
                     θ_max=80,
+                    θ_fse=θ_fse,
                 )
-                _vis.show_Skemer2016_ShearStrainAngles(
+                (
+                    _,
+                    _,
+                    _,
+                    data_Skemer2016,
+                    indices,
+                ) = _vis.show_Skemer2016_ShearStrainAngles(
                     ax,
                     [
                         "Z&K 1200 C",
@@ -651,11 +674,27 @@ class TestOlivineA:
                     ],
                     fabric=_core.MineralFabric.olivine_A,
                 )
-                # There is a lot of stuff on this legend, so put it outside the axes.
-                # These values might need to be tweaked depending on the font size, etc.
-                _legend = _utils.redraw_legend(ax, fig=fig, bbox_to_anchor=(1.77, 0.99))
+                _legend = _utils.redraw_legend(ax, loc="upper right", ncols=3)
                 fig.savefig(
                     _io.resolve_path(f"{out_basepath}.pdf"),
                     bbox_extra_artists=(_legend,),
                     bbox_inches="tight",
+                )
+                r2vals = []
+                for angles in result_angles:
+                    _angles = PchipInterpolator(strains, angles)
+                    r2 = np.sum(
+                        [
+                            (a - b) ** 2
+                            for a, b in zip(
+                                _angles(
+                                    np.take(data_Skemer2016.shear_strain, indices) / 200
+                                ),
+                                np.take(data_Skemer2016.angle, indices),
+                            )
+                        ]
+                    )
+                    r2vals.append(r2)
+                _log.info(
+                    "Sums of squared residuals (r-values) for each M∗: %s", r2vals
                 )

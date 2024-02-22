@@ -41,28 +41,28 @@ class TestCellOlivineA:
             return
 
         fig = _vis.figure()
-        axθ = fig.add_subplot(211)
-        axF = fig.add_subplot(212, sharex=axθ)
-        fig, axθ, colors = _vis.alignment(
-            axθ,
+        mosaic = fig.subplot_mosaic([["a)"], ["b)"]], sharex=True)
+        fig, mosaic["a)"], colors = _vis.alignment(
+            mosaic["a)"],
             np.asarray([d["strains"] for d in data]),
             np.asarray([d["angles_mean"] for d in data]),
-            ("o", "v", "s", "p", "d"),
+            ("s", "o", "v", "*", "."),
             list(map(str, cls._ensemble_n_grains)),
             err=np.asarray([d["angles_err"] for d in data]),
         )
-        fig, axF, colors = _vis.alignment(
-            axF,
+        fig, mosaic["b)"], colors = _vis.alignment(
+            mosaic["b)"],
             np.asarray([d["strains"] for d in data]),
             np.asarray([d["max_sizes_mean"] for d in data]),
-            ("o", "v", "s", "p", "d"),
+            ("s", "o", "v", "*", "."),
             list(map(str, cls._ensemble_n_grains)),
             err=np.asarray([d["max_sizes_err"] for d in data]),
             θ_max=4,
         )
-        axF.set_ylabel("Max. normalized grain size ($log_{10}$)")
-        axθ.label_outer()
-        axF.get_legend().remove()
+        mosaic["b)"].set_ylabel(r"$\log_{10}(\overline{S}_{\mathrm{max}})$")
+
+        mosaic["a)"].label_outer()
+        mosaic["b)"].get_legend().remove()
         fig.savefig(
             _io.resolve_path(
                 f"{outdir}/{SUBDIR}/{cls.class_id}_xz_ensemble_combined.pdf"
@@ -166,15 +166,11 @@ class TestCellOlivineA:
                 cmap="cmc.batlow_r",
                 tick_formatter=lambda x, pos: str(x),
             )
-            fig_path.colorbar(s, ax=ax_path, aspect=25, label="strain (ε)")
+            fig_path.colorbar(s, ax=ax_path, aspect=25, label="Strain (ε)")
             fig_path.savefig(_io.resolve_path(f"{out_basepath}_path.pdf"))
             # Second figure with the angles and grain sizes at every 10 strain values.
             fig = _vis.figure()
-            ax_sizes = fig.add_subplot(2, 1, 1)
-            fig, ax_sizes, parts = _vis.grainsizes(
-                ax_sizes, strains[::10], mineral.fractions[::10]
-            )
-            axθ = fig.add_subplot(2, 1, 2, sharex=ax_sizes)
+            axθ = fig.add_subplot(2, 1, 1)
             fig, axθ, colors = _vis.alignment(
                 axθ,
                 strains,
@@ -184,8 +180,12 @@ class TestCellOlivineA:
                 colors=[strains],
                 cmaps=["cmc.batlow_r"],
             )
-            ax_sizes.label_outer()
-            fig.savefig(_io.resolve_path(f"{out_basepath}.png"))
+            ax_sizes = fig.add_subplot(2, 1, 2, sharex=axθ)
+            fig, ax_sizes, parts = _vis.grainsizes(
+                ax_sizes, strains[::10], mineral.fractions[::10]
+            )
+            axθ.label_outer()
+            fig.savefig(_io.resolve_path(f"{out_basepath}.pdf"))
 
         # Some checks for when we should have "enough" grains.
         # Based on empirical model outputs, it seems like the dip at ε ≈ 3.75 is the
@@ -256,7 +256,7 @@ class TestCellOlivineA:
                 err=angles_err,
             )
             ax_maxsize = fig.add_subplot(2, 1, 2, sharex=axθ)
-            ax_maxsize.set_ylabel(r"Max. normalized grain size ($log_{10}$)")
+            ax_maxsize.set_ylabel(r"$\log_{10}(\overline{S}_{\mathrm{max}})$")
             max_sizes_mean = np.mean(max_sizes, axis=0)
             ax_maxsize.plot(strains, max_sizes_mean, color=colors[0])
             max_sizes_err = np.std(max_sizes, axis=0)
@@ -268,7 +268,7 @@ class TestCellOlivineA:
                 color=colors[0],
             )
             axθ.label_outer()
-            fig.savefig(_io.resolve_path(f"{out_basepath}.png"))
+            fig.savefig(_io.resolve_path(f"{out_basepath}.pdf"))
             np.savez(
                 _io.resolve_path(f"{out_basepath}_data.npz"),
                 strains=strains,

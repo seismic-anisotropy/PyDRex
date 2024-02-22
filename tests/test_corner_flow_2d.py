@@ -89,6 +89,9 @@ class TestCornerOlivineA:
 
         .. note::
             This example takes about 11 CPU hours to run and uses around 60GB of RAM.
+            It is recommended to only use `ncpus=4` which matches the number of
+            pathlines, because higher numbers can lead to redundant cross-core
+            communication.
 
         """
         # Plate speed (half spreading rate), convert cm/yr to m/s.
@@ -176,7 +179,32 @@ class TestCornerOlivineA:
                         directions.append(bingham_vectors)
 
         if outdir is not None:
-            markers = ("o", "v", "s", "p")
+            np.savez(
+                f"{out_basepath}_path.npz",
+                strains_1=path_strains[0],
+                strains_2=path_strains[1],
+                strains_3=path_strains[2],
+                strains_4=path_strains[3],
+                paths_1=np.asarray(paths[0]),
+                paths_2=np.asarray(paths[1]),
+                paths_3=np.asarray(paths[2]),
+                paths_4=np.asarray(paths[3]),
+            )
+            np.savez(
+                f"{out_basepath}_strength.npz",
+                strength_1=indices[0],
+                strength_2=indices[1],
+                strength_3=indices[2],
+                strength_4=indices[3],
+            )
+            np.savez(
+                f"{out_basepath}_angles.npz",
+                angles_1=angles[0],
+                angles_2=angles[1],
+                angles_3=angles[2],
+                angles_4=angles[3],
+            )
+            markers = ("s", "o", "v", "*")
             cmaps = ["cmc.batlow_r"] * len(markers)
             fig_domain = _vis.figure(figsize=(10, 3))
             ax_domain = fig_domain.add_subplot()

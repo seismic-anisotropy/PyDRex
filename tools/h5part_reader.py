@@ -67,41 +67,46 @@ if __name__ == "__main__":
             outfile = args.output
         else:
             raise ValueError(f"can only save to NPZ format, not {args.output}")
+    # outfile_paths = outfile[:-4] + "_paths.npz"
 
-    with h5py.File(args.input) as file:
-        # Don't use the last timestep,
-        # fluidity deletes the detector and just writes empty data there.
-        n_timesteps = len(file.keys()) - 1
+    option_map = {
+        "olivine": MineralPhase.olivine,
+        "enstatite": MineralPhase.enstatite,
+        "A": MineralFabric.olivine_A,
+        "B": MineralFabric.olivine_B,
+        "C": MineralFabric.olivine_C,
+        "D": MineralFabric.olivine_D,
+        "E": MineralFabric.olivine_E,
+        "N": MineralFabric.enstatite_AB,
+    }
 
-        for particle_id in file["Step#0/id"][:]:
-            option_map = {
-                "olivine": MineralPhase.olivine,
-                "enstatite": MineralPhase.enstatite,
-                "A": MineralFabric.olivine_A,
-                "B": MineralFabric.olivine_B,
-                "C": MineralFabric.olivine_C,
-                "D": MineralFabric.olivine_D,
-                "E": MineralFabric.olivine_E,
-                "N": MineralFabric.enstatite_AB,
-            }
+    with h5py.File(args.input) as infile:
+        for particle_id in infile["Step#0/id"][:]:
+            # Fluidity writes empty arrays to the particle data after they are deleted.
+            # We need only the timesteps before deletion of this particle.
+            steps = []
+            for k in sorted(list(infile.keys()), key=lambda s: int(s.lstrip("Step#"))):
+                if infile[f"{k}/x"].shape[0] >= particle_id:
+                    steps.append(k)
 
             # Temporary data arrays.
+            n_timesteps = len(steps)
             x = np.zeros(n_timesteps)
             y = np.zeros(n_timesteps)
             z = np.zeros(n_timesteps)
             orientations = np.empty((n_timesteps, args.ngrains, 3, 3))
             fractions = np.empty((n_timesteps, args.ngrains))
 
-            for t in range(n_timesteps):
+            for t, k in enumerate(steps):
                 # Extract particle position.
-                x[t] = file[f"Step#{t}/x"][particle_id - 1]
-                y[t] = file[f"Step#{t}/y"][particle_id - 1]
-                z[t] = file[f"Step#{t}/z"][particle_id - 1]
+                x[t] = infile[f"{k}/x"][particle_id - 1]
+                y[t] = infile[f"{k}/y"][particle_id - 1]
+                z[t] = infile[f"{k}/z"][particle_id - 1]
 
                 # Extract CPO data.
                 vals = np.empty(args.ngrains * 10)
                 for n in range(len(vals)):
-                    vals[n] = file[f"Step#{t}/CPO{n+1}"][particle_id - 1]
+                    vals[n] = infile[f"{k}/CPO_{n+1}"][particle_id - 1]
 
                 orientations[t] = np.array(
                     [
@@ -124,10 +129,12 @@ if __name__ == "__main__":
             mineral.fractions = _fractions
             mineral.orientations = _orientations
             mineral.save(outfile, postfix=_postfix)
-            archive = ZipFile(outfile, mode="a", allowZip64=True)
-            for key, data in zip(("x", "y", "z"), (x, y, z)):
-                with archive.open(f"{key}_{_postfix}", "w", force_zip64=True) as file:
-                    buffer = io.BytesIO()
-                    np.save(buffer, data)
-                    file.write(buffer.getvalue())
-                    buffer.close()
+            np.savez(outfile[:-4] + f"_path_{_postfix}.npz", x=x, y=y, z=z)
+            # FIXME: Why is this not working??
+            # archive = ZipFile(outfile_paths, mode="a", allowZip64=True)
+            # for key, data in zip(("x", "y", "z"), (x, y, z)):
+            #     with archive.open(f"{key}_{_postfix}", "w", force_zip64=True) as file:
+            #         buffer = io.BytesIO()
+            #         np.save(buffer, data)
+            #         file.write(buffer.getvalue())
+            #         buffer.close()
