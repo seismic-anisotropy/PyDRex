@@ -156,7 +156,7 @@ def redraw_legend(ax, fig=None, legendax=None, remove_all=True, **kwargs):
             return legendax.legend(handles, labels, handler_map=handler_map, **kwargs)
         return ax.legend(handler_map=handler_map, **kwargs)
     else:
-        if legendax is None:
+        if legendax is not None:
             _log.warning("ignoring `legendax` argument which requires `fig=None`")
         for legend in fig.legends:
             if legend is not None:
@@ -178,19 +178,16 @@ def add_subplot_labels(
     If `labelmap` is None, the keys in `axs` will be used as the labels by default.
 
     If `internal` is `False` (default), the axes titles will be used.
-    Otherwise, internal lables will be drawn with `ax.text`,
+    Otherwise, internal labels will be drawn with `ax.text`,
     in which case `loc` must be a tuple of floats.
 
-    Any axes in `axs` corresponding to the special key `"legend"` are skipped.
+    Any axes in `axs` corresponding to the special key `legend` are skipped.
 
     """
     for txt, ax in mosaic.items():
         if txt.lower() == "legend":
             continue
-        if labelmap is not None:
-            _txt = labelmap[txt]
-        else:
-            _txt = txt
+        _txt = labelmap[txt] if labelmap is not None else txt
         if internal:
             trans = ScaledTranslation(10 / 72, -5 / 72, ax.figure.dpi_scale_trans)
             ax.text(

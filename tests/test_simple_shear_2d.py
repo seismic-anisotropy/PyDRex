@@ -570,10 +570,7 @@ class TestOlivineA:
         with optional_logging:
             clock_start = process_time()
             for m, gbm_mobility in enumerate(gbm_mobilities):
-                if m == 0:
-                    return_fse = True
-                else:
-                    return_fse = False
+                return_fse = True if m == 0 else False
                 params["gbm_mobility"] = gbm_mobility
                 _run = ft.partial(
                     self.run,

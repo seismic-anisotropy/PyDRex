@@ -518,7 +518,7 @@ def spin(
     rotation_rates,
     target_initial_angles=None,
     target_rotation_rates=None,
-    labels=None,
+    labels=("target", "computed"),
     shear_axis=None,
 ):
     """Plot rotation rates of grains with known, unique initial [100] angles from X.
@@ -532,8 +532,6 @@ def spin(
     the data series plots.
 
     """
-    if labels is None:
-        labels = ("target", "computed")
     fig, ax = figure_unless(ax)
     ax.set_ylabel("Rotation rate (°/s)")
     ax.set_xlabel("Initial [100] angle (°)")
@@ -575,7 +573,7 @@ def growth(
     fractions_diff,
     target_initial_angles=None,
     target_fractions_diff=None,
-    labels=None,
+    labels=("target", "computed"),
     shear_axis=None,
 ):
     """Plot grain growth of grains with known, unique initial [100] angles from X.
@@ -589,8 +587,6 @@ def growth(
     the data series plots.
 
     """
-    if labels is None:
-        labels = ("target", "computed")
     fig, ax = figure_unless(ax)
     ax.set_ylabel("Grain growth rate (s⁻¹)")
     ax.set_xlabel("Initial [100] angle (°)")

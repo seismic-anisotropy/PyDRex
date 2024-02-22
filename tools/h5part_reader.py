@@ -82,7 +82,7 @@ if __name__ == "__main__":
 
     with h5py.File(args.input) as infile:
         for particle_id in infile["Step#0/id"][:]:
-            # Fluidity writes empty arrays after deleting detectors (particles).
+            # Fluidity writes empty arrays to the particle data after they are deleted.
             # We need only the timesteps before deletion of this particle.
             steps = []
             for k in sorted(list(infile.keys()), key=lambda s: int(s.lstrip("Step#"))):
