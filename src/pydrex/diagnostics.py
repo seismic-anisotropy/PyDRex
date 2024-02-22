@@ -226,7 +226,7 @@ def finite_strain(deformation_gradient, driver="ev"):
     return np.sqrt(B_λ[-1]) - 1, B_v[:, -1]
 
 
-def symmetry(orientations, axis="a"):
+def symmetry_pgr(orientations, axis="a"):
     r"""Compute texture symmetry eigenvalue diagnostics from grain orientation matrices.
 
     Compute Point, Girdle and Random symmetry diagnostics

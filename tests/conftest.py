@@ -70,8 +70,8 @@ class PytestConsoleLogger(LoggingPlugin):
         terminal_reporter = config.pluginmanager.get_plugin("terminalreporter")
         capture_manager = config.pluginmanager.get_plugin("capturemanager")
         handler = _LiveLoggingStreamHandler(terminal_reporter, capture_manager)
-        handler.setFormatter(_log.LOGGER_CONSOLE.formatter)
-        handler.setLevel(_log.LOGGER_CONSOLE.level)
+        handler.setFormatter(_log.CONSOLE_LOGGER.formatter)
+        handler.setLevel(_log.CONSOLE_LOGGER.level)
         self.log_cli_handler = handler
 
     # Override original, which tries to delete some silly globals that we aren't
@@ -102,8 +102,8 @@ def pytest_configure(config):
         terminal_reporter = config.pluginmanager.get_plugin("terminalreporter")
         capture_manager = config.pluginmanager.get_plugin("capturemanager")
         handler = _LiveLoggingStreamHandler(terminal_reporter, capture_manager)
-        handler.setFormatter(_log.LOGGER_CONSOLE.formatter)
-        handler.setLevel(_log.LOGGER_CONSOLE.level)
+        handler.setFormatter(_log.CONSOLE_LOGGER.formatter)
+        handler.setLevel(_log.CONSOLE_LOGGER.level)
         _log.LOGGER_PYTEST = handler
         config.pluginmanager.register(
             PytestConsoleLogger(config), PytestConsoleLogger.name
@@ -148,7 +148,7 @@ def console_handler(request):
         return request.config.pluginmanager.get_plugin(
             "pytest-console-logger"
         ).log_cli_handler
-    return _log.LOGGER_CONSOLE
+    return _log.CONSOLE_LOGGER
 
 
 @pytest.fixture
