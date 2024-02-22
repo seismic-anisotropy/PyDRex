@@ -1,6 +1,7 @@
 """> PyDRex: tests for texture diagnostics."""
-import pytest
+
 import numpy as np
+import pytest
 from numpy import random as rn
 from scipy.spatial.transform import Rotation
 

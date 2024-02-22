@@ -19,14 +19,14 @@ r"""> PyDRex: Methods to calculate texture and strain diagnostics.
 import functools as ft
 from multiprocessing import Pool
 
-import numpy as np
 import numba as nb
+import numpy as np
 import scipy.linalg as la
 
-from pydrex import stats as _stats
-from pydrex import tensors as _tensors
 from pydrex import geometry as _geo
 from pydrex import logger as _log
+from pydrex import stats as _stats
+from pydrex import tensors as _tensors
 from pydrex import utils as _utils
 
 

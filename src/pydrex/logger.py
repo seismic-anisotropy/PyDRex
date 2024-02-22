@@ -51,6 +51,7 @@ with _log.logfile_enable("my_log_file.log"):  # Overwrite existing file unless m
 ```
 
 """
+
 import contextlib as cl
 import functools as ft
 import logging

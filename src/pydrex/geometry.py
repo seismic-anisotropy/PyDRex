@@ -1,5 +1,7 @@
 """> PyDRex: Functions for geometric coordinate conversions and projections."""
+
 from enum import Enum, unique
+
 import numpy as np
 from scipy import linalg as la
 from scipy.spatial.transform import Rotation

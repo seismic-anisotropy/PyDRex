@@ -1,15 +1,14 @@
 """> PyDRex: Miscellaneous utility methods."""
 
-from datetime import datetime
-import subprocess
 import os
 import platform
+import subprocess
 
-from matplotlib.pyplot import Line2D
-from matplotlib.collections import PathCollection
-from matplotlib.legend_handler import HandlerPathCollection, HandlerLine2D
 import numba as nb
 import numpy as np
+from matplotlib.collections import PathCollection
+from matplotlib.legend_handler import HandlerLine2D, HandlerPathCollection
+from matplotlib.pyplot import Line2D
 
 
 @nb.njit(fastmath=True)

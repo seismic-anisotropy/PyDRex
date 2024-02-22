@@ -1,14 +1,13 @@
 from time import perf_counter
 
-import numpy as np
 import numba as nb
+import numpy as np
 
 from pydrex import core as _core
 from pydrex import diagnostics as _diagnostics
 from pydrex import io as _io
 from pydrex import minerals as _minerals
 from pydrex import velocity as _velocity
-
 
 shear_direction = np.array([0.0, 1.0, 0.0])
 strain_rate = 1e-4

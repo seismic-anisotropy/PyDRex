@@ -114,6 +114,7 @@ A draft of the input file spec is shown below:
 ```
 
 """
+
 from pydrex.core import (
     DeformationRegime,
     MineralFabric,
@@ -123,16 +124,16 @@ from pydrex.core import (
 )
 from pydrex.diagnostics import (
     bingham_average,
-    misorientation_index,
-    misorientation_indices,
     coaxial_index,
     finite_strain,
+    misorientation_index,
+    misorientation_indices,
     smallest_angle,
     symmetry,
 )
 from pydrex.geometry import (
-    misorientation_angles,
     lambert_equal_area,
+    misorientation_angles,
     poles,
     shirley_concentric_squaredisk,
     to_cartesian,

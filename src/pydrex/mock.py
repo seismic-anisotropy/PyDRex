@@ -1,4 +1,5 @@
 """> PyDRex: Mock objects for testing and reproducibility."""
+
 from pydrex.core import MineralFabric
 
 PARAMS_FRATERS2021 = {

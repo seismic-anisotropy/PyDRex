@@ -12,6 +12,7 @@ the `data/` folder of the source repository. For supported cell types, see
 `SCSV_TYPEMAP`.
 
 """
+
 import collections as c
 import csv
 import functools as ft
@@ -21,9 +22,9 @@ import pathlib
 import tomllib
 from importlib.resources import files
 
-import yaml
 import meshio
 import numpy as np
+import yaml
 
 from pydrex import core as _core
 from pydrex import exceptions as _err
