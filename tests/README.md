@@ -8,14 +8,29 @@ The custom optional flag `--outdir="OUT"` is recommended
 to produce output figures, data dumps and logs and save them in the directory `"OUT"`.
 The value `"."` can be used to save these in the current directory.
 
+In total, the following custom pytest command line flags are defined by PyDRex:
+- `--outdir` (described above)
+- `--runbig` (enable tests which require a large amount of RAM)
+- `--runslow` (enable slow tests which require HPC resources, implies `--runbig`)
+- `--ncpus` (number of CPU cores to use for shared memory multiprocessing, set to one less than the available maximum by default)
+- `--fontsize` (Matplotlib `rcParams["font.size"]`)
+- `--markersize` (Matplotlib `rcParams["lines.markersize"]`)
+- `--linewidth` (Matplotlib `rcParams["lines.linewidth"]`)
+
 Tests which require a “significant” amount of memory (<16GB RAM) are disabled by default.
 To fully check the functionality of the code, it is recommended to run these locally
 by using the `--runbig` flag before moving to larger simulations.
-To mark a test as “big”, add the `@pytest.mark.big` decorator above its method definition.
 
 Long tests/examples are also disabled by default and can be enabled with `--runslow`.
 It is recommended to run these on a HPC cluster infrastructure (>100GB RAM, >46 cores).
 To mark a test as slow, add the `@pytest.mark.slow` decorator above its method definition.
+The number of cores to use for shared memory multiprocessing can be specified with `--ncpus`.
+
+## Writing tests
+
+- To mark a test as “big”, add the `@pytest.mark.big` decorator above its method definition.
+
+- To mark a test as “slow”, add the `@pytest.mark.slow` decorator above its method definition.
 
 Tests should not produce persistent output by default.
 If a test method can produce such output for debugging or visualisation,
