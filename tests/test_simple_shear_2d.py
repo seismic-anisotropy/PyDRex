@@ -1,4 +1,5 @@
 """> PyDRex: 2D simple shear tests."""
+
 import contextlib as cl
 import functools as ft
 from multiprocessing import Pool
@@ -303,10 +304,7 @@ class TestOlivineA:
                 if outdir is not None:
                     labels.append(f"$M^∗$ = {gbm_mobility}")
 
-            _log.info(
-                "elapsed CPU time: %s",
-                _utils.readable_timestamp(np.abs(process_time() - clock_start)),
-            )
+            _log.info("elapsed CPU time: %s", np.abs(process_time() - clock_start))
 
         # Take ensemble means and optionally plot figure.
         strains = timestamps * strain_rate
@@ -428,10 +426,7 @@ class TestOlivineA:
                 if outdir is not None:
                     labels.append(f"$M^∗$ = {params['gbm_mobility']}")
 
-            _log.info(
-                "elapsed CPU time: %s",
-                _utils.readable_timestamp(np.abs(process_time() - clock_start)),
-            )
+            _log.info("elapsed CPU time: %s", np.abs(process_time() - clock_start))
 
             # Take ensemble means and optionally plot figure.
             _log.info("postprocessing results...")
@@ -605,10 +600,7 @@ class TestOlivineA:
                 if outdir is not None:
                     labels.append(f"$M^∗$ = {params['gbm_mobility']}")
 
-            _log.info(
-                "elapsed CPU time: %s",
-                _utils.readable_timestamp(np.abs(process_time() - clock_start)),
-            )
+            _log.info("elapsed CPU time: %s", np.abs(process_time() - clock_start))
 
             # Take ensemble means and optionally plot figure.
             _log.info("postprocessing results...")

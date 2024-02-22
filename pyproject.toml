@@ -87,6 +87,6 @@ exclude = [
     ".npz",
     ".vtu",
 ]
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "src/pydrex/__init__.py" = ["F401", "E501"]  # Don't complain about unused imports or long lines in __init__.py file.
 "tests/test_scsv.py" = ["E501"]  # Don't complain about long lines here.

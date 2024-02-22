@@ -1,20 +1,20 @@
 """> PyDRex: Simple shear 3D tests."""
+
 import contextlib as cl
-import numpy as np
+import functools as ft
 from multiprocessing import Pool
 from time import process_time
-import functools as ft
 
+import numpy as np
 import pytest
 
 from pydrex import core as _core
+from pydrex import diagnostics as _diagnostics
+from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
-from pydrex import velocity as _velocity
 from pydrex import stats as _stats
-from pydrex import diagnostics as _diagnostics
-from pydrex import utils as _utils
-from pydrex import io as _io
+from pydrex import velocity as _velocity
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "3d_simple_shear"
@@ -206,10 +206,7 @@ class TestFraters2021:
                         ]
                     )
 
-            _log.info(
-                "elapsed CPU time: %s",
-                _utils.readable_timestamp(np.abs(process_time() - clock_start)),
-            )
+            _log.info("elapsed CPU time: %s", np.abs(process_time() - clock_start))
             _log.info("calculating ensemble averages...")
             olA_from_proj_XZ_mean = olA_from_proj_XZ.mean(axis=0)
             olA_from_proj_XZ_err = olA_from_proj_XZ.std(axis=0)

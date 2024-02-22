@@ -1,11 +1,12 @@
 """> PyDRex: Visualisation functions for test outputs and examples."""
+
 import numpy as np
+from cmcrameri import cm as cmc
 from matplotlib import projections as mproj
 from matplotlib import pyplot as plt
-from cmcrameri import cm as cmc
 
-from pydrex import core as _core
 from pydrex import axes as _axes
+from pydrex import core as _core
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import utils as _utils

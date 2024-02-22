@@ -15,16 +15,18 @@ r"""> PyDRex: Methods to calculate texture and strain diagnostics.
     grain axis and the j-th external axis (in the global Eulerian frame).
 
 """
+
 import functools as ft
 from multiprocessing import Pool
 
+import numba as nb
 import numpy as np
 import scipy.linalg as la
 
-from pydrex import stats as _stats
-from pydrex import tensors as _tensors
 from pydrex import geometry as _geo
 from pydrex import logger as _log
+from pydrex import stats as _stats
+from pydrex import tensors as _tensors
 from pydrex import utils as _utils
 
 
@@ -207,7 +209,7 @@ def bingham_average(orientations, axis="a"):
     return mean_vector / la.norm(mean_vector)
 
 
-def finite_strain(deformation_gradient, **kwargs):
+def finite_strain(deformation_gradient, driver="ev"):
     """Extract measures of finite strain from the deformation gradient.
 
     Extracts the largest principal strain value and the vector defining the axis of
@@ -218,7 +220,7 @@ def finite_strain(deformation_gradient, **kwargs):
     # Get eigenvalues and eigenvectors of the left stretch (Cauchy-Green) tensor.
     B_λ, B_v = la.eigh(
         deformation_gradient @ deformation_gradient.transpose(),
-        driver=kwargs.pop("driver", "ev"),
+        driver=driver,
     )
     # Stretch ratio is sqrt(λ) - 1, the (-1) is so that undeformed strain is 0 not 1.
     return np.sqrt(B_λ[-1]) - 1, B_v[:, -1]
@@ -265,7 +267,11 @@ def symmetry(orientations, axis="a"):
 
 
 def misorientation_indices(
-    orientation_stack, system: _geo.LatticeSystem, bins=None, ncpus=None, pool=None,
+    orientation_stack,
+    system: _geo.LatticeSystem,
+    bins=None,
+    ncpus=None,
+    pool=None,
 ):
     """Calculate M-indices for a series of polycrystal textures.
 
@@ -312,7 +318,7 @@ def misorientation_index(orientations, system: _geo.LatticeSystem, bins=None):
     See `_geo.LatticeSystem` for supported systems.
 
     .. warning::
-        This method must be able to allocate an array of shape 
+        This method must be able to allocate an array of shape
         $ \frac{N!}{2(N-2)!}× M^{2} $
         for N the length of `orientations` and M the number of symmetry operations for
         the given `system`.
@@ -354,6 +360,7 @@ def coaxial_index(orientations, axis1="b", axis2="a"):
     return 0.5 * (2 - (P1 / (G1 + P1)) - (G2 / (G2 + P2)))
 
 
+@nb.njit(fastmath=True)
 def smallest_angle(vector, axis, plane=None):
     """Get smallest angle between a unit `vector` and a bidirectional `axis`.
 
@@ -363,13 +370,19 @@ def smallest_angle(vector, axis, plane=None):
 
     """
     if plane is not None:
-        _plane = np.asarray(plane)
-        _vector = np.asarray(vector) - _plane * np.dot(vector, _plane)
+        _vector = vector - plane * np.dot(vector, plane)
     else:
-        _vector = np.asarray(vector)
+        _vector = vector
     angle = np.rad2deg(
         np.arccos(
-            np.clip(np.dot(_vector, axis) / (la.norm(_vector) * la.norm(axis)), -1, 1)
+            np.clip(
+                np.asarray(  # https://github.com/numba/numba/issues/3469
+                    np.dot(_vector, axis)
+                    / (np.linalg.norm(_vector) * np.linalg.norm(axis))
+                ),
+                -1,
+                1,
+            )
         )
     )
     if angle > 90:

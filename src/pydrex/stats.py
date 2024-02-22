@@ -1,9 +1,10 @@
 """> PyDRex: Statistical methods for orientation and elasticity data."""
+
 import itertools as it
 
-from scipy.spatial.transform import Rotation
 import numpy as np
 import scipy.special as sp
+from scipy.spatial.transform import Rotation
 
 from pydrex import geometry as _geo
 from pydrex import logger as _log

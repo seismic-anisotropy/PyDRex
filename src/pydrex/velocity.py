@@ -5,6 +5,7 @@ For the sake of consistency, all callables returned from methods in this module 
 can be directly used as arguments to e.g. `pydrex.minerals.Mineral.update_orientations`.
 
 """
+
 import functools as ft
 
 import numba as nb
@@ -71,7 +72,7 @@ def _corner_2d_grad(x, horizontal=0, vertical=2, plate_speed=1):
     if np.abs(h) < 1e-15 and np.abs(v) < 1e-15:
         return np.full((3, 3), np.nan)
     grad_v = np.zeros((3, 3))
-    prefactor = 4 * plate_speed / (np.pi * (h**2 + v**2)**2)
+    prefactor = 4 * plate_speed / (np.pi * (h**2 + v**2) ** 2)
     grad_v[horizontal, horizontal] = -(h**2) * v
     grad_v[horizontal, vertical] = h**3
     grad_v[vertical, horizontal] = -h * v**2

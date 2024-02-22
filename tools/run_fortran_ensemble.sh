@@ -9,6 +9,7 @@ usage() {
     echo 'Run ensemble of simple shear A-type olivine runs using'
     echo ' ./drex_forward_simpleshear.f90'
 }
+warn() { >&2 printf '%s\n' "$SCRIPTNAME: $1"; }
 is_command() {
     if 1>/dev/null 2>&1 command -v "$1"; then
         return 0

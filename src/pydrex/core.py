@@ -9,6 +9,7 @@ crystallographic rotation rate and changes in fractional grain volumes.
     normalised to the stress required to initiate slip on the softest slip system
 
 """
+
 from enum import IntEnum, unique
 
 import numba as nb

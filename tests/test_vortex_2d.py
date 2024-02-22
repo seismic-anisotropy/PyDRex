@@ -1,18 +1,20 @@
 """> PyDRex: tests for CPO stability in 2D vortex and Stokes cell flows."""
-import numpy as np
-import pytest
+
 import functools as ft
 from multiprocessing import Pool
+
+import numpy as np
+import pytest
 
 from pydrex import core as _core
 from pydrex import diagnostics as _diagnostics
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
+from pydrex import pathlines as _path
 from pydrex import utils as _utils
 from pydrex import velocity as _velocity
 from pydrex import visualisation as _vis
-from pydrex import pathlines as _path
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "2d_vortex"

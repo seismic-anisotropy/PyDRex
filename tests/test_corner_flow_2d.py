@@ -1,7 +1,8 @@
 """> PyDRex: 2D corner flow tests."""
+
 import contextlib as cl
-import pathlib as pl
 import functools as ft
+import pathlib as pl
 from multiprocessing import Pool
 from time import perf_counter
 
@@ -16,9 +17,9 @@ from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import pathlines as _path
 from pydrex import stats as _stats
-from pydrex import visualisation as _vis
-from pydrex import velocity as _velocity
 from pydrex import utils as _utils
+from pydrex import velocity as _velocity
+from pydrex import visualisation as _vis
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "2d_cornerflow"
@@ -163,10 +164,7 @@ class TestCornerOlivineA:
                         )
                         bingham_vectors[idx] = direction_mean
 
-                    _log.debug(
-                        "Total walltime: %s",
-                        _utils.readable_timestamp(perf_counter() - _begin),
-                    )
+                    _log.debug("Total walltime: %s", perf_counter() - _begin)
 
                     if outdir is not None:
                         labels.append(rf"$z_{{f}}$ = {z_exit/1e3:.1f} km")

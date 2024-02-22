@@ -1,4 +1,5 @@
 """> PyDRex: Entry points for command line tools."""
+
 import argparse
 import os
 from collections import namedtuple
@@ -79,8 +80,8 @@ class PoleFigureVisualiser:
                     i_range = range(0, 25)
 
             orientations_resampled, _ = _stats.resample_orientations(
-                mineral.orientations[i_range.start:i_range.stop:i_range.step],
-                mineral.fractions[i_range.start:i_range.stop:i_range.step],
+                mineral.orientations[i_range.start : i_range.stop : i_range.step],
+                mineral.fractions[i_range.start : i_range.stop : i_range.step],
             )
             if args.scsv is None:
                 strains = None

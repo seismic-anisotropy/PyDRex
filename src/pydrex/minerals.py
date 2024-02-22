@@ -6,6 +6,7 @@
     leading to an overall anisotropic orientation distribution
 
 """
+
 import io
 from dataclasses import dataclass, field
 from zipfile import ZipFile
@@ -20,6 +21,7 @@ from pydrex import exceptions as _err
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import tensors as _tensors
+from pydrex import utils as _utils
 
 OLIVINE_STIFFNESS = np.array(
     [
@@ -123,9 +125,9 @@ def voigt_averages(minerals, weights):
                 match mineral.phase:
                     case _core.MineralPhase.olivine:
                         if "olivine" not in elastic_tensors:
-                            elastic_tensors[
-                                "olivine"
-                            ] = _tensors.voigt_to_elastic_tensor(OLIVINE_STIFFNESS)
+                            elastic_tensors["olivine"] = (
+                                _tensors.voigt_to_elastic_tensor(OLIVINE_STIFFNESS)
+                            )
                         average_tensors[i] += _tensors.elastic_tensor_to_voigt(
                             _tensors.rotate(
                                 elastic_tensors["olivine"],
@@ -136,9 +138,9 @@ def voigt_averages(minerals, weights):
                         )
                     case _core.MineralPhase.enstatite:
                         if "enstatite" not in elastic_tensors:
-                            elastic_tensors[
-                                "enstatite"
-                            ] = _tensors.voigt_to_elastic_tensor(ENSTATITE_STIFFNESS)
+                            elastic_tensors["enstatite"] = (
+                                _tensors.voigt_to_elastic_tensor(ENSTATITE_STIFFNESS)
+                            )
                         average_tensors[i] += _tensors.elastic_tensor_to_voigt(
                             _tensors.rotate(
                                 elastic_tensors["enstatite"],
@@ -334,22 +336,6 @@ class Mineral:
 
         # ===== Set up callables for the ODE solver and internal processing =====
 
-        def extract_vars(y):
-            # TODO: Check if we can avoid .copy() here.
-            deformation_gradient = y[:9].copy().reshape((3, 3))
-            orientations = (
-                y[9 : self.n_grains * 9 + 9]
-                .copy()
-                .reshape((self.n_grains, 3, 3))
-                .clip(-1, 1)
-            )
-            # TODO: Check if we can avoid .copy() here.
-            fractions = (
-                y[self.n_grains * 9 + 9 : self.n_grains * 10 + 9].copy().clip(0, None)
-            )
-            fractions /= fractions.sum()
-            return deformation_gradient, orientations, fractions
-
         def eval_rhs(t, y):
             """Evaluate right hand side of the D-Rex PDE."""
             # assert not np.any(np.isnan(y)), y[np.isnan(y)].shape
@@ -371,7 +357,9 @@ class Mineral:
 
             strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
             strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
-            deformation_gradient, orientations, fractions = extract_vars(y)
+            deformation_gradient, orientations, fractions = _utils.extract_vars(
+                y, self.n_grains
+            )
             # Uses nondimensional values of strain rate and velocity gradient.
             orientations_diff, fractions_diff = _core.derivatives(
                 phase=self.phase,
@@ -395,26 +383,6 @@ class Mineral:
                 )
             )
 
-        def apply_gbs(orientations, fractions, config):
-            """Apply grain boundary sliding for small grains."""
-            mask = fractions < (config["gbs_threshold"] / self.n_grains)
-            # _log.debug(
-            #     "grain boundary sliding activity (volume percentage): %s",
-            #     len(np.nonzero(mask)) / len(fractions),
-            # )
-            # No rotation: carry over previous orientations.
-            orientations[mask, :, :] = self.orientations[-1][mask, :, :]
-            fractions[mask] = config["gbs_threshold"] / self.n_grains
-            fractions /= fractions.sum()
-            # _log.debug(
-            #     "grain volume fractions: median=%e, min=%e, max=%e, sum=%e",
-            #     np.median(fractions),
-            #     np.min(fractions),
-            #     np.max(fractions),
-            #     np.sum(fractions),
-            # )
-            return orientations, fractions
-
         def perform_step(solver):
             """Perform SciPy solver step and appropriate processing."""
             message = solver.step()
@@ -424,8 +392,16 @@ class Mineral:
             #     "%s step_size=%e", solver.__class__.__qualname__, solver.step_size
             # )
 
-            deformation_gradient, orientations, fractions = extract_vars(solver.y)
-            orientations, fractions = apply_gbs(orientations, fractions, config)
+            deformation_gradient, orientations, fractions = _utils.extract_vars(
+                solver.y, self.n_grains
+            )
+            orientations, fractions = _utils.apply_gbs(
+                orientations,
+                fractions,
+                config["gbs_threshold"],
+                self.orientations[-1],
+                self.n_grains,
+            )
             solver.y[9:] = np.hstack((orientations.flatten(), fractions))
 
         # ===== Initialise and run the solver using the above callables =====
@@ -469,7 +445,9 @@ class Mineral:
             perform_step(solver)
 
         # Extract final values for this simulation step, append to storage.
-        deformation_gradient, orientations, fractions = extract_vars(solver.y.squeeze())
+        deformation_gradient, orientations, fractions = _utils.extract_vars(
+            solver.y.squeeze(), self.n_grains
+        )
         self.orientations.append(orientations)
         self.fractions.append(fractions)
         return deformation_gradient
