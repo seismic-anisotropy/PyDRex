@@ -1,0 +1,397 @@
+<?xml version='1.0' encoding='utf-8'?>
+<fluidity_options>
+  <simulation_name>
+    <string_value lines="1">corner_flow_2d</string_value>
+  </simulation_name>
+  <problem_type>
+    <string_value lines="1">stokes</string_value>
+  </problem_type>
+  <geometry>
+    <dimension>
+      <integer_value rank="0">2</integer_value>
+    </dimension>
+    <mesh name="CoordinateMesh">
+      <from_file file_name="corner_flow_2d">
+        <format name="gmsh"/>
+        <stat>
+          <include_in_stat/>
+        </stat>
+      </from_file>
+    </mesh>
+    <mesh name="VelocityMesh">
+      <from_mesh>
+        <mesh name="CoordinateMesh"/>
+        <mesh_shape>
+          <polynomial_degree>
+            <integer_value rank="0">2</integer_value>
+          </polynomial_degree>
+        </mesh_shape>
+        <stat>
+          <exclude_from_stat/>
+        </stat>
+      </from_mesh>
+    </mesh>
+    <mesh name="VelocityGradientMesh">
+      <from_mesh>
+        <mesh name="CoordinateMesh"/>
+        <mesh_shape>
+          <polynomial_degree>
+            <integer_value rank="0">1</integer_value>
+          </polynomial_degree>
+        </mesh_shape>
+        <mesh_continuity>
+          <string_value>discontinuous</string_value>
+        </mesh_continuity>
+        <stat>
+          <exclude_from_stat/>
+        </stat>
+      </from_mesh>
+    </mesh>
+    <quadrature>
+      <degree>
+        <integer_value rank="0">6</integer_value>
+      </degree>
+    </quadrature>
+  </geometry>
+  <io>
+    <dump_format>
+      <string_value>vtk</string_value>
+    </dump_format>
+    <dump_period>
+      <constant>
+        <real_value rank="0">1e13</real_value>
+      </constant>
+    </dump_period>
+    <output_mesh name="CoordinateMesh"/>
+    <stat/>
+  </io>
+  <particles>
+    <particle_group name="PyDRex">
+      <particle_io>
+        <dump_period>
+          <constant>
+            <real_value rank="0">1e13</real_value>
+          </constant>
+        </dump_period>
+      </particle_io>
+      <particle_subgroup name="pydrex_cornerflow">
+        <initial_position>
+          <python>
+            <string_value type="code" language="python" lines="20">def val(t):
+    from corner_flow_2d import INITIAL_POSITIONS
+
+    return INITIAL_POSITIONS</string_value>
+          </python>
+        </initial_position>
+        <attributes>
+          <scalar_attribute_array name="CPO_">
+            <dimension>
+              <integer_value rank="0">50021</integer_value>
+              <comment>= n_grains (PyDRex) + 21</comment>
+            </dimension>
+            <initial_attribute_value>
+              <python_fields>
+                <string_value type="code" language="python" lines="20">def val(X, t, dt, fields, n):
+    import numpy as np
+    import pydrex
+
+    # Construct 3D position vector.
+    position = np.asarray(X) if len(X) == 3 else np.insert(X, 1, 0)
+    # Create new mineral with random initial orientations and undeformed initial state.
+    # The extra 21 values are: a 3-component position vector,
+    # a 3x3 array to store previous velocity gradients (for interpolation) and
+    # a 3x3 array to store the (Lagrangian) deformation gradient.
+    n_grains = int((n - 21) / 10)  # Divide by 10 because: 3x3 orientation matrix + 1 'surrogate grain' size
+    mineral = pydrex.Mineral(n_grains=n_grains)
+    return np.hstack(
+        (position, np.zeros(9), np.eye(3).flatten(), mineral.orientations[-1].flatten(), mineral.fractions[-1])
+    )</string_value>
+              </python_fields>
+            </initial_attribute_value>
+            <attribute_value>
+              <python_fields>
+                <string_value type="code" language="python" lines="20">def val(X, t, dt, fields, n):
+    import numpy as np
+    import pydrex
+
+    from corner_flow_2d import gen_interp_position, gen_interp_velocity_grad, PARAMS
+
+    # Unpack values from previous step and create Mineral.
+    cpo_prev = fields["old%CPO_"]
+    position_prev = cpo_prev[:3]
+    velocity_gradient_prev = cpo_prev[3:12].reshape(3, 3)
+    deformation_gradient_prev = cpo_prev[12:21].reshape(3, 3)
+
+    n_grains = int((n - 21) / 10)
+    orientations_prev = cpo_prev[21:-n_grains].reshape(n_grains, 3, 3)
+    fractions_prev = cpo_prev[-n_grains:]
+
+    mineral = pydrex.Mineral(
+        fractions_init=fractions_prev,
+        orientations_init=orientations_prev,
+        n_grains=n_grains,
+    )
+
+    # Construct 3D velocity gradient matrix and position vector.
+    position = np.asarray(X) if len(X) == 3 else np.insert(X, 1, 0)
+    velocity_gradient = fields["VelocityGradient"]
+    if velocity_gradient.shape == (2, 2):
+        velocity_gradient = np.insert(
+            np.insert(velocity_gradient, [1], 0, axis=0), [1], 0, axis=1
+        )
+    assert velocity_gradient.shape == (3, 3), f"velocity gradient has shape: {velocity_gradient.shape}"
+
+    deformation_gradient = mineral.update_orientations(
+        PARAMS,
+        deformation_gradient_prev,
+        gen_interp_velocity_grad(velocity_gradient_prev, velocity_gradient, t, dt),
+        (t - dt, t, gen_interp_position(position_prev, position, t, dt)),
+    )
+    return np.hstack((
+        position,
+        velocity_gradient.flatten(),
+        deformation_gradient.flatten(),
+        mineral.orientations[-1].flatten(),
+        mineral.fractions[-1],
+    ))</string_value>
+                <store_old_attribute/>
+              </python_fields>
+            </attribute_value>
+          </scalar_attribute_array>
+        </attributes>
+      </particle_subgroup>
+    </particle_group>
+    <moving_outside_domain>
+      <delete_outside_domain/>
+    </moving_outside_domain>
+    <lagrangian_timestepping>
+      <subcycles>
+        <integer_value rank="0">1</integer_value>
+      </subcycles>
+      <search_tolerance>
+        <real_value rank="0">1e-10</real_value>
+      </search_tolerance>
+      <rk4_guided_search/>
+    </lagrangian_timestepping>
+  </particles>
+  <timestepping>
+    <current_time>
+      <real_value rank="0">0</real_value>
+    </current_time>
+    <timestep>
+      <real_value rank="0">5e12</real_value>
+    </timestep>
+    <finish_time>
+      <real_value rank="0">4e15</real_value>
+    </finish_time>
+  </timestepping>
+  <physical_parameters>
+    <gravity>
+      <magnitude>
+        <real_value rank="0">9.80665</real_value>
+      </magnitude>
+      <vector_field name="GravityDirection" rank="1">
+        <prescribed>
+          <mesh name="CoordinateMesh"/>
+          <value name="WholeMesh">
+            <constant>
+              <real_value rank="1" dim1="dim" shape="2">0 -1</real_value>
+            </constant>
+          </value>
+          <output/>
+          <stat>
+            <include_in_stat/>
+          </stat>
+          <detectors>
+            <exclude_from_detectors/>
+          </detectors>
+          <particles>
+            <exclude_from_particles/>
+          </particles>
+        </prescribed>
+      </vector_field>
+    </gravity>
+  </physical_parameters>
+  <material_phase name="Fluid">
+    <scalar_field rank="0" name="Pressure">
+      <prognostic>
+        <mesh name="CoordinateMesh"/>
+        <spatial_discretisation>
+          <continuous_galerkin>
+            <remove_stabilisation_term/>
+          </continuous_galerkin>
+        </spatial_discretisation>
+        <scheme>
+          <poisson_pressure_solution>
+            <string_value lines="1">never</string_value>
+          </poisson_pressure_solution>
+          <use_projection_method>
+            <full_schur_complement>
+              <inner_matrix name="FullMomentumMatrix"/>
+              <preconditioner_matrix name="ScaledPressureMassMatrix"/>
+            </full_schur_complement>
+          </use_projection_method>
+        </scheme>
+        <solver>
+          <iterative_method name="fgmres"/>
+          <preconditioner name="ksp">
+            <solver>
+              <iterative_method name="preonly"/>
+              <preconditioner name="lu">
+                <factorization_package name="mumps"/>
+              </preconditioner>
+              <relative_error>
+                <real_value rank="0">1.0e-15</real_value>
+              </relative_error>
+              <max_iterations>
+                <integer_value rank="0">10000</integer_value>
+              </max_iterations>
+              <never_ignore_solver_failures/>
+              <diagnostics>
+                <monitors/>
+              </diagnostics>
+            </solver>
+          </preconditioner>
+          <relative_error>
+            <real_value rank="0">1.0e-16</real_value>
+          </relative_error>
+          <max_iterations>
+            <integer_value rank="0">10000</integer_value>
+          </max_iterations>
+          <never_ignore_solver_failures/>
+          <diagnostics>
+            <monitors>
+              <preconditioned_residual/>
+            </monitors>
+          </diagnostics>
+        </solver>
+        <output>
+          <exclude_from_vtu/>
+        </output>
+        <stat/>
+        <convergence>
+          <exclude_from_convergence/>
+        </convergence>
+        <detectors>
+          <exclude_from_detectors/>
+        </detectors>
+        <particles>
+          <exclude_from_particles/>
+        </particles>
+        <steady_state>
+          <exclude_from_steady_state/>
+        </steady_state>
+        <no_interpolation/>
+      </prognostic>
+    </scalar_field>
+    <scalar_field rank="0" name="Density">
+      <diagnostic>
+        <algorithm name="Internal" material_phase_support="multiple"/>
+        <mesh name="VelocityMesh"/>
+        <output/>
+        <stat/>
+        <convergence>
+          <exclude_from_convergence/>
+        </convergence>
+        <detectors>
+          <exclude_from_detectors/>
+        </detectors>
+        <particles>
+          <exclude_from_particles/>
+        </particles>
+        <steady_state>
+          <exclude_from_steady_state/>
+        </steady_state>
+      </diagnostic>
+    </scalar_field>
+    <vector_field rank="1" name="Velocity">
+      <prescribed>
+        <mesh name="VelocityMesh"/>
+        <value name="WholeMesh">
+          <python>
+            <string_value type="code" language="python" lines="">def val(X, t):
+    from corner_flow_2d import velocity
+
+    return velocity(X, t)</string_value>
+          </python>
+        </value>
+        <output/>
+        <stat>
+          <include_in_stat/>
+        </stat>
+        <detectors>
+          <exclude_from_detectors/>
+        </detectors>
+        <particles>
+          <exclude_from_particles/>
+        </particles>
+      </prescribed>
+    </vector_field>
+    <vector_field rank="1" name="DiagnosticCoordinate">
+      <diagnostic>
+        <algorithm name="Internal" material_phase_support="multiple"/>
+        <mesh name="VelocityMesh"/>
+        <output/>
+        <stat>
+          <include_in_stat/>
+        </stat>
+        <convergence>
+          <include_in_convergence/>
+        </convergence>
+        <detectors>
+          <include_in_detectors/>
+        </detectors>
+        <particles>
+          <exclude_from_particles/>
+        </particles>
+        <steady_state>
+          <include_in_steady_state/>
+        </steady_state>
+      </diagnostic>
+    </vector_field>
+    <tensor_field name="Viscosity" rank="2">
+      <prescribed>
+        <mesh name="VelocityMesh"/>
+        <value name="WholeMesh">
+          <isotropic>
+            <constant>
+              <real_value rank="0">1</real_value>
+            </constant>
+          </isotropic>
+        </value>
+        <output/>
+        <particles>
+          <exclude_from_particles/>
+        </particles>
+      </prescribed>
+    </tensor_field>
+    <tensor_field rank="2" name="StrainRate">
+      <diagnostic>
+        <algorithm name="strain_rate" material_phase_support="single " source_field_name="Velocity" source_field_type="vector"/>
+        <mesh name="CoordinateMesh"/>
+        <output>
+          <exclude_from_vtu/>
+        </output>
+        <stat>
+          <include_in_stat/>
+        </stat>
+        <particles>
+          <exclude_from_particles/>
+        </particles>
+      </diagnostic>
+    </tensor_field>
+    <tensor_field rank="2" name="VelocityGradient">
+      <diagnostic>
+        <algorithm name="grad_vector" material_phase_support="single " source_field_name="Velocity" source_field_type="vector"/>
+        <mesh name="VelocityGradientMesh"/>
+        <output/>
+        <stat>
+          <include_in_stat/>
+        </stat>
+        <particles>
+          <include_in_particles/>
+        </particles>
+      </diagnostic>
+    </tensor_field>
+  </material_phase>
+</fluidity_options>
