@@ -50,7 +50,10 @@
 
             <h2>Contents</h2>
             <ul>
-  <li><a href="#pydrex-tests">PyDRex tests</a></li>
+  <li><a href="#pydrex-tests">PyDRex tests</a>
+  <ul>
+    <li><a href="#writing-tests">Writing tests</a></li>
+  </ul></li>
 </ul>
 
 
@@ -94,14 +97,34 @@ The custom optional flag <code>--outdir="OUT"</code> is recommended
 to produce output figures, data dumps and logs and save them in the directory <code>"OUT"</code>.
 The value <code>"."</code> can be used to save these in the current directory.</p>
 
-<p>Tests which require a “significant” amount of memory (&lt;16GB RAM) are disabled by default.
+<p>In total, the following custom pytest command line flags are defined by PyDRex:</p>
+
+<ul>
+<li><code>--outdir</code> (described above)</li>
+<li><code>--runbig</code> (enable tests which require a large amount of RAM)</li>
+<li><code>--runslow</code> (enable slow tests which require HPC resources, implies <code>--runbig</code>)</li>
+<li><code>--ncpus</code> (number of CPU cores to use for shared memory multiprocessing, set to one less than the available maximum by default)</li>
+<li><code>--fontsize</code> (Matplotlib <code>rcParams["font.size"]</code>)</li>
+<li><code>--markersize</code> (Matplotlib <code>rcParams["lines.markersize"]</code>)</li>
+<li><code>--linewidth</code> (Matplotlib <code>rcParams["lines.linewidth"]</code>)</li>
+</ul>
+
+<p>Tests which require a “significant” amount of memory (&gt; ~16GB RAM) are disabled by default.
 To fully check the functionality of the code, it is recommended to run these locally
-by using the <code>--runbig</code> flag before moving to larger simulations.
-To mark a test as “big”, add the <code>@pytest.mark.big</code> decorator above its method definition.</p>
+by using the <code>--runbig</code> flag before moving to larger simulations.</p>
 
 <p>Long tests/examples are also disabled by default and can be enabled with <code>--runslow</code>.
-It is recommended to run these on a HPC cluster infrastructure (&gt;100GB RAM, &gt;46 cores).
-To mark a test as slow, add the <code>@pytest.mark.slow</code> decorator above its method definition.</p>
+It is recommended to run these on a HPC cluster infrastructure (&gt;100GB RAM, &gt;32 cores).
+The number of cores to use for shared memory multiprocessing can be specified with <code>--ncpus</code>.</p>
+
+<h2 id="writing-tests">Writing tests</h2>
+
+<ul>
+<li><p>To mark a test as “big” (i.e. requiring more than ~16GB RAM), apply the
+<code>@pytest.mark.big</code> decorator to the corresponding method definition.</p></li>
+<li><p>To mark a test as “slow” (i.e. requiring more than ~32 cores), apply the
+<code>@pytest.mark.slow</code> decorator to the corresponding method definition.</p></li>
+</ul>
 
 <p>Tests should not produce persistent output by default.
 If a test method can produce such output for debugging or visualisation,
