@@ -17,20 +17,21 @@ In total, the following custom pytest command line flags are defined by PyDRex:
 - `--markersize` (Matplotlib `rcParams["lines.markersize"]`)
 - `--linewidth` (Matplotlib `rcParams["lines.linewidth"]`)
 
-Tests which require a “significant” amount of memory (<16GB RAM) are disabled by default.
+Tests which require a “significant” amount of memory (> ~16GB RAM) are disabled by default.
 To fully check the functionality of the code, it is recommended to run these locally
 by using the `--runbig` flag before moving to larger simulations.
 
 Long tests/examples are also disabled by default and can be enabled with `--runslow`.
-It is recommended to run these on a HPC cluster infrastructure (>100GB RAM, >46 cores).
-To mark a test as slow, add the `@pytest.mark.slow` decorator above its method definition.
+It is recommended to run these on a HPC cluster infrastructure (>100GB RAM, >32 cores).
 The number of cores to use for shared memory multiprocessing can be specified with `--ncpus`.
 
 ## Writing tests
 
-- To mark a test as “big”, add the `@pytest.mark.big` decorator above its method definition.
+- To mark a test as “big” (i.e. requiring more than ~16GB RAM), apply the
+  `@pytest.mark.big` decorator to the corresponding method definition.
 
-- To mark a test as “slow”, add the `@pytest.mark.slow` decorator above its method definition.
+- To mark a test as “slow” (i.e. requiring more than ~32 cores), apply the
+  `@pytest.mark.slow` decorator to the corresponding method definition.
 
 Tests should not produce persistent output by default.
 If a test method can produce such output for debugging or visualisation,
