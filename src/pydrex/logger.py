@@ -94,11 +94,11 @@ LOGGER = logging.getLogger("pydrex")
 # To allow for multiple handlers at different levels, default level must be DEBUG.
 LOGGER.setLevel(logging.DEBUG)
 # Set up console handler.
-LOGGER_CONSOLE = logging.StreamHandler()
-LOGGER_CONSOLE.setFormatter(ConsoleFormatter(datefmt="%H:%M"))
-LOGGER_CONSOLE.setLevel(logging.INFO)
+CONSOLE_LOGGER = logging.StreamHandler()
+CONSOLE_LOGGER.setFormatter(ConsoleFormatter(datefmt="%H:%M"))
+CONSOLE_LOGGER.setLevel(logging.INFO)
 # Turn on console logger by default.
-LOGGER.addHandler(LOGGER_CONSOLE)
+LOGGER.addHandler(CONSOLE_LOGGER)
 
 
 def handle_exception(exec_type, exec_value, exec_traceback):
@@ -117,14 +117,14 @@ sys.excepthook = handle_exception
 
 
 @cl.contextmanager
-def handler_level(level, handler=LOGGER_CONSOLE):
+def handler_level(level, handler=CONSOLE_LOGGER):
     """Set logging handler level for current context.
 
     Args:
     - `level` (string) — logging level name e.g. "DEBUG", "ERROR", etc.
       See Python's logging module for details.
     - `handler` (optional, `logging.Handler`) — alternative handler to control instead
-      of the default, `LOGGER_CONSOLE`.
+      of the default, `CONSOLE_LOGGER`.
 
     """
     default_level = handler.level

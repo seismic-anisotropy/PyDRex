@@ -284,7 +284,7 @@ def parse_config(path):
 
     # Input option 1: velocity gradient mesh + final particle locations.
     if "mesh" in _input:
-        _input["mesh"] = read_mesh(resolve_path(_input["mesh"], path.parent))
+        _input["mesh"] = meshio.read(resolve_path(_input["mesh"], path.parent))
         _input["locations_final"] = read_scsv(
             resolve_path(_input["locations_final"], path.parent)
         )
@@ -399,11 +399,6 @@ def parse_config(path):
             f"invalid initial olivine fabric: {_params['initial_olivine_fabric']}"
         )
     return toml
-
-
-def read_mesh(meshfile, *args, **kwargs):
-    """Wrapper of `meshio.read`, see <https://github.com/nschloe/meshio>."""
-    return meshio.read(resolve_path(meshfile), *args, **kwargs)
 
 
 def resolve_path(path, refdir=None):
