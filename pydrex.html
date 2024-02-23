@@ -445,37 +445,59 @@ A draft of the input file spec is shown below:</p>
 </span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>
 </span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>
-</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a><span class="kn">from</span> <span class="nn">pydrex.core</span> <span class="kn">import</span> <span class="p">(</span>
-</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>    <span class="n">DeformationRegime</span><span class="p">,</span>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>    <span class="n">MineralFabric</span><span class="p">,</span>
-</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a>    <span class="n">MineralPhase</span><span class="p">,</span>
-</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>    <span class="n">derivatives</span><span class="p">,</span>
-</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>    <span class="n">get_crss</span><span class="p">,</span>
-</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="p">)</span>
-</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="kn">from</span> <span class="nn">pydrex.diagnostics</span> <span class="kn">import</span> <span class="p">(</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>    <span class="n">bingham_average</span><span class="p">,</span>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>    <span class="n">coaxial_index</span><span class="p">,</span>
-</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>    <span class="n">finite_strain</span><span class="p">,</span>
-</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>    <span class="n">misorientation_index</span><span class="p">,</span>
-</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>    <span class="n">misorientation_indices</span><span class="p">,</span>
-</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>    <span class="n">smallest_angle</span><span class="p">,</span>
-</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>    <span class="n">symmetry</span><span class="p">,</span>
-</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="p">)</span>
-</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="kn">from</span> <span class="nn">pydrex.geometry</span> <span class="kn">import</span> <span class="p">(</span>
-</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>    <span class="n">lambert_equal_area</span><span class="p">,</span>
-</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>    <span class="n">misorientation_angles</span><span class="p">,</span>
-</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>    <span class="n">poles</span><span class="p">,</span>
-</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>    <span class="n">shirley_concentric_squaredisk</span><span class="p">,</span>
-</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>    <span class="n">to_cartesian</span><span class="p">,</span>
-</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>    <span class="n">to_spherical</span><span class="p">,</span>
-</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a><span class="p">)</span>
-</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a><span class="kn">from</span> <span class="nn">pydrex.minerals</span> <span class="kn">import</span> <span class="p">(</span>
-</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>    <span class="n">OLIVINE_SLIP_SYSTEMS</span><span class="p">,</span>
-</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>    <span class="n">OLIVINE_STIFFNESS</span><span class="p">,</span>
-</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>    <span class="n">Mineral</span><span class="p">,</span>
-</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>    <span class="n">voigt_averages</span><span class="p">,</span>
-</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a><span class="p">)</span>
-</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a><span class="kn">from</span> <span class="nn">pydrex.stats</span> <span class="kn">import</span> <span class="n">resample_orientations</span>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a><span class="c1"># Set up the top-level pydrex namespace for convenient usage.</span>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="c1"># To keep it clean, we don&#39;t want every single symbol here, especially not those from</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="c1"># `utils` or `visualisation` modules, which should be explicitly imported instead.</span>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="kn">import</span> <span class="nn">pydrex.axes</span>  <span class="c1"># Defines the &#39;pydrex.polefigure&#39; Axes subclass.</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="kn">from</span> <span class="nn">pydrex.core</span> <span class="kn">import</span> <span class="p">(</span>
+</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>    <span class="n">DeformationRegime</span><span class="p">,</span>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>    <span class="n">MineralFabric</span><span class="p">,</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>    <span class="n">MineralPhase</span><span class="p">,</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>    <span class="n">derivatives</span><span class="p">,</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>    <span class="n">get_crss</span><span class="p">,</span>
+</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="p">)</span>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="kn">from</span> <span class="nn">pydrex.diagnostics</span> <span class="kn">import</span> <span class="p">(</span>
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>    <span class="n">bingham_average</span><span class="p">,</span>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>    <span class="n">coaxial_index</span><span class="p">,</span>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>    <span class="n">elasticity_components</span><span class="p">,</span>
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>    <span class="n">finite_strain</span><span class="p">,</span>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>    <span class="n">misorientation_index</span><span class="p">,</span>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>    <span class="n">misorientation_indices</span><span class="p">,</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>    <span class="n">smallest_angle</span><span class="p">,</span>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>    <span class="n">symmetry_pgr</span><span class="p">,</span>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="p">)</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="kn">from</span> <span class="nn">pydrex.geometry</span> <span class="kn">import</span> <span class="p">(</span>
+</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>    <span class="n">LatticeSystem</span><span class="p">,</span>
+</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>    <span class="n">lambert_equal_area</span><span class="p">,</span>
+</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>    <span class="n">misorientation_angles</span><span class="p">,</span>
+</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>    <span class="n">poles</span><span class="p">,</span>
+</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>    <span class="n">shirley_concentric_squaredisk</span><span class="p">,</span>
+</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>    <span class="n">symmetry_operations</span><span class="p">,</span>
+</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>    <span class="n">to_cartesian</span><span class="p">,</span>
+</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a>    <span class="n">to_spherical</span><span class="p">,</span>
+</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a><span class="p">)</span>
+</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a><span class="kn">from</span> <span class="nn">pydrex.io</span> <span class="kn">import</span> <span class="n">DEFAULT_PARAMS</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">read_scsv</span><span class="p">,</span> <span class="n">save_scsv</span>
+</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a><span class="kn">from</span> <span class="nn">pydrex.minerals</span> <span class="kn">import</span> <span class="p">(</span>
+</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a>    <span class="n">OLIVINE_PRIMARY_AXIS</span><span class="p">,</span>
+</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>    <span class="n">OLIVINE_SLIP_SYSTEMS</span><span class="p">,</span>
+</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>    <span class="n">OLIVINE_STIFFNESS</span><span class="p">,</span>
+</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a>    <span class="n">Mineral</span><span class="p">,</span>
+</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a>    <span class="n">voigt_averages</span><span class="p">,</span>
+</span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a><span class="p">)</span>
+</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a><span class="kn">from</span> <span class="nn">pydrex.pathlines</span> <span class="kn">import</span> <span class="n">get_pathline</span>
+</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="kn">from</span> <span class="nn">pydrex.stats</span> <span class="kn">import</span> <span class="p">(</span>
+</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a>    <span class="n">misorientation_hist</span><span class="p">,</span>
+</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a>    <span class="n">misorientations_random</span><span class="p">,</span>
+</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a>    <span class="n">resample_orientations</span><span class="p">,</span>
+</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a><span class="p">)</span>
+</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a><span class="kn">from</span> <span class="nn">pydrex.tensors</span> <span class="kn">import</span> <span class="p">(</span>
+</span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a>    <span class="n">elastic_tensor_to_voigt</span><span class="p">,</span>
+</span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a>    <span class="n">rotate</span><span class="p">,</span>
+</span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a>    <span class="n">voigt_decompose</span><span class="p">,</span>
+</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>    <span class="n">voigt_matrix_to_vector</span><span class="p">,</span>
+</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a>    <span class="n">voigt_to_elastic_tensor</span><span class="p">,</span>
+</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a>    <span class="n">voigt_vector_to_matrix</span><span class="p">,</span>
+</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a><span class="p">)</span>
 </span></pre></div>
 
 

@@ -60,7 +60,7 @@
                     <a class="function" href="#finite_strain">finite_strain</a>
             </li>
             <li>
-                    <a class="function" href="#symmetry">symmetry</a>
+                    <a class="function" href="#symmetry_pgr">symmetry_pgr</a>
             </li>
             <li>
                     <a class="function" href="#misorientation_indices">misorientation_indices</a>
@@ -344,7 +344,7 @@ grain axis and the j-th external axis (in the global Eulerian frame).</p>
 </span><span id="L-226"><a href="#L-226"><span class="linenos">226</span></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">B_λ</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">B_v</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </span><span id="L-227"><a href="#L-227"><span class="linenos">227</span></a>
 </span><span id="L-228"><a href="#L-228"><span class="linenos">228</span></a>
-</span><span id="L-229"><a href="#L-229"><span class="linenos">229</span></a><span class="k">def</span> <span class="nf">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">):</span>
+</span><span id="L-229"><a href="#L-229"><span class="linenos">229</span></a><span class="k">def</span> <span class="nf">symmetry_pgr</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">):</span>
 </span><span id="L-230"><a href="#L-230"><span class="linenos">230</span></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute texture symmetry eigenvalue diagnostics from grain orientation matrices.</span>
 </span><span id="L-231"><a href="#L-231"><span class="linenos">231</span></a>
 </span><span id="L-232"><a href="#L-232"><span class="linenos">232</span></a><span class="sd">    Compute Point, Girdle and Random symmetry diagnostics</span>
@@ -808,55 +808,55 @@ deformation gradient tensor.</p>
 
 
                 </section>
-                <section id="symmetry">
-                            <input id="symmetry-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+                <section id="symmetry_pgr">
+                            <input id="symmetry_pgr-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">symmetry</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">orientations</span>, </span><span class="param"><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;a&#39;</span></span><span class="return-annotation">):</span></span>
+        <span class="name">symmetry_pgr</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">orientations</span>, </span><span class="param"><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;a&#39;</span></span><span class="return-annotation">):</span></span>
 
-                <label class="view-source-button" for="symmetry-view-source"><span>View Source</span></label>
+                <label class="view-source-button" for="symmetry_pgr-view-source"><span>View Source</span></label>
 
     </div>
-    <a class="headerlink" href="#symmetry"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="symmetry-230"><a href="#symmetry-230"><span class="linenos">230</span></a><span class="k">def</span> <span class="nf">symmetry</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">):</span>
-</span><span id="symmetry-231"><a href="#symmetry-231"><span class="linenos">231</span></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute texture symmetry eigenvalue diagnostics from grain orientation matrices.</span>
-</span><span id="symmetry-232"><a href="#symmetry-232"><span class="linenos">232</span></a>
-</span><span id="symmetry-233"><a href="#symmetry-233"><span class="linenos">233</span></a><span class="sd">    Compute Point, Girdle and Random symmetry diagnostics</span>
-</span><span id="symmetry-234"><a href="#symmetry-234"><span class="linenos">234</span></a><span class="sd">    for ternary texture classification.</span>
-</span><span id="symmetry-235"><a href="#symmetry-235"><span class="linenos">235</span></a><span class="sd">    Returns the tuple (P, G, R) where</span>
-</span><span id="symmetry-236"><a href="#symmetry-236"><span class="linenos">236</span></a><span class="sd">    $$</span>
-</span><span id="symmetry-237"><a href="#symmetry-237"><span class="linenos">237</span></a><span class="sd">    \begin{align\*}</span>
-</span><span id="symmetry-238"><a href="#symmetry-238"><span class="linenos">238</span></a><span class="sd">    P &amp;= (λ_{1} - λ_{2}) / N \cr</span>
-</span><span id="symmetry-239"><a href="#symmetry-239"><span class="linenos">239</span></a><span class="sd">    G &amp;= 2 (λ_{2} - λ_{3}) / N \cr</span>
-</span><span id="symmetry-240"><a href="#symmetry-240"><span class="linenos">240</span></a><span class="sd">    R &amp;= 3 λ_{3} / N</span>
-</span><span id="symmetry-241"><a href="#symmetry-241"><span class="linenos">241</span></a><span class="sd">    \end{align\*}</span>
-</span><span id="symmetry-242"><a href="#symmetry-242"><span class="linenos">242</span></a><span class="sd">    $$</span>
-</span><span id="symmetry-243"><a href="#symmetry-243"><span class="linenos">243</span></a><span class="sd">    with $N$ the sum of the eigenvalues $λ_{1} ≥ λ_{2} ≥ λ_{3}$</span>
-</span><span id="symmetry-244"><a href="#symmetry-244"><span class="linenos">244</span></a><span class="sd">    of the scatter (inertia) matrix.</span>
-</span><span id="symmetry-245"><a href="#symmetry-245"><span class="linenos">245</span></a>
-</span><span id="symmetry-246"><a href="#symmetry-246"><span class="linenos">246</span></a><span class="sd">    See e.g. [Vollmer (1990)](https://doi.org/10.1130/0016-7606(1990)102%3C0786:AAOEMT%3E2.3.CO;2).</span>
-</span><span id="symmetry-247"><a href="#symmetry-247"><span class="linenos">247</span></a>
-</span><span id="symmetry-248"><a href="#symmetry-248"><span class="linenos">248</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="symmetry-249"><a href="#symmetry-249"><span class="linenos">249</span></a>    <span class="k">match</span> <span class="n">axis</span><span class="p">:</span>
-</span><span id="symmetry-250"><a href="#symmetry-250"><span class="linenos">250</span></a>        <span class="k">case</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span>
-</span><span id="symmetry-251"><a href="#symmetry-251"><span class="linenos">251</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span>
-</span><span id="symmetry-252"><a href="#symmetry-252"><span class="linenos">252</span></a>        <span class="k">case</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span>
-</span><span id="symmetry-253"><a href="#symmetry-253"><span class="linenos">253</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">1</span>
-</span><span id="symmetry-254"><a href="#symmetry-254"><span class="linenos">254</span></a>        <span class="k">case</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span>
-</span><span id="symmetry-255"><a href="#symmetry-255"><span class="linenos">255</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">2</span>
-</span><span id="symmetry-256"><a href="#symmetry-256"><span class="linenos">256</span></a>        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-</span><span id="symmetry-257"><a href="#symmetry-257"><span class="linenos">257</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;axis must be &#39;a&#39;, &#39;b&#39;, or &#39;c&#39;, not </span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="symmetry-258"><a href="#symmetry-258"><span class="linenos">258</span></a>
-</span><span id="symmetry-259"><a href="#symmetry-259"><span class="linenos">259</span></a>    <span class="n">scatter</span> <span class="o">=</span> <span class="n">_stats</span><span class="o">.</span><span class="n">_scatter_matrix</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
-</span><span id="symmetry-260"><a href="#symmetry-260"><span class="linenos">260</span></a>    <span class="c1"># SciPy uses lower triangular entries by default, no need for all components.</span>
-</span><span id="symmetry-261"><a href="#symmetry-261"><span class="linenos">261</span></a>    <span class="n">eigvals_descending</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">scatter</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-</span><span id="symmetry-262"><a href="#symmetry-262"><span class="linenos">262</span></a>    <span class="n">sum_eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">eigvals_descending</span><span class="p">)</span>
-</span><span id="symmetry-263"><a href="#symmetry-263"><span class="linenos">263</span></a>    <span class="k">return</span> <span class="p">(</span>
-</span><span id="symmetry-264"><a href="#symmetry-264"><span class="linenos">264</span></a>        <span class="p">(</span><span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
-</span><span id="symmetry-265"><a href="#symmetry-265"><span class="linenos">265</span></a>        <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
-</span><span id="symmetry-266"><a href="#symmetry-266"><span class="linenos">266</span></a>        <span class="mi">3</span> <span class="o">*</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
-</span><span id="symmetry-267"><a href="#symmetry-267"><span class="linenos">267</span></a>    <span class="p">)</span>
+    <a class="headerlink" href="#symmetry_pgr"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="symmetry_pgr-230"><a href="#symmetry_pgr-230"><span class="linenos">230</span></a><span class="k">def</span> <span class="nf">symmetry_pgr</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">):</span>
+</span><span id="symmetry_pgr-231"><a href="#symmetry_pgr-231"><span class="linenos">231</span></a><span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute texture symmetry eigenvalue diagnostics from grain orientation matrices.</span>
+</span><span id="symmetry_pgr-232"><a href="#symmetry_pgr-232"><span class="linenos">232</span></a>
+</span><span id="symmetry_pgr-233"><a href="#symmetry_pgr-233"><span class="linenos">233</span></a><span class="sd">    Compute Point, Girdle and Random symmetry diagnostics</span>
+</span><span id="symmetry_pgr-234"><a href="#symmetry_pgr-234"><span class="linenos">234</span></a><span class="sd">    for ternary texture classification.</span>
+</span><span id="symmetry_pgr-235"><a href="#symmetry_pgr-235"><span class="linenos">235</span></a><span class="sd">    Returns the tuple (P, G, R) where</span>
+</span><span id="symmetry_pgr-236"><a href="#symmetry_pgr-236"><span class="linenos">236</span></a><span class="sd">    $$</span>
+</span><span id="symmetry_pgr-237"><a href="#symmetry_pgr-237"><span class="linenos">237</span></a><span class="sd">    \begin{align\*}</span>
+</span><span id="symmetry_pgr-238"><a href="#symmetry_pgr-238"><span class="linenos">238</span></a><span class="sd">    P &amp;= (λ_{1} - λ_{2}) / N \cr</span>
+</span><span id="symmetry_pgr-239"><a href="#symmetry_pgr-239"><span class="linenos">239</span></a><span class="sd">    G &amp;= 2 (λ_{2} - λ_{3}) / N \cr</span>
+</span><span id="symmetry_pgr-240"><a href="#symmetry_pgr-240"><span class="linenos">240</span></a><span class="sd">    R &amp;= 3 λ_{3} / N</span>
+</span><span id="symmetry_pgr-241"><a href="#symmetry_pgr-241"><span class="linenos">241</span></a><span class="sd">    \end{align\*}</span>
+</span><span id="symmetry_pgr-242"><a href="#symmetry_pgr-242"><span class="linenos">242</span></a><span class="sd">    $$</span>
+</span><span id="symmetry_pgr-243"><a href="#symmetry_pgr-243"><span class="linenos">243</span></a><span class="sd">    with $N$ the sum of the eigenvalues $λ_{1} ≥ λ_{2} ≥ λ_{3}$</span>
+</span><span id="symmetry_pgr-244"><a href="#symmetry_pgr-244"><span class="linenos">244</span></a><span class="sd">    of the scatter (inertia) matrix.</span>
+</span><span id="symmetry_pgr-245"><a href="#symmetry_pgr-245"><span class="linenos">245</span></a>
+</span><span id="symmetry_pgr-246"><a href="#symmetry_pgr-246"><span class="linenos">246</span></a><span class="sd">    See e.g. [Vollmer (1990)](https://doi.org/10.1130/0016-7606(1990)102%3C0786:AAOEMT%3E2.3.CO;2).</span>
+</span><span id="symmetry_pgr-247"><a href="#symmetry_pgr-247"><span class="linenos">247</span></a>
+</span><span id="symmetry_pgr-248"><a href="#symmetry_pgr-248"><span class="linenos">248</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="symmetry_pgr-249"><a href="#symmetry_pgr-249"><span class="linenos">249</span></a>    <span class="k">match</span> <span class="n">axis</span><span class="p">:</span>
+</span><span id="symmetry_pgr-250"><a href="#symmetry_pgr-250"><span class="linenos">250</span></a>        <span class="k">case</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span>
+</span><span id="symmetry_pgr-251"><a href="#symmetry_pgr-251"><span class="linenos">251</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span id="symmetry_pgr-252"><a href="#symmetry_pgr-252"><span class="linenos">252</span></a>        <span class="k">case</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span>
+</span><span id="symmetry_pgr-253"><a href="#symmetry_pgr-253"><span class="linenos">253</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span id="symmetry_pgr-254"><a href="#symmetry_pgr-254"><span class="linenos">254</span></a>        <span class="k">case</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span>
+</span><span id="symmetry_pgr-255"><a href="#symmetry_pgr-255"><span class="linenos">255</span></a>            <span class="n">row</span> <span class="o">=</span> <span class="mi">2</span>
+</span><span id="symmetry_pgr-256"><a href="#symmetry_pgr-256"><span class="linenos">256</span></a>        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+</span><span id="symmetry_pgr-257"><a href="#symmetry_pgr-257"><span class="linenos">257</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;axis must be &#39;a&#39;, &#39;b&#39;, or &#39;c&#39;, not </span><span class="si">{</span><span class="n">axis</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="symmetry_pgr-258"><a href="#symmetry_pgr-258"><span class="linenos">258</span></a>
+</span><span id="symmetry_pgr-259"><a href="#symmetry_pgr-259"><span class="linenos">259</span></a>    <span class="n">scatter</span> <span class="o">=</span> <span class="n">_stats</span><span class="o">.</span><span class="n">_scatter_matrix</span><span class="p">(</span><span class="n">orientations</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
+</span><span id="symmetry_pgr-260"><a href="#symmetry_pgr-260"><span class="linenos">260</span></a>    <span class="c1"># SciPy uses lower triangular entries by default, no need for all components.</span>
+</span><span id="symmetry_pgr-261"><a href="#symmetry_pgr-261"><span class="linenos">261</span></a>    <span class="n">eigvals_descending</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">scatter</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</span><span id="symmetry_pgr-262"><a href="#symmetry_pgr-262"><span class="linenos">262</span></a>    <span class="n">sum_eigvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">eigvals_descending</span><span class="p">)</span>
+</span><span id="symmetry_pgr-263"><a href="#symmetry_pgr-263"><span class="linenos">263</span></a>    <span class="k">return</span> <span class="p">(</span>
+</span><span id="symmetry_pgr-264"><a href="#symmetry_pgr-264"><span class="linenos">264</span></a>        <span class="p">(</span><span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
+</span><span id="symmetry_pgr-265"><a href="#symmetry_pgr-265"><span class="linenos">265</span></a>        <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
+</span><span id="symmetry_pgr-266"><a href="#symmetry_pgr-266"><span class="linenos">266</span></a>        <span class="mi">3</span> <span class="o">*</span> <span class="n">eigvals_descending</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">sum_eigvals</span><span class="p">,</span>
+</span><span id="symmetry_pgr-267"><a href="#symmetry_pgr-267"><span class="linenos">267</span></a>    <span class="p">)</span>
 </span></pre></div>
 
 
@@ -1003,7 +1003,7 @@ instance of <code>multiprocessing.Pool</code> can be provided.</p>
 
 <p>The <code>bins</code> argument is passed to <code>numpy.histogram</code>.
 If left as <code>None</code>, 1° bins will be used as recommended by the reference paper.
-The <code><a href="#symmetry">symmetry</a></code> argument specifies the lattice system which determines intrinsic
+The <code>symmetry</code> argument specifies the lattice system which determines intrinsic
 symmetry degeneracies and the maximum allowable misorientation angle.
 See <code>_geo.LatticeSystem</code> for supported systems.</p>
 
@@ -1052,7 +1052,7 @@ the given <code>system</code>.</p>
             <div class="docstring"><p>Calculate coaxial “BA” index for a combination of two crystal axes.</p>
 
 <p>The BA index of <a href="https://doi.org/10.1144/SP409.8">Mainprice et al. (2015)</a>
-is derived from the eigenvalue <code><a href="#symmetry">symmetry</a></code> diagnostics and measures point vs girdle
+is derived from the eigenvalue <code>symmetry</code> diagnostics and measures point vs girdle
 symmetry in the aggregate. $BA ∈ [0, 1]$ where $BA = 0$ corresponds to a perfect
 axial girdle texture and $BA = 1$ represents a point symmetry texture assuming that
 the random component $R$ is negligible. May be less susceptible to random

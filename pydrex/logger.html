@@ -66,7 +66,7 @@
                     <a class="variable" href="#LOGGER">LOGGER</a>
             </li>
             <li>
-                    <a class="variable" href="#LOGGER_CONSOLE">LOGGER_CONSOLE</a>
+                    <a class="variable" href="#CONSOLE_LOGGER">CONSOLE_LOGGER</a>
             </li>
             <li>
                     <a class="function" href="#handle_exception">handle_exception</a>
@@ -122,7 +122,7 @@
 which logger to use, so just using <code>logging.debug</code> for example always uses
 the "root" logger, which spams a bunch of messages from other imports/modules.
 Instead, the methods in this module are thin wrappers that use custom
-logging objects (<code><a href="#LOGGER">pydrex.logger.LOGGER</a></code> and <code>pydrex.logger.CONSOLE_LOGGER</code>).
+logging objects (<code><a href="#LOGGER">pydrex.logger.LOGGER</a></code> and <code><a href="#CONSOLE_LOGGER">pydrex.logger.CONSOLE_LOGGER</a></code>).
 The method <code><a href="#quiet_aliens">quiet_aliens</a></code> can be invoked to suppress most messages
 from third-party modules, except critical errors and warnings from Numba.</p>
 
@@ -271,11 +271,11 @@ otherwise compute time will be wasted on string conversions when logging is disa
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="c1"># To allow for multiple handlers at different levels, default level must be DEBUG.</span>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="n">LOGGER</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="c1"># Set up console handler.</span>
-</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="n">LOGGER_CONSOLE</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
-</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a><span class="n">LOGGER_CONSOLE</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">ConsoleFormatter</span><span class="p">(</span><span class="n">datefmt</span><span class="o">=</span><span class="s2">&quot;%H:%M&quot;</span><span class="p">))</span>
-</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="n">LOGGER_CONSOLE</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="n">CONSOLE_LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a><span class="n">CONSOLE_LOGGER</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">ConsoleFormatter</span><span class="p">(</span><span class="n">datefmt</span><span class="o">=</span><span class="s2">&quot;%H:%M&quot;</span><span class="p">))</span>
+</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="n">CONSOLE_LOGGER</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
 </span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a><span class="c1"># Turn on console logger by default.</span>
-</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="n">LOGGER</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">LOGGER_CONSOLE</span><span class="p">)</span>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="n">LOGGER</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">CONSOLE_LOGGER</span><span class="p">)</span>
 </span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>
 </span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>
 </span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a><span class="k">def</span> <span class="nf">handle_exception</span><span class="p">(</span><span class="n">exec_type</span><span class="p">,</span> <span class="n">exec_value</span><span class="p">,</span> <span class="n">exec_traceback</span><span class="p">):</span>
@@ -294,14 +294,14 @@ otherwise compute time will be wasted on string conversions when logging is disa
 </span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>
 </span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>
 </span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="nd">@cl</span><span class="o">.</span><span class="n">contextmanager</span>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="k">def</span> <span class="nf">handler_level</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">handler</span><span class="o">=</span><span class="n">LOGGER_CONSOLE</span><span class="p">):</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a><span class="k">def</span> <span class="nf">handler_level</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">handler</span><span class="o">=</span><span class="n">CONSOLE_LOGGER</span><span class="p">):</span>
 </span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Set logging handler level for current context.</span>
 </span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>
 </span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">    Args:</span>
 </span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">    - `level` (string) — logging level name e.g. &quot;DEBUG&quot;, &quot;ERROR&quot;, etc.</span>
 </span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">      See Python&#39;s logging module for details.</span>
 </span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">    - `handler` (optional, `logging.Handler`) — alternative handler to control instead</span>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">      of the default, `LOGGER_CONSOLE`.</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="sd">      of the default, `CONSOLE_LOGGER`.</span>
 </span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>    <span class="n">default_level</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">level</span>
@@ -502,14 +502,14 @@ it is formatted using formatException() and appended to the message.</p>
     
 
                 </section>
-                <section id="LOGGER_CONSOLE">
+                <section id="CONSOLE_LOGGER">
                     <div class="attr variable">
-            <span class="name">LOGGER_CONSOLE</span>        =
+            <span class="name">CONSOLE_LOGGER</span>        =
 <span class="default_value">&lt;StreamHandler (INFO)&gt;</span>
 
         
     </div>
-    <a class="headerlink" href="#LOGGER_CONSOLE"></a>
+    <a class="headerlink" href="#CONSOLE_LOGGER"></a>
     
     
 
@@ -553,14 +553,14 @@ it is formatted using formatException() and appended to the message.</p>
     </div>
     <a class="headerlink" href="#handler_level"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="handler_level-120"><a href="#handler_level-120"><span class="linenos">120</span></a><span class="nd">@cl</span><span class="o">.</span><span class="n">contextmanager</span>
-</span><span id="handler_level-121"><a href="#handler_level-121"><span class="linenos">121</span></a><span class="k">def</span> <span class="nf">handler_level</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">handler</span><span class="o">=</span><span class="n">LOGGER_CONSOLE</span><span class="p">):</span>
+</span><span id="handler_level-121"><a href="#handler_level-121"><span class="linenos">121</span></a><span class="k">def</span> <span class="nf">handler_level</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">handler</span><span class="o">=</span><span class="n">CONSOLE_LOGGER</span><span class="p">):</span>
 </span><span id="handler_level-122"><a href="#handler_level-122"><span class="linenos">122</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Set logging handler level for current context.</span>
 </span><span id="handler_level-123"><a href="#handler_level-123"><span class="linenos">123</span></a>
 </span><span id="handler_level-124"><a href="#handler_level-124"><span class="linenos">124</span></a><span class="sd">    Args:</span>
 </span><span id="handler_level-125"><a href="#handler_level-125"><span class="linenos">125</span></a><span class="sd">    - `level` (string) — logging level name e.g. &quot;DEBUG&quot;, &quot;ERROR&quot;, etc.</span>
 </span><span id="handler_level-126"><a href="#handler_level-126"><span class="linenos">126</span></a><span class="sd">      See Python&#39;s logging module for details.</span>
 </span><span id="handler_level-127"><a href="#handler_level-127"><span class="linenos">127</span></a><span class="sd">    - `handler` (optional, `logging.Handler`) — alternative handler to control instead</span>
-</span><span id="handler_level-128"><a href="#handler_level-128"><span class="linenos">128</span></a><span class="sd">      of the default, `LOGGER_CONSOLE`.</span>
+</span><span id="handler_level-128"><a href="#handler_level-128"><span class="linenos">128</span></a><span class="sd">      of the default, `CONSOLE_LOGGER`.</span>
 </span><span id="handler_level-129"><a href="#handler_level-129"><span class="linenos">129</span></a>
 </span><span id="handler_level-130"><a href="#handler_level-130"><span class="linenos">130</span></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="handler_level-131"><a href="#handler_level-131"><span class="linenos">131</span></a>    <span class="n">default_level</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">level</span>
@@ -578,7 +578,7 @@ it is formatted using formatException() and appended to the message.</p>
 <li><code>level</code> (string) — logging level name e.g. "DEBUG", "ERROR", etc.
 See Python's logging module for details.</li>
 <li><code>handler</code> (optional, <code>logging.Handler</code>) — alternative handler to control instead
-of the default, <code><a href="#LOGGER_CONSOLE">LOGGER_CONSOLE</a></code>.</li>
+of the default, <code><a href="#CONSOLE_LOGGER">CONSOLE_LOGGER</a></code>.</li>
 </ul>
 </div>
 
