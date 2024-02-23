@@ -1,4 +1,9 @@
-"""> PyDRex: Entry points for command line tools."""
+"""> PyDRex: Entry points and argument handling for command line tools.
+
+All CLI handlers should be registered in the `CLI_HANDLERS` namedtuple,
+which ensures that they will be installed as executable scripts alongside the package.
+
+"""
 
 import argparse
 import os
@@ -12,8 +17,6 @@ from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
 from pydrex import visualisation as _vis
-
-# NOTE: Register all cli handlers in the namedtuple at the end of the file.
 
 
 @dataclass

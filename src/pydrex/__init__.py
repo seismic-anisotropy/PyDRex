@@ -115,6 +115,10 @@ A draft of the input file spec is shown below:
 
 """
 
+# Set up the top-level pydrex namespace for convenient usage.
+# To keep it clean, we don't want every single symbol here, especially not those from
+# `utils` or `visualisation` modules, which should be explicitly imported instead.
+import pydrex.axes  # Defines the 'pydrex.polefigure' Axes subclass.
 from pydrex.core import (
     DeformationRegime,
     MineralFabric,
@@ -125,24 +129,42 @@ from pydrex.core import (
 from pydrex.diagnostics import (
     bingham_average,
     coaxial_index,
+    elasticity_components,
     finite_strain,
     misorientation_index,
     misorientation_indices,
     smallest_angle,
-    symmetry,
+    symmetry_pgr,
 )
 from pydrex.geometry import (
+    LatticeSystem,
     lambert_equal_area,
     misorientation_angles,
     poles,
     shirley_concentric_squaredisk,
+    symmetry_operations,
     to_cartesian,
     to_spherical,
 )
+from pydrex.io import DEFAULT_PARAMS, data, read_scsv, save_scsv
 from pydrex.minerals import (
+    OLIVINE_PRIMARY_AXIS,
     OLIVINE_SLIP_SYSTEMS,
     OLIVINE_STIFFNESS,
     Mineral,
     voigt_averages,
 )
-from pydrex.stats import resample_orientations
+from pydrex.pathlines import get_pathline
+from pydrex.stats import (
+    misorientation_hist,
+    misorientations_random,
+    resample_orientations,
+)
+from pydrex.tensors import (
+    elastic_tensor_to_voigt,
+    rotate,
+    voigt_decompose,
+    voigt_matrix_to_vector,
+    voigt_to_elastic_tensor,
+    voigt_vector_to_matrix,
+)
