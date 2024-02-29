@@ -52,6 +52,8 @@ def resample_orientations(orientations, fractions, n_samples=None, seed=None):
         # Cumulative volume fractions.
         frac_ascending = frac[sort_ascending]
         cumfrac = frac_ascending.cumsum()
+        # Force cumfrac[-1] to be equal to sum(frac_ascending) i.e. 1.
+        cumfrac[-1] = 1.0
         # Number of new samples with volume less than each cumulative fraction.
         count_less = np.searchsorted(cumfrac, rng.random(n_samples))
         out_orientations[i, ...] = orient[sort_ascending][count_less]
