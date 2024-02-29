@@ -10,6 +10,7 @@ import pytest
 
 from pydrex import core as _core
 from pydrex import diagnostics as _diagnostics
+from pydrex import geometry as _geo
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
@@ -138,6 +139,9 @@ class TestFraters2021:
         olA_from_proj_YX = np.empty_like(olA_from_proj_XZ)
         ens_from_proj_XZ = np.empty_like(olA_from_proj_XZ)
         ens_from_proj_YX = np.empty_like(olA_from_proj_XZ)
+        # Output arrays for M-index (CPO strength).
+        olA_strength = np.empty_like(olA_from_proj_XZ)
+        ens_strength = np.empty_like(olA_from_proj_XZ)
 
         _id = _io.stringify(switch_time_Ma * 1e6)
         optional_logging = cl.nullcontext()
@@ -181,6 +185,9 @@ class TestFraters2021:
                             for v in olA_mean_vectors
                         ]
                     )
+                    olA_strength[s, :] = _diagnostics.misorientation_indices(
+                        olA_resampled, _geo.LatticeSystem.orthorhombic, pool=pool
+                    )
                     del olivine, olA_resampled, olA_mean_vectors
 
                     _log.info("%s; # %d; postprocessing enstatite...", _id, _seeds[s])
@@ -205,6 +212,10 @@ class TestFraters2021:
                             for v in ens_mean_vectors
                         ]
                     )
+                    ens_strength[s, :] = _diagnostics.misorientation_indices(
+                        ens_resampled, _geo.LatticeSystem.orthorhombic, pool=pool
+                    )
+                    del enstatite, ens_resampled, ens_mean_vectors
 
             _log.info("elapsed CPU time: %s", np.abs(process_time() - clock_start))
             _log.info("calculating ensemble averages...")
@@ -231,4 +242,11 @@ class TestFraters2021:
                     ens_from_proj_XZ_err=ens_from_proj_XZ_err,
                     ens_from_proj_YX_mean=ens_from_proj_YX_mean,
                     ens_from_proj_YX_err=ens_from_proj_YX_err,
+                )
+                np.savez(
+                    f"{out_basepath}_strength.npz",
+                    olA_mean=olA_strength.mean(axis=0),
+                    ens_mean=ens_strength.mean(axis=0),
+                    olA_err=olA_strength.std(axis=0),
+                    ens_err=ens_strength.std(axis=0),
                 )
