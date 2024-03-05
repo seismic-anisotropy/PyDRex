@@ -86,8 +86,8 @@
         <attributes>
           <scalar_attribute_array name="CPO_">
             <dimension>
-              <integer_value rank="0">50021</integer_value>
-              <comment>= n_grains (PyDRex) + 21</comment>
+              <integer_value rank="0">50022</integer_value>
+              <comment>= n_grains (PyDRex) + 22</comment>
             </dimension>
             <initial_attribute_value>
               <python_fields>
@@ -95,17 +95,27 @@
     import numpy as np
     import pydrex
 
-    # Construct 3D position vector.
+    from corner_flow_2d import velocity_gradient
+
+    # Construct 3D velocity gradient matrix and position vector.
+    velocity_gradient_init = velocity_gradient(X, t)  # Takes a 2D position vector.
     position = np.asarray(X) if len(X) == 3 else np.insert(X, 1, 0)
+    if velocity_gradient_init.shape == (2, 2):
+        velocity_gradient_init = np.insert(
+            np.insert(velocity_gradient_init, [1], 0, axis=0), [1], 0, axis=1
+        )
     # Create new mineral with random initial orientations and undeformed initial state.
-    # The extra 21 values are: a 3-component position vector,
-    # a 3x3 array to store previous velocity gradients (for interpolation) and
-    # a 3x3 array to store the (Lagrangian) deformation gradient.
-    n_grains = int((n - 21) / 10)  # Divide by 10 because: 3x3 orientation matrix + 1 'surrogate grain' size
+    # The extra 22 values are stored after the actual CPO data and they are:
+    # a 3-component position vector,
+    # a 3x3 array to store previous velocity gradients (for interpolation),
+    # a 3x3 array to store the (Lagrangian) deformation gradient and
+    # a scalar that records the current accumulated strain.
+    n_grains = int((n - 22) / 10)  # Divide by 10 because: 3x3 orientation matrix + 1 'surrogate grain' size
     mineral = pydrex.Mineral(n_grains=n_grains)
-    return np.hstack(
-        (position, np.zeros(9), np.eye(3).flatten(), mineral.orientations[-1].flatten(), mineral.fractions[-1])
-    )</string_value>
+    return np.hstack((
+        mineral.orientations[-1].flatten(), mineral.fractions[-1],
+        position, velocity_gradient_init.flatten(), np.eye(3).flatten(), 0.0
+    ))</string_value>
               </python_fields>
             </initial_attribute_value>
             <attribute_value>
@@ -113,18 +123,21 @@
                 <string_value type="code" language="python" lines="20">def val(X, t, dt, fields, n):
     import numpy as np
     import pydrex
+    from pydrex import utils
 
     from corner_flow_2d import gen_interp_position, gen_interp_velocity_grad, PARAMS
 
     # Unpack values from previous step and create Mineral.
+    n_grains = int((n - 22) / 10)
     cpo_prev = fields["old%CPO_"]
-    position_prev = cpo_prev[:3]
-    velocity_gradient_prev = cpo_prev[3:12].reshape(3, 3)
-    deformation_gradient_prev = cpo_prev[12:21].reshape(3, 3)
+    orientations_prev = cpo_prev[:n_grains * 9].reshape(n_grains, 3, 3)
+    fractions_prev = cpo_prev[n_grains * 9:n_grains * 10]
 
-    n_grains = int((n - 21) / 10)
-    orientations_prev = cpo_prev[21:-n_grains].reshape(n_grains, 3, 3)
-    fractions_prev = cpo_prev[-n_grains:]
+    begin_aux_data = n_grains * 10
+    position_prev = cpo_prev[begin_aux_data:begin_aux_data + 3]
+    velocity_gradient_prev = cpo_prev[begin_aux_data + 3:begin_aux_data + 12].reshape(3, 3)
+    deformation_gradient_prev = cpo_prev[begin_aux_data + 12:begin_aux_data + 21].reshape(3, 3)
+    strain = cpo_prev[begin_aux_data + 22 - 1]
 
     mineral = pydrex.Mineral(
         fractions_init=fractions_prev,
@@ -148,11 +161,12 @@
         (t - dt, t, gen_interp_position(position_prev, position, t, dt)),
     )
     return np.hstack((
+        mineral.orientations[-1].flatten(),
+        mineral.fractions[-1],
         position,
         velocity_gradient.flatten(),
         deformation_gradient.flatten(),
-        mineral.orientations[-1].flatten(),
-        mineral.fractions[-1],
+        strain + utils.strain_increment(dt, velocity_gradient),
     ))</string_value>
                 <store_old_attribute/>
               </python_fields>
