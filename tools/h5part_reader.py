@@ -108,13 +108,8 @@ if __name__ == "__main__":
                 for n in range(len(vals)):
                     vals[n] = infile[f"{k}/CPO_{n+1}"][particle_id - 1]
 
-                orientations[t] = np.array(
-                    [
-                        np.reshape(vals[n : n + 9], (3, 3))
-                        for n in range(0, 9 * args.ngrains, 9)
-                    ]
-                )
-                fractions[t] = vals[9 * args.ngrains :]
+                orientations[t] = vals[:args.ngrains * 9].reshape((args.ngrains, 3, 3))
+                fractions[t] = vals[args.ngrains * 9:]
 
             _postfix = str(particle_id)
             _fractions = list(fractions)
