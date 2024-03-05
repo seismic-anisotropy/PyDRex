@@ -2,7 +2,7 @@
 """Script to read CPO data from fluidity h5part files.
 
 CPO data is saved to a NPZ file which can be read by `pydrex.mineral.Mineral.from_file`.
-The data is extracted from particles with a `scalar_attribute_array` named 'CPO',
+The data is extracted from particles with a `scalar_attribute_array` named 'CPO_',
 and saved to the NPZ file under fields named with the postfix set to the particle ID.
 For example, the fields 'meta_1', 'fractions_1' and 'orientations_1' store data for the
 particle with id 1. The particle positions are stored in the additional fields `x`, `y`
@@ -10,9 +10,7 @@ and `z`.
 
 """
 import argparse
-import io
 import os
-from zipfile import ZipFile
 
 import h5py
 import numpy as np
@@ -67,7 +65,6 @@ if __name__ == "__main__":
             outfile = args.output
         else:
             raise ValueError(f"can only save to NPZ format, not {args.output}")
-    # outfile_paths = outfile[:-4] + "_paths.npz"
 
     option_map = {
         "olivine": MineralPhase.olivine,
@@ -96,6 +93,7 @@ if __name__ == "__main__":
             z = np.zeros(n_timesteps)
             orientations = np.empty((n_timesteps, args.ngrains, 3, 3))
             fractions = np.empty((n_timesteps, args.ngrains))
+            strains = np.empty(n_timesteps)
 
             for t, k in enumerate(steps):
                 # Extract particle position.
@@ -108,8 +106,9 @@ if __name__ == "__main__":
                 for n in range(len(vals)):
                     vals[n] = infile[f"{k}/CPO_{n+1}"][particle_id - 1]
 
-                orientations[t] = vals[:args.ngrains * 9].reshape((args.ngrains, 3, 3))
-                fractions[t] = vals[args.ngrains * 9:]
+                orientations[t] = vals[: args.ngrains * 9].reshape((args.ngrains, 3, 3))
+                fractions[t] = vals[args.ngrains * 9 :]
+                strains[t] = vals[args.ngrains * 9 + 21]
 
             _postfix = str(particle_id)
             _fractions = list(fractions)
@@ -124,12 +123,4 @@ if __name__ == "__main__":
             mineral.fractions = _fractions
             mineral.orientations = _orientations
             mineral.save(outfile, postfix=_postfix)
-            np.savez(outfile[:-4] + f"_path_{_postfix}.npz", x=x, y=y, z=z)
-            # FIXME: Why is this not working??
-            # archive = ZipFile(outfile_paths, mode="a", allowZip64=True)
-            # for key, data in zip(("x", "y", "z"), (x, y, z)):
-            #     with archive.open(f"{key}_{_postfix}", "w", force_zip64=True) as file:
-            #         buffer = io.BytesIO()
-            #         np.save(buffer, data)
-            #         file.write(buffer.getvalue())
-            #         buffer.close()
+            np.savez(outfile[:-4] + f"_path_{_postfix}.npz", x=x, y=y, z=z, strains=strains)
