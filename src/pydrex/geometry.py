@@ -112,7 +112,7 @@ def misorientation_angles(q1_array, q2_array):
                 )
             )
             k += 1
-    return np.min(angles, axis=1)
+    return np.array([np.min(a) for a in angles])
 
 
 def symmetry_operations(system: LatticeSystem):
