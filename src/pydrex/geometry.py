@@ -3,6 +3,7 @@
 from enum import Enum, unique
 
 import numpy as np
+import numba as nb
 from scipy import linalg as la
 from scipy.spatial.transform import Rotation
 
@@ -67,6 +68,7 @@ def to_spherical(x, y, z):
     return (r, np.arctan2(y, x), np.sign(y) * np.arccos(x / np.sqrt(x**2 + y**2)))
 
 
+@nb.njit(fastmath=True)
 def misorientation_angles(q1_array, q2_array):
     """Calculate minimum misorientation angles for collections of rotation quaternions.
 
