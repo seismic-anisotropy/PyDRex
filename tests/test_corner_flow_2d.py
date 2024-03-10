@@ -69,7 +69,13 @@ class TestCornerOlivineA:
             strains[t] = strains[t - 1] + (
                 _utils.strain_increment(timestamps[t] - time, velocity_gradients[t])
             )
-            _log.info("step %d/%d (ε = %.2f)", t, len(timestamps) - 1, strains[t])
+            _log.info(
+                "final location = %s; step %d/%d (ε = %.2f)",
+                final_location.ravel(),
+                t,
+                len(timestamps) - 1,
+                strains[t],
+            )
 
             deformation_gradient = mineral.update_orientations(
                 params,
