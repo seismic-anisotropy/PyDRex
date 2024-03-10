@@ -89,7 +89,8 @@ def misorientation_hist(orientations, system: _geo.LatticeSystem, bins=None):
     .. warning::
         This method must be able to allocate $ \frac{N!}{N-2!}× 4M $ floats
         for N the length of `orientations` and M the number of symmetry operations for
-        the given `system`.
+        the given `system` (`numpy.float32` values are used to reduce the memory
+        requirements)
 
     See [Skemer et al. (2005)](https://doi.org/10.1016/j.tecto.2005.08.023).
 
@@ -97,10 +98,12 @@ def misorientation_hist(orientations, system: _geo.LatticeSystem, bins=None):
     symmetry_ops = _geo.symmetry_operations(system)
     # Compute and bin misorientation angles from orientation data.
     q1_array = np.empty(
-        (sp.comb(len(orientations), 2, exact=True), len(symmetry_ops), 4)
+        (sp.comb(len(orientations), 2, exact=True), len(symmetry_ops), 4),
+        dtype=np.float32,
     )
     q2_array = np.empty(
-        (sp.comb(len(orientations), 2, exact=True), len(symmetry_ops), 4)
+        (sp.comb(len(orientations), 2, exact=True), len(symmetry_ops), 4),
+        dtype=np.float32,
     )
     for i, e in enumerate(
         it.combinations(Rotation.from_matrix(orientations).as_quat(), 2)
