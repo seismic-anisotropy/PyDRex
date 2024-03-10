@@ -160,7 +160,7 @@ class TestCornerOlivineA:
                         )
                         misorient_angles[idx] = _diagnostics.smallest_angle(
                             direction_mean,
-                            [1, 0, 0],
+                            np.array([1.0, 0.0, 0.0]),
                         )
                         bingham_vectors[idx] = direction_mean
 
