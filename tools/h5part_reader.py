@@ -107,8 +107,8 @@ if __name__ == "__main__":
                     vals[n] = infile[f"{k}/CPO_{n+1}"][particle_id - 1]
 
                 orientations[t] = vals[: args.ngrains * 9].reshape((args.ngrains, 3, 3))
-                fractions[t] = vals[args.ngrains * 9 :]
-                strains[t] = vals[args.ngrains * 9 + 21]
+                fractions[t] = vals[args.ngrains * 9 : args.ngrains * 10]
+                strains[t] = vals[args.ngrains * 10]
 
             _postfix = str(particle_id)
             _fractions = list(fractions)

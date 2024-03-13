@@ -110,6 +110,7 @@ class TestCornerOlivineA:
         get_velocity, get_velocity_gradient = _velocity.corner_2d("X", "Z", plate_speed)
         # Z-values at the end of each pathline.
         z_ends = list(map(lambda x: x * domain_height, (-0.1, -0.3, -0.54, -0.78)))
+        markers = ("s", "o", "v", "*")
 
         # Optional plotting and logging setup.
         optional_logging = cl.nullcontext()
@@ -210,7 +211,6 @@ class TestCornerOlivineA:
                 angles_3=angles[2],
                 angles_4=angles[3],
             )
-            markers = ("s", "o", "v", "*")
             cmaps = ["cmc.batlow_r"] * len(markers)
             fig_domain = _vis.figure(figsize=(10, 3))
             ax_domain = fig_domain.add_subplot()

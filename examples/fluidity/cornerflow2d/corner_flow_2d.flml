@@ -106,15 +106,15 @@
         )
     # Create new mineral with random initial orientations and undeformed initial state.
     # The extra 22 values are stored after the actual CPO data and they are:
+    # a scalar that records the current accumulated strain,
     # a 3-component position vector,
-    # a 3x3 array to store previous velocity gradients (for interpolation),
-    # a 3x3 array to store the (Lagrangian) deformation gradient and
-    # a scalar that records the current accumulated strain.
+    # a 3x3 array to store previous velocity gradients (for interpolation) and
+    # a 3x3 array to store the (Lagrangian) deformation gradient.
     n_grains = int((n - 22) / 10)  # Divide by 10 because: 3x3 orientation matrix + 1 'surrogate grain' size
-    mineral = pydrex.Mineral(n_grains=n_grains)
+    mineral = pydrex.Mineral(n_grains=n_grains, seed=8816)
     return np.hstack((
         mineral.orientations[-1].flatten(), mineral.fractions[-1],
-        position, velocity_gradient_init.flatten(), np.eye(3).flatten(), 0.0
+        np.zeros(1), position, velocity_gradient_init.flatten(), np.eye(3).flatten()
     ))</string_value>
               </python_fields>
             </initial_attribute_value>
@@ -124,20 +124,21 @@
     import numpy as np
     import pydrex
     from pydrex import utils
+    from pydrex import logger as _log
 
     from corner_flow_2d import gen_interp_position, gen_interp_velocity_grad, PARAMS
 
     # Unpack values from previous step and create Mineral.
     n_grains = int((n - 22) / 10)
     cpo_prev = fields["old%CPO_"]
-    orientations_prev = cpo_prev[:n_grains * 9].reshape(n_grains, 3, 3)
+    orientations_prev = cpo_prev[:n_grains * 9].reshape((n_grains, 3, 3))
     fractions_prev = cpo_prev[n_grains * 9:n_grains * 10]
 
     begin_aux_data = n_grains * 10
-    position_prev = cpo_prev[begin_aux_data:begin_aux_data + 3]
-    velocity_gradient_prev = cpo_prev[begin_aux_data + 3:begin_aux_data + 12].reshape(3, 3)
-    deformation_gradient_prev = cpo_prev[begin_aux_data + 12:begin_aux_data + 21].reshape(3, 3)
-    strain = cpo_prev[begin_aux_data + 22 - 1]
+    strain = cpo_prev[begin_aux_data]
+    position_prev = cpo_prev[begin_aux_data + 1:begin_aux_data + 4]
+    velocity_gradient_prev = cpo_prev[begin_aux_data + 4:begin_aux_data + 13].reshape((3, 3))
+    deformation_gradient_prev = cpo_prev[begin_aux_data + 13:begin_aux_data + 22].reshape((3, 3))
 
     mineral = pydrex.Mineral(
         fractions_init=fractions_prev,
@@ -152,7 +153,11 @@
         velocity_gradient = np.insert(
             np.insert(velocity_gradient, [1], 0, axis=0), [1], 0, axis=1
         )
-    assert velocity_gradient.shape == (3, 3), f"velocity gradient has shape: {velocity_gradient.shape}"
+    _log.info("deformation gradient: %s", deformation_gradient_prev.flatten())
+    _log.info("position: %s", gen_interp_position(position_prev, position, t, dt)(t))
+    _log.info("velocity gradient: %s",
+        gen_interp_velocity_grad(velocity_gradient_prev, velocity_gradient, t, dt)(t).flatten()
+    )
 
     deformation_gradient = mineral.update_orientations(
         PARAMS,
@@ -163,10 +168,10 @@
     return np.hstack((
         mineral.orientations[-1].flatten(),
         mineral.fractions[-1],
+        strain + utils.strain_increment(dt, velocity_gradient),
         position,
         velocity_gradient.flatten(),
         deformation_gradient.flatten(),
-        strain + utils.strain_increment(dt, velocity_gradient),
     ))</string_value>
                 <store_old_attribute/>
               </python_fields>
@@ -323,7 +328,7 @@
         <mesh name="VelocityMesh"/>
         <value name="WholeMesh">
           <python>
-            <string_value type="code" language="python" lines="">def val(X, t):
+            <string_value type="code" language="python" lines="20">def val(X, t):
     from corner_flow_2d import velocity
 
     return velocity(X, t)</string_value>
@@ -363,7 +368,7 @@
         </steady_state>
       </diagnostic>
     </vector_field>
-    <tensor_field name="Viscosity" rank="2">
+    <tensor_field rank="2" name="Viscosity">
       <prescribed>
         <mesh name="VelocityMesh"/>
         <value name="WholeMesh">
@@ -395,9 +400,18 @@
       </diagnostic>
     </tensor_field>
     <tensor_field rank="2" name="VelocityGradient">
-      <diagnostic>
-        <algorithm name="grad_vector" material_phase_support="single " source_field_name="Velocity" source_field_type="vector"/>
+      <prescribed>
         <mesh name="VelocityGradientMesh"/>
+        <value name="WholeMesh">
+          <anisotropic_asymmetric>
+            <python>
+              <string_value type="code" language="python" lines="20">def val(X, t):
+    from corner_flow_2d import velocity_gradient
+
+    return velocity_gradient(X, t)</string_value>
+            </python>
+          </anisotropic_asymmetric>
+        </value>
         <output/>
         <stat>
           <include_in_stat/>
@@ -405,7 +419,7 @@
         <particles>
           <include_in_particles/>
         </particles>
-      </diagnostic>
+      </prescribed>
     </tensor_field>
   </material_phase>
 </fluidity_options>
