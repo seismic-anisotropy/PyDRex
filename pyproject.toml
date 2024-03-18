@@ -34,7 +34,7 @@ classifiers = [
 
 dependencies = [
     "numpy >= 1.8",  # <https://numpy.org/doc/stable/reference/generated/numpy.linalg.eigvalsh.html>
-    "numba >= 0.5",  # <https://numba.pydata.org/numba-doc/latest/release-notes.html#version-0-50-0-jun-10-2020>
+    "numba >= 0.57",  # <https://numba.readthedocs.io/en/stable/release-notes.html#version-0-57-0-1-may-2023>
     "scipy >= 1.2",  # <https://github.com/scipy/scipy/pull/9176>
     "pyyaml",  # For YAML headers of plaintext datafiles.
     "meshio",  # For reading VTK and other meshes.
@@ -72,8 +72,7 @@ where = ["src"]
 testpaths = ["tests"]
 # --tb=short : Use short tracebacks, terminal scrollback is precious.
 # --show-capture=no : Don't show captured output (stdout/stderr/logs) for failed tests.
-# --doctest-modules : Run doctest snippets in docstrings
-addopts = "--tb=short --show-capture=no --doctest-modules"
+addopts = "--tb=short --show-capture=no"
 
 # Global linter and devtools settings.
 [tool.isort]

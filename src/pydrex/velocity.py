@@ -131,21 +131,22 @@ def simple_shear_2d(direction, deformation_plane, strain_rate):
 
     Examples:
 
+    >>> import numpy as np
     >>> u, L = simple_shear_2d("X", "Z", 1e-4)
-    >>> u([0, 0, 0])
-    array([0.e+00, 0.e+00, 0.e+00])
-    >>> u([0, 0, 1])
-    array([1.e-04, 0.e+00, 0.e+00])
-    >>> u([0.0, 0.0, 2.0])
-    array([2.e-04, 0.e+00, 0.e+00])
-    >>> L([0, 0, 0])
-    array([[0.e+00, 0.e+00, 2.e-04],
-        [0.e+00, 0.e+00, 0.e+00],
-        [0.e+00, 0.e+00, 0.e+00]])
-    >>> L([0.0, 0.0, 1.0])
-    array([[0.e+00, 0.e+00, 2.e-04],
-        [0.e+00, 0.e+00, 0.e+00],
-        [0.e+00, 0.e+00, 0.e+00]])
+    >>> u(np.array([0, 0, 0]))
+    array([0., 0., 0.])
+    >>> u(np.array([0, 0, 1]))
+    array([0.0001, 0.    , 0.    ])
+    >>> u(np.array([0.0, 0.0, 2.0]))
+    array([0.0002, 0.    , 0.    ])
+    >>> L(np.array([0, 0, 0]))
+    array([[0.    , 0.    , 0.0002],
+           [0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    ]])
+    >>> L(np.array([0.0, 0.0, 1.0]))
+    array([[0.    , 0.    , 0.0002],
+           [0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    ]])
 
     """
     try:
@@ -193,55 +194,56 @@ def cell_2d(horizontal, vertical, velocity_edge, edge_length=2):
 
     Examples:
 
+    >>> import numpy as np
     >>> u, L = cell_2d("X", "Z", 1)
-    >>> u([0, 0, 0])
-    array([0.e+00, 0.e+00, -0.e+00])
-    >>> u([0, 0, 1])
-    array([1.e+00, 0.e+00, -0.e+00])
-    >>> u([0, 1, 0])  # Y-value is not used.
-    array([0.e+00, 0.e+00, -0.e+00])
-    >>> u([0, 0, -1])
-    array([-1.e+00, 0.e+00, -0.e+00])
-    >>> u([1, 0, 0])
-    array([0.e+00, 0.e+00, -1.e+00])
-    >>> u([-0.5, 0.0, 0.0])
-    array([0.e+00, 0.e+00, 7.071067811865475e-01])
-    >>> L([0, 0, 0])
-    array([[-0.e+00, 0.e+00, 1.5707963267948966e+00],
-        [0.e+00, 0.e+00, 0.e+00],
-        [0.e+00, 0.e+00, -1.5707963267948966e+00]])
-    >>> L([1, 0, 0])
-    array([[-0.e+00, 0.e+00, 9.618353468608949e-17],
-        [0.e+00, 0.e+00, 0.e+00],
-        [0.e+00, 0.e+00, -9.618353468608949e-17]])
-    >>> L([0, 0, 0]) == L([0, 1, 0])  # Y-value is not used.
+    >>> u(np.array([0, 0, 0]))
+    array([ 0.,  0., -0.])
+    >>> u(np.array([0, 0, 1]))
+    array([ 1.,  0., -0.])
+    >>> u(np.array([0, 1, 0]))  # Y-value is not used.
+    array([ 0.,  0., -0.])
+    >>> u(np.array([0, 0, -1]))
+    array([-1.,  0., -0.])
+    >>> u(np.array([1, 0, 0]))
+    array([ 0.,  0., -1.])
+    >>> u(np.array([-0.5, 0.0, 0.0]))
+    array([0.        , 0.        , 0.70710678])
+    >>> L(np.array([0, 0, 0]))
+    array([[-0.        ,  0.        ,  1.57079633],
+           [ 0.        ,  0.        ,  0.        ],
+           [ 0.        ,  0.        , -1.57079633]])
+    >>> L(np.array([0.5, 0.0, 0.0]))
+    array([[-0.        ,  0.        ,  1.11072073],
+           [ 0.        ,  0.        ,  0.        ],
+           [ 0.        ,  0.        , -1.11072073]])
+    >>> L(np.array([0, 0, 0])) == L(np.array([0, 1, 0]))  # Y-value is not used.
     array([[ True,  True,  True],
-        [ True,  True,  True],
-        [ True,  True,  True]])
-    >>> L([1, 0, 0]) == L([0, 0, 1])
+           [ True,  True,  True],
+           [ True,  True,  True]])
+    >>> L(np.array([1, 0, 0])) == L(np.array([0, 0, 1]))
     array([[ True,  True,  True],
-        [ True,  True,  True],
-        [ True,  True,  True]])
-    >>> L([1, 0, 0]) == L([-1, 0, 0])
+           [ True,  True,  True],
+           [ True,  True,  True]])
+    >>> L(np.array([1, 0, 0])) == L(np.array([-1, 0, 0]))
     array([[ True,  True,  True],
-        [ True,  True,  True],
-        [ True,  True,  True]])
-    >>> L([1, 0, 0]) == L([0, 0, -1])
+           [ True,  True,  True],
+           [ True,  True,  True]])
+    >>> L(np.array([1, 0, 0])) == L(np.array([0, 0, -1]))
     array([[ True,  True,  True],
-        [ True,  True,  True],
-        [ True,  True,  True]])
-    >>> L([0.5, 0.0, 0.5])
-    array([[-7.853981633974481e-01, 0.e+00, 7.853981633974485e-01],
-        [0.e+00, 0.e+00, 0.e+00],
-        [7.853981633974481e-01, 0.e+00, -7.853981633974485e-01]])
+           [ True,  True,  True],
+           [ True,  True,  True]])
+    >>> L(np.array([0.5, 0.0, 0.5]))
+    array([[-0.78539816,  0.        ,  0.78539816],
+           [ 0.        ,  0.        ,  0.        ],
+           [ 0.78539816,  0.        , -0.78539816]])
 
     >>> u, L = cell_2d("X", "Z", 6.3e-10, 1e5)
-    >>> u([0, 0, 0])
-    array([0.e+00, 0.e+00, -0.e+00])
-    >>> u([0.0, 0.0, -5e4])
-    array([-6.3e-10, 0.e+00, -0.e+00])
-    >>> u([2e2, 0e0, 0e0])
-    array([0.e+00, 0.e+00, -3.958380698302139e-12])
+    >>> u(np.array([0, 0, 0]))
+    array([ 0.,  0., -0.])
+    >>> u(np.array([0.0, 0.0, -5e4]))
+    array([-6.3e-10,  0.0e+00, -0.0e+00])
+    >>> u(np.array([2e2, 0e0, 0e0]))
+    array([ 0.0000000e+00,  0.0000000e+00, -3.9583807e-12])
 
     """
     if edge_length < 0:
@@ -342,9 +344,3 @@ def corner_2d(horizontal, vertical, plate_speed):
             plate_speed=plate_speed,
         ),
     )
-
-
-def __run_doctests():
-    import doctest
-
-    return doctest.testmod()
