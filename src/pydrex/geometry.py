@@ -271,14 +271,14 @@ def shirley_concentric_squaredisk(xvals, yvals):
            [1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ],
            [1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ],
            [1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ]])
+    >>> from math import atan2
+    >>> θ = [atan2(y, x) for y, x in zip(y_disk, x_disk)]
+    >>> max(θ)
+    3.141592653589793
+    >>> min(θ)
+    -2.9845130209101467
 
     """
-    # >>> from math import atan2
-    # >>> θ = [atan2(y, x) for y, x in zip(y_disk, x_disk)]
-    # >>> max(θ)
-    # 3.141592653589793
-    # >>> min(θ)
-    # -2.9845130209101467
 
     def _shirley_concentric_squaredisc_xgty(xvals, yvals):
         ratios = yvals / (xvals + 1e-12)
