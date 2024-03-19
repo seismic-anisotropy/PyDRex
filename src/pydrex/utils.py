@@ -100,14 +100,14 @@ def get_steps(a):
 
     Examples:
 
-    >>> _get_steps(np.array([1, 2, 3, 4, 5]))
+    >>> get_steps(np.array([1, 2, 3, 4, 5]))
     array([[1, 1, 1, 1, 1]])
 
-    >>> _get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10]]))
+    >>> get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10]]))
     array([[1, 1, 1, 1, 1],
            [2, 3, 3, 1, 1]])
 
-    >>> _get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10], [1, 0, 0, 0, np.inf]]))
+    >>> get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10], [1, 0, 0, 0, np.inf]]))
     array([[ 1.,  1.,  1.,  1.,  1.],
            [ 2.,  3.,  3.,  1.,  1.],
            [-1.,  0.,  0., inf, nan]])
@@ -237,9 +237,3 @@ def _remove_legend_symbol_transparency(handle, orig):
     # https://stackoverflow.com/a/59629242/12519962
     handle.update_from(orig)
     handle.set_alpha(1)
-
-
-def __run_doctests():
-    import doctest
-
-    return doctest.testmod()

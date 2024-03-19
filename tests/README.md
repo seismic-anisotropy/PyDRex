@@ -27,6 +27,11 @@ The number of cores to use for shared memory multiprocessing can be specified wi
 
 ## Writing tests
 
+For quick sanity checks and inline unit tests, use [python doctests](https://docs.python.org/3/library/doctest.html).
+These will also appear as inline examples in the generated documentation.
+More comprehensive unit tests and larger integration tests should be organised
+into submodules of the `test` module.
+
 - To mark a test as “big” (i.e. requiring more than ~16GB RAM), apply the
   `@pytest.mark.big` decorator to the corresponding method definition.
 

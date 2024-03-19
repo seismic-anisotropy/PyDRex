@@ -182,13 +182,20 @@ class Mineral:
 
     Mineral with isotropic initial texture:
     >>> import pydrex
-    >>> pydrex.Mineral(
-    >>>     phase=pydrex.MineralPhase.olivine,
-    >>>     fabric=pydrex.MineralFabric.olivine_A,
-    >>>     regime=pydrex.DeformationRegime.dislocation,
-    >>>     n_grains=2000,
-    >>> )
-    Mineral(phase=0, fabric=0, regime=1, n_grains=2000, ...)
+    >>> olA = pydrex.Mineral(
+    ...     phase=pydrex.MineralPhase.olivine,
+    ...     fabric=pydrex.MineralFabric.olivine_A,
+    ...     regime=pydrex.DeformationRegime.dislocation,
+    ...     n_grains=2000
+    ... )
+    >>> olA.phase
+    <MineralPhase.olivine: 0>
+    >>> olA.fabric
+    <MineralFabric.olivine_A: 0>
+    >>> olA.regime
+    <DeformationRegime.dislocation: 1>
+    >>> olA.n_grains
+    2000
 
     Mineral with specified initial texture and default phase, fabric and regime settings
     which are for an olivine A-type mineral in the dislocation creep regime.
@@ -198,16 +205,23 @@ class Mineral:
     >>> import pydrex
     >>> rng = np.random.default_rng()
     >>> n_grains = 2000
-    >>> pydrex.Mineral(
-    >>>     n_grains=n_grains,
-    >>>     fractions_init=np.full(n_grains, 1 / n_grains),
-    >>>     orientations_init=Rotation.from_euler(
-    >>>         "zxz", [
-    >>>             [x * np.pi / 2, np.pi / /2, np.pi / 2] for x in rng.random(n_grains)
-    >>>         ]
-    >>>     ).inv().as_matrix(),
-    >>> )
-    Mineral(phase=0, fabric=0, regime=1, n_grains=2000, ...)
+    >>> olA = pydrex.Mineral(
+    ...     n_grains=n_grains,
+    ...     fractions_init=np.full(n_grains, 1 / n_grains),
+    ...     orientations_init=Rotation.from_euler(
+    ...         "zxz", [
+    ...             [x * np.pi / 2, np.pi / 2, np.pi / 2] for x in rng.random(n_grains)
+    ...         ]
+    ...     ).inv().as_matrix(),
+    ... )
+    >>> len(olA.orientations)
+    1
+    >>> type(olA.orientations)
+    <class 'list'>
+    >>> olA.orientations[0].shape
+    (2000, 3, 3)
+    >>> olA.fractions[0].shape
+    (2000,)
 
     Note that minerals can also be constructed from serialized data,
     see `Mineral.load` and `Mineral.from_file`.
@@ -564,9 +578,3 @@ class Mineral:
         mineral.fractions = fractions
         mineral.orientations = orientations
         return mineral
-
-
-def __run_doctests():
-    import doctest
-
-    return doctest.testmod()
