@@ -381,18 +381,18 @@
 </span><span id="L-259"><a href="#L-259"><span class="linenos">259</span></a><span class="sd">    &gt;&gt;&gt; y_flat = [j for i in y for j in i]</span>
 </span><span id="L-260"><a href="#L-260"><span class="linenos">260</span></a><span class="sd">    &gt;&gt;&gt; x_disk, y_disk = shirley_concentric_squaredisk(x_flat, y_flat)</span>
 </span><span id="L-261"><a href="#L-261"><span class="linenos">261</span></a><span class="sd">    &gt;&gt;&gt; r = x_disk**2 + y_disk**2</span>
-</span><span id="L-262"><a href="#L-262"><span class="linenos">262</span></a><span class="sd">    &gt;&gt;&gt; r</span>
-</span><span id="L-263"><a href="#L-263"><span class="linenos">263</span></a><span class="sd">    array([1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ,</span>
-</span><span id="L-264"><a href="#L-264"><span class="linenos">264</span></a><span class="sd">           1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ,</span>
-</span><span id="L-265"><a href="#L-265"><span class="linenos">265</span></a><span class="sd">           1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ,</span>
-</span><span id="L-266"><a href="#L-266"><span class="linenos">266</span></a><span class="sd">           1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ,</span>
-</span><span id="L-267"><a href="#L-267"><span class="linenos">267</span></a><span class="sd">           1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ,</span>
-</span><span id="L-268"><a href="#L-268"><span class="linenos">268</span></a><span class="sd">           1.  , 0.64, 0.36, 0.16, 0.04, 0.  , 0.04, 0.16, 0.36, 0.64, 1.  ,</span>
-</span><span id="L-269"><a href="#L-269"><span class="linenos">269</span></a><span class="sd">           1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ,</span>
-</span><span id="L-270"><a href="#L-270"><span class="linenos">270</span></a><span class="sd">           1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ,</span>
-</span><span id="L-271"><a href="#L-271"><span class="linenos">271</span></a><span class="sd">           1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ,</span>
-</span><span id="L-272"><a href="#L-272"><span class="linenos">272</span></a><span class="sd">           1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ,</span>
-</span><span id="L-273"><a href="#L-273"><span class="linenos">273</span></a><span class="sd">           1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ])</span>
+</span><span id="L-262"><a href="#L-262"><span class="linenos">262</span></a><span class="sd">    &gt;&gt;&gt; r.reshape((len(a), len(a)))</span>
+</span><span id="L-263"><a href="#L-263"><span class="linenos">263</span></a><span class="sd">    array([[1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ],</span>
+</span><span id="L-264"><a href="#L-264"><span class="linenos">264</span></a><span class="sd">           [1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ],</span>
+</span><span id="L-265"><a href="#L-265"><span class="linenos">265</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ],</span>
+</span><span id="L-266"><a href="#L-266"><span class="linenos">266</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ],</span>
+</span><span id="L-267"><a href="#L-267"><span class="linenos">267</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ],</span>
+</span><span id="L-268"><a href="#L-268"><span class="linenos">268</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.16, 0.04, 0.  , 0.04, 0.16, 0.36, 0.64, 1.  ],</span>
+</span><span id="L-269"><a href="#L-269"><span class="linenos">269</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ],</span>
+</span><span id="L-270"><a href="#L-270"><span class="linenos">270</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ],</span>
+</span><span id="L-271"><a href="#L-271"><span class="linenos">271</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ],</span>
+</span><span id="L-272"><a href="#L-272"><span class="linenos">272</span></a><span class="sd">           [1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ],</span>
+</span><span id="L-273"><a href="#L-273"><span class="linenos">273</span></a><span class="sd">           [1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ]])</span>
 </span><span id="L-274"><a href="#L-274"><span class="linenos">274</span></a><span class="sd">    &gt;&gt;&gt; from math import atan2</span>
 </span><span id="L-275"><a href="#L-275"><span class="linenos">275</span></a><span class="sd">    &gt;&gt;&gt; θ = [atan2(y, x) for y, x in zip(y_disk, x_disk)]</span>
 </span><span id="L-276"><a href="#L-276"><span class="linenos">276</span></a><span class="sd">    &gt;&gt;&gt; max(θ)</span>
@@ -429,12 +429,6 @@
 </span><span id="L-307"><a href="#L-307"><span class="linenos">307</span></a>        <span class="p">],</span>
 </span><span id="L-308"><a href="#L-308"><span class="linenos">308</span></a>    <span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
 </span><span id="L-309"><a href="#L-309"><span class="linenos">309</span></a>    <span class="k">return</span> <span class="n">x_disk</span><span class="p">,</span> <span class="n">y_disk</span>
-</span><span id="L-310"><a href="#L-310"><span class="linenos">310</span></a>
-</span><span id="L-311"><a href="#L-311"><span class="linenos">311</span></a>
-</span><span id="L-312"><a href="#L-312"><span class="linenos">312</span></a><span class="k">def</span> <span class="nf">__run_doctests</span><span class="p">():</span>
-</span><span id="L-313"><a href="#L-313"><span class="linenos">313</span></a>    <span class="kn">import</span> <span class="nn">doctest</span>
-</span><span id="L-314"><a href="#L-314"><span class="linenos">314</span></a>
-</span><span id="L-315"><a href="#L-315"><span class="linenos">315</span></a>    <span class="k">return</span> <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -981,18 +975,18 @@ and then projects that hemisphere onto the disk.</p>
 </span><span id="shirley_concentric_squaredisk-260"><a href="#shirley_concentric_squaredisk-260"><span class="linenos">260</span></a><span class="sd">    &gt;&gt;&gt; y_flat = [j for i in y for j in i]</span>
 </span><span id="shirley_concentric_squaredisk-261"><a href="#shirley_concentric_squaredisk-261"><span class="linenos">261</span></a><span class="sd">    &gt;&gt;&gt; x_disk, y_disk = shirley_concentric_squaredisk(x_flat, y_flat)</span>
 </span><span id="shirley_concentric_squaredisk-262"><a href="#shirley_concentric_squaredisk-262"><span class="linenos">262</span></a><span class="sd">    &gt;&gt;&gt; r = x_disk**2 + y_disk**2</span>
-</span><span id="shirley_concentric_squaredisk-263"><a href="#shirley_concentric_squaredisk-263"><span class="linenos">263</span></a><span class="sd">    &gt;&gt;&gt; r</span>
-</span><span id="shirley_concentric_squaredisk-264"><a href="#shirley_concentric_squaredisk-264"><span class="linenos">264</span></a><span class="sd">    array([1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ,</span>
-</span><span id="shirley_concentric_squaredisk-265"><a href="#shirley_concentric_squaredisk-265"><span class="linenos">265</span></a><span class="sd">           1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ,</span>
-</span><span id="shirley_concentric_squaredisk-266"><a href="#shirley_concentric_squaredisk-266"><span class="linenos">266</span></a><span class="sd">           1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ,</span>
-</span><span id="shirley_concentric_squaredisk-267"><a href="#shirley_concentric_squaredisk-267"><span class="linenos">267</span></a><span class="sd">           1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ,</span>
-</span><span id="shirley_concentric_squaredisk-268"><a href="#shirley_concentric_squaredisk-268"><span class="linenos">268</span></a><span class="sd">           1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ,</span>
-</span><span id="shirley_concentric_squaredisk-269"><a href="#shirley_concentric_squaredisk-269"><span class="linenos">269</span></a><span class="sd">           1.  , 0.64, 0.36, 0.16, 0.04, 0.  , 0.04, 0.16, 0.36, 0.64, 1.  ,</span>
-</span><span id="shirley_concentric_squaredisk-270"><a href="#shirley_concentric_squaredisk-270"><span class="linenos">270</span></a><span class="sd">           1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ,</span>
-</span><span id="shirley_concentric_squaredisk-271"><a href="#shirley_concentric_squaredisk-271"><span class="linenos">271</span></a><span class="sd">           1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ,</span>
-</span><span id="shirley_concentric_squaredisk-272"><a href="#shirley_concentric_squaredisk-272"><span class="linenos">272</span></a><span class="sd">           1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ,</span>
-</span><span id="shirley_concentric_squaredisk-273"><a href="#shirley_concentric_squaredisk-273"><span class="linenos">273</span></a><span class="sd">           1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ,</span>
-</span><span id="shirley_concentric_squaredisk-274"><a href="#shirley_concentric_squaredisk-274"><span class="linenos">274</span></a><span class="sd">           1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ])</span>
+</span><span id="shirley_concentric_squaredisk-263"><a href="#shirley_concentric_squaredisk-263"><span class="linenos">263</span></a><span class="sd">    &gt;&gt;&gt; r.reshape((len(a), len(a)))</span>
+</span><span id="shirley_concentric_squaredisk-264"><a href="#shirley_concentric_squaredisk-264"><span class="linenos">264</span></a><span class="sd">    array([[1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ],</span>
+</span><span id="shirley_concentric_squaredisk-265"><a href="#shirley_concentric_squaredisk-265"><span class="linenos">265</span></a><span class="sd">           [1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ],</span>
+</span><span id="shirley_concentric_squaredisk-266"><a href="#shirley_concentric_squaredisk-266"><span class="linenos">266</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ],</span>
+</span><span id="shirley_concentric_squaredisk-267"><a href="#shirley_concentric_squaredisk-267"><span class="linenos">267</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ],</span>
+</span><span id="shirley_concentric_squaredisk-268"><a href="#shirley_concentric_squaredisk-268"><span class="linenos">268</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ],</span>
+</span><span id="shirley_concentric_squaredisk-269"><a href="#shirley_concentric_squaredisk-269"><span class="linenos">269</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.16, 0.04, 0.  , 0.04, 0.16, 0.36, 0.64, 1.  ],</span>
+</span><span id="shirley_concentric_squaredisk-270"><a href="#shirley_concentric_squaredisk-270"><span class="linenos">270</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ],</span>
+</span><span id="shirley_concentric_squaredisk-271"><a href="#shirley_concentric_squaredisk-271"><span class="linenos">271</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ],</span>
+</span><span id="shirley_concentric_squaredisk-272"><a href="#shirley_concentric_squaredisk-272"><span class="linenos">272</span></a><span class="sd">           [1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ],</span>
+</span><span id="shirley_concentric_squaredisk-273"><a href="#shirley_concentric_squaredisk-273"><span class="linenos">273</span></a><span class="sd">           [1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ],</span>
+</span><span id="shirley_concentric_squaredisk-274"><a href="#shirley_concentric_squaredisk-274"><span class="linenos">274</span></a><span class="sd">           [1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ]])</span>
 </span><span id="shirley_concentric_squaredisk-275"><a href="#shirley_concentric_squaredisk-275"><span class="linenos">275</span></a><span class="sd">    &gt;&gt;&gt; from math import atan2</span>
 </span><span id="shirley_concentric_squaredisk-276"><a href="#shirley_concentric_squaredisk-276"><span class="linenos">276</span></a><span class="sd">    &gt;&gt;&gt; θ = [atan2(y, x) for y, x in zip(y_disk, x_disk)]</span>
 </span><span id="shirley_concentric_squaredisk-277"><a href="#shirley_concentric_squaredisk-277"><span class="linenos">277</span></a><span class="sd">    &gt;&gt;&gt; max(θ)</span>
@@ -1047,18 +1041,18 @@ is optimised to preserve area. See also: <a href="http://marc-b-reynolds.github.
 <span class="gp">&gt;&gt;&gt; </span><span class="n">y_flat</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">y</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">i</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x_disk</span><span class="p">,</span> <span class="n">y_disk</span> <span class="o">=</span> <span class="n">shirley_concentric_squaredisk</span><span class="p">(</span><span class="n">x_flat</span><span class="p">,</span> <span class="n">y_flat</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">x_disk</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y_disk</span><span class="o">**</span><span class="mi">2</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span>
-<span class="go">array([1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ,</span>
-<span class="go">       1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ,</span>
-<span class="go">       1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ,</span>
-<span class="go">       1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ,</span>
-<span class="go">       1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ,</span>
-<span class="go">       1.  , 0.64, 0.36, 0.16, 0.04, 0.  , 0.04, 0.16, 0.36, 0.64, 1.  ,</span>
-<span class="go">       1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ,</span>
-<span class="go">       1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ,</span>
-<span class="go">       1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ,</span>
-<span class="go">       1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ,</span>
-<span class="go">       1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)))</span>
+<span class="go">array([[1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ],</span>
+<span class="go">       [1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ],</span>
+<span class="go">       [1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ],</span>
+<span class="go">       [1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ],</span>
+<span class="go">       [1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ],</span>
+<span class="go">       [1.  , 0.64, 0.36, 0.16, 0.04, 0.  , 0.04, 0.16, 0.36, 0.64, 1.  ],</span>
+<span class="go">       [1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ],</span>
+<span class="go">       [1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ],</span>
+<span class="go">       [1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ],</span>
+<span class="go">       [1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ],</span>
+<span class="go">       [1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ]])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">atan2</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">θ</span> <span class="o">=</span> <span class="p">[</span><span class="n">atan2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">y_disk</span><span class="p">,</span> <span class="n">x_disk</span><span class="p">)]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">max</span><span class="p">(</span><span class="n">θ</span><span class="p">)</span>

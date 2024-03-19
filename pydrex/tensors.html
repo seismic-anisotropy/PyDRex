@@ -247,11 +247,11 @@ symmetric 6x6 matrix.</p>
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>
 </span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a><span class="sd">    &gt;&gt;&gt; import numpy as np</span>
 </span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="sd">    &gt;&gt;&gt; upper_tri_to_symmetric(np.array([</span>
-</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="sd">    &gt;&gt;&gt;         [ 1.,  2.,  3.,  4.],</span>
-</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="sd">    &gt;&gt;&gt;         [ 0.,  5.,  6.,  7.],</span>
-</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="sd">    &gt;&gt;&gt;         [ 0.,  0.,  8.,  9.],</span>
-</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="sd">    &gt;&gt;&gt;         [ 9.,  0.,  0., 10.]</span>
-</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">    &gt;&gt;&gt; ]))</span>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="sd">    ...         [ 1.,  2.,  3.,  4.],</span>
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="sd">    ...         [ 0.,  5.,  6.,  7.],</span>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a><span class="sd">    ...         [ 0.,  0.,  8.,  9.],</span>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="sd">    ...         [ 9.,  0.,  0., 10.]</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">    ... ]))</span>
 </span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="sd">    array([[ 1.,  2.,  3.,  4.],</span>
 </span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="sd">           [ 2.,  5.,  6.,  7.],</span>
 </span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="sd">           [ 3.,  6.,  8.,  9.],</span>
@@ -370,12 +370,6 @@ symmetric 6x6 matrix.</p>
 </span><span id="L-252"><a href="#L-252"><span class="linenos">252</span></a>                                        <span class="o">*</span> <span class="n">tensor</span><span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">]</span>
 </span><span id="L-253"><a href="#L-253"><span class="linenos">253</span></a>                                    <span class="p">)</span>
 </span><span id="L-254"><a href="#L-254"><span class="linenos">254</span></a>    <span class="k">return</span> <span class="n">rotated_tensor</span>
-</span><span id="L-255"><a href="#L-255"><span class="linenos">255</span></a>
-</span><span id="L-256"><a href="#L-256"><span class="linenos">256</span></a>
-</span><span id="L-257"><a href="#L-257"><span class="linenos">257</span></a><span class="k">def</span> <span class="nf">__run_doctests</span><span class="p">():</span>
-</span><span id="L-258"><a href="#L-258"><span class="linenos">258</span></a>    <span class="kn">import</span> <span class="nn">doctest</span>
-</span><span id="L-259"><a href="#L-259"><span class="linenos">259</span></a>
-</span><span id="L-260"><a href="#L-260"><span class="linenos">260</span></a>    <span class="k">return</span> <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -384,17 +378,17 @@ symmetric 6x6 matrix.</p>
                     <div class="attr variable">
             <span class="name">PERMUTATION_SYMBOL</span>        =
 <input id="PERMUTATION_SYMBOL-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-            <label class="view-value-button pdoc-button" for="PERMUTATION_SYMBOL-view-value"></label><span class="default_value">array([[[0.e+00, 0.e+00, 0.e+00],
-        [0.e+00, 0.e+00, 1.e+00],
-        [0.e+00, -1.e+00, 0.e+00]],
+            <label class="view-value-button pdoc-button" for="PERMUTATION_SYMBOL-view-value"></label><span class="default_value">array([[[ 0.,  0.,  0.],
+        [ 0.,  0.,  1.],
+        [ 0., -1.,  0.]],
 
-       [[0.e+00, 0.e+00, -1.e+00],
-        [0.e+00, 0.e+00, 0.e+00],
-        [1.e+00, 0.e+00, 0.e+00]],
+       [[ 0.,  0., -1.],
+        [ 0.,  0.,  0.],
+        [ 1.,  0.,  0.]],
 
-       [[0.e+00, 1.e+00, 0.e+00],
-        [-1.e+00, 0.e+00, 0.e+00],
-        [0.e+00, 0.e+00, 0.e+00]]])</span>
+       [[ 0.,  1.,  0.],
+        [-1.,  0.,  0.],
+        [ 0.,  0.,  0.]]])</span>
 
         
     </div>
@@ -646,11 +640,11 @@ elasticity components.</p>
 </span><span id="upper_tri_to_symmetric-130"><a href="#upper_tri_to_symmetric-130"><span class="linenos">130</span></a>
 </span><span id="upper_tri_to_symmetric-131"><a href="#upper_tri_to_symmetric-131"><span class="linenos">131</span></a><span class="sd">    &gt;&gt;&gt; import numpy as np</span>
 </span><span id="upper_tri_to_symmetric-132"><a href="#upper_tri_to_symmetric-132"><span class="linenos">132</span></a><span class="sd">    &gt;&gt;&gt; upper_tri_to_symmetric(np.array([</span>
-</span><span id="upper_tri_to_symmetric-133"><a href="#upper_tri_to_symmetric-133"><span class="linenos">133</span></a><span class="sd">    &gt;&gt;&gt;         [ 1.,  2.,  3.,  4.],</span>
-</span><span id="upper_tri_to_symmetric-134"><a href="#upper_tri_to_symmetric-134"><span class="linenos">134</span></a><span class="sd">    &gt;&gt;&gt;         [ 0.,  5.,  6.,  7.],</span>
-</span><span id="upper_tri_to_symmetric-135"><a href="#upper_tri_to_symmetric-135"><span class="linenos">135</span></a><span class="sd">    &gt;&gt;&gt;         [ 0.,  0.,  8.,  9.],</span>
-</span><span id="upper_tri_to_symmetric-136"><a href="#upper_tri_to_symmetric-136"><span class="linenos">136</span></a><span class="sd">    &gt;&gt;&gt;         [ 9.,  0.,  0., 10.]</span>
-</span><span id="upper_tri_to_symmetric-137"><a href="#upper_tri_to_symmetric-137"><span class="linenos">137</span></a><span class="sd">    &gt;&gt;&gt; ]))</span>
+</span><span id="upper_tri_to_symmetric-133"><a href="#upper_tri_to_symmetric-133"><span class="linenos">133</span></a><span class="sd">    ...         [ 1.,  2.,  3.,  4.],</span>
+</span><span id="upper_tri_to_symmetric-134"><a href="#upper_tri_to_symmetric-134"><span class="linenos">134</span></a><span class="sd">    ...         [ 0.,  5.,  6.,  7.],</span>
+</span><span id="upper_tri_to_symmetric-135"><a href="#upper_tri_to_symmetric-135"><span class="linenos">135</span></a><span class="sd">    ...         [ 0.,  0.,  8.,  9.],</span>
+</span><span id="upper_tri_to_symmetric-136"><a href="#upper_tri_to_symmetric-136"><span class="linenos">136</span></a><span class="sd">    ...         [ 9.,  0.,  0., 10.]</span>
+</span><span id="upper_tri_to_symmetric-137"><a href="#upper_tri_to_symmetric-137"><span class="linenos">137</span></a><span class="sd">    ... ]))</span>
 </span><span id="upper_tri_to_symmetric-138"><a href="#upper_tri_to_symmetric-138"><span class="linenos">138</span></a><span class="sd">    array([[ 1.,  2.,  3.,  4.],</span>
 </span><span id="upper_tri_to_symmetric-139"><a href="#upper_tri_to_symmetric-139"><span class="linenos">139</span></a><span class="sd">           [ 2.,  5.,  6.,  7.],</span>
 </span><span id="upper_tri_to_symmetric-140"><a href="#upper_tri_to_symmetric-140"><span class="linenos">140</span></a><span class="sd">           [ 3.,  6.,  8.,  9.],</span>
@@ -668,11 +662,11 @@ elasticity components.</p>
 <div class="pdoc-code codehilite">
 <pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">upper_tri_to_symmetric</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="p">[</span> <span class="mf">1.</span><span class="p">,</span>  <span class="mf">2.</span><span class="p">,</span>  <span class="mf">3.</span><span class="p">,</span>  <span class="mf">4.</span><span class="p">],</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">5.</span><span class="p">,</span>  <span class="mf">6.</span><span class="p">,</span>  <span class="mf">7.</span><span class="p">],</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">8.</span><span class="p">,</span>  <span class="mf">9.</span><span class="p">],</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="p">[</span> <span class="mf">9.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">]))</span>
+<span class="gp">... </span>        <span class="p">[</span> <span class="mf">1.</span><span class="p">,</span>  <span class="mf">2.</span><span class="p">,</span>  <span class="mf">3.</span><span class="p">,</span>  <span class="mf">4.</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">5.</span><span class="p">,</span>  <span class="mf">6.</span><span class="p">,</span>  <span class="mf">7.</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">8.</span><span class="p">,</span>  <span class="mf">9.</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="p">[</span> <span class="mf">9.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">]))</span>
 <span class="go">array([[ 1.,  2.,  3.,  4.],</span>
 <span class="go">       [ 2.,  5.,  6.,  7.],</span>
 <span class="go">       [ 3.,  6.,  8.,  9.],</span>

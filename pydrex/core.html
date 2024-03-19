@@ -241,12 +241,12 @@ normalised to the stress required to initiate slip on the softest slip system</l
 </span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>            <span class="k">case</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">olivine_E</span><span class="p">:</span>
 </span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
 </span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a>            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unsupported olivine fabric&quot;</span><span class="p">)</span>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unsupported olivine fabric: </span><span class="si">{</span><span class="n">fabric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>    <span class="k">elif</span> <span class="n">phase</span> <span class="o">==</span> <span class="n">MineralPhase</span><span class="o">.</span><span class="n">enstatite</span><span class="p">:</span>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>        <span class="k">if</span> <span class="n">fabric</span> <span class="o">==</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">enstatite_AB</span><span class="p">:</span>
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unsupported enstatite fabric&quot;</span><span class="p">)</span>
-</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;phase must be a valid `MineralPhase`&quot;</span><span class="p">)</span>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unsupported enstatite fabric: </span><span class="si">{</span><span class="n">fabric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;phase must be a valid `MineralPhase`, not </span><span class="si">{</span><span class="n">phase</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>
 </span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>
 </span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="c1"># 12 args is a lot, but this way we can use numba</span>
@@ -595,17 +595,17 @@ normalised to the stress required to initiate slip on the softest slip system</l
                     <div class="attr variable">
             <span class="name">PERMUTATION_SYMBOL</span>        =
 <input id="PERMUTATION_SYMBOL-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-            <label class="view-value-button pdoc-button" for="PERMUTATION_SYMBOL-view-value"></label><span class="default_value">array([[[0.e+00, 0.e+00, 0.e+00],
-        [0.e+00, 0.e+00, 1.e+00],
-        [0.e+00, -1.e+00, 0.e+00]],
+            <label class="view-value-button pdoc-button" for="PERMUTATION_SYMBOL-view-value"></label><span class="default_value">array([[[ 0.,  0.,  0.],
+        [ 0.,  0.,  1.],
+        [ 0., -1.,  0.]],
 
-       [[0.e+00, 0.e+00, -1.e+00],
-        [0.e+00, 0.e+00, 0.e+00],
-        [1.e+00, 0.e+00, 0.e+00]],
+       [[ 0.,  0., -1.],
+        [ 0.,  0.,  0.],
+        [ 1.,  0.,  0.]],
 
-       [[0.e+00, 1.e+00, 0.e+00],
-        [-1.e+00, 0.e+00, 0.e+00],
-        [0.e+00, 0.e+00, 0.e+00]]])</span>
+       [[ 0.,  1.,  0.],
+        [-1.,  0.,  0.],
+        [ 0.,  0.,  0.]]])</span>
 
         
     </div>
@@ -962,12 +962,12 @@ normalised to the stress required to initiate slip on the softest slip system</l
 </span><span id="get_crss-91"><a href="#get_crss-91"><span class="linenos">91</span></a>            <span class="k">case</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">olivine_E</span><span class="p">:</span>
 </span><span id="get_crss-92"><a href="#get_crss-92"><span class="linenos">92</span></a>                <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
 </span><span id="get_crss-93"><a href="#get_crss-93"><span class="linenos">93</span></a>            <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-</span><span id="get_crss-94"><a href="#get_crss-94"><span class="linenos">94</span></a>                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unsupported olivine fabric&quot;</span><span class="p">)</span>
+</span><span id="get_crss-94"><a href="#get_crss-94"><span class="linenos">94</span></a>                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unsupported olivine fabric: </span><span class="si">{</span><span class="n">fabric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span><span id="get_crss-95"><a href="#get_crss-95"><span class="linenos">95</span></a>    <span class="k">elif</span> <span class="n">phase</span> <span class="o">==</span> <span class="n">MineralPhase</span><span class="o">.</span><span class="n">enstatite</span><span class="p">:</span>
 </span><span id="get_crss-96"><a href="#get_crss-96"><span class="linenos">96</span></a>        <span class="k">if</span> <span class="n">fabric</span> <span class="o">==</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">enstatite_AB</span><span class="p">:</span>
 </span><span id="get_crss-97"><a href="#get_crss-97"><span class="linenos">97</span></a>            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-</span><span id="get_crss-98"><a href="#get_crss-98"><span class="linenos">98</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;unsupported enstatite fabric&quot;</span><span class="p">)</span>
-</span><span id="get_crss-99"><a href="#get_crss-99"><span class="linenos">99</span></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;phase must be a valid `MineralPhase`&quot;</span><span class="p">)</span>
+</span><span id="get_crss-98"><a href="#get_crss-98"><span class="linenos">98</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unsupported enstatite fabric: </span><span class="si">{</span><span class="n">fabric</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="get_crss-99"><a href="#get_crss-99"><span class="linenos">99</span></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;phase must be a valid `MineralPhase`, not </span><span class="si">{</span><span class="n">phase</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </span></pre></div>
 
 
