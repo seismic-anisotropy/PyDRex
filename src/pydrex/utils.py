@@ -93,21 +93,21 @@ def default_ncpus():
         return 1
 
 
-def get_steps(a):
+def diff_like(a):
     """Get forward difference of 2D array `a`, with repeated last elements.
 
     The repeated last elements ensure that output and input arrays have equal shape.
 
     Examples:
 
-    >>> get_steps(np.array([1, 2, 3, 4, 5]))
+    >>> diff_like(np.array([1, 2, 3, 4, 5]))
     array([[1, 1, 1, 1, 1]])
 
-    >>> get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10]]))
+    >>> diff_like(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10]]))
     array([[1, 1, 1, 1, 1],
            [2, 3, 3, 1, 1]])
 
-    >>> get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10], [1, 0, 0, 0, np.inf]]))
+    >>> diff_like(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10], [1, 0, 0, 0, np.inf]]))
     array([[ 1.,  1.,  1.,  1.,  1.],
            [ 2.,  3.,  3.,  1.,  1.],
            [-1.,  0.,  0., inf, nan]])

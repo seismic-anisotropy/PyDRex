@@ -122,8 +122,8 @@ def simple_shear_2d(direction, deformation_plane, strain_rate):
     Args:
     - `direction` (one of {"X", "Y", "Z"}) — velocity vector direction
     - `deformation_plane` (one of {"X", "Y", "Z"}) — direction of velocity gradient
-    - `strain_rate` (float) — 1/2 × strength of velocity gradient (i.e. magnitude of the
-      velocity at a unit distance from the shear plane)
+    - `strain_rate` (float) — 1/2 × magnitude of the largest eigenvalue of the velocity
+      gradient
 
     .. note::
         Input arrays to the returned callables must have homogeneous element types.

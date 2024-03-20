@@ -267,18 +267,18 @@ class Mineral:
         else:
             shape_of_orientations = "(?)"
 
-        return (
-            self.__class__.__qualname__
-            + f"(phase={self.phase!s}, "
-            + f"fabric={self.fabric!s}, "
-            + f"regime={self.regime!s}, "
-            + f"n_grains={self.n_grains!s}, "
-            + f"fractions=<{self.fractions.__class__.__qualname__}"
-            + f" of {self.fractions[0].__class__.__qualname__} {shape_of_fractions}>, "
-            + f"orientations=<{self.orientations.__class__.__qualname__}"
-            + f" of {self.orientations[0].__class__.__qualname__}"
-            + f" {shape_of_orientations}>)"
-        )
+        obj = self.__class__.__qualname__
+        phase = f"(phase={self.phase!r}, "
+        fabric = f"fabric={self.fabric!r}, "
+        regime = f"regime={self.regime!r}, "
+        n_grains = f"n_grains={self.n_grains}, "
+        _fclass = self.fractions.__class__.__qualname__
+        _f0class = self.fractions[0].__class__.__qualname__
+        frac = f"fractions=<{_fclass} of {_f0class} {shape_of_fractions}>, "
+        _oclass = self.orientations.__class__.__qualname__
+        _o0class = self.orientations[0].__class__.__qualname__
+        orient = f"orientations=<{_oclass} of {_o0class} {shape_of_orientations}>)"
+        return f"{obj}{phase}{fabric}{regime}{n_grains}{frac}{orient}"
 
     def _repr_pretty_(self, p, cycle):
         # Format to use when printing to IPython or other interactive console.
@@ -367,7 +367,9 @@ class Mineral:
             elif self.phase == _core.MineralPhase.enstatite:
                 volume_fraction = config["enstatite_fraction"]
             else:
-                assert False  # Should never happen.
+                raise ValueError(
+                    f"phase must be a valid `MineralPhase`, not {self.phase}"
+                )
 
             strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
             strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
