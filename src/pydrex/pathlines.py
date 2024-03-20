@@ -14,6 +14,7 @@ def get_pathline(
     min_coords,
     max_coords,
     max_strain,
+    regular_steps=None,
     **kwargs,
 ):
     """Determine the pathline for a particle in a steady state flow.
@@ -37,6 +38,10 @@ def get_pathline(
       location, useful if the pathline never inflows into the domain (the pathline will
       only be traced backwards until a strain of 0 is reached, unless a domain boundary
       is reached first)
+    - `regular_steps` (float, optional) — number of time steps to use for regular
+      resampling between the start (t << 0) and end (t <= 0) of the pathline
+      (if `None`, which is the default, then the timestamps obtained from
+      `scipy.integrate.solve_ivp` are returned instead)
 
     Optional keyword arguments will be passed to `scipy.integrate.solve_ivp`. However,
     some of the arguments to the `solve_ivp` call may not be modified, and a warning
@@ -106,8 +111,10 @@ def get_pathline(
         path.t[-2],
     )
 
-    # Remove the last timestep — integration stops one step after a terminal event.
-    return path.t[:-1], path.sol
+    if regular_steps is None:
+        return path.t[::-1], path.sol
+    else:
+        return np.linspace(path.t[-1], path.t[0], regular_steps + 1), path.sol
 
 
 def _ivp_func(time, point, get_velocity, get_velocity_gradient, min_coords, max_coords):
