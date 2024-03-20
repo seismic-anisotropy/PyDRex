@@ -355,8 +355,8 @@ def coaxial_index(orientations, axis1="b", axis2="a"):
     fluctuations compared to the raw eigenvalue diagnostics.
 
     """
-    P1, G1, _ = symmetry(orientations, axis=axis1)
-    P2, G2, _ = symmetry(orientations, axis=axis2)
+    P1, G1, _ = symmetry_pgr(orientations, axis=axis1)
+    P2, G2, _ = symmetry_pgr(orientations, axis=axis2)
     return 0.5 * (2 - (P1 / (G1 + P1)) - (G2 / (G2 + P2)))
 
 
