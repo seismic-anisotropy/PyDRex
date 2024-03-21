@@ -107,8 +107,8 @@ def get_pathline(
         "calculated pathline from %s (t = %e) to %s (t = %e)",
         path.sol(path.t[0]),
         path.t[0],
-        path.sol(path.t[-2]),
-        path.t[-2],
+        path.sol(path.t[-1]),
+        path.t[-1],
     )
 
     if regular_steps is None:

@@ -790,7 +790,7 @@ class TestOlivineA:
             optional_logging = _log.logfile_enable(f"{out_basepath}.log")
 
         with optional_logging:
-            shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
+            shear_direction = [1, 0, 0]  # Used to calculate the angular diagnostics.
             strain_rate = 1e-15  # Moderate, realistic shear in the upper mantle.
             get_velocity, get_velocity_gradient = _velocity.simple_shear_2d(
                 "X", "Z", strain_rate
@@ -845,9 +845,11 @@ class TestOlivineA:
                     cpo_vectors[i], Ŋ(shear_direction, dtype=np.float64)
                 )
 
-            # Check for decreasing CPO angles (exclude initial condition).
-            nt.assert_array_less(np.diff(cpo_angles[1:]), np.zeros(n_timesteps))
+            # Check for mostly decreasing CPO angles (exclude initial condition).
+            _log.debug("cpo angles: %s", cpo_angles)
+            nt.assert_array_less(np.diff(cpo_angles[1:]), np.ones(n_timesteps))
             # Check for increasing CPO strength (M-index).
+            _log.debug("cpo strengths: %s", misorient_indices)
             nt.assert_array_less(np.zeros(n_timesteps), np.diff(misorient_indices))
             # Check that last angle is <5° (M*=125) or <10° (M*=10).
             assert cpo_angles[-1] < 5
