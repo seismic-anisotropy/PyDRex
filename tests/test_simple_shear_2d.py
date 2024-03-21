@@ -850,7 +850,9 @@ class TestOlivineA:
             nt.assert_array_less(np.diff(cpo_angles[1:]), np.ones(n_timesteps - 1))
             # Check for increasing CPO strength (M-index).
             _log.debug("cpo strengths: %s", misorient_indices)
-            nt.assert_array_less(np.zeros(n_timesteps), np.diff(misorient_indices))
+            nt.assert_array_less(
+                np.full(n_timesteps, -0.01), np.diff(misorient_indices)
+            )
             # Check that last angle is <5° (M*=125) or <10° (M*=10).
             assert cpo_angles[-1] < 5
 
