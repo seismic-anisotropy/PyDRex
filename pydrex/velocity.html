@@ -212,8 +212,8 @@ can be directly used as arguments to e.g. <code><a href="minerals.html#Mineral.u
 </span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="sd">    Args:</span>
 </span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">    - `direction` (one of {&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;}) — velocity vector direction</span>
 </span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">    - `deformation_plane` (one of {&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;}) — direction of velocity gradient</span>
-</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">    - `strain_rate` (float) — 1/2 × strength of velocity gradient (i.e. magnitude of the</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">      velocity at a unit distance from the shear plane)</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a><span class="sd">    - `strain_rate` (float) — 1/2 × magnitude of the largest eigenvalue of the velocity</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">      gradient</span>
 </span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>
 </span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="sd">    .. note::</span>
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">        Input arrays to the returned callables must have homogeneous element types.</span>
@@ -457,8 +457,8 @@ can be directly used as arguments to e.g. <code><a href="minerals.html#Mineral.u
 </span><span id="simple_shear_2d-123"><a href="#simple_shear_2d-123"><span class="linenos">123</span></a><span class="sd">    Args:</span>
 </span><span id="simple_shear_2d-124"><a href="#simple_shear_2d-124"><span class="linenos">124</span></a><span class="sd">    - `direction` (one of {&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;}) — velocity vector direction</span>
 </span><span id="simple_shear_2d-125"><a href="#simple_shear_2d-125"><span class="linenos">125</span></a><span class="sd">    - `deformation_plane` (one of {&quot;X&quot;, &quot;Y&quot;, &quot;Z&quot;}) — direction of velocity gradient</span>
-</span><span id="simple_shear_2d-126"><a href="#simple_shear_2d-126"><span class="linenos">126</span></a><span class="sd">    - `strain_rate` (float) — 1/2 × strength of velocity gradient (i.e. magnitude of the</span>
-</span><span id="simple_shear_2d-127"><a href="#simple_shear_2d-127"><span class="linenos">127</span></a><span class="sd">      velocity at a unit distance from the shear plane)</span>
+</span><span id="simple_shear_2d-126"><a href="#simple_shear_2d-126"><span class="linenos">126</span></a><span class="sd">    - `strain_rate` (float) — 1/2 × magnitude of the largest eigenvalue of the velocity</span>
+</span><span id="simple_shear_2d-127"><a href="#simple_shear_2d-127"><span class="linenos">127</span></a><span class="sd">      gradient</span>
 </span><span id="simple_shear_2d-128"><a href="#simple_shear_2d-128"><span class="linenos">128</span></a>
 </span><span id="simple_shear_2d-129"><a href="#simple_shear_2d-129"><span class="linenos">129</span></a><span class="sd">    .. note::</span>
 </span><span id="simple_shear_2d-130"><a href="#simple_shear_2d-130"><span class="linenos">130</span></a><span class="sd">        Input arrays to the returned callables must have homogeneous element types.</span>
@@ -518,8 +518,8 @@ can be directly used as arguments to e.g. <code><a href="minerals.html#Mineral.u
 <ul>
 <li><code>direction</code> (one of {"X", "Y", "Z"}) — velocity vector direction</li>
 <li><code>deformation_plane</code> (one of {"X", "Y", "Z"}) — direction of velocity gradient</li>
-<li><code>strain_rate</code> (float) — 1/2 × strength of velocity gradient (i.e. magnitude of the
-velocity at a unit distance from the shear plane)</li>
+<li><code>strain_rate</code> (float) — 1/2 × magnitude of the largest eigenvalue of the velocity
+gradient</li>
 </ul>
 
 <div class="pdoc-alert pdoc-alert-note">

@@ -66,7 +66,7 @@
                     <a class="function" href="#default_ncpus">default_ncpus</a>
             </li>
             <li>
-                    <a class="function" href="#get_steps">get_steps</a>
+                    <a class="function" href="#diff_like">diff_like</a>
             </li>
             <li>
                     <a class="function" href="#angle_fse_simpleshear">angle_fse_simpleshear</a>
@@ -203,21 +203,21 @@
 </span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>        <span class="k">return</span> <span class="mi">1</span>
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>
-</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="k">def</span> <span class="nf">get_steps</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="k">def</span> <span class="nf">diff_like</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
 </span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get forward difference of 2D array `a`, with repeated last elements.</span>
 </span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>
 </span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="sd">    The repeated last elements ensure that output and input arrays have equal shape.</span>
 </span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>
 </span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="sd">    Examples:</span>
 </span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>
-</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a><span class="sd">    &gt;&gt;&gt; get_steps(np.array([1, 2, 3, 4, 5]))</span>
+</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a><span class="sd">    &gt;&gt;&gt; diff_like(np.array([1, 2, 3, 4, 5]))</span>
 </span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a><span class="sd">    array([[1, 1, 1, 1, 1]])</span>
 </span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>
-</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a><span class="sd">    &gt;&gt;&gt; get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10]]))</span>
+</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a><span class="sd">    &gt;&gt;&gt; diff_like(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10]]))</span>
 </span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="sd">    array([[1, 1, 1, 1, 1],</span>
 </span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a><span class="sd">           [2, 3, 3, 1, 1]])</span>
 </span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>
-</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="sd">    &gt;&gt;&gt; get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10], [1, 0, 0, 0, np.inf]]))</span>
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="sd">    &gt;&gt;&gt; diff_like(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10], [1, 0, 0, 0, np.inf]]))</span>
 </span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="sd">    array([[ 1.,  1.,  1.,  1.,  1.],</span>
 </span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="sd">           [ 2.,  3.,  3.,  1.,  1.],</span>
 </span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a><span class="sd">           [-1.,  0.,  0., inf, nan]])</span>
@@ -526,41 +526,41 @@ If any of these fail, a fallback of 1 is used and a warning is logged.</p>
 
 
                 </section>
-                <section id="get_steps">
-                            <input id="get_steps-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+                <section id="diff_like">
+                            <input id="diff_like-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_steps</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">a</span></span><span class="return-annotation">):</span></span>
+        <span class="name">diff_like</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">a</span></span><span class="return-annotation">):</span></span>
 
-                <label class="view-source-button" for="get_steps-view-source"><span>View Source</span></label>
+                <label class="view-source-button" for="diff_like-view-source"><span>View Source</span></label>
 
     </div>
-    <a class="headerlink" href="#get_steps"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="get_steps-97"><a href="#get_steps-97"><span class="linenos"> 97</span></a><span class="k">def</span> <span class="nf">get_steps</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
-</span><span id="get_steps-98"><a href="#get_steps-98"><span class="linenos"> 98</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get forward difference of 2D array `a`, with repeated last elements.</span>
-</span><span id="get_steps-99"><a href="#get_steps-99"><span class="linenos"> 99</span></a>
-</span><span id="get_steps-100"><a href="#get_steps-100"><span class="linenos">100</span></a><span class="sd">    The repeated last elements ensure that output and input arrays have equal shape.</span>
-</span><span id="get_steps-101"><a href="#get_steps-101"><span class="linenos">101</span></a>
-</span><span id="get_steps-102"><a href="#get_steps-102"><span class="linenos">102</span></a><span class="sd">    Examples:</span>
-</span><span id="get_steps-103"><a href="#get_steps-103"><span class="linenos">103</span></a>
-</span><span id="get_steps-104"><a href="#get_steps-104"><span class="linenos">104</span></a><span class="sd">    &gt;&gt;&gt; get_steps(np.array([1, 2, 3, 4, 5]))</span>
-</span><span id="get_steps-105"><a href="#get_steps-105"><span class="linenos">105</span></a><span class="sd">    array([[1, 1, 1, 1, 1]])</span>
-</span><span id="get_steps-106"><a href="#get_steps-106"><span class="linenos">106</span></a>
-</span><span id="get_steps-107"><a href="#get_steps-107"><span class="linenos">107</span></a><span class="sd">    &gt;&gt;&gt; get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10]]))</span>
-</span><span id="get_steps-108"><a href="#get_steps-108"><span class="linenos">108</span></a><span class="sd">    array([[1, 1, 1, 1, 1],</span>
-</span><span id="get_steps-109"><a href="#get_steps-109"><span class="linenos">109</span></a><span class="sd">           [2, 3, 3, 1, 1]])</span>
-</span><span id="get_steps-110"><a href="#get_steps-110"><span class="linenos">110</span></a>
-</span><span id="get_steps-111"><a href="#get_steps-111"><span class="linenos">111</span></a><span class="sd">    &gt;&gt;&gt; get_steps(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10], [1, 0, 0, 0, np.inf]]))</span>
-</span><span id="get_steps-112"><a href="#get_steps-112"><span class="linenos">112</span></a><span class="sd">    array([[ 1.,  1.,  1.,  1.,  1.],</span>
-</span><span id="get_steps-113"><a href="#get_steps-113"><span class="linenos">113</span></a><span class="sd">           [ 2.,  3.,  3.,  1.,  1.],</span>
-</span><span id="get_steps-114"><a href="#get_steps-114"><span class="linenos">114</span></a><span class="sd">           [-1.,  0.,  0., inf, nan]])</span>
-</span><span id="get_steps-115"><a href="#get_steps-115"><span class="linenos">115</span></a>
-</span><span id="get_steps-116"><a href="#get_steps-116"><span class="linenos">116</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="get_steps-117"><a href="#get_steps-117"><span class="linenos">117</span></a>    <span class="n">a2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-</span><span id="get_steps-118"><a href="#get_steps-118"><span class="linenos">118</span></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span>
-</span><span id="get_steps-119"><a href="#get_steps-119"><span class="linenos">119</span></a>        <span class="n">a2</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">a2</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">a2</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">a2</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">2</span><span class="p">]),</span> <span class="p">(</span><span class="n">a2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
-</span><span id="get_steps-120"><a href="#get_steps-120"><span class="linenos">120</span></a>    <span class="p">)</span>
+    <a class="headerlink" href="#diff_like"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="diff_like-97"><a href="#diff_like-97"><span class="linenos"> 97</span></a><span class="k">def</span> <span class="nf">diff_like</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+</span><span id="diff_like-98"><a href="#diff_like-98"><span class="linenos"> 98</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Get forward difference of 2D array `a`, with repeated last elements.</span>
+</span><span id="diff_like-99"><a href="#diff_like-99"><span class="linenos"> 99</span></a>
+</span><span id="diff_like-100"><a href="#diff_like-100"><span class="linenos">100</span></a><span class="sd">    The repeated last elements ensure that output and input arrays have equal shape.</span>
+</span><span id="diff_like-101"><a href="#diff_like-101"><span class="linenos">101</span></a>
+</span><span id="diff_like-102"><a href="#diff_like-102"><span class="linenos">102</span></a><span class="sd">    Examples:</span>
+</span><span id="diff_like-103"><a href="#diff_like-103"><span class="linenos">103</span></a>
+</span><span id="diff_like-104"><a href="#diff_like-104"><span class="linenos">104</span></a><span class="sd">    &gt;&gt;&gt; diff_like(np.array([1, 2, 3, 4, 5]))</span>
+</span><span id="diff_like-105"><a href="#diff_like-105"><span class="linenos">105</span></a><span class="sd">    array([[1, 1, 1, 1, 1]])</span>
+</span><span id="diff_like-106"><a href="#diff_like-106"><span class="linenos">106</span></a>
+</span><span id="diff_like-107"><a href="#diff_like-107"><span class="linenos">107</span></a><span class="sd">    &gt;&gt;&gt; diff_like(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10]]))</span>
+</span><span id="diff_like-108"><a href="#diff_like-108"><span class="linenos">108</span></a><span class="sd">    array([[1, 1, 1, 1, 1],</span>
+</span><span id="diff_like-109"><a href="#diff_like-109"><span class="linenos">109</span></a><span class="sd">           [2, 3, 3, 1, 1]])</span>
+</span><span id="diff_like-110"><a href="#diff_like-110"><span class="linenos">110</span></a>
+</span><span id="diff_like-111"><a href="#diff_like-111"><span class="linenos">111</span></a><span class="sd">    &gt;&gt;&gt; diff_like(np.array([[1, 2, 3, 4, 5], [1, 3, 6, 9, 10], [1, 0, 0, 0, np.inf]]))</span>
+</span><span id="diff_like-112"><a href="#diff_like-112"><span class="linenos">112</span></a><span class="sd">    array([[ 1.,  1.,  1.,  1.,  1.],</span>
+</span><span id="diff_like-113"><a href="#diff_like-113"><span class="linenos">113</span></a><span class="sd">           [ 2.,  3.,  3.,  1.,  1.],</span>
+</span><span id="diff_like-114"><a href="#diff_like-114"><span class="linenos">114</span></a><span class="sd">           [-1.,  0.,  0., inf, nan]])</span>
+</span><span id="diff_like-115"><a href="#diff_like-115"><span class="linenos">115</span></a>
+</span><span id="diff_like-116"><a href="#diff_like-116"><span class="linenos">116</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="diff_like-117"><a href="#diff_like-117"><span class="linenos">117</span></a>    <span class="n">a2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</span><span id="diff_like-118"><a href="#diff_like-118"><span class="linenos">118</span></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span>
+</span><span id="diff_like-119"><a href="#diff_like-119"><span class="linenos">119</span></a>        <span class="n">a2</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">a2</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">a2</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">a2</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">2</span><span class="p">]),</span> <span class="p">(</span><span class="n">a2</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+</span><span id="diff_like-120"><a href="#diff_like-120"><span class="linenos">120</span></a>    <span class="p">)</span>
 </span></pre></div>
 
 
@@ -571,20 +571,20 @@ If any of these fail, a fallback of 1 is used and a warning is logged.</p>
 <p>Examples:</p>
 
 <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">get_steps</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]))</span>
+<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">diff_like</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]))</span>
 <span class="go">array([[1, 1, 1, 1, 1]])</span>
 </code></pre>
 </div>
 
 <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">get_steps</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">]]))</span>
+<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">diff_like</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">]]))</span>
 <span class="go">array([[1, 1, 1, 1, 1],</span>
 <span class="go">       [2, 3, 3, 1, 1]])</span>
 </code></pre>
 </div>
 
 <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">get_steps</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]]))</span>
+<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">diff_like</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]]))</span>
 <span class="go">array([[ 1.,  1.,  1.,  1.,  1.],</span>
 <span class="go">       [ 2.,  3.,  3.,  1.,  1.],</span>
 <span class="go">       [-1.,  0.,  0., inf, nan]])</span>
