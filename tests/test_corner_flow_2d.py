@@ -52,15 +52,15 @@ class TestCornerOlivineA:
             seed=seed,
         )
         deformation_gradient = np.eye(3)
-        timestamps_back, get_position = _path.get_pathline(
+        timestamps, get_position = _path.get_pathline(
             final_location,
             get_velocity,
             get_velocity_gradient,
             min_coords,
             max_coords,
             max_strain,
+            regular_steps=n_timesteps,
         )
-        timestamps = np.linspace(timestamps_back[-1], timestamps_back[0], n_timesteps)
         positions = [get_position(t) for t in timestamps]
         velocity_gradients = [get_velocity_gradient(np.asarray(x)) for x in positions]
         strains = np.empty_like(timestamps)

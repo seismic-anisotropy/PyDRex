@@ -7,14 +7,18 @@ from time import process_time
 
 import numpy as np
 import pytest
+from numpy import asarray as Ŋ
 from numpy import testing as nt
 from scipy.interpolate import PchipInterpolator
 
 from pydrex import core as _core
 from pydrex import diagnostics as _diagnostics
+from pydrex import geometry as _geo
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
+from pydrex import pathlines as _paths
+from pydrex import stats as _stats
 from pydrex import utils as _utils
 from pydrex import velocity as _velocity
 from pydrex import visualisation as _vis
@@ -23,14 +27,90 @@ from pydrex import visualisation as _vis
 SUBDIR = "2d_simple_shear"
 
 
+class TestPreliminaries:
+    """Preliminary tests to check that various auxiliary routines are working."""
+
+    def test_strain_increment(self):
+        """Test for accumulating strain via strain increment calculations."""
+        _, get_velocity_gradient = _velocity.simple_shear_2d("X", "Z", 1)
+        timestamps = np.linspace(0, 1, 10)  # Solve until D₀t=1 (tensorial strain).
+        strains_inc = np.zeros_like(timestamps)
+        L = get_velocity_gradient(Ŋ([0e0, 0e0, 0e0]))
+        for i, ε in enumerate(strains_inc[1:]):
+            strains_inc[i + 1] = strains_inc[i] + _utils.strain_increment(
+                timestamps[1] - timestamps[0],
+                L,
+            )
+        # For constant timesteps, check strains == positive_timestamps * strain_rate.
+        nt.assert_allclose(strains_inc, timestamps, atol=6e-16, rtol=0)
+
+        # Same thing, but for strain rate similar to experiments.
+        _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", 1e-5)
+        timestamps = np.linspace(0, 1e6, 10)  # Solve until D₀t=10 (tensorial strain).
+        strains_inc = np.zeros_like(timestamps)
+        L = get_velocity_gradient(Ŋ([0e0, 0e0, 0e0]))
+        for i, ε in enumerate(strains_inc[1:]):
+            strains_inc[i + 1] = strains_inc[i] + _utils.strain_increment(
+                timestamps[1] - timestamps[0],
+                L,
+            )
+        nt.assert_allclose(strains_inc, timestamps * 1e-5, atol=5e-15, rtol=0)
+
+        # Again, but this time the particle will move (using get_pathline).
+        # We use a 400km x 400km box and a strain rate of 1e-15 s⁻¹.
+        get_velocity, get_velocity_gradient = _velocity.simple_shear_2d("X", "Z", 1e-15)
+        timestamps, get_position = _paths.get_pathline(
+            Ŋ([1e5, 0e0, 1e5]),
+            get_velocity,
+            get_velocity_gradient,
+            Ŋ([-2e5, 0e0, -2e5]),
+            Ŋ([2e5, 0e0, 2e5]),
+            2,
+            regular_steps=10,
+        )
+        positions = [get_position(t) for t in timestamps]
+        velocity_gradients = [get_velocity_gradient(Ŋ(x)) for x in positions]
+
+        # Check that polycrystal is experiencing steady velocity gradient.
+        nt.assert_array_equal(
+            velocity_gradients, np.full_like(velocity_gradients, velocity_gradients[0])
+        )
+        # Check that positions are changing as expected.
+        xdiff = np.diff(Ŋ([x[0] for x in positions]))
+        zdiff = np.diff(Ŋ([x[2] for x in positions]))
+        assert xdiff[0] > 0
+        assert zdiff[0] == 0
+        nt.assert_allclose(xdiff, np.full_like(xdiff, xdiff[0]), rtol=0, atol=1e-10)
+        nt.assert_allclose(zdiff, np.full_like(zdiff, zdiff[0]), rtol=0, atol=1e-10)
+        strains_inc = np.zeros_like(timestamps)
+        for t, time in enumerate(timestamps[:-1], start=1):
+            strains_inc[t] = strains_inc[t - 1] + (
+                _utils.strain_increment(timestamps[t] - time, velocity_gradients[t])
+            )
+        # fig, ax, _, _ = _vis.pathline_box2d(
+        #     None,
+        #     get_velocity,
+        #     "xz",
+        #     strains_inc,
+        #     positions,
+        #     ".",
+        #     Ŋ([-2e5, -2e5]),
+        #     Ŋ([2e5, 2e5]),
+        #     [20, 20],
+        # )
+        # fig.savefig("/tmp/fig.png")
+        nt.assert_allclose(
+            strains_inc,
+            (timestamps - timestamps[0]) * 1e-15,
+            atol=5e-15,
+            rtol=0,
+        )
+
+
 class TestOlivineA:
     """Tests for stationary A-type olivine polycrystals in 2D simple shear."""
 
     class_id = "olivineA"
-
-    @classmethod
-    def get_position(cls, t):
-        return np.zeros(3)  # These crystals are stationary.
 
     @classmethod
     def run(
@@ -42,6 +122,7 @@ class TestOlivineA:
         shear_direction,
         seed=None,
         return_fse=None,
+        get_position=lambda t: np.zeros(3),  # Stationary particles by default.
     ):
         """Reusable logic for 2D olivine (A-type) simple shear tests.
 
@@ -77,7 +158,7 @@ class TestOlivineA:
                 params,
                 deformation_gradient,
                 get_velocity_gradient,
-                pathline=(time, timestamps[t], cls.get_position),
+                pathline=(time, timestamps[t], get_position),
             )
             _log.debug(
                 "› velocity gradient = %s",
@@ -698,3 +779,95 @@ class TestOlivineA:
                 _log.info(
                     "Sums of squared residuals (r-values) for each M∗: %s", r2vals
                 )
+
+    @pytest.mark.big
+    def test_dudz_pathline(self, outdir, seed):
+        """Test alignment of olivine a-axis for a polycrystal advected on a pathline."""
+        test_id = "dudz_pathline"
+        optional_logging = cl.nullcontext()
+        if outdir is not None:
+            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}"
+            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+
+        with optional_logging:
+            shear_direction = [1, 0, 0]  # Used to calculate the angular diagnostics.
+            strain_rate = 1e-15  # Moderate, realistic shear in the upper mantle.
+            get_velocity, get_velocity_gradient = _velocity.simple_shear_2d(
+                "X", "Z", strain_rate
+            )
+            n_timesteps = 10
+            timestamps, get_position = _paths.get_pathline(
+                Ŋ([1e5, 0e0, 1e5]),
+                get_velocity,
+                get_velocity_gradient,
+                Ŋ([-2e5, 0e0, -2e5]),
+                Ŋ([2e5, 0e0, 2e5]),
+                2,
+                regular_steps=n_timesteps,
+            )
+            positions = [get_position(t) for t in timestamps]
+            velocity_gradients = [get_velocity_gradient(Ŋ(x)) for x in positions]
+
+            params = _io.DEFAULT_PARAMS
+            params["number_of_grains"] = 5000
+            olA = _minerals.Mineral(n_grains=params["number_of_grains"], seed=seed)
+            deformation_gradient = np.eye(3)
+            strains = np.zeros_like(timestamps)
+            for t, time in enumerate(timestamps[:-1], start=1):
+                strains[t] = strains[t - 1] + (
+                    _utils.strain_increment(timestamps[t] - time, velocity_gradients[t])
+                )
+                _log.info("step %d/%d (ε = %.2f)", t, len(timestamps) - 1, strains[t])
+                deformation_gradient = olA.update_orientations(
+                    params,
+                    deformation_gradient,
+                    get_velocity_gradient,
+                    pathline=(time, timestamps[t], get_position),
+                )
+
+            orient_resampled, fractions_resampled = _stats.resample_orientations(
+                olA.orientations, olA.fractions, seed=seed
+            )
+            # About 36GB, 26 min needed with float64. GitHub macos runner has 14GB.
+            misorient_indices = _diagnostics.misorientation_indices(
+                orient_resampled,
+                _geo.LatticeSystem.orthorhombic,
+                ncpus=3,
+            )
+            cpo_vectors = np.zeros((n_timesteps + 1, 3))
+            cpo_angles = np.zeros(n_timesteps + 1)
+            for i, matrices in enumerate(orient_resampled):
+                cpo_vectors[i] = _diagnostics.bingham_average(
+                    matrices,
+                    axis=_minerals.OLIVINE_PRIMARY_AXIS[olA.fabric],
+                )
+                cpo_angles[i] = _diagnostics.smallest_angle(
+                    cpo_vectors[i], Ŋ(shear_direction, dtype=np.float64)
+                )
+
+            # Check for mostly decreasing CPO angles (exclude initial condition).
+            _log.debug("cpo angles: %s", cpo_angles)
+            nt.assert_array_less(np.diff(cpo_angles[1:]), np.ones(n_timesteps - 1))
+            # Check for increasing CPO strength (M-index).
+            _log.debug("cpo strengths: %s", misorient_indices)
+            nt.assert_array_less(
+                np.full(n_timesteps, -0.01), np.diff(misorient_indices)
+            )
+            # Check that last angle is <5° (M*=125) or <10° (M*=10).
+            assert cpo_angles[-1] < 5
+
+        if outdir is not None:
+            fig, ax, _, _ = _vis.pathline_box2d(
+                None,
+                get_velocity,
+                "xz",
+                strains,
+                positions,
+                ".",
+                Ŋ([-2e5, -2e5]),
+                Ŋ([2e5, 2e5]),
+                [20, 20],
+                cpo_vectors=cpo_vectors,
+                cpo_strengths=misorient_indices,
+            )
+            fig.savefig(f"{out_basepath}.pdf")
