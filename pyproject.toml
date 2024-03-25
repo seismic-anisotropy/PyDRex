@@ -38,13 +38,16 @@ dependencies = [
     "scipy >= 1.2",  # <https://github.com/scipy/scipy/pull/9176>
     "pyyaml",  # For YAML headers of plaintext datafiles.
     "meshio",  # For reading VTK and other meshes.
+    "matplotlib",  # Plotting library, The.
     "cmcrameri",  # Matplotlib colormaps using the palettes designed by Fabio Crameri.
+    "h5py",  # For reading Fluidity .h5part files.
 ]
 
 [project.optional-dependencies]
-test = ["pytest", "matplotlib"]
+test = ["pytest"]
 doc = ["pdoc"]
-dev = ["pytest", "matplotlib", "pdoc", "ruff", "black", "h5py", "isort", "ipython"]
+mesh = ["gmsh"]  # NOTE: Saying `import gmsh` is like saying "I don't want my CI to work".
+dev = ["pytest", "uniplot", "pdoc", "ruff", "black", "isort", "ptpython"]
 lsp = ["python-lsp-server", "pyls-isort", "python-lsp-black", "python-lsp-ruff"]
 
 [project.urls]
@@ -53,6 +56,8 @@ documentation = "https://seismic-anisotropy.github.io/PyDRex/"
 
 [project.scripts]
 pydrex-polefigures = "pydrex.cli:CLI_HANDLERS.pole_figure_visualiser"
+pydrex-mesh = "pydrex.cli:CLI_HANDLERS.mesh_generator"
+pydrex-h5party="pydrex.cli:CLI_HANDLERS.h5part_extractor"
 npzshow = "pydrex.cli:CLI_HANDLERS.npz_file_inspector"
 
 # Make setuptools include datafiles in wheels/packages.
