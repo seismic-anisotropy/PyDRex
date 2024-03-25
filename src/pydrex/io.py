@@ -22,6 +22,7 @@ import pathlib
 import tomllib
 from importlib.resources import files
 
+import h5py
 import meshio
 import numpy as np
 import yaml
@@ -55,6 +56,97 @@ SCSV_TYPEMAP = {
 
 _SCSV_DEFAULT_TYPE = "string"
 _SCSV_DEFAULT_FILL = ""
+
+
+def extract_h5part(file, phase, fabric, n_grains, output):
+    """Extract CPO data from Fluidity h5part file and save to canonical formats."""
+    from pydrex.minerals import Mineral
+
+    with h5py.File(file, "r") as f:
+        for particle_id in f["Step#0/id"][:]:
+            # Fluidity writes empty arrays to the particle data after they are deleted.
+            # We need only the timesteps before deletion of this particle.
+            steps = []
+            for k in sorted(list(f.keys()), key=lambda s: int(s.lstrip("Step#"))):
+                if f[f"{k}/x"].shape[0] >= particle_id:
+                    steps.append(k)
+
+            # Temporary data arrays.
+            n_timesteps = len(steps)
+            x = np.zeros(n_timesteps)
+            y = np.zeros(n_timesteps)
+            z = np.zeros(n_timesteps)
+            orientations = np.empty((n_timesteps, n_grains, 3, 3))
+            fractions = np.empty((n_timesteps, n_grains))
+
+            strains = np.zeros(n_timesteps)
+            for t, k in enumerate(steps):
+                # Extract particle position.
+                x[t] = f[f"{k}/x"][particle_id - 1]
+                y[t] = f[f"{k}/y"][particle_id - 1]
+                z[t] = f[f"{k}/z"][particle_id - 1]
+
+                # Extract CPO data.
+                strains[t] = f[f"{k}/CPO_{n_grains * 10 + 1}"][particle_id - 1]
+                vals = np.empty(n_grains * 10)
+                for n in range(len(vals)):
+                    vals[n] = f[f"{k}/CPO_{n+1}"][particle_id - 1]
+
+                orientations[t] = np.array(
+                    [
+                        np.reshape(vals[n : n + 9], (3, 3))
+                        for n in range(0, 9 * n_grains, 9)
+                    ]
+                )
+                fractions[t] = vals[9 * n_grains :]
+
+            _postfix = str(particle_id)
+            _fractions = list(fractions)
+            _orientations = list(orientations)
+            mineral = Mineral(
+                phase=phase,
+                fabric=fabric,
+                n_grains=n_grains,
+                fractions_init=_fractions[0],
+                orientations_init=_orientations[0],
+            )
+            mineral.fractions = _fractions
+            mineral.orientations = _orientations
+            mineral.save(output, postfix=_postfix)
+            save_scsv(
+                output[:-4] + ".scsv",
+                {
+                    "delimiter": ",",
+                    "missing": "-",
+                    "fields": [
+                        {
+                            "name": "strain",
+                            "type": "float",
+                            "unit": "percent",
+                            "fill": np.nan,
+                        },
+                        {
+                            "name": "x",
+                            "type": "float",
+                            "unit": "m",
+                            "fill": np.nan,
+                        },
+                        {
+                            "name": "y",
+                            "type": "float",
+                            "unit": "m",
+                            "fill": np.nan,
+                        },
+                        {
+                            "name": "z",
+                            "type": "float",
+                            "unit": "m",
+                            "fill": np.nan,
+                        },
+                    ],
+                },
+                [strains * 200, x, y, z],
+            )
 
 
 def read_scsv(file):

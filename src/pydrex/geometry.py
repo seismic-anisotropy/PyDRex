@@ -307,3 +307,23 @@ def shirley_concentric_squaredisk(xvals, yvals):
         ],
     ).transpose()
     return x_disk, y_disk
+
+
+def to_indices(horizontal, vertical):
+    _geometry = (horizontal.upper(), vertical.upper())
+    match _geometry:
+        case ("X", "Y"):
+            indices = (0, 1)
+        case ("X", "Z"):
+            indices = (0, 2)
+        case ("Y", "X"):
+            indices = (1, 0)
+        case ("Y", "Z"):
+            indices = (1, 2)
+        case ("Z", "X"):
+            indices = (2, 0)
+        case ("Z", "Y"):
+            indices = (2, 1)
+        case _:
+            raise ValueError
+    return indices

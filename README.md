@@ -31,6 +31,10 @@ use `pip install -e "$PWD[dev]"`.
 
 The package metadata and full list of dependencies are specified in [`pyproject.toml`](pyproject.toml).
 
+Optional mesh generation using [gmsh](https://pypi.org/project/gmsh/) is available,
+however the `gmsh` module requires the [`glu`](https://gitlab.freedesktop.org/mesa/glu) library
+(that may not be installed by default on all systems).
+
 ## Test
 
 Some tests can optionally output figures or extended diagnostics when run locally.

@@ -18,7 +18,12 @@ def _get_submodule_list():
     # so many significant digits in doctests is annoying.
     np.set_printoptions()
     np.set_string_function(None)
-    return ["pydrex." + m.name for m in pkgutil.iter_modules(pydrex.__path__)]
+    modules = ["pydrex." + m.name for m in pkgutil.iter_modules(pydrex.__path__)]
+    try:
+        from pydrex import mesh
+    except ImportError:
+        modules.remove("pydrex.mesh")
+    return modules
 
 
 @pytest.mark.parametrize("module", _get_submodule_list())

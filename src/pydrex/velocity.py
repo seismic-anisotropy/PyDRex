@@ -11,6 +11,8 @@ import functools as ft
 import numba as nb
 import numpy as np
 
+from pydrex import geometry as _geo
+
 
 @nb.njit(fastmath=True)
 def _simple_shear_2d_grad(x, direction, deformation_plane, strain_rate):
@@ -94,26 +96,6 @@ def _corner_2d_grad(x, horizontal, vertical, plate_speed):
     return prefactor * grad_v
 
 
-def _to_indices(horizontal, vertical):
-    geometry = (horizontal.upper(), vertical.upper())
-    match geometry:
-        case ("X", "Y"):
-            indices = (0, 1)
-        case ("X", "Z"):
-            indices = (0, 2)
-        case ("Y", "X"):
-            indices = (1, 0)
-        case ("Y", "Z"):
-            indices = (1, 2)
-        case ("Z", "X"):
-            indices = (2, 0)
-        case ("Z", "Y"):
-            indices = (2, 1)
-        case _:
-            raise ValueError
-    return indices
-
-
 def simple_shear_2d(direction, deformation_plane, strain_rate):
     """Return simple shear velocity and velocity gradient callables.
 
@@ -150,7 +132,7 @@ def simple_shear_2d(direction, deformation_plane, strain_rate):
 
     """
     try:
-        indices = _to_indices(direction, deformation_plane)
+        indices = _geo.to_indices(direction, deformation_plane)
     except ValueError:
         raise ValueError(
             "unsupported shear type with"
@@ -249,7 +231,7 @@ def cell_2d(horizontal, vertical, velocity_edge, edge_length=2):
     if edge_length < 0:
         raise ValueError(f"edge length of 2D cell must be positive, not {edge_length}")
     try:
-        indices = _to_indices(horizontal, vertical)
+        indices = _geo.to_indices(horizontal, vertical)
     except ValueError:
         raise ValueError(
             "unsupported convection cell geometry with"
@@ -323,7 +305,7 @@ def corner_2d(horizontal, vertical, plate_speed):
 
     """
     try:
-        indices = _to_indices(horizontal, vertical)
+        indices = _geo.to_indices(horizontal, vertical)
     except ValueError:
         raise ValueError(
             "unsupported convection cell geometry with"

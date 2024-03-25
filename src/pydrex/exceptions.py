@@ -7,6 +7,18 @@ class Error(Exception):
     """Base class for exceptions in PyDRex."""
 
 
+class MissingDependencyError(Error):
+    """Exception raised when optional dependencies are missing.
+
+    Attributes:
+        message — explanation of the error
+
+    """
+
+    def __init__(self, message):  # pylint: disable=super-init-not-called
+        self.message = message
+
+
 class ConfigError(Error):
     """Exception raised for errors in the input configuration.
 
@@ -49,6 +61,18 @@ class SCSVError(Error):
 
     Attributes:
     - message — explanation of the error
+
+    """
+
+    def __init__(self, message):  # pylint: disable=super-init-not-called
+        self.message = message
+
+
+class ModelContextError(Error):
+    """Exception raised for errors in `mesh.Model` context state.
+
+    Attributes:
+        message — explanation of the error
 
     """
 
