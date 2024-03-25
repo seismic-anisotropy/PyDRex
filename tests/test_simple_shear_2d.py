@@ -809,6 +809,7 @@ class TestOlivineA:
             velocity_gradients = [get_velocity_gradient(Ŋ(x)) for x in positions]
 
             params = _io.DEFAULT_PARAMS
+            params["gbm_mobility"] = 10
             params["number_of_grains"] = 5000
             olA = _minerals.Mineral(n_grains=params["number_of_grains"], seed=seed)
             deformation_gradient = np.eye(3)
@@ -824,6 +825,9 @@ class TestOlivineA:
                     get_velocity_gradient,
                     pathline=(time, timestamps[t], get_position),
                 )
+
+            if outdir is not None:
+                olA.save(f"{out_basepath}.npz")
 
             orient_resampled, fractions_resampled = _stats.resample_orientations(
                 olA.orientations, olA.fractions, seed=seed
@@ -854,7 +858,7 @@ class TestOlivineA:
                 np.full(n_timesteps, -0.01), np.diff(misorient_indices)
             )
             # Check that last angle is <5° (M*=125) or <10° (M*=10).
-            assert cpo_angles[-1] < 5
+            assert cpo_angles[-1] < 10
 
         if outdir is not None:
             fig, ax, _, _ = _vis.pathline_box2d(
