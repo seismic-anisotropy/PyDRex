@@ -197,6 +197,7 @@ def read_scsv(file):
                 + f"\n with column headers\n{header_colnames}"
             )
 
+        _log.info("reading SCSV file: %s", resolve_path(file))
         Columns = c.namedtuple("Columns", schema_colnames)
         # __dict__() and __slots__() of NamedTuples is empty :(
         # Set up some pretty printing instead to give a quick view of column names.
@@ -295,6 +296,7 @@ def save_scsv(file, schema, data, **kwargs):
                 "refusing to write data columns of unequal length to SCSV file"
             )
 
+    _log.info("writing to SCSV file: %s", file)
     try:  # Check that the output is valid by attempting to parse.
         with open(path, mode="w") as stream:
             write_scsv_header(stream, schema, **kwargs)
@@ -310,7 +312,9 @@ def save_scsv(file, schema, data, **kwargs):
                 stream, delimiter=schema["delimiter"], lineterminator=os.linesep
             )
             writer.writerow(names)
-            for col in zip(*data, strict=True):
+
+            # No need for strict=True here since column lengths were already checked.
+            for col in zip(*data):
                 row = []
                 for i, (d, t, f) in enumerate(zip(col, types, fills, strict=True)):
                     try:
@@ -338,11 +342,16 @@ def save_scsv(file, schema, data, **kwargs):
                 writer.writerow(row)
     except ValueError:
         path.unlink(missing_ok=True)
+        raise _err.SCSVError(
+            "number of fields declared in schema does not match number of data columns."
+            + f" Declared schema fields were {names}; got {len(data)} data columns"
+        ) from None
 
 
 def parse_config(path):
     """Parse a TOML file containing PyDRex configuration."""
     path = resolve_path(path)
+    _log.info("parsing configuration file: %s", path)
     with open(path, "rb") as file:
         toml = tomllib.load(file)
 
@@ -358,7 +367,7 @@ def parse_config(path):
     try:
         _input = toml["input"]
     except KeyError:
-        raise _err.ConfigError(f"missing [input] section in '{path}'")
+        raise _err.ConfigError(f"missing [input] section in '{path}'") from None
     if "timestep" not in _input and "paths" not in _input:
         raise _err.ConfigError(f"unspecified input timestep in '{path}'")
 
@@ -489,7 +498,7 @@ def parse_config(path):
     except AttributeError:
         raise _err.ConfigError(
             f"invalid initial olivine fabric: {_params['initial_olivine_fabric']}"
-        )
+        ) from None
     return toml
 
 
@@ -521,7 +530,7 @@ def _parse_output_options(output_opts, level):
             f"unsupported mineral phase in {level} option.\n"
             + f" You supplied the value: {output_opts[level]}.\n"
             + " Check pydrex.core.MineralPhase for supported options."
-        )
+        ) from None
 
 
 def _validate_scsv_schema(schema):
