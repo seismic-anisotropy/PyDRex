@@ -16,3 +16,4 @@ This table lists the corresponding PyDRex tests:
 | Fluidity example | PyDRex test |
 | --- | --- |
 | `advection2d` | `test_simple_shear_2d.TestOlivineA.test_dudz_pathline` |
+| `corner2d` | `test_corner_flow_2d.TestOlivineA.test_steady4` |

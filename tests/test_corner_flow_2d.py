@@ -25,7 +25,7 @@ from pydrex import visualisation as _vis
 SUBDIR = "2d_cornerflow"
 
 
-class TestCornerOlivineA:
+class TestOlivineA:
     """Tests for pure A-type olivine polycrystals in 2D corner flows."""
 
     class_id = "corner_olivineA"
@@ -86,8 +86,8 @@ class TestCornerOlivineA:
         return timestamps, positions, strains, mineral, deformation_gradient
 
     @pytest.mark.slow
-    def test_prescribed(self, outdir, seed, ncpus):
-        """Test CPO evolution in prescribed 2D corner flow.
+    def test_steady4(self, outdir, seed, ncpus):
+        """Test CPO evolution in steady 2D corner flow along 4 pathlines.
 
         Initial condition: random orientations and uniform volumes in all `Mineral`s.
 
