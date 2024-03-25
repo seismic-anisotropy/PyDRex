@@ -498,6 +498,7 @@ class Mineral:
             _io.resolve_path(filename)
             # Append to file, requires postfix (unique name).
             if postfix is not None:
+                _log.info("saving Mineral to file %s (postfix: %s)", filename, postfix)
                 archive = ZipFile(filename, mode="a", allowZip64=True)
                 for key in data.keys():
                     with archive.open(
@@ -508,6 +509,7 @@ class Mineral:
                         file.write(buffer.getvalue())
                         buffer.close()
             else:
+                _log.info("saving Mineral to file %s", filename)
                 np.savez(filename, **data)
         else:
             raise ValueError(
