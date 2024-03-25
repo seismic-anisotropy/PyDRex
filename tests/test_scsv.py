@@ -214,6 +214,9 @@ def test_save_scsv_errors():
         _io.save_scsv(temp.name, schema, [foo])
         foo = [True]
         _io.save_scsv(temp.name, schema, [foo])
+        foo = [1, 2, 3]
+        bar = [1, 2, 3]
+        _io.save_scsv(temp.name, schema, [foo, bar])
 
 
 def test_read_Kaminski2004():
