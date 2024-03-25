@@ -68,6 +68,78 @@ def remove_nans(a):
     return a[~np.isnan(a)]
 
 
+def remove_dim(a, dim):
+    """Remove all values corresponding to dimension `dim` from an array.
+
+    Note that a `dim` of 0 refers to the “x” values.
+
+    Examples:
+
+    >>> a = [1, 2, 3]
+    >>> remove_dim(a, 0)
+    array([2, 3])
+    >>> remove_dim(a, 1)
+    array([1, 3])
+    >>> remove_dim(a, 2)
+    array([1, 2])
+
+    >>> a = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    >>> remove_dim(a, 0)
+    array([[5, 6],
+           [8, 9]])
+    >>> remove_dim(a, 1)
+    array([[1, 3],
+           [7, 9]])
+    >>> remove_dim(a, 2)
+    array([[1, 2],
+           [4, 5]])
+
+    """
+    _a = np.asarray(a)
+    for i, _ in enumerate(_a.shape):
+        _a = np.delete(_a, [dim], axis=i)
+    return _a
+
+
+def add_dim(a, dim, val=0):
+    """Add entries of `val` corresponding to dimension `dim` to an array.
+
+    Note that a `dim` of 0 refers to the “x” values.
+
+    Examples:
+
+    >>> a = [1, 2]
+    >>> add_dim(a, 0)
+    array([0, 1, 2])
+    >>> add_dim(a, 1)
+    array([1, 0, 2])
+    >>> add_dim(a, 2)
+    array([1, 2, 0])
+
+    >>> add_dim([1.0, 2.0], 2)
+    array([1., 2., 0.])
+
+    >>> a = [[1, 2], [3, 4]]
+    >>> add_dim(a, 0)
+    array([[0, 0, 0],
+           [0, 1, 2],
+           [0, 3, 4]])
+    >>> add_dim(a, 1)
+    array([[1, 0, 2],
+           [0, 0, 0],
+           [3, 0, 4]])
+    >>> add_dim(a, 2)
+    array([[1, 2, 0],
+           [3, 4, 0],
+           [0, 0, 0]])
+
+    """
+    _a = np.asarray(a)
+    for i, _ in enumerate(_a.shape):
+        _a = np.insert(_a, [dim], 0, axis=i)
+    return _a
+
+
 def default_ncpus():
     """Get a safe default number of CPUs available for multiprocessing.
 
