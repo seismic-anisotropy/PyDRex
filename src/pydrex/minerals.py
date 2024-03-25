@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from zipfile import ZipFile
 
 import numpy as np
+from numpy import asarray as Ŋ
 from scipy import linalg as la
 from scipy.integrate import LSODA
 from scipy.spatial.transform import Rotation
@@ -314,6 +315,31 @@ class Mineral:
         del self.orientations_init
 
         _log.info("created %s", self)
+
+    def __eq__(self, other):
+        if other.__class__ is self.__class__:
+            return (
+                self.phase == other.phase
+                and self.fabric == other.fabric
+                and self.regime == other.regime
+                and self.n_grains == other.n_grains
+                and len(self.fractions) == len(other.fractions)
+                and np.all(
+                    Ŋ([f.shape for f in self.fractions])
+                    == Ŋ([f.shape for f in other.fractions])
+                )
+                and np.all(Ŋ(self.fractions) == Ŋ(other.fractions))
+                and len(self.orientations) == len(other.orientations)
+                and np.all(
+                    Ŋ([f.shape for f in self.orientations])
+                    == Ŋ([f.shape for f in other.orientations])
+                )
+                and np.all(Ŋ(self.orientations) == Ŋ(other.orientations))
+                and self.seed == other.seed
+                and self.lband == other.lband
+                and self.uband == other.uband
+            )
+        return False
 
     def update_orientations(
         self,
