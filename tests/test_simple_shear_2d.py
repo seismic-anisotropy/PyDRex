@@ -256,7 +256,7 @@ class TestOlivineA:
         params["gbm_mobility"] = 0
         strain_rate = 1
         timestamps = np.linspace(0, 1, 25)  # Solve until D₀t=1 (tensorial strain).
-        shear_direction = [0, 1, 0]
+        shear_direction = Ŋ([0, 1, 0], dtype=np.float64)
         _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", strain_rate)
         mineral, _ = self.run(
             params,
@@ -278,7 +278,7 @@ class TestOlivineA:
         strain_rate = 1
         timestamps = np.linspace(0, 1, 25)  # Solve until D₀t=1 (tensorial strain).
         n_timestamps = len(timestamps)
-        shear_direction = [0, 1, 0]
+        shear_direction = Ŋ([0, 1, 0], dtype=np.float64)
         _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", strain_rate)
         mineral, _ = self.run(
             params,
@@ -314,7 +314,7 @@ class TestOlivineA:
         _seeds = seeds_nearX45
         n_seeds = len(_seeds)
 
-        shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
+        shear_direction = Ŋ([0, 1, 0], dtype=np.float64)
         _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", strain_rate)
 
         gbm_mobilities = [0, 50, 125, 200]
@@ -441,7 +441,7 @@ class TestOlivineA:
         Results are compared to the Fortran 90 output.
 
         """
-        shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
+        shear_direction = Ŋ([0, 1, 0], dtype=np.float64)
         strain_rate = 1e-4
         _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", strain_rate)
         timestamps = np.linspace(0, 1e4, 51)  # Solve until D₀t=1 ('shear' γ=2).
@@ -622,7 +622,7 @@ class TestOlivineA:
         Data are provided by [Skemer & Hansen, 2016](http://dx.doi.org/10.1016/j.tecto.2015.12.003).
 
         """
-        shear_direction = [0, 1, 0]  # Used to calculate the angular diagnostics.
+        shear_direction = Ŋ([0, 1, 0], dtype=np.float64)
         strain_rate = 1
         _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", strain_rate)
         timestamps = np.linspace(0, 3.2, 65)  # Solve until D₀t=3.2 ('shear' γ=6.4).
@@ -790,7 +790,7 @@ class TestOlivineA:
             optional_logging = _log.logfile_enable(f"{out_basepath}.log")
 
         with optional_logging:
-            shear_direction = [1, 0, 0]  # Used to calculate the angular diagnostics.
+            shear_direction = Ŋ([1, 0, 0], dtype=np.float64)
             strain_rate = 1e-15  # Moderate, realistic shear in the upper mantle.
             get_velocity, get_velocity_gradient = _velocity.simple_shear_2d(
                 "X", "Z", strain_rate
@@ -846,7 +846,7 @@ class TestOlivineA:
                     axis=_minerals.OLIVINE_PRIMARY_AXIS[olA.fabric],
                 )
                 cpo_angles[i] = _diagnostics.smallest_angle(
-                    cpo_vectors[i], Ŋ(shear_direction, dtype=np.float64)
+                    cpo_vectors[i], shear_direction
                 )
 
             # Check for mostly decreasing CPO angles (exclude initial condition).
