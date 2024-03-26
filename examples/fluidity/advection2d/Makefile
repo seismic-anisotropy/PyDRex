@@ -23,7 +23,8 @@ GBM_MOBILITY := 10
 GBS_THRESHOLD := 0.3
 NUCLEATION_EFFICIENCY := 5
 
-$(OUT_DIR)/fluidity.log-0: $(OUT_DIR)/$(SIM_NAME).flml $(OUT_DIR)/$(SIM_NAME).msh $(OUT_DIR)/$(SIM_NAME).py $(OUT_DIR)/$(SIM_NAME).ini
+$(OUT_DIR)/fluidity.log-0: $(OUT_DIR)/$(SIM_NAME).flml \
+	$(OUT_DIR)/$(SIM_NAME).msh $(OUT_DIR)/$(SIM_NAME).py $(OUT_DIR)/$(SIM_NAME).ini
 	@echo "********** Running fluidity with verbose logging enabled..."
 	./envcheck.sh -f
 	cd $(OUT_DIR) && fluidity -v2 -l $(SIM_NAME).flml
@@ -31,9 +32,6 @@ $(OUT_DIR)/fluidity.log-0: $(OUT_DIR)/$(SIM_NAME).flml $(OUT_DIR)/$(SIM_NAME).ms
 $(OUT_DIR)/$(SIM_NAME).ini: $(OUT_DIR)/$(SIM_NAME).py
 	@echo "********** Setting up initial conditions and recryst. parameters..."
 	echo "[initial conditions]" > $@
-	echo "WIDTH = $(WIDTH)" >> $@
-	echo "DEPTH = $(DEPTH)" >> $@
-	echo "RESOLUTION = $(RESOLUTION)" >> $@
 	echo "STRAIN_RATE = $(STRAIN_RATE)" >> $@
 	echo "INIT_HORIZ = $(INIT_HORIZ)" >> $@
 	echo "INIT_VERT = $(INIT_VERT)" >> $@

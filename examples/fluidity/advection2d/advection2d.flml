@@ -94,7 +94,7 @@
                 <string_value type="code" language="python" lines="20">def val(X, t, dt, fields, n):
     import numpy as np
     import pydrex
-    from advection2d import STRAIN_RATE, _velocity_grad
+    from advection2d import _velocity_grad
 
     # Construct 3D velocity gradient matrix and position vector.
     position = np.asarray(X) if len(X) == 3 else np.insert(X, 1, 0)
