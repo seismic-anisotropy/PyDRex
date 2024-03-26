@@ -10,6 +10,8 @@ OUT_DIR := _out
 # Initial geometry options (in units of metres), passed to `pydrex-mesh`.
 WIDTH := 1e6
 DEPTH := 2e5
+HALF_WIDTH := $(shell python3 -c 'print($(WIDTH)/2)')
+HALF_DEPTH := $(shell python3 -c 'print($(DEPTH)/2)')
 RESOLUTION_HI := 1e2
 RESOLUTION_LO := 1e4
 # Initial conditions, used to parametrise velocity fields and spawn particles.
