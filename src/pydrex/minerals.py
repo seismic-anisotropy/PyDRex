@@ -385,7 +385,7 @@ class Mineral:
             #     "calculating CPO at %s (t=%e) with velocity gradient %s",
             #     position,
             #     t,
-            #     velocity_gradient.flatten(),
+            #     velocity_gradient.ravel(),
             # )
 
             if self.phase == _core.MineralPhase.olivine:
@@ -461,6 +461,25 @@ class Mineral:
                 + " You must provide a callable with signature f(t)"
                 + " that returns a 3-component array."
             )
+        _log.debug(
+            "calculating CPO from %s (t=%s) to %s (t=%s)",
+            get_position(time_start),
+            time_start,
+            get_position(time_end),
+            time_end,
+        )
+        _log.debug("    with deformation gradient %s", deformation_gradient.ravel())
+        _log.debug(
+            "    with velocity gradient interpolated between %s and %s",
+            get_velocity_gradient(time_start, get_position(time_start)).ravel(),
+            get_velocity_gradient(time_end, get_position(time_end)).ravel()
+        )
+        _log.debug(
+            "    intermediate velocity gradient = %s",
+            get_velocity_gradient(
+                (time_start + time_end) / 2, get_position((time_start + time_end) / 2)
+            ).ravel(),
+        )
 
         y_start = np.hstack(
             (
