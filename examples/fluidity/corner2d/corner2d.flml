@@ -59,7 +59,7 @@
     </dump_format>
     <dump_period>
       <constant>
-        <real_value rank="0">8.72e13</real_value>
+        <real_value rank="0">8.732e13</real_value>
       </constant>
     </dump_period>
     <output_mesh name="CoordinateMesh"/>
@@ -70,7 +70,7 @@
       <particle_io>
         <dump_period>
           <constant>
-            <real_value rank="0">4.36e13</real_value>
+            <real_value rank="0">4.366e13</real_value>
           </constant>
         </dump_period>
       </particle_io>
@@ -193,10 +193,10 @@
       <real_value rank="0">0</real_value>
     </current_time>
     <timestep>
-      <real_value rank="0">4.36e13</real_value>
+      <real_value rank="0">4.366e13</real_value>
     </timestep>
     <finish_time>
-      <real_value rank="0">2.18e15</real_value>
+      <real_value rank="0">2.183e15</real_value>
     </finish_time>
   </timestepping>
   <physical_parameters>
