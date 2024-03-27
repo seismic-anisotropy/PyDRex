@@ -35,7 +35,7 @@ class TestPreliminaries:
         _, get_velocity_gradient = _velocity.simple_shear_2d("X", "Z", 1)
         timestamps = np.linspace(0, 1, 10)  # Solve until D₀t=1 (tensorial strain).
         strains_inc = np.zeros_like(timestamps)
-        L = get_velocity_gradient(Ŋ([0e0, 0e0, 0e0]))
+        L = get_velocity_gradient(np.nan, Ŋ([0e0, 0e0, 0e0]))
         for i, ε in enumerate(strains_inc[1:]):
             strains_inc[i + 1] = strains_inc[i] + _utils.strain_increment(
                 timestamps[1] - timestamps[0],
@@ -48,7 +48,7 @@ class TestPreliminaries:
         _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", 1e-5)
         timestamps = np.linspace(0, 1e6, 10)  # Solve until D₀t=10 (tensorial strain).
         strains_inc = np.zeros_like(timestamps)
-        L = get_velocity_gradient(Ŋ([0e0, 0e0, 0e0]))
+        L = get_velocity_gradient(np.nan, Ŋ([0e0, 0e0, 0e0]))
         for i, ε in enumerate(strains_inc[1:]):
             strains_inc[i + 1] = strains_inc[i] + _utils.strain_increment(
                 timestamps[1] - timestamps[0],
@@ -69,7 +69,7 @@ class TestPreliminaries:
             regular_steps=10,
         )
         positions = [get_position(t) for t in timestamps]
-        velocity_gradients = [get_velocity_gradient(Ŋ(x)) for x in positions]
+        velocity_gradients = [get_velocity_gradient(np.nan, Ŋ(x)) for x in positions]
 
         # Check that polycrystal is experiencing steady velocity gradient.
         nt.assert_array_equal(
@@ -162,7 +162,7 @@ class TestOlivineA:
             )
             _log.debug(
                 "› velocity gradient = %s",
-                get_velocity_gradient(None).flatten(),
+                get_velocity_gradient(np.nan, np.full(3, np.nan)).flatten(),
             )
             _log.debug("› strain D₀t = %.2f", strain_rate * timestamps[t])
             _log.debug(
@@ -806,7 +806,9 @@ class TestOlivineA:
                 regular_steps=n_timesteps,
             )
             positions = [get_position(t) for t in timestamps]
-            velocity_gradients = [get_velocity_gradient(Ŋ(x)) for x in positions]
+            velocity_gradients = [
+                get_velocity_gradient(np.nan, Ŋ(x)) for x in positions
+            ]
 
             params = _io.DEFAULT_PARAMS
             params["gbm_mobility"] = 10

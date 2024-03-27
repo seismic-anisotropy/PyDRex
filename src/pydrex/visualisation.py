@@ -166,8 +166,8 @@ def pathline_box2d(
     If `ax` is None, a new figure and axes are created with `figure_unless`.
 
     Args:
-    - `get_velocity` (callable) — object with call signature f(x) that returns
-      the 3D velocity vector at a given 3D position vector
+    - `get_velocity` (callable) — callable with signature f(t, x) that returns the 3D
+      velocity vector at a given time (not used) and 3D position vector
     - `ref_axes` (two letters from {"x", "y", "z"}) — labels for the horizontal and
       vertical axes (these also define the projection for the 3D velocity/position)
     - `colors` (array) — monotonic values along a representative pathline in the flow
@@ -220,7 +220,7 @@ def pathline_box2d(
             p = np.zeros(3)
             p[horizontal] = x
             p[vertical] = y
-            v3d = get_velocity(p)
+            v3d = get_velocity(np.nan, p)
             U[i] = v3d[horizontal]
             V[i] = v3d[vertical]
 

@@ -62,7 +62,9 @@ class TestOlivineA:
             regular_steps=n_timesteps,
         )
         positions = [get_position(t) for t in timestamps]
-        velocity_gradients = [get_velocity_gradient(np.asarray(x)) for x in positions]
+        velocity_gradients = [
+            get_velocity_gradient(np.nan, np.asarray(x)) for x in positions
+        ]
         strains = np.empty_like(timestamps)
         strains[0] = 0
         for t, time in enumerate(timestamps[:-1], start=1):

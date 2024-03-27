@@ -358,8 +358,8 @@ class Mineral:
         Args:
         - `config` (dict) — PyDRex configuration dictionary
         - `deformation_gradient` (array) — 3x3 initial deformation gradient tensor
-        - `get_velocity_gradient` (function) — callable with signature f(x) that returns
-          a 3x3 velocity gradient matrix at position x (vector)
+        - `get_velocity_gradient` (function) — callable with signature f(t, x) that
+          returns a 3x3 velocity gradient matrix at time t at position x (3D vector)
         - `pathline` (tuple) — tuple consisting of:
             1. the time at which to start the CPO integration (t_start)
             2. the time at which to stop the CPO integration (t_end)
@@ -380,7 +380,7 @@ class Mineral:
             """Evaluate right hand side of the D-Rex PDE."""
             # assert not np.any(np.isnan(y)), y[np.isnan(y)].shape
             position = get_position(t)
-            velocity_gradient = get_velocity_gradient(position)
+            velocity_gradient = get_velocity_gradient(t, position)
             # _log.debug(
             #     "calculating CPO at %s (t=%e) with velocity gradient %s",
             #     position,
@@ -452,7 +452,7 @@ class Mineral:
         if not callable(get_velocity_gradient):
             raise ValueError(
                 "unable to evaluate velocity gradient callable."
-                + " You must provide a callable with signature f(x)"
+                + " You must provide a callable with signature f(t, x)"
                 + " that returns a 3x3 matrix."
             )
         if not callable(get_position):

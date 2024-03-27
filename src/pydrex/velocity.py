@@ -1,8 +1,9 @@
 """> PyDRex: Steady-state solutions of velocity (gradients) for various flows.
 
 For the sake of consistency, all callables returned from methods in this module expect a
-3D position vector as input. They also return 3D tensors in all cases. This means they
-can be directly used as arguments to e.g. `pydrex.minerals.Mineral.update_orientations`.
+time scalar and 3D position vector as inputs. They also return 3D tensors in all cases.
+This means they can be directly used as arguments to e.g.
+`pydrex.minerals.Mineral.update_orientations`.
 
 """
 
@@ -15,21 +16,21 @@ from pydrex import geometry as _geo
 
 
 @nb.njit(fastmath=True)
-def _simple_shear_2d_grad(x, direction, deformation_plane, strain_rate):
+def _simple_shear_2d_grad(t, x, direction, deformation_plane, strain_rate):
     grad_v = np.zeros((3, 3))
     grad_v[direction, deformation_plane] = 2 * strain_rate
     return grad_v
 
 
 @nb.njit(fastmath=True)
-def _simple_shear_2d(x, direction, deformation_plane, strain_rate):
+def _simple_shear_2d(t, x, direction, deformation_plane, strain_rate):
     v = np.zeros(3)
     v[direction] = x[deformation_plane] * strain_rate
     return v
 
 
 @nb.njit(fastmath=True)
-def _cell_2d_grad(x, horizontal, vertical, velocity_edge, edge_length):
+def _cell_2d_grad(t, x, horizontal, vertical, velocity_edge, edge_length):
     _lim = edge_length / 2
     if np.abs(x[horizontal]) > _lim or np.abs(x[vertical]) > _lim:
         # NOTE: At the moment, this prints type info rather than values. Probably a
@@ -50,7 +51,7 @@ def _cell_2d_grad(x, horizontal, vertical, velocity_edge, edge_length):
 
 
 @nb.njit(fastmath=True)
-def _cell_2d(x, horizontal, vertical, velocity_edge, edge_length):
+def _cell_2d(t, x, horizontal, vertical, velocity_edge, edge_length):
     _lim = edge_length / 2
     if np.abs(x[horizontal]) > _lim or np.abs(x[vertical]) > _lim:
         # NOTE: At the moment, this prints type info rather than values. Probably a
@@ -69,7 +70,7 @@ def _cell_2d(x, horizontal, vertical, velocity_edge, edge_length):
 
 
 @nb.njit(fastmath=True)
-def _corner_2d(x, horizontal, vertical, plate_speed):
+def _corner_2d(t, x, horizontal, vertical, plate_speed):
     h = x[horizontal]
     v = x[vertical]
     if np.abs(h) < 1e-15 and np.abs(v) < 1e-15:
@@ -82,7 +83,7 @@ def _corner_2d(x, horizontal, vertical, plate_speed):
 
 
 @nb.njit(fastmath=True)
-def _corner_2d_grad(x, horizontal, vertical, plate_speed):
+def _corner_2d_grad(t, x, horizontal, vertical, plate_speed):
     h = x[horizontal]
     v = x[vertical]
     if np.abs(h) < 1e-15 and np.abs(v) < 1e-15:
@@ -99,7 +100,7 @@ def _corner_2d_grad(x, horizontal, vertical, plate_speed):
 def simple_shear_2d(direction, deformation_plane, strain_rate):
     """Return simple shear velocity and velocity gradient callables.
 
-    The returned callables have signature f(x) where x is a 3D position vector.
+    The returned callables have signature f(t, x) where x is a 3D position vector.
 
     Args:
     - `direction` (one of {"X", "Y", "Z"}) — velocity vector direction
@@ -115,17 +116,17 @@ def simple_shear_2d(direction, deformation_plane, strain_rate):
 
     >>> import numpy as np
     >>> u, L = simple_shear_2d("X", "Z", 1e-4)
-    >>> u(np.array([0, 0, 0]))
+    >>> u(np.nan, np.array([0, 0, 0]))  # Time is not used here.
     array([0., 0., 0.])
-    >>> u(np.array([0, 0, 1]))
+    >>> u(np.nan, np.array([0, 0, 1]))
     array([0.0001, 0.    , 0.    ])
-    >>> u(np.array([0.0, 0.0, 2.0]))
+    >>> u(np.nan, np.array([0.0, 0.0, 2.0]))
     array([0.0002, 0.    , 0.    ])
-    >>> L(np.array([0, 0, 0]))
+    >>> L(np.nan, np.array([0, 0, 0]))
     array([[0.    , 0.    , 0.0002],
            [0.    , 0.    , 0.    ],
            [0.    , 0.    , 0.    ]])
-    >>> L(np.array([0.0, 0.0, 1.0]))
+    >>> L(np.nan, np.array([0.0, 0.0, 1.0]))
     array([[0.    , 0.    , 0.0002],
            [0.    , 0.    , 0.    ],
            [0.    , 0.    , 0.    ]])
@@ -166,7 +167,7 @@ def cell_2d(horizontal, vertical, velocity_edge, edge_length=2):
     and vertical directions, respectively. The velocity at the cell edge has a magnitude
     of $U$ and $d$ is the length of a cell edge.
 
-    The returned callables have signature f(x) where x is a 3D position vector.
+    The returned callables have signature f(t, x) where x is a 3D position vector.
 
     Args:
     - `horizontal` (one of {"X", "Y", "Z"}) — horizontal direction
@@ -178,53 +179,53 @@ def cell_2d(horizontal, vertical, velocity_edge, edge_length=2):
 
     >>> import numpy as np
     >>> u, L = cell_2d("X", "Z", 1)
-    >>> u(np.array([0, 0, 0]))
+    >>> u(np.nan, np.array([0, 0, 0]))  # Time value is not used for steady flows.
     array([ 0.,  0., -0.])
-    >>> u(np.array([0, 0, 1]))
+    >>> u(np.nan, np.array([0, 0, 1]))
     array([ 1.,  0., -0.])
-    >>> u(np.array([0, 1, 0]))  # Y-value is not used.
+    >>> u(np.nan, np.array([0, 1, 0]))  # Y-value is not used.
     array([ 0.,  0., -0.])
-    >>> u(np.array([0, 0, -1]))
+    >>> u(np.nan, np.array([0, 0, -1]))
     array([-1.,  0., -0.])
-    >>> u(np.array([1, 0, 0]))
+    >>> u(np.nan, np.array([1, 0, 0]))
     array([ 0.,  0., -1.])
-    >>> u(np.array([-0.5, 0.0, 0.0]))
+    >>> u(np.nan, np.array([-0.5, 0.0, 0.0]))
     array([0.        , 0.        , 0.70710678])
-    >>> L(np.array([0, 0, 0]))
+    >>> L(np.nan, np.array([0, 0, 0]))
     array([[-0.        ,  0.        ,  1.57079633],
            [ 0.        ,  0.        ,  0.        ],
            [ 0.        ,  0.        , -1.57079633]])
-    >>> L(np.array([0.5, 0.0, 0.0]))
+    >>> L(np.nan, np.array([0.5, 0.0, 0.0]))
     array([[-0.        ,  0.        ,  1.11072073],
            [ 0.        ,  0.        ,  0.        ],
            [ 0.        ,  0.        , -1.11072073]])
-    >>> L(np.array([0, 0, 0])) == L(np.array([0, 1, 0]))  # Y-value is not used.
+    >>> L(np.nan, np.array([0, 0, 0])) == L(np.nan, np.array([0, 1, 0]))  # Y-value is not used.
     array([[ True,  True,  True],
            [ True,  True,  True],
            [ True,  True,  True]])
-    >>> L(np.array([1, 0, 0])) == L(np.array([0, 0, 1]))
+    >>> L(np.nan, np.array([1, 0, 0])) == L(np.nan, np.array([0, 0, 1]))
     array([[ True,  True,  True],
            [ True,  True,  True],
            [ True,  True,  True]])
-    >>> L(np.array([1, 0, 0])) == L(np.array([-1, 0, 0]))
+    >>> L(np.nan, np.array([1, 0, 0])) == L(np.nan, np.array([-1, 0, 0]))
     array([[ True,  True,  True],
            [ True,  True,  True],
            [ True,  True,  True]])
-    >>> L(np.array([1, 0, 0])) == L(np.array([0, 0, -1]))
+    >>> L(np.nan, np.array([1, 0, 0])) == L(np.nan, np.array([0, 0, -1]))
     array([[ True,  True,  True],
            [ True,  True,  True],
            [ True,  True,  True]])
-    >>> L(np.array([0.5, 0.0, 0.5]))
+    >>> L(np.nan, np.array([0.5, 0.0, 0.5]))
     array([[-0.78539816,  0.        ,  0.78539816],
            [ 0.        ,  0.        ,  0.        ],
            [ 0.78539816,  0.        , -0.78539816]])
 
     >>> u, L = cell_2d("X", "Z", 6.3e-10, 1e5)
-    >>> u(np.array([0, 0, 0]))
+    >>> u(np.nan, np.array([0, 0, 0]))
     array([ 0.,  0., -0.])
-    >>> u(np.array([0.0, 0.0, -5e4]))
+    >>> u(np.nan, np.array([0.0, 0.0, -5e4]))
     array([-6.3e-10,  0.0e+00, -0.0e+00])
-    >>> u(np.array([2e2, 0e0, 0e0]))
+    >>> u(np.nan, np.array([2e2, 0e0, 0e0]))
     array([ 0.0000000e+00,  0.0000000e+00, -3.9583807e-12])
 
     """
@@ -296,7 +297,7 @@ def corner_2d(horizontal, vertical, plate_speed):
     $$
     See also Fig. 5 in [Kaminski & Ribe, 2002](https://doi.org/10.1029/2001GC000222).
 
-    The returned callables have signature f(x) where x is a 3D position vector.
+    The returned callables have signature f(t, x) where x is a 3D position vector.
 
     Args:
     - `horizontal` (one of {"X", "Y", "Z"}) — horizontal direction

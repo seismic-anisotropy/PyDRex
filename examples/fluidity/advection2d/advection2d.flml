@@ -98,7 +98,7 @@
 
     # Construct 3D velocity gradient matrix and position vector.
     position = np.asarray(X) if len(X) == 3 else np.insert(X, 1, 0)
-    velocity_gradient_init = _velocity_grad(position)
+    velocity_gradient_init = _velocity_grad(t, position)
 
     # Create new mineral with random initial orientations and undeformed initial state.
     # The extra 22 values are stored after the actual CPO data and they are:
@@ -153,11 +153,6 @@
     velocity_gradient = fields["VelocityGradient"]
     if velocity_gradient.shape == (2, 2):
         velocity_gradient = utils.add_dim(velocity_gradient, 1)
-    _log.info("deformation gradient: %s", deformation_gradient_prev.flatten())
-    _log.info("position: %s", cb_interp_position(position_prev, position, t, dt)(t))
-    _log.info("velocity gradient: %s",
-        cb_interp_velocity_grad(velocity_gradient_prev, velocity_gradient, t, dt)(t).flatten()
-    )
 
     deformation_gradient = mineral.update_orientations(
         PARAMS,
@@ -331,7 +326,7 @@
             <string_value type="code" language="python" lines="20">def val(X, t):
     from advection2d import velocity
 
-    return velocity(X, t)</string_value>
+    return velocity(t, X)</string_value>
           </python>
         </value>
         <output/>
@@ -393,7 +388,7 @@
               <string_value type="code" language="python" lines="20">def val(X, t):
     from advection2d import velocity_gradient
 
-    return velocity_gradient(X, t)</string_value>
+    return velocity_gradient(t, X)</string_value>
             </python>
           </anisotropic_asymmetric>
         </value>
