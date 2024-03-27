@@ -101,7 +101,9 @@ class TestCellOlivineA:
             regular_steps=int(max_strain * 10),
         )
         positions = [get_position(t) for t in timestamps]
-        velocity_gradients = [get_velocity_gradient(np.asarray(x)) for x in positions]
+        velocity_gradients = [
+            get_velocity_gradient(np.nan, np.asarray(x)) for x in positions
+        ]
         strains = np.empty_like(timestamps)
         strains[0] = 0
         for t, time in enumerate(timestamps[:-1], start=1):
@@ -145,7 +147,7 @@ class TestCellOlivineA:
         )
         angles = [
             _diagnostics.smallest_angle(
-                _diagnostics.bingham_average(a, axis="a"), get_velocity(x)
+                _diagnostics.bingham_average(a, axis="a"), get_velocity(np.nan, x)
             )
             for a, x in zip(mineral.orientations, positions, strict=True)
         ]
@@ -233,7 +235,8 @@ class TestCellOlivineA:
                 timestamps, positions, strains, mineral, deformation_gradient = out
                 angles[s] = [
                     _diagnostics.smallest_angle(
-                        _diagnostics.bingham_average(a, axis="a"), get_velocity(x)
+                        _diagnostics.bingham_average(a, axis="a"),
+                        get_velocity(np.nan, x),
                     )
                     for a, x in zip(mineral.orientations, positions, strict=True)
                 ]

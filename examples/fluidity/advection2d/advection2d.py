@@ -33,7 +33,7 @@ def cb_interp_velocity_grad(velocity_grad_prev, velocity_grad, t, dt):
     """Return ∇v interpolator for CPO integration between `velocity_grad_prev` and `velocity_grad`."""
 
     @nb.njit(fastmath=True)
-    def _interp_vel_grad(int_time):
+    def _interp_vel_grad(int_time, int_position):
         return velocity_grad_prev + (int_time - t + dt) / dt * (
             velocity_grad - velocity_grad_prev
         )
@@ -58,9 +58,9 @@ PARAMS = {
 _velocity, _velocity_grad = simple_shear_2d("X", "Z", STRAIN_RATE)
 
 
-def velocity(X, t):
-    return remove_dim(_velocity(add_dim(X, 1)), 1)
+def velocity(t, X):
+    return remove_dim(_velocity(t, add_dim(X, 1)), 1)
 
 
-def velocity_gradient(X, t):
-    return remove_dim(_velocity_grad(add_dim(X, 1)), 1)
+def velocity_gradient(t, X):
+    return remove_dim(_velocity_grad(t, add_dim(X, 1)), 1)

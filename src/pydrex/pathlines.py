@@ -63,7 +63,7 @@ def get_pathline(
 
         if _is_inside(point, min_coords, max_coords):
             dε = _utils.strain_increment(
-                time - _time_prev, get_velocity_gradient(point)
+                time - _time_prev, get_velocity_gradient(np.nan, point)
             )
             if time > _time_prev:  # Timestamps jump around for SciPy to find the root.
                 _strain += dε
@@ -120,14 +120,14 @@ def get_pathline(
 def _ivp_func(time, point, get_velocity, get_velocity_gradient, min_coords, max_coords):
     """Internal use only, must have the same signature as `get_pathline`."""
     if _is_inside(point, min_coords, max_coords):
-        return get_velocity(point)
+        return get_velocity(np.nan, point)
     return np.zeros_like(point)
 
 
 def _ivp_jac(time, point, get_velocity, get_velocity_gradient, min_coords, max_coords):
     """Internal use only, must have the same signature as `_ivp_func`."""
     if _is_inside(point, min_coords, max_coords):
-        return get_velocity_gradient(point)
+        return get_velocity_gradient(np.nan, point)
     return np.zeros((np.array(point).size,) * 2)
 
 
