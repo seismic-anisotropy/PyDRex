@@ -54,7 +54,7 @@ $(OUT_DIR)/$(SIM_NAME).flml: $(SRC_DIR)/$(SIM_NAME).flml
 $(OUT_DIR)/$(SIM_NAME).msh:
 	@echo "********** Building the mesh file..."
 	./envcheck.sh -m
-	pydrex-mesh -k="rectangle" -a xy $(WIDTH),$(DEPTH) $(RESOLUTION) $@
+	pydrex-mesh -k="rectangle" -a xy $(WIDTH),$(DEPTH) -r G:$(RESOLUTION) $@
 
 .PHONY: clean
 clean:

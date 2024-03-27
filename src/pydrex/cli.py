@@ -31,7 +31,10 @@ class CliTool:
 class MeshGenerator(CliTool):
     """PyDRex script to generate various simple meshes.
 
-    Only rectangular (2D) meshes are currently supported.
+    Only rectangular (2D) meshes are currently supported. The RESOLUTION must be a comma
+    delimited set of directives of the form `<LOC>:<RES>` where `<LOC>` is a location
+    specifier, i.e. either "G" (global) or a compas direction like "N", "S", "NE", etc.,
+    and `<RES>` is a floating point value to be set as the resolution at that location.
 
     """
 
@@ -54,13 +57,37 @@ class MeshGenerator(CliTool):
                 assert len(center) == 2
 
             width, height = map(float, args.size.split(","))
+            _loc_map = {
+                "G": "global",
+                "N": "north",
+                "S": "south",
+                "E": "east",
+                "W": "west",
+                "NE": "north-east",
+                "NW": "north-west",
+                "SE": "south-east",
+                "SW": "south-west",
+            }
+            try:
+                resolution = {
+                    _loc_map[k]: float(v)
+                    for k, v in map(lambda s: s.split(":"), args.resolution.split(","))
+                }
+            except KeyError:
+                raise KeyError(
+                    "invalid or unsupported location specified in resolution directive"
+                ) from None
+            except ValueError:
+                raise ValueError(
+                    "invalid resolution value. The format should be '<LOC1>:<RES1>,<LOC2>:<RES2>,...'"
+                ) from None
             _mesh.rectangle(
                 args.output[:-4],
                 (args.ref_axes[0], args.ref_axes[1]),
                 center,
                 width,
                 height,
-                args.resolution,
+                resolution,
             )
 
     def _get_args(self) -> argparse.Namespace:
@@ -68,7 +95,10 @@ class MeshGenerator(CliTool):
         parser = argparse.ArgumentParser(description=description, epilog=epilog)
         parser.add_argument("size", help="width,height[,depth] of the mesh")
         parser.add_argument(
-            "resolution", help="base resolution of the mesh (edge length hint for gmsh)"
+            "-r",
+            "--resolution",
+            help="resolution for the mesh (edge length hint(s) for gmsh)",
+            required=True,
         )
         parser.add_argument("output", help="output file (.msh)")
         parser.add_argument(
