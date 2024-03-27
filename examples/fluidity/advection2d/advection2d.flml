@@ -154,6 +154,7 @@
     if velocity_gradient.shape == (2, 2):
         velocity_gradient = utils.add_dim(velocity_gradient, 1)
 
+    _log.CONSOLE_LOGGER.setLevel("DEBUG")
     deformation_gradient = mineral.update_orientations(
         PARAMS,
         deformation_gradient_prev,
