@@ -18,7 +18,7 @@ RESOLUTION_LO := 1e4
 # INIT_HORIZ can be a space-delimited array of values (for multiple particles).
 # NOTE: PLATE_SPEED is in cm/yr here.
 PLATE_SPEED := 2.0
-INIT_HORIZ := 3.13e4
+INIT_HORIZ := 3.13e4 9.74e4 2.02e5 3.97e5
 INIT_DEPTH := 2e5
 # Recrystallisation parameters.
 STRESS_EXPONENT := 1.5
