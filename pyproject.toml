@@ -41,6 +41,7 @@ dependencies = [
     "matplotlib",  # Plotting library, The.
     "cmcrameri",  # Matplotlib colormaps using the palettes designed by Fabio Crameri.
     "h5py",  # For reading Fluidity .h5part files.
+    "tqdm",  # For progress bars (for long-running CLI scripts)
 ]
 
 [project.optional-dependencies]

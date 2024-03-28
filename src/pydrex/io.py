@@ -26,6 +26,7 @@ import h5py
 import meshio
 import numpy as np
 import yaml
+from tqdm import tqdm
 
 from pydrex import core as _core
 from pydrex import exceptions as _err
@@ -80,7 +81,9 @@ def extract_h5part(file, phase, fabric, n_grains, output):
             fractions = np.empty((n_timesteps, n_grains))
 
             strains = np.zeros(n_timesteps)
-            for t, k in enumerate(steps):
+            for t, k in enumerate(
+                tqdm(steps, desc=f"Extracting particle {particle_id}")
+            ):
                 # Extract particle position.
                 x[t] = f[f"{k}/x"][particle_id - 1]
                 y[t] = f[f"{k}/y"][particle_id - 1]
