@@ -359,7 +359,7 @@ class Mineral:
 
         Args:
         - `config` (dict) — PyDRex configuration dictionary
-        - `deformation_gradient` (array) — 3x3 initial deformation gradient tensor
+        - `deformation_gradient` (array) — 3x3 deformation gradient tensor
         - `get_velocity_gradient` (function) — callable with signature f(t, x) that
           returns a 3x3 velocity gradient matrix at time t and position x (3D vector)
         - `pathline` (tuple) — tuple consisting of:
@@ -373,6 +373,35 @@ class Mineral:
 
         Array values must provide a NumPy-compatible interface:
         <https://numpy.org/doc/stable/user/whatisnumpy.html>
+
+        Examples:
+
+        >>> from itertools import pairwise
+        >>> import pydrex
+        >>> olA = pydrex.Mineral(
+        ...           phase=pydrex.MineralPhase.olivine,
+        ...           fabric=pydrex.MineralFabric.olivine_A,
+        ...           regime=pydrex.DeformationRegime.dislocation,
+        ...           n_grains=pydrex.DEFAULT_PARAMS["number_of_grains"],
+        ... )
+        >>> def get_velocity_gradient(t, x):  # Simple L for simple shear.
+        ...     L = np.zeros((3, 3))
+        ...     L[0, 2] = 1
+        ...     return L
+        >>> def get_position(t):
+        ...     return np.zeros(3)  # Stationary polycrystal for this example.
+        >>> timestamps = range(2)  # Just 1 timestep for demonstration.
+        >>> deformation_gradient = np.eye(3)  # Start with an undeformed polycrystal.
+        >>> for t_start, t_end in pairwise(timestamps):
+        ...     # Update deformation_gradient, olA.orientations and olA.fractions.
+        ...     deformation_gradient = olA.update_orientations(
+        ...         pydrex.DEFAULT_PARAMS,
+        ...         deformation_gradient,
+        ...         get_velocity_gradient,
+        ...         (t_start, t_end, get_position),
+        ...     )
+        >>> np.all(deformation_gradient == np.eye(3) + get_velocity_gradient(t_end, np.nan))
+        True
 
         """
 
