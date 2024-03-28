@@ -359,7 +359,7 @@ class Mineral:
         - `config` (dict) — PyDRex configuration dictionary
         - `deformation_gradient` (array) — 3x3 initial deformation gradient tensor
         - `get_velocity_gradient` (function) — callable with signature f(t, x) that
-          returns a 3x3 velocity gradient matrix at time t at position x (3D vector)
+          returns a 3x3 velocity gradient matrix at time t and position x (3D vector)
         - `pathline` (tuple) — tuple consisting of:
             1. the time at which to start the CPO integration (t_start)
             2. the time at which to stop the CPO integration (t_end)
