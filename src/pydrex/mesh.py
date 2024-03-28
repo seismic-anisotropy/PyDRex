@@ -14,6 +14,8 @@ from pydrex import logger as _log
 class Model:
     """A context manager for using the gmsh model API.
 
+    Examples:
+
     >>> with Model("example_model", 2, _write_file=False) as model:
     ...     model.point_constraints = [
     ...         (0, -10, 0, 0.1),  # x, y, z, nearby_edge_length
@@ -137,6 +139,8 @@ class Model:
 
 def rectangle(name, ref_axes, center, width, height, resolution, **kwargs):
     """Generate a rectangular (2D) mesh.
+
+    Examples:
 
     >>> rect = rectangle(
     ...     "test_rect",

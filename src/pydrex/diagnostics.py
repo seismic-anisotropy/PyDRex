@@ -368,6 +368,20 @@ def smallest_angle(vector, axis, plane=None):
     Optionally project the vector onto the `plane` (given by its unit normal)
     before calculating the angle.
 
+    Examples:
+
+    >>> from numpy import asarray as Ŋ
+    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([1e0, 0e0, 0e0]))
+    0.0
+    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([0e0, 1e0, 0e0]))
+    90.0
+    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([0e0, -1e0, 0e0]))
+    90.0
+    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([np.sqrt(2), np.sqrt(2), 0e0]))
+    45.0
+    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([-np.sqrt(2), np.sqrt(2), 0e0]))
+    45.0
+
     """
     if plane is not None:
         _vector = vector - plane * np.dot(vector, plane)

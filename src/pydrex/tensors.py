@@ -127,6 +127,8 @@ def hex_project(voigt_vector):
 def upper_tri_to_symmetric(arr):
     """Create symmetric array using upper triangle of input array.
 
+    Examples:
+
     >>> import numpy as np
     >>> upper_tri_to_symmetric(np.array([
     ...         [ 1.,  2.,  3.,  4.],
