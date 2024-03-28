@@ -20,7 +20,7 @@ requires-python = ">=3.11"  # We use tomllib: <https://docs.python.org/3/library
 license = {file = "LICENSE"}
 authors = [
     {name = "Thomas Duvernay", email = "td75013@hotmail.fr"},
-    {name = "Leon Bilton", email = "adigitoleo@dissimulo.com"},
+    {name = "Leon Bilton", email = "adigitoleo@posteo.net"},
     {name = "Chris Mathews"},
 ]
 keywords = ["CPO", "LPO", "olivine", "deformation", "anisotropy", "crystallography"]
