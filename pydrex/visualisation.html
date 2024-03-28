@@ -273,8 +273,8 @@
 </span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a><span class="sd">    If `ax` is None, a new figure and axes are created with `figure_unless`.</span>
 </span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>
 </span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a><span class="sd">    Args:</span>
-</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a><span class="sd">    - `get_velocity` (callable) — object with call signature f(x) that returns</span>
-</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a><span class="sd">      the 3D velocity vector at a given 3D position vector</span>
+</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a><span class="sd">    - `get_velocity` (callable) — callable with signature f(t, x) that returns the 3D</span>
+</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a><span class="sd">      velocity vector at a given time (not used) and 3D position vector</span>
 </span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a><span class="sd">    - `ref_axes` (two letters from {&quot;x&quot;, &quot;y&quot;, &quot;z&quot;}) — labels for the horizontal and</span>
 </span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a><span class="sd">      vertical axes (these also define the projection for the 3D velocity/position)</span>
 </span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a><span class="sd">    - `colors` (array) — monotonic values along a representative pathline in the flow</span>
@@ -327,7 +327,7 @@
 </span><span id="L-220"><a href="#L-220"><span class="linenos">220</span></a>            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </span><span id="L-221"><a href="#L-221"><span class="linenos">221</span></a>            <span class="n">p</span><span class="p">[</span><span class="n">horizontal</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
 </span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a>            <span class="n">p</span><span class="p">[</span><span class="n">vertical</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span>
-</span><span id="L-223"><a href="#L-223"><span class="linenos">223</span></a>            <span class="n">v3d</span> <span class="o">=</span> <span class="n">get_velocity</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</span><span id="L-223"><a href="#L-223"><span class="linenos">223</span></a>            <span class="n">v3d</span> <span class="o">=</span> <span class="n">get_velocity</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
 </span><span id="L-224"><a href="#L-224"><span class="linenos">224</span></a>            <span class="n">U</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v3d</span><span class="p">[</span><span class="n">horizontal</span><span class="p">]</span>
 </span><span id="L-225"><a href="#L-225"><span class="linenos">225</span></a>            <span class="n">V</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v3d</span><span class="p">[</span><span class="n">vertical</span><span class="p">]</span>
 </span><span id="L-226"><a href="#L-226"><span class="linenos">226</span></a>
@@ -936,8 +936,8 @@ on the command line.</p>
 </span><span id="pathline_box2d-167"><a href="#pathline_box2d-167"><span class="linenos">167</span></a><span class="sd">    If `ax` is None, a new figure and axes are created with `figure_unless`.</span>
 </span><span id="pathline_box2d-168"><a href="#pathline_box2d-168"><span class="linenos">168</span></a>
 </span><span id="pathline_box2d-169"><a href="#pathline_box2d-169"><span class="linenos">169</span></a><span class="sd">    Args:</span>
-</span><span id="pathline_box2d-170"><a href="#pathline_box2d-170"><span class="linenos">170</span></a><span class="sd">    - `get_velocity` (callable) — object with call signature f(x) that returns</span>
-</span><span id="pathline_box2d-171"><a href="#pathline_box2d-171"><span class="linenos">171</span></a><span class="sd">      the 3D velocity vector at a given 3D position vector</span>
+</span><span id="pathline_box2d-170"><a href="#pathline_box2d-170"><span class="linenos">170</span></a><span class="sd">    - `get_velocity` (callable) — callable with signature f(t, x) that returns the 3D</span>
+</span><span id="pathline_box2d-171"><a href="#pathline_box2d-171"><span class="linenos">171</span></a><span class="sd">      velocity vector at a given time (not used) and 3D position vector</span>
 </span><span id="pathline_box2d-172"><a href="#pathline_box2d-172"><span class="linenos">172</span></a><span class="sd">    - `ref_axes` (two letters from {&quot;x&quot;, &quot;y&quot;, &quot;z&quot;}) — labels for the horizontal and</span>
 </span><span id="pathline_box2d-173"><a href="#pathline_box2d-173"><span class="linenos">173</span></a><span class="sd">      vertical axes (these also define the projection for the 3D velocity/position)</span>
 </span><span id="pathline_box2d-174"><a href="#pathline_box2d-174"><span class="linenos">174</span></a><span class="sd">    - `colors` (array) — monotonic values along a representative pathline in the flow</span>
@@ -990,7 +990,7 @@ on the command line.</p>
 </span><span id="pathline_box2d-221"><a href="#pathline_box2d-221"><span class="linenos">221</span></a>            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </span><span id="pathline_box2d-222"><a href="#pathline_box2d-222"><span class="linenos">222</span></a>            <span class="n">p</span><span class="p">[</span><span class="n">horizontal</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
 </span><span id="pathline_box2d-223"><a href="#pathline_box2d-223"><span class="linenos">223</span></a>            <span class="n">p</span><span class="p">[</span><span class="n">vertical</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span>
-</span><span id="pathline_box2d-224"><a href="#pathline_box2d-224"><span class="linenos">224</span></a>            <span class="n">v3d</span> <span class="o">=</span> <span class="n">get_velocity</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</span><span id="pathline_box2d-224"><a href="#pathline_box2d-224"><span class="linenos">224</span></a>            <span class="n">v3d</span> <span class="o">=</span> <span class="n">get_velocity</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
 </span><span id="pathline_box2d-225"><a href="#pathline_box2d-225"><span class="linenos">225</span></a>            <span class="n">U</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v3d</span><span class="p">[</span><span class="n">horizontal</span><span class="p">]</span>
 </span><span id="pathline_box2d-226"><a href="#pathline_box2d-226"><span class="linenos">226</span></a>            <span class="n">V</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">v3d</span><span class="p">[</span><span class="n">vertical</span><span class="p">]</span>
 </span><span id="pathline_box2d-227"><a href="#pathline_box2d-227"><span class="linenos">227</span></a>
@@ -1040,8 +1040,8 @@ on the command line.</p>
 <p>Args:</p>
 
 <ul>
-<li><code>get_velocity</code> (callable) — object with call signature f(x) that returns
-the 3D velocity vector at a given 3D position vector</li>
+<li><code>get_velocity</code> (callable) — callable with signature f(t, x) that returns the 3D
+velocity vector at a given time (not used) and 3D position vector</li>
 <li><code>ref_axes</code> (two letters from {"x", "y", "z"}) — labels for the horizontal and
 vertical axes (these also define the projection for the 3D velocity/position)</li>
 <li><code>colors</code> (array) — monotonic values along a representative pathline in the flow</li>

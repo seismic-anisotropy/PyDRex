@@ -97,6 +97,13 @@ The custom optional flag <code>--outdir="OUT"</code> is recommended
 to produce output figures, data dumps and logs and save them in the directory <code>"OUT"</code>.
 The value <code>"."</code> can be used to save these in the current directory.</p>
 
+<p>Running individual tests or test subsets is possible using the pytest
+<code>-k="&lt;pattern&gt;"</code> command line flag, which accepts a string pattern that is
+matched against the names of test classes or methods.
+To see a full list of available tests, use the command <code>pytest --co</code>. This
+produces a rather long list and it is recommended to view the output with a
+pager like <code>less</code> on Linux.</p>
+
 <p>In total, the following custom pytest command line flags are defined by PyDRex:</p>
 
 <ul>
