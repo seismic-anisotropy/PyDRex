@@ -182,6 +182,7 @@ class Mineral:
     **Examples:**
 
     Mineral with isotropic initial texture:
+
     >>> import pydrex
     >>> olA = pydrex.Mineral(
     ...     phase=pydrex.MineralPhase.olivine,
@@ -201,6 +202,7 @@ class Mineral:
     Mineral with specified initial texture and default phase, fabric and regime settings
     which are for an olivine A-type mineral in the dislocation creep regime.
     The initial grain volume fractions should be normalised.
+
     >>> import numpy as np
     >>> from scipy.spatial.transform import Rotation
     >>> import pydrex
