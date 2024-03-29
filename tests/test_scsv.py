@@ -156,8 +156,9 @@ def test_save_specfile(outdir):
         _io.save_scsv(f"{outdir}/spec_out.scsv", schema, data)
         _io.save_scsv(f"{outdir}/spec_out_alt.scsv", schema_alt, data_alt)
 
-    temp = tempfile.NamedTemporaryFile()
-    temp_alt = tempfile.NamedTemporaryFile()
+    # https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
+    temp = tempfile.NamedTemporaryFile(delete=False)
+    temp_alt = tempfile.NamedTemporaryFile(delete=False)
     _io.save_scsv(temp.name, schema, data)
     _io.save_scsv(temp_alt.name, schema_alt, data_alt)
     raw_read = []
