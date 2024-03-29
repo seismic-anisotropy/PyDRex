@@ -1,8 +1,9 @@
 """> PyDRex: Steady-state solutions of velocity (gradients) for various flows.
 
 For the sake of consistency, all callables returned from methods in this module expect a
-3D position vector as input. They also return 3D tensors in all cases. This means they
-can be directly used as arguments to e.g. `pydrex.minerals.Mineral.update_orientations`.
+time scalar and 3D position vector as inputs. They also return 3D tensors in all cases.
+This means they can be directly used as arguments to e.g.
+`pydrex.minerals.Mineral.update_orientations`.
 
 """
 
@@ -11,49 +12,65 @@ import functools as ft
 import numba as nb
 import numpy as np
 
+from pydrex import geometry as _geo
+
 
 @nb.njit(fastmath=True)
-def _simple_shear_2d_grad(x, direction=1, deformation_plane=0, strain_rate=1):
+def _simple_shear_2d_grad(t, x, direction, deformation_plane, strain_rate):
     grad_v = np.zeros((3, 3))
     grad_v[direction, deformation_plane] = 2 * strain_rate
     return grad_v
 
 
 @nb.njit(fastmath=True)
-def _simple_shear_2d(x, direction=1, deformation_plane=0, strain_rate=1):
+def _simple_shear_2d(t, x, direction, deformation_plane, strain_rate):
     v = np.zeros(3)
     v[direction] = x[deformation_plane] * strain_rate
     return v
 
 
 @nb.njit(fastmath=True)
-def _cell_2d_grad(x, horizontal=0, vertical=2, velocity_edge=1):
-    cos_πx_div2 = np.cos(0.5 * np.pi * x[horizontal])
-    cos_πz_div2 = np.cos(0.5 * np.pi * x[vertical])
-    sin_πx_div2 = np.sin(0.5 * np.pi * x[horizontal])
-    sin_πz_div2 = np.sin(0.5 * np.pi * x[vertical])
+def _cell_2d_grad(t, x, horizontal, vertical, velocity_edge, edge_length):
+    _lim = edge_length / 2
+    if np.abs(x[horizontal]) > _lim or np.abs(x[vertical]) > _lim:
+        # NOTE: At the moment, this prints type info rather than values. Probably a
+        # numba bug, version 0.59 shouldn't require these to be compile-time constants.
+        raise ValueError(
+            f"position ({x[horizontal]}, {x[vertical]}) is outside domain with xᵢ ∈ [-{_lim}, {_lim}]"
+        )
+    cos_πx_divd = np.cos(np.pi * x[horizontal] / edge_length)
+    cos_πz_divd = np.cos(np.pi * x[vertical] / edge_length)
+    sin_πx_divd = np.sin(np.pi * x[horizontal] / edge_length)
+    sin_πz_divd = np.sin(np.pi * x[vertical] / edge_length)
     grad_v = np.zeros((3, 3))
-    grad_v[horizontal, horizontal] = -0.5 * np.pi * sin_πz_div2 * sin_πx_div2
-    grad_v[horizontal, vertical] = 0.5 * np.pi * cos_πz_div2 * cos_πx_div2
-    grad_v[vertical, vertical] = -0.5 * np.pi * cos_πz_div2 * cos_πx_div2
-    grad_v[vertical, horizontal] = 0.5 * np.pi * sin_πz_div2 * sin_πx_div2
-    return grad_v
+    grad_v[horizontal, horizontal] = -np.pi / edge_length * sin_πz_divd * sin_πx_divd
+    grad_v[horizontal, vertical] = np.pi / edge_length * cos_πz_divd * cos_πx_divd
+    grad_v[vertical, vertical] = -np.pi / edge_length * cos_πz_divd * cos_πx_divd
+    grad_v[vertical, horizontal] = np.pi / edge_length * sin_πz_divd * sin_πx_divd
+    return velocity_edge * grad_v
 
 
 @nb.njit(fastmath=True)
-def _cell_2d(x, horizontal=0, vertical=2, velocity_edge=1):
-    cos_πx_div2 = np.cos(0.5 * np.pi * x[horizontal])
-    cos_πz_div2 = np.cos(0.5 * np.pi * x[vertical])
-    sin_πx_div2 = np.sin(0.5 * np.pi * x[horizontal])
-    sin_πz_div2 = np.sin(0.5 * np.pi * x[vertical])
+def _cell_2d(t, x, horizontal, vertical, velocity_edge, edge_length):
+    _lim = edge_length / 2
+    if np.abs(x[horizontal]) > _lim or np.abs(x[vertical]) > _lim:
+        # NOTE: At the moment, this prints type info rather than values. Probably a
+        # numba bug, version 0.59 shouldn't require these to be compile-time constants.
+        raise ValueError(
+            f"position ({x[horizontal]}, {x[vertical]}) is outside domain with xᵢ ∈ [-{_lim}, {_lim}]"
+        )
+    cos_πx_divd = np.cos(np.pi * x[horizontal] / edge_length)
+    cos_πz_divd = np.cos(np.pi * x[vertical] / edge_length)
+    sin_πx_divd = np.sin(np.pi * x[horizontal] / edge_length)
+    sin_πz_divd = np.sin(np.pi * x[vertical] / edge_length)
     v = np.zeros(3)
-    v[horizontal] = cos_πx_div2 * sin_πz_div2
-    v[vertical] = -sin_πx_div2 * cos_πz_div2
+    v[horizontal] = velocity_edge * cos_πx_divd * sin_πz_divd
+    v[vertical] = -velocity_edge * sin_πx_divd * cos_πz_divd
     return v
 
 
 @nb.njit(fastmath=True)
-def _corner_2d(x, horizontal=0, vertical=2, plate_speed=1):
+def _corner_2d(t, x, horizontal, vertical, plate_speed):
     h = x[horizontal]
     v = x[vertical]
     if np.abs(h) < 1e-15 and np.abs(v) < 1e-15:
@@ -66,7 +83,7 @@ def _corner_2d(x, horizontal=0, vertical=2, plate_speed=1):
 
 
 @nb.njit(fastmath=True)
-def _corner_2d_grad(x, horizontal=0, vertical=2, plate_speed=1):
+def _corner_2d_grad(t, x, horizontal, vertical, plate_speed):
     h = x[horizontal]
     v = x[vertical]
     if np.abs(h) < 1e-15 and np.abs(v) < 1e-15:
@@ -83,100 +100,159 @@ def _corner_2d_grad(x, horizontal=0, vertical=2, plate_speed=1):
 def simple_shear_2d(direction, deformation_plane, strain_rate):
     """Return simple shear velocity and velocity gradient callables.
 
-    The returned callables have signature f(x) where x is a 3D position vector.
+    The returned callables have signature f(t, x) where x is a 3D position vector.
 
     Args:
     - `direction` (one of {"X", "Y", "Z"}) — velocity vector direction
     - `deformation_plane` (one of {"X", "Y", "Z"}) — direction of velocity gradient
-    - `strain_rate` (float) — 1/2 × strength of velocity gradient
+    - `strain_rate` (float) — 1/2 × magnitude of the largest eigenvalue of the velocity
+      gradient
+
+    .. note::
+        Input arrays to the returned callables must have homogeneous element types.
+        Arrays with e.g. both floating point and integer values are not supported.
+
+    Examples:
+
+    >>> import numpy as np
+    >>> u, L = simple_shear_2d("X", "Z", 1e-4)
+    >>> u(np.nan, np.array([0, 0, 0]))  # Time is not used here.
+    array([0., 0., 0.])
+    >>> u(np.nan, np.array([0, 0, 1]))
+    array([0.0001, 0.    , 0.    ])
+    >>> u(np.nan, np.array([0.0, 0.0, 2.0]))
+    array([0.0002, 0.    , 0.    ])
+    >>> L(np.nan, np.array([0, 0, 0]))
+    array([[0.    , 0.    , 0.0002],
+           [0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    ]])
+    >>> L(np.nan, np.array([0.0, 0.0, 1.0]))
+    array([[0.    , 0.    , 0.0002],
+           [0.    , 0.    , 0.    ],
+           [0.    , 0.    , 0.    ]])
 
     """
-    shear = (direction, deformation_plane)
-    match shear:
-        case ("X", "Y"):
-            _shear = (0, 1)
-        case ("X", "Z"):
-            _shear = (0, 2)
-        case ("Y", "X"):
-            _shear = (1, 0)
-        case ("Y", "Z"):
-            _shear = (1, 2)
-        case ("Z", "X"):
-            _shear = (2, 0)
-        case ("Z", "Y"):
-            _shear = (2, 1)
-        case _:
-            raise ValueError(
-                "unsupported shear type with"
-                + f" direction = {direction}, deformation_plane = {deformation_plane}"
-            )
+    try:
+        indices = _geo.to_indices(direction, deformation_plane)
+    except ValueError:
+        raise ValueError(
+            "unsupported shear type with"
+            + f" direction = {direction}, deformation_plane = {deformation_plane}"
+        )
 
     return (
         ft.partial(
             _simple_shear_2d,
-            direction=_shear[0],
-            deformation_plane=_shear[1],
+            direction=indices[0],
+            deformation_plane=indices[1],
             strain_rate=strain_rate,
         ),
         ft.partial(
             _simple_shear_2d_grad,
-            direction=_shear[0],
-            deformation_plane=_shear[1],
+            direction=indices[0],
+            deformation_plane=indices[1],
             strain_rate=strain_rate,
         ),
     )
 
 
-def cell_2d(horizontal, vertical, velocity_edge):
+def cell_2d(horizontal, vertical, velocity_edge, edge_length=2):
     r"""Get velocity and velocity gradient callables for a steady-state 2D Stokes cell.
 
-    The velocity field is defined by:
+    The cell is centered at (0,0) and the velocity field is defined by:
     $$
-    \bm{u} = \cos(π x/2)\sin(π x/2) \bm{\hat{h}} - \sin(π x/2)\cos(π x/2) \bm{\hat{v}}
+    \bm{u} = U\cos(π x/d)\sin(π z/d) \bm{\hat{h}} - U\sin(π x/d)\cos(π z/d) \bm{\hat{v}}
     $$
     where $\bm{\hat{h}}$ and $\bm{\hat{v}}$ are unit vectors in the chosen horizontal
-    and vertical directions, respectively.
+    and vertical directions, respectively. The velocity at the cell edge has a magnitude
+    of $U$ and $d$ is the length of a cell edge.
 
-    The returned callables have signature f(x) where x is a 3D position vector.
+    The returned callables have signature f(t, x) where x is a 3D position vector.
 
     Args:
     - `horizontal` (one of {"X", "Y", "Z"}) — horizontal direction
     - `vertical` (one of {"X", "Y", "Z"}) — vertical direction
     - `velocity_edge` (float) — velocity magnitude at the center of the cell edge
+    - `edge_length` (float, optional) — the edge length of the cell (= 2 by default)
+
+    Examples:
+
+    >>> import numpy as np
+    >>> u, L = cell_2d("X", "Z", 1)
+    >>> u(np.nan, np.array([0, 0, 0]))  # Time value is not used for steady flows.
+    array([ 0.,  0., -0.])
+    >>> u(np.nan, np.array([0, 0, 1]))
+    array([ 1.,  0., -0.])
+    >>> u(np.nan, np.array([0, 1, 0]))  # Y-value is not used.
+    array([ 0.,  0., -0.])
+    >>> u(np.nan, np.array([0, 0, -1]))
+    array([-1.,  0., -0.])
+    >>> u(np.nan, np.array([1, 0, 0]))
+    array([ 0.,  0., -1.])
+    >>> u(np.nan, np.array([-0.5, 0.0, 0.0]))
+    array([0.        , 0.        , 0.70710678])
+    >>> L(np.nan, np.array([0, 0, 0]))
+    array([[-0.        ,  0.        ,  1.57079633],
+           [ 0.        ,  0.        ,  0.        ],
+           [ 0.        ,  0.        , -1.57079633]])
+    >>> L(np.nan, np.array([0.5, 0.0, 0.0]))
+    array([[-0.        ,  0.        ,  1.11072073],
+           [ 0.        ,  0.        ,  0.        ],
+           [ 0.        ,  0.        , -1.11072073]])
+    >>> L(np.nan, np.array([0, 0, 0])) == L(np.nan, np.array([0, 1, 0]))  # Y-value is not used.
+    array([[ True,  True,  True],
+           [ True,  True,  True],
+           [ True,  True,  True]])
+    >>> L(np.nan, np.array([1, 0, 0])) == L(np.nan, np.array([0, 0, 1]))
+    array([[ True,  True,  True],
+           [ True,  True,  True],
+           [ True,  True,  True]])
+    >>> L(np.nan, np.array([1, 0, 0])) == L(np.nan, np.array([-1, 0, 0]))
+    array([[ True,  True,  True],
+           [ True,  True,  True],
+           [ True,  True,  True]])
+    >>> L(np.nan, np.array([1, 0, 0])) == L(np.nan, np.array([0, 0, -1]))
+    array([[ True,  True,  True],
+           [ True,  True,  True],
+           [ True,  True,  True]])
+    >>> L(np.nan, np.array([0.5, 0.0, 0.5]))
+    array([[-0.78539816,  0.        ,  0.78539816],
+           [ 0.        ,  0.        ,  0.        ],
+           [ 0.78539816,  0.        , -0.78539816]])
+
+    >>> u, L = cell_2d("X", "Z", 6.3e-10, 1e5)
+    >>> u(np.nan, np.array([0, 0, 0]))
+    array([ 0.,  0., -0.])
+    >>> u(np.nan, np.array([0.0, 0.0, -5e4]))
+    array([-6.3e-10,  0.0e+00, -0.0e+00])
+    >>> u(np.nan, np.array([2e2, 0e0, 0e0]))
+    array([ 0.0000000e+00,  0.0000000e+00, -3.9583807e-12])
 
     """
-    geometry = (horizontal, vertical)
-    match geometry:
-        case ("X", "Y"):
-            _geometry = (0, 1)
-        case ("X", "Z"):
-            _geometry = (0, 2)
-        case ("Y", "X"):
-            _geometry = (1, 0)
-        case ("Y", "Z"):
-            _geometry = (1, 2)
-        case ("Z", "X"):
-            _geometry = (2, 0)
-        case ("Z", "Y"):
-            _geometry = (2, 1)
-        case _:
-            raise ValueError(
-                "unsupported convection cell geometry with"
-                + f" horizontal = {horizontal}, vertical = {vertical}"
-            )
+    if edge_length < 0:
+        raise ValueError(f"edge length of 2D cell must be positive, not {edge_length}")
+    try:
+        indices = _geo.to_indices(horizontal, vertical)
+    except ValueError:
+        raise ValueError(
+            "unsupported convection cell geometry with"
+            + f" horizontal = {horizontal}, vertical = {vertical}"
+        )
 
     return (
         ft.partial(
             _cell_2d,
-            horizontal=_geometry[0],
-            vertical=_geometry[1],
+            horizontal=indices[0],
+            vertical=indices[1],
             velocity_edge=velocity_edge,
+            edge_length=edge_length,
         ),
         ft.partial(
             _cell_2d_grad,
-            horizontal=_geometry[0],
-            vertical=_geometry[1],
+            horizontal=indices[0],
+            vertical=indices[1],
             velocity_edge=velocity_edge,
+            edge_length=edge_length,
         ),
     )
 
@@ -221,7 +297,7 @@ def corner_2d(horizontal, vertical, plate_speed):
     $$
     See also Fig. 5 in [Kaminski & Ribe, 2002](https://doi.org/10.1029/2001GC000222).
 
-    The returned callables have signature f(x) where x is a 3D position vector.
+    The returned callables have signature f(t, x) where x is a 3D position vector.
 
     Args:
     - `horizontal` (one of {"X", "Y", "Z"}) — horizontal direction
@@ -229,37 +305,25 @@ def corner_2d(horizontal, vertical, plate_speed):
     - `plate_speed` (float) — speed of the “plate” i.e. upper boundary
 
     """
-    geometry = (horizontal, vertical)
-    match geometry:
-        case ("X", "Y"):
-            _geometry = (0, 1)
-        case ("X", "Z"):
-            _geometry = (0, 2)
-        case ("Y", "X"):
-            _geometry = (1, 0)
-        case ("Y", "Z"):
-            _geometry = (1, 2)
-        case ("Z", "X"):
-            _geometry = (2, 0)
-        case ("Z", "Y"):
-            _geometry = (2, 1)
-        case _:
-            raise ValueError(
-                "unsupported convection cell geometry with"
-                + f" horizontal = {horizontal}, vertical = {vertical}"
-            )
+    try:
+        indices = _geo.to_indices(horizontal, vertical)
+    except ValueError:
+        raise ValueError(
+            "unsupported convection cell geometry with"
+            + f" horizontal = {horizontal}, vertical = {vertical}"
+        )
 
     return (
         ft.partial(
             _corner_2d,
-            horizontal=_geometry[0],
-            vertical=_geometry[1],
+            horizontal=indices[0],
+            vertical=indices[1],
             plate_speed=plate_speed,
         ),
         ft.partial(
             _corner_2d_grad,
-            horizontal=_geometry[0],
-            vertical=_geometry[1],
+            horizontal=indices[0],
+            vertical=indices[1],
             plate_speed=plate_speed,
         ),
     )

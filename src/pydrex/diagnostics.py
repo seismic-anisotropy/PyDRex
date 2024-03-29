@@ -355,8 +355,8 @@ def coaxial_index(orientations, axis1="b", axis2="a"):
     fluctuations compared to the raw eigenvalue diagnostics.
 
     """
-    P1, G1, _ = symmetry(orientations, axis=axis1)
-    P2, G2, _ = symmetry(orientations, axis=axis2)
+    P1, G1, _ = symmetry_pgr(orientations, axis=axis1)
+    P2, G2, _ = symmetry_pgr(orientations, axis=axis2)
     return 0.5 * (2 - (P1 / (G1 + P1)) - (G2 / (G2 + P2)))
 
 
@@ -367,6 +367,20 @@ def smallest_angle(vector, axis, plane=None):
     The axis is specified using either of its two parallel unit vectors.
     Optionally project the vector onto the `plane` (given by its unit normal)
     before calculating the angle.
+
+    Examples:
+
+    >>> from numpy import asarray as Ŋ
+    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([1e0, 0e0, 0e0]))
+    0.0
+    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([0e0, 1e0, 0e0]))
+    90.0
+    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([0e0, -1e0, 0e0]))
+    90.0
+    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([np.sqrt(2), np.sqrt(2), 0e0]))
+    45.0
+    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([-np.sqrt(2), np.sqrt(2), 0e0]))
+    45.0
 
     """
     if plane is not None:

@@ -20,7 +20,7 @@ requires-python = ">=3.11"  # We use tomllib: <https://docs.python.org/3/library
 license = {file = "LICENSE"}
 authors = [
     {name = "Thomas Duvernay", email = "td75013@hotmail.fr"},
-    {name = "Leon Bilton", email = "adigitoleo@dissimulo.com"},
+    {name = "Leon Bilton", email = "adigitoleo@posteo.net"},
     {name = "Chris Mathews"},
 ]
 keywords = ["CPO", "LPO", "olivine", "deformation", "anisotropy", "crystallography"]
@@ -34,17 +34,21 @@ classifiers = [
 
 dependencies = [
     "numpy >= 1.8",  # <https://numpy.org/doc/stable/reference/generated/numpy.linalg.eigvalsh.html>
-    "numba >= 0.5",  # <https://numba.pydata.org/numba-doc/latest/release-notes.html#version-0-50-0-jun-10-2020>
+    "numba >= 0.57",  # <https://numba.readthedocs.io/en/stable/release-notes.html#version-0-57-0-1-may-2023>
     "scipy >= 1.2",  # <https://github.com/scipy/scipy/pull/9176>
     "pyyaml",  # For YAML headers of plaintext datafiles.
     "meshio",  # For reading VTK and other meshes.
+    "matplotlib",  # Plotting library, The.
     "cmcrameri",  # Matplotlib colormaps using the palettes designed by Fabio Crameri.
+    "h5py",  # For reading Fluidity .h5part files.
+    "tqdm",  # For progress bars (for long-running CLI scripts)
 ]
 
 [project.optional-dependencies]
-test = ["pytest", "matplotlib"]
+test = ["pytest"]
 doc = ["pdoc"]
-dev = ["pytest", "matplotlib", "pdoc", "ruff", "black", "h5py", "isort", "ipython"]
+mesh = ["gmsh"]  # NOTE: Saying `import gmsh` is like saying "I don't want my CI to work".
+dev = ["pytest", "uniplot", "pdoc", "ruff", "black", "isort", "ptpython"]
 lsp = ["python-lsp-server", "pyls-isort", "python-lsp-black", "python-lsp-ruff"]
 
 [project.urls]
@@ -53,6 +57,8 @@ documentation = "https://seismic-anisotropy.github.io/PyDRex/"
 
 [project.scripts]
 pydrex-polefigures = "pydrex.cli:CLI_HANDLERS.pole_figure_visualiser"
+pydrex-mesh = "pydrex.cli:CLI_HANDLERS.mesh_generator"
+pydrex-h5party="pydrex.cli:CLI_HANDLERS.h5part_extractor"
 npzshow = "pydrex.cli:CLI_HANDLERS.npz_file_inspector"
 
 # Make setuptools include datafiles in wheels/packages.
@@ -72,8 +78,7 @@ where = ["src"]
 testpaths = ["tests"]
 # --tb=short : Use short tracebacks, terminal scrollback is precious.
 # --show-capture=no : Don't show captured output (stdout/stderr/logs) for failed tests.
-# --doctest-modules : Run doctest snippets in docstrings
-addopts = "--tb=short --show-capture=no --doctest-modules"
+addopts = "--tb=short --show-capture=no"
 
 # Global linter and devtools settings.
 [tool.isort]

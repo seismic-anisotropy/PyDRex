@@ -87,10 +87,10 @@ def misorientation_hist(orientations, system: _geo.LatticeSystem, bins=None):
     See `_geo.LatticeSystem` for supported systems.
 
     .. warning::
-        This method must be able to allocate an array of shape
-        $ \frac{N!}{2(N-2)!}× M^{2} $
+        This method must be able to allocate $ \frac{N!}{N-2!}× 4M $ floats
         for N the length of `orientations` and M the number of symmetry operations for
-        the given `system`.
+        the given `system` (`numpy.float32` values are used to reduce the memory
+        requirements)
 
     See [Skemer et al. (2005)](https://doi.org/10.1016/j.tecto.2005.08.023).
 
@@ -98,10 +98,12 @@ def misorientation_hist(orientations, system: _geo.LatticeSystem, bins=None):
     symmetry_ops = _geo.symmetry_operations(system)
     # Compute and bin misorientation angles from orientation data.
     q1_array = np.empty(
-        (sp.comb(len(orientations), 2, exact=True), len(symmetry_ops), 4)
+        (sp.comb(len(orientations), 2, exact=True), len(symmetry_ops), 4),
+        dtype=np.float32,
     )
     q2_array = np.empty(
-        (sp.comb(len(orientations), 2, exact=True), len(symmetry_ops), 4)
+        (sp.comb(len(orientations), 2, exact=True), len(symmetry_ops), 4),
+        dtype=np.float32,
     )
     for i, e in enumerate(
         it.combinations(Rotation.from_matrix(orientations).as_quat(), 2)
@@ -114,9 +116,6 @@ def misorientation_hist(orientations, system: _geo.LatticeSystem, bins=None):
             else:
                 q1_array[i, j] = _utils.quat_product(qs, q1)
                 q2_array[i, j] = _utils.quat_product(qs, q2)
-
-    _log.debug("calculating misorientations...")
-    _log.debug("largest array size: %s GB", q1_array.nbytes / 1e9)
 
     misorientations_data = _geo.misorientation_angles(q1_array, q2_array)
     θmax = _stats._max_misorientation(system)

@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from zipfile import ZipFile
 
 import numpy as np
+from numpy import asarray as Ŋ
 from scipy import linalg as la
 from scipy.integrate import LSODA
 from scipy.spatial.transform import Rotation
@@ -181,33 +182,49 @@ class Mineral:
     **Examples:**
 
     Mineral with isotropic initial texture:
+
     >>> import pydrex
-    >>> pydrex.Mineral(
-    >>>     phase=pydrex.MineralPhase.olivine,
-    >>>     fabric=pydrex.MineralFabric.olivine_A,
-    >>>     regime=pydrex.DeformationRegime.dislocation,
-    >>>     n_grains=2000,
-    >>> )
-    Mineral(phase=0, fabric=0, regime=1, n_grains=2000, ...)
+    >>> olA = pydrex.Mineral(
+    ...     phase=pydrex.MineralPhase.olivine,
+    ...     fabric=pydrex.MineralFabric.olivine_A,
+    ...     regime=pydrex.DeformationRegime.dislocation,
+    ...     n_grains=2000
+    ... )
+    >>> olA.phase
+    <MineralPhase.olivine: 0>
+    >>> olA.fabric
+    <MineralFabric.olivine_A: 0>
+    >>> olA.regime
+    <DeformationRegime.dislocation: 1>
+    >>> olA.n_grains
+    2000
 
     Mineral with specified initial texture and default phase, fabric and regime settings
     which are for an olivine A-type mineral in the dislocation creep regime.
     The initial grain volume fractions should be normalised.
+
     >>> import numpy as np
     >>> from scipy.spatial.transform import Rotation
     >>> import pydrex
     >>> rng = np.random.default_rng()
     >>> n_grains = 2000
-    >>> pydrex.Mineral(
-    >>>     n_grains=n_grains,
-    >>>     fractions_init=np.full(n_grains, 1 / n_grains),
-    >>>     orientations_init=Rotation.from_euler(
-    >>>         "zxz", [
-    >>>             [x * np.pi / 2, np.pi / /2, np.pi / 2] for x in rng.random(n_grains)
-    >>>         ]
-    >>>     ).inv().as_matrix(),
-    >>> )
-    Mineral(phase=0, fabric=0, regime=1, n_grains=2000, ...)
+    >>> olA = pydrex.Mineral(
+    ...     n_grains=n_grains,
+    ...     fractions_init=np.full(n_grains, 1 / n_grains),
+    ...     orientations_init=Rotation.from_euler(
+    ...         "zxz", [
+    ...             [x * np.pi / 2, np.pi / 2, np.pi / 2] for x in rng.random(n_grains)
+    ...         ]
+    ...     ).inv().as_matrix(),
+    ... )
+    >>> len(olA.orientations)
+    1
+    >>> type(olA.orientations)
+    <class 'list'>
+    >>> olA.orientations[0].shape
+    (2000, 3, 3)
+    >>> olA.fractions[0].shape
+    (2000,)
 
     Note that minerals can also be constructed from serialized data,
     see `Mineral.load` and `Mineral.from_file`.
@@ -253,18 +270,18 @@ class Mineral:
         else:
             shape_of_orientations = "(?)"
 
-        return (
-            self.__class__.__qualname__
-            + f"(phase={self.phase!s}, "
-            + f"fabric={self.fabric!s}, "
-            + f"regime={self.regime!s}, "
-            + f"n_grains={self.n_grains!s}, "
-            + f"fractions=<{self.fractions.__class__.__qualname__}"
-            + f" of {self.fractions[0].__class__.__qualname__} {shape_of_fractions}>, "
-            + f"orientations=<{self.orientations.__class__.__qualname__}"
-            + f" of {self.orientations[0].__class__.__qualname__}"
-            + f" {shape_of_orientations}>)"
-        )
+        obj = self.__class__.__qualname__
+        phase = f"(phase={self.phase!r}, "
+        fabric = f"fabric={self.fabric!r}, "
+        regime = f"regime={self.regime!r}, "
+        n_grains = f"n_grains={self.n_grains}, "
+        _fclass = self.fractions.__class__.__qualname__
+        _f0class = self.fractions[0].__class__.__qualname__
+        frac = f"fractions=<{_fclass} of {_f0class} {shape_of_fractions}>, "
+        _oclass = self.orientations.__class__.__qualname__
+        _o0class = self.orientations[0].__class__.__qualname__
+        orient = f"orientations=<{_oclass} of {_o0class} {shape_of_orientations}>)"
+        return f"{obj}{phase}{fabric}{regime}{n_grains}{frac}{orient}"
 
     def _repr_pretty_(self, p, cycle):
         # Format to use when printing to IPython or other interactive console.
@@ -301,6 +318,31 @@ class Mineral:
 
         _log.info("created %s", self)
 
+    def __eq__(self, other):
+        if other.__class__ is self.__class__:
+            return (
+                self.phase == other.phase
+                and self.fabric == other.fabric
+                and self.regime == other.regime
+                and self.n_grains == other.n_grains
+                and len(self.fractions) == len(other.fractions)
+                and np.all(
+                    Ŋ([f.shape for f in self.fractions])
+                    == Ŋ([f.shape for f in other.fractions])
+                )
+                and np.all(Ŋ(self.fractions) == Ŋ(other.fractions))
+                and len(self.orientations) == len(other.orientations)
+                and np.all(
+                    Ŋ([f.shape for f in self.orientations])
+                    == Ŋ([f.shape for f in other.orientations])
+                )
+                and np.all(Ŋ(self.orientations) == Ŋ(other.orientations))
+                and self.seed == other.seed
+                and self.lband == other.lband
+                and self.uband == other.uband
+            )
+        return False
+
     def update_orientations(
         self,
         config,
@@ -317,9 +359,9 @@ class Mineral:
 
         Args:
         - `config` (dict) — PyDRex configuration dictionary
-        - `deformation_gradient` (array) — 3x3 initial deformation gradient tensor
-        - `get_velocity_gradient` (function) — callable with signature f(x) that returns
-          a 3x3 velocity gradient matrix at position x (vector)
+        - `deformation_gradient` (array) — 3x3 deformation gradient tensor
+        - `get_velocity_gradient` (function) — callable with signature f(t, x) that
+          returns a 3x3 velocity gradient matrix at time t and position x (3D vector)
         - `pathline` (tuple) — tuple consisting of:
             1. the time at which to start the CPO integration (t_start)
             2. the time at which to stop the CPO integration (t_end)
@@ -332,6 +374,35 @@ class Mineral:
         Array values must provide a NumPy-compatible interface:
         <https://numpy.org/doc/stable/user/whatisnumpy.html>
 
+        Examples:
+
+        >>> from itertools import pairwise
+        >>> import pydrex
+        >>> olA = pydrex.Mineral(
+        ...           phase=pydrex.MineralPhase.olivine,
+        ...           fabric=pydrex.MineralFabric.olivine_A,
+        ...           regime=pydrex.DeformationRegime.dislocation,
+        ...           n_grains=pydrex.DEFAULT_PARAMS["number_of_grains"],
+        ... )
+        >>> def get_velocity_gradient(t, x):  # Simple L for simple shear.
+        ...     L = np.zeros((3, 3))
+        ...     L[0, 2] = 1
+        ...     return L
+        >>> def get_position(t):
+        ...     return np.zeros(3)  # Stationary polycrystal for this example.
+        >>> timestamps = range(2)  # Just 1 timestep for demonstration.
+        >>> deformation_gradient = np.eye(3)  # Start with an undeformed polycrystal.
+        >>> for t_start, t_end in pairwise(timestamps):
+        ...     # Update deformation_gradient, olA.orientations and olA.fractions.
+        ...     deformation_gradient = olA.update_orientations(
+        ...         pydrex.DEFAULT_PARAMS,
+        ...         deformation_gradient,
+        ...         get_velocity_gradient,
+        ...         (t_start, t_end, get_position),
+        ...     )
+        >>> np.all(deformation_gradient == np.eye(3) + get_velocity_gradient(t_end, np.nan))
+        True
+
         """
 
         # ===== Set up callables for the ODE solver and internal processing =====
@@ -340,12 +411,12 @@ class Mineral:
             """Evaluate right hand side of the D-Rex PDE."""
             # assert not np.any(np.isnan(y)), y[np.isnan(y)].shape
             position = get_position(t)
-            velocity_gradient = get_velocity_gradient(position)
+            velocity_gradient = get_velocity_gradient(t, position)
             # _log.debug(
             #     "calculating CPO at %s (t=%e) with velocity gradient %s",
             #     position,
             #     t,
-            #     velocity_gradient.flatten(),
+            #     velocity_gradient.ravel(),
             # )
 
             if self.phase == _core.MineralPhase.olivine:
@@ -353,7 +424,9 @@ class Mineral:
             elif self.phase == _core.MineralPhase.enstatite:
                 volume_fraction = config["enstatite_fraction"]
             else:
-                assert False  # Should never happen.
+                raise ValueError(
+                    f"phase must be a valid `MineralPhase`, not {self.phase}"
+                )
 
             strain_rate = (velocity_gradient + velocity_gradient.transpose()) / 2
             strain_rate_max = np.abs(la.eigvalsh(strain_rate)).max()
@@ -410,7 +483,7 @@ class Mineral:
         if not callable(get_velocity_gradient):
             raise ValueError(
                 "unable to evaluate velocity gradient callable."
-                + " You must provide a callable with signature f(x)"
+                + " You must provide a callable with signature f(t, x)"
                 + " that returns a 3x3 matrix."
             )
         if not callable(get_position):
@@ -419,6 +492,25 @@ class Mineral:
                 + " You must provide a callable with signature f(t)"
                 + " that returns a 3-component array."
             )
+        _log.debug(
+            "calculating CPO from %s (t=%s) to %s (t=%s)",
+            get_position(time_start),
+            time_start,
+            get_position(time_end),
+            time_end,
+        )
+        _log.debug("    with deformation gradient %s", deformation_gradient.ravel())
+        _log.debug(
+            "    with velocity gradient interpolated between %s and %s",
+            get_velocity_gradient(time_start, get_position(time_start)).ravel(),
+            get_velocity_gradient(time_end, get_position(time_end)).ravel()
+        )
+        _log.debug(
+            "    intermediate velocity gradient = %s",
+            get_velocity_gradient(
+                (time_start + time_end) / 2, get_position((time_start + time_end) / 2)
+            ).ravel(),
+        )
 
         y_start = np.hstack(
             (
@@ -482,6 +574,7 @@ class Mineral:
             _io.resolve_path(filename)
             # Append to file, requires postfix (unique name).
             if postfix is not None:
+                _log.info("saving Mineral to file %s (postfix: %s)", filename, postfix)
                 archive = ZipFile(filename, mode="a", allowZip64=True)
                 for key in data.keys():
                     with archive.open(
@@ -492,6 +585,7 @@ class Mineral:
                         file.write(buffer.getvalue())
                         buffer.close()
             else:
+                _log.info("saving Mineral to file %s", filename)
                 np.savez(filename, **data)
         else:
             raise ValueError(
@@ -564,9 +658,3 @@ class Mineral:
         mineral.fractions = fractions
         mineral.orientations = orientations
         return mineral
-
-
-def __run_doctests():
-    import doctest
-
-    return doctest.testmod()

@@ -2,6 +2,7 @@
 
 from enum import Enum, unique
 
+import numba as nb
 import numpy as np
 from scipy import linalg as la
 from scipy.spatial.transform import Rotation
@@ -67,6 +68,7 @@ def to_spherical(x, y, z):
     return (r, np.arctan2(y, x), np.sign(y) * np.arccos(x / np.sqrt(x**2 + y**2)))
 
 
+@nb.njit(fastmath=True)
 def misorientation_angles(q1_array, q2_array):
     """Calculate minimum misorientation angles for collections of rotation quaternions.
 
@@ -110,7 +112,7 @@ def misorientation_angles(q1_array, q2_array):
                 )
             )
             k += 1
-    return np.min(angles, axis=1)
+    return np.array([np.min(a) for a in angles])
 
 
 def symmetry_operations(system: LatticeSystem):
@@ -259,18 +261,18 @@ def shirley_concentric_squaredisk(xvals, yvals):
     >>> y_flat = [j for i in y for j in i]
     >>> x_disk, y_disk = shirley_concentric_squaredisk(x_flat, y_flat)
     >>> r = x_disk**2 + y_disk**2
-    >>> r
-    array([1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ,
-           1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ,
-           1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ,
-           1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ,
-           1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ,
-           1.  , 0.64, 0.36, 0.16, 0.04, 0.  , 0.04, 0.16, 0.36, 0.64, 1.  ,
-           1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ,
-           1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ,
-           1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ,
-           1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ,
-           1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ])
+    >>> r.reshape((len(a), len(a)))
+    array([[1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ],
+           [1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ],
+           [1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ],
+           [1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ],
+           [1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ],
+           [1.  , 0.64, 0.36, 0.16, 0.04, 0.  , 0.04, 0.16, 0.36, 0.64, 1.  ],
+           [1.  , 0.64, 0.36, 0.16, 0.04, 0.04, 0.04, 0.16, 0.36, 0.64, 1.  ],
+           [1.  , 0.64, 0.36, 0.16, 0.16, 0.16, 0.16, 0.16, 0.36, 0.64, 1.  ],
+           [1.  , 0.64, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.36, 0.64, 1.  ],
+           [1.  , 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 0.64, 1.  ],
+           [1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  , 1.  ]])
     >>> from math import atan2
     >>> θ = [atan2(y, x) for y, x in zip(y_disk, x_disk)]
     >>> max(θ)
@@ -309,7 +311,21 @@ def shirley_concentric_squaredisk(xvals, yvals):
     return x_disk, y_disk
 
 
-def __run_doctests():
-    import doctest
-
-    return doctest.testmod()
+def to_indices(horizontal, vertical):
+    _geometry = (horizontal.upper(), vertical.upper())
+    match _geometry:
+        case ("X", "Y"):
+            indices = (0, 1)
+        case ("X", "Z"):
+            indices = (0, 2)
+        case ("Y", "X"):
+            indices = (1, 0)
+        case ("Y", "Z"):
+            indices = (1, 2)
+        case ("Z", "X"):
+            indices = (2, 0)
+        case ("Z", "Y"):
+            indices = (2, 1)
+        case _:
+            raise ValueError
+    return indices

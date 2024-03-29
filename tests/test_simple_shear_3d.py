@@ -99,7 +99,7 @@ class TestFraters2021:
             )
             _log.debug(
                 "› velocity gradient = %s",
-                get_velocity_gradient(None).flatten(),
+                get_velocity_gradient(np.nan, np.full(3, np.nan)).flatten(),
             )
         return olivine, enstatite
 

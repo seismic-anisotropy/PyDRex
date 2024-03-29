@@ -8,7 +8,6 @@ which ensures that they will be installed as executable scripts alongside the pa
 import argparse
 import os
 from collections import namedtuple
-from dataclasses import dataclass
 from zipfile import ZipFile
 
 from pydrex import exceptions as _err
@@ -19,8 +18,167 @@ from pydrex import stats as _stats
 from pydrex import visualisation as _vis
 
 
-@dataclass
-class NPZFileInspector:
+class CliTool:
+    """Base class for CLI tools defining the required interface."""
+
+    def __call__(self):
+        return NotImplementedError
+
+    def _get_args(self) -> argparse.Namespace:
+        return NotImplementedError
+
+
+class MeshGenerator(CliTool):
+    """PyDRex script to generate various simple meshes.
+
+    Only rectangular (2D) meshes are currently supported. The RESOLUTION must be a comma
+    delimited set of directives of the form `<LOC>:<RES>` where `<LOC>` is a location
+    specifier, i.e. either "G" (global) or a compas direction like "N", "S", "NE", etc.,
+    and `<RES>` is a floating point value to be set as the resolution at that location.
+
+    """
+
+    def __call__(self):
+        try:  # This one is dangerous, especially in CI.
+            from pydrex import mesh as _mesh
+        except ImportError:
+            raise _err.MissingDependencyError(
+                "missing optional meshing dependencies."
+                + " Have you installed the package with 'pip install pydrex[mesh]'?"
+            )
+
+        args = self._get_args()
+
+        if args.kind == "rectangle":
+            if args.center is None:
+                center = (0, 0)
+            else:
+                center = [float(s) for s in args.center.split(",")]
+                assert len(center) == 2
+
+            width, height = map(float, args.size.split(","))
+            _loc_map = {
+                "G": "global",
+                "N": "north",
+                "S": "south",
+                "E": "east",
+                "W": "west",
+                "NE": "north-east",
+                "NW": "north-west",
+                "SE": "south-east",
+                "SW": "south-west",
+            }
+            try:
+                resolution = {
+                    _loc_map[k]: float(v)
+                    for k, v in map(lambda s: s.split(":"), args.resolution.split(","))
+                }
+            except KeyError:
+                raise KeyError(
+                    "invalid or unsupported location specified in resolution directive"
+                ) from None
+            except ValueError:
+                raise ValueError(
+                    "invalid resolution value. The format should be '<LOC1>:<RES1>,<LOC2>:<RES2>,...'"
+                ) from None
+            _mesh.rectangle(
+                args.output[:-4],
+                (args.ref_axes[0], args.ref_axes[1]),
+                center,
+                width,
+                height,
+                resolution,
+            )
+
+    def _get_args(self) -> argparse.Namespace:
+        description, epilog = self.__doc__.split(os.linesep + os.linesep, 1)
+        parser = argparse.ArgumentParser(description=description, epilog=epilog)
+        parser.add_argument("size", help="width,height[,depth] of the mesh")
+        parser.add_argument(
+            "-r",
+            "--resolution",
+            help="resolution for the mesh (edge length hint(s) for gmsh)",
+            required=True,
+        )
+        parser.add_argument("output", help="output file (.msh)")
+        parser.add_argument(
+            "-c",
+            "--center",
+            help="center of the mesh as 2 or 3 comma-separated coordinates. default: (0, 0[, 0])",
+            default=None,
+        )
+        parser.add_argument(
+            "-a",
+            "--ref-axes",
+            help=(
+                "two letters from {'x', 'y', 'z'} that specify"
+                + " the horizontal and vertical axes of the mesh"
+            ),
+            default="xz",
+        )
+        parser.add_argument(
+            "-k", "--kind", help="kind of mesh, e.g. 'rectangle'", default="rectangle"
+        )
+        return parser.parse_args()
+
+
+class H5partExtractor(CliTool):
+    """PyDRex script to extract raw CPO data from Fluidity .h5part files.
+
+    Fluidity saves data stored on model `particles` to an `.h5part` file.
+    This script converts that file to canonical serialisation formats:
+    - a `.npz` file containing the raw CPO orientations and (surrogate) grain sizes
+    - an `.scsv` file containing the pathline positions and accumulated strain
+
+    It is assumed that CPO data is stored in keys called 'CPO_<N>' in the .h5part
+    data, where `<N>` is an integer in the range 1—`n_grains`. The accumulated strain is
+    read from the attribute `CPO_<S>` where S=`ngrains`+1. Particle positions are read
+    from the attributes `x`, `y`, and `z`.
+
+    At the moment, dynamic changes in fabric or phase are not supported.
+
+    """
+
+    def __call__(self):
+        args = self._get_args()
+        _io.extract_h5part(
+            args.input, args.phase, args.fabric, args.ngrains, args.output
+        )
+
+    def _get_args(self) -> argparse.Namespace:
+        description, epilog = self.__doc__.split(os.linesep + os.linesep, 1)
+        parser = argparse.ArgumentParser(description=description, epilog=epilog)
+        parser.add_argument("input", help="input file (.h5part)")
+        parser.add_argument(
+            "-p",
+            "--phase",
+            help="type of `pydrex.MineralPhase` (as an ordinal number); 0 by default",
+            default=0,
+        )
+        parser.add_argument(
+            "-f",
+            "--fabric",
+            type=int,
+            help="type of `pydrex.MineralFabric` (as an ordinal number); 0 by default",
+            default=0,
+        )
+        parser.add_argument(
+            "-n",
+            "--ngrains",
+            help="number of grains used in the Fluidity simulation",
+            type=int,
+            required=True,
+        )
+        parser.add_argument(
+            "-o",
+            "--output",
+            help="filename for the output NPZ file (stem also used for the .scsv)",
+            required=True,
+        )
+        return parser.parse_args()
+
+
+class NPZFileInspector(CliTool):
     """PyDRex script to show information about serialized CPO data.
 
     Lists the keys that should be used for the `postfix` in `pydrex.Mineral.load` and
@@ -49,8 +207,7 @@ class NPZFileInspector:
         return parser.parse_args()
 
 
-@dataclass
-class PoleFigureVisualiser:
+class PoleFigureVisualiser(CliTool):
     """PyDRex script to plot pole figures of serialized CPO data.
 
     Produces [100], [010] and [001] pole figures for serialized `pydrex.Mineral`s.
@@ -174,13 +331,19 @@ class PoleFigureVisualiser:
         return parser.parse_args()
 
 
+# These are not the final names of the executables (those are set in pyproject.toml).
 _CLI_HANDLERS = namedtuple(
     "CLI_HANDLERS",
     {
         "pole_figure_visualiser",
         "npz_file_inspector",
+        "mesh_generator",
+        "h5part_extractor",
     },
 )
 CLI_HANDLERS = _CLI_HANDLERS(
-    pole_figure_visualiser=PoleFigureVisualiser(), npz_file_inspector=NPZFileInspector()
+    pole_figure_visualiser=PoleFigureVisualiser(),
+    npz_file_inspector=NPZFileInspector(),
+    mesh_generator=MeshGenerator(),
+    h5part_extractor=H5partExtractor(),
 )

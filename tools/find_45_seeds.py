@@ -15,7 +15,7 @@ for i in range(10000):
                     _d.elasticity_components(
                         _m.voigt_averages([m], {"olivine_fraction": 1})[0]
                     )["hexagonal_axis"][0],
-                    [1, 0, 0],
+                    np.asarray([1, 0, 0], dtype=np.float64),
                 )
                 - 45
             )

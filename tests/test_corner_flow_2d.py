@@ -25,7 +25,7 @@ from pydrex import visualisation as _vis
 SUBDIR = "2d_cornerflow"
 
 
-class TestCornerOlivineA:
+class TestOlivineA:
     """Tests for pure A-type olivine polycrystals in 2D corner flows."""
 
     class_id = "corner_olivineA"
@@ -52,24 +52,32 @@ class TestCornerOlivineA:
             seed=seed,
         )
         deformation_gradient = np.eye(3)
-        timestamps_back, get_position = _path.get_pathline(
+        timestamps, get_position = _path.get_pathline(
             final_location,
             get_velocity,
             get_velocity_gradient,
             min_coords,
             max_coords,
             max_strain,
+            regular_steps=n_timesteps,
         )
-        timestamps = np.linspace(timestamps_back[-1], timestamps_back[0], n_timesteps)
         positions = [get_position(t) for t in timestamps]
-        velocity_gradients = [get_velocity_gradient(np.asarray(x)) for x in positions]
+        velocity_gradients = [
+            get_velocity_gradient(np.nan, np.asarray(x)) for x in positions
+        ]
         strains = np.empty_like(timestamps)
         strains[0] = 0
         for t, time in enumerate(timestamps[:-1], start=1):
             strains[t] = strains[t - 1] + (
                 _utils.strain_increment(timestamps[t] - time, velocity_gradients[t])
             )
-            _log.info("step %d/%d (ε = %.2f)", t, len(timestamps) - 1, strains[t])
+            _log.info(
+                "final location = %s; step %d/%d (ε = %.2f)",
+                final_location.ravel(),
+                t,
+                len(timestamps) - 1,
+                strains[t],
+            )
 
             deformation_gradient = mineral.update_orientations(
                 params,
@@ -80,8 +88,8 @@ class TestCornerOlivineA:
         return timestamps, positions, strains, mineral, deformation_gradient
 
     @pytest.mark.slow
-    def test_prescribed(self, outdir, seed, ncpus):
-        """Test CPO evolution in prescribed 2D corner flow.
+    def test_steady4(self, outdir, seed, ncpus):
+        """Test CPO evolution in steady 2D corner flow along 4 pathlines.
 
         Initial condition: random orientations and uniform volumes in all `Mineral`s.
 
@@ -160,7 +168,7 @@ class TestCornerOlivineA:
                         )
                         misorient_angles[idx] = _diagnostics.smallest_angle(
                             direction_mean,
-                            [1, 0, 0],
+                            np.asarray([1, 0, 0], dtype=np.float64),
                         )
                         bingham_vectors[idx] = direction_mean
 

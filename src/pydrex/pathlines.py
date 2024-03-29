@@ -14,6 +14,7 @@ def get_pathline(
     min_coords,
     max_coords,
     max_strain,
+    regular_steps=None,
     **kwargs,
 ):
     """Determine the pathline for a particle in a steady state flow.
@@ -37,6 +38,10 @@ def get_pathline(
       location, useful if the pathline never inflows into the domain (the pathline will
       only be traced backwards until a strain of 0 is reached, unless a domain boundary
       is reached first)
+    - `regular_steps` (float, optional) — number of time steps to use for regular
+      resampling between the start (t << 0) and end (t <= 0) of the pathline
+      (if `None`, which is the default, then the timestamps obtained from
+      `scipy.integrate.solve_ivp` are returned instead)
 
     Optional keyword arguments will be passed to `scipy.integrate.solve_ivp`. However,
     some of the arguments to the `solve_ivp` call may not be modified, and a warning
@@ -58,7 +63,7 @@ def get_pathline(
 
         if _is_inside(point, min_coords, max_coords):
             dε = _utils.strain_increment(
-                time - _time_prev, get_velocity_gradient(point)
+                time - _time_prev, get_velocity_gradient(np.nan, point)
             )
             if time > _time_prev:  # Timestamps jump around for SciPy to find the root.
                 _strain += dε
@@ -102,25 +107,27 @@ def get_pathline(
         "calculated pathline from %s (t = %e) to %s (t = %e)",
         path.sol(path.t[0]),
         path.t[0],
-        path.sol(path.t[-2]),
-        path.t[-2],
+        path.sol(path.t[-1]),
+        path.t[-1],
     )
 
-    # Remove the last timestep — integration stops one step after a terminal event.
-    return path.t[:-1], path.sol
+    if regular_steps is None:
+        return path.t[::-1], path.sol
+    else:
+        return np.linspace(path.t[-1], path.t[0], regular_steps + 1), path.sol
 
 
 def _ivp_func(time, point, get_velocity, get_velocity_gradient, min_coords, max_coords):
     """Internal use only, must have the same signature as `get_pathline`."""
     if _is_inside(point, min_coords, max_coords):
-        return get_velocity(point)
+        return get_velocity(np.nan, point)
     return np.zeros_like(point)
 
 
 def _ivp_jac(time, point, get_velocity, get_velocity_gradient, min_coords, max_coords):
     """Internal use only, must have the same signature as `_ivp_func`."""
     if _is_inside(point, min_coords, max_coords):
-        return get_velocity_gradient(point)
+        return get_velocity_gradient(np.nan, point)
     return np.zeros((np.array(point).size,) * 2)
 
 

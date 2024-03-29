@@ -90,12 +90,12 @@ def get_crss(phase, fabric):
             case MineralFabric.olivine_E:
                 return np.array([3, 1, 2, np.inf])
             case _:
-                raise ValueError("unsupported olivine fabric")
+                raise ValueError(f"unsupported olivine fabric: {fabric}")
     elif phase == MineralPhase.enstatite:
         if fabric == MineralFabric.enstatite_AB:
             return np.array([np.inf, np.inf, np.inf, 1])
-        raise ValueError("unsupported enstatite fabric")
-    raise ValueError("phase must be a valid `MineralPhase`")
+        raise ValueError(f"unsupported enstatite fabric: {fabric}")
+    raise ValueError(f"phase must be a valid `MineralPhase`, not {phase}")
 
 
 # 12 args is a lot, but this way we can use numba

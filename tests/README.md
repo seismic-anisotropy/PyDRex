@@ -8,6 +8,13 @@ The custom optional flag `--outdir="OUT"` is recommended
 to produce output figures, data dumps and logs and save them in the directory `"OUT"`.
 The value `"."` can be used to save these in the current directory.
 
+Running individual tests or test subsets is possible using the pytest
+`-k="<pattern>"` command line flag, which accepts a string pattern that is
+matched against the names of test classes or methods.
+To see a full list of available tests, use the command `pytest --co`. This
+produces a rather long list and it is recommended to view the output with a
+pager like `less` on Linux.
+
 In total, the following custom pytest command line flags are defined by PyDRex:
 - `--outdir` (described above)
 - `--runbig` (enable tests which require a large amount of RAM)
@@ -26,6 +33,11 @@ It is recommended to run these on a HPC cluster infrastructure (>100GB RAM, >32 
 The number of cores to use for shared memory multiprocessing can be specified with `--ncpus`.
 
 ## Writing tests
+
+For quick sanity checks and inline unit tests, use [python doctests](https://docs.python.org/3/library/doctest.html).
+These will also appear as inline examples in the generated documentation.
+More comprehensive unit tests and larger integration tests should be organised
+into submodules of the `test` module.
 
 - To mark a test as “big” (i.e. requiring more than ~16GB RAM), apply the
   `@pytest.mark.big` decorator to the corresponding method definition.

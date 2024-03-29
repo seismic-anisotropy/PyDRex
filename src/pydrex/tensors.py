@@ -127,13 +127,15 @@ def hex_project(voigt_vector):
 def upper_tri_to_symmetric(arr):
     """Create symmetric array using upper triangle of input array.
 
+    Examples:
+
     >>> import numpy as np
     >>> upper_tri_to_symmetric(np.array([
-    >>>         [ 1.,  2.,  3.,  4.],
-    >>>         [ 0.,  5.,  6.,  7.],
-    >>>         [ 0.,  0.,  8.,  9.],
-    >>>         [ 9.,  0.,  0., 10.]
-    >>> ]))
+    ...         [ 1.,  2.,  3.,  4.],
+    ...         [ 0.,  5.,  6.,  7.],
+    ...         [ 0.,  0.,  8.,  9.],
+    ...         [ 9.,  0.,  0., 10.]
+    ... ]))
     array([[ 1.,  2.,  3.,  4.],
            [ 2.,  5.,  6.,  7.],
            [ 3.,  6.,  8.,  9.],
@@ -252,9 +254,3 @@ def rotate(tensor, rotation):
                                         * tensor[a, b, c, d]
                                     )
     return rotated_tensor
-
-
-def __run_doctests():
-    import doctest
-
-    return doctest.testmod()
