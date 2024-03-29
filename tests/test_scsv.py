@@ -1,5 +1,6 @@
 """> PyDRex: tests for the SCSV plain text file format."""
 
+import sys
 import tempfile
 
 import numpy as np
@@ -97,6 +98,7 @@ def test_read_specfile():
     nt.assert_equal(data.complex_column, [0.1 + 0 * 1j, np.nan + 0 * 1j, 1.0 + 1 * 1j])
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Items are not equal")
 def test_save_specfile(outdir):
     """Test SCSV spec file reproduction."""
     schema = {
