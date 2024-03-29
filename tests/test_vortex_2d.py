@@ -1,6 +1,7 @@
 """> PyDRex: tests for CPO stability in 2D vortex and Stokes cell flows."""
 
 import functools as ft
+import sys
 from multiprocessing import Pool
 
 import numpy as np
@@ -125,6 +126,7 @@ class TestCellOlivineA:
         """Run 2D cell test with 10000 grains (~14GiB RAM requirement)."""
         self.test_xz(outdir, seed, 10000)
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="Unable to allocate memory")
     @pytest.mark.parametrize("n_grains", [100, 500, 1000, 5000])
     def test_xz(self, outdir, seed, n_grains):
         """Test to check that 5000 grains is "enough" to resolve transient features."""

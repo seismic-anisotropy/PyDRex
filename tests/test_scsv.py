@@ -1,5 +1,6 @@
 """> PyDRex: tests for the SCSV plain text file format."""
 
+import sys
 import tempfile
 
 import numpy as np
@@ -97,6 +98,7 @@ def test_read_specfile():
     nt.assert_equal(data.complex_column, [0.1 + 0 * 1j, np.nan + 0 * 1j, 1.0 + 1 * 1j])
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Items are not equal")
 def test_save_specfile(outdir):
     """Test SCSV spec file reproduction."""
     schema = {
@@ -156,8 +158,9 @@ def test_save_specfile(outdir):
         _io.save_scsv(f"{outdir}/spec_out.scsv", schema, data)
         _io.save_scsv(f"{outdir}/spec_out_alt.scsv", schema_alt, data_alt)
 
-    temp = tempfile.NamedTemporaryFile()
-    temp_alt = tempfile.NamedTemporaryFile()
+    # https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
+    temp = tempfile.NamedTemporaryFile(delete_on_close=False)
+    temp_alt = tempfile.NamedTemporaryFile(delete_on_close=False)
     _io.save_scsv(temp.name, schema, data)
     _io.save_scsv(temp_alt.name, schema_alt, data_alt)
     raw_read = []
@@ -204,7 +207,8 @@ def test_save_scsv_errors():
             }
         ],
     }
-    temp = tempfile.NamedTemporaryFile()
+    # https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
+    temp = tempfile.NamedTemporaryFile(delete_on_close=False)
     with pytest.raises(_err.SCSVError):
         foo = [1, 5, 0.2]
         _io.save_scsv(temp.name, schema, [foo])

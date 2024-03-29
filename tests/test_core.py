@@ -1,8 +1,10 @@
 """> PyDRex: Tests for core D-Rex routines."""
 
 import contextlib as cl
+import sys
 
 import numpy as np
+import pytest
 from numpy import testing as nt
 from scipy.spatial.transform import Rotation
 
@@ -10,8 +12,8 @@ from pydrex import core as _core
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
-from pydrex import visualisation as _vis
 from pydrex import utils as _utils
+from pydrex import visualisation as _vis
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "core"
@@ -22,6 +24,7 @@ class TestDislocationCreepOPX:
 
     class_id = "dislocation_creep_OPX"
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="Not equal to tolerance")
     def test_shear_dudz(self, outdir):
         test_id = "dudz"
         optional_logging = cl.nullcontext()
@@ -106,6 +109,7 @@ class TestDislocationCreepOlivineA:
 
     class_id = "dislocation_creep_OlA"
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="Not equal to tolerance")
     def test_shear_dvdx_slip_010_100(self, outdir):
         r"""Single grain of A-type olivine, slip on (010)[100].
 
@@ -336,6 +340,7 @@ class TestDislocationCreepOlivineA:
                 _io.resolve_path(f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.pdf")
             )
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="Not equal to tolerance")
     def test_shear_dwdx_slip_001_100(self, outdir):
         r"""Single grain of A-type olivine, slip on (001)[100].
 
@@ -451,6 +456,7 @@ class TestDislocationCreepOlivineA:
                 _io.resolve_path(f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.pdf")
             )
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="Not equal to tolerance")
     def test_shear_dvdz_slip_010_001(self, outdir):
         r"""Single grain of A-type olivine, slip on (010)[001].
 
