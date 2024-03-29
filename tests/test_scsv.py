@@ -157,8 +157,8 @@ def test_save_specfile(outdir):
         _io.save_scsv(f"{outdir}/spec_out_alt.scsv", schema_alt, data_alt)
 
     # https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
-    temp = tempfile.NamedTemporaryFile(delete=False)
-    temp_alt = tempfile.NamedTemporaryFile(delete=False)
+    temp = tempfile.NamedTemporaryFile(delete_on_close=False)
+    temp_alt = tempfile.NamedTemporaryFile(delete_on_close=False)
     _io.save_scsv(temp.name, schema, data)
     _io.save_scsv(temp_alt.name, schema_alt, data_alt)
     raw_read = []
@@ -205,7 +205,8 @@ def test_save_scsv_errors():
             }
         ],
     }
-    temp = tempfile.NamedTemporaryFile()
+    # https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
+    temp = tempfile.NamedTemporaryFile(delete_on_close=False)
     with pytest.raises(_err.SCSVError):
         foo = [1, 5, 0.2]
         _io.save_scsv(temp.name, schema, [foo])
