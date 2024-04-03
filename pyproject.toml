@@ -2,7 +2,7 @@
 # PEP 660 editable installs: <https://github.com/pypa/setuptools/blob/main/CHANGES.rst#v6400>.
 # Python 3.11 support: <https://github.com/pypa/setuptools_scm/blob/main/CHANGELOG.rst#v710>.
 [build-system]
-requires = ["setuptools >= 64", "setuptools_scm[toml]>=7.1"]
+requires = ["setuptools>=64", "setuptools_scm[toml]>=8"]
 build-backend = "setuptools.build_meta"
 
 # Automatically use the version number from vcs (e.g. git) tags,
@@ -48,7 +48,7 @@ dependencies = [
 test = ["pytest"]
 doc = ["pdoc"]
 mesh = ["gmsh"]  # NOTE: Saying `import gmsh` is like saying "I don't want my CI to work".
-dev = ["pytest", "uniplot", "pdoc", "ruff", "black", "isort", "ptpython"]
+dev = ["pytest", "uniplot", "pdoc", "ruff", "black", "isort", "ptpython", "build", "twine"]
 lsp = ["python-lsp-server", "pyls-isort", "python-lsp-black", "python-lsp-ruff"]
 
 [project.urls]
