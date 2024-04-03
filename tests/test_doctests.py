@@ -28,28 +28,35 @@ def _get_submodule_list():
 
 
 @pytest.mark.parametrize("module", _get_submodule_list())
-def test_doctests(module):
+def test_doctests(module, capsys):
     """Run doctests for all submodules."""
-    _log.info("running doctests for %s...", module)
-    try:
-        doctest.testmod(importlib.import_module(module), raise_on_error=True)
-    except doctest.DocTestFailure as e:
-        if e.test.lineno is None:
-            lineno = ""
-        else:
-            lineno = f":{e.test.lineno + 1 + e.example.lineno}"
-        raise Error(
-            f"{e.test.name} ({module}{lineno}) failed with:"
-            + os.linesep
-            + os.linesep
-            + e.got
-        ) from None
-    except doctest.UnexpectedException as e:
-        if e.test.lineno is None:
-            lineno = ""
-        else:
-            lineno = f":{e.test.lineno + 1 + e.example.lineno}"
-        err_type, err, _ = e.exc_info
-        raise Error(
-            f"{err_type.__qualname__} encountered in {e.test.name} ({module}{lineno})"
-        ) from err
+    with capsys.disabled():  # Pytest output capturing messes with doctests.
+        _log.info("running doctests for %s...", module)
+        try:
+            n_fails, n_tests = doctest.testmod(
+                importlib.import_module(module),
+                raise_on_error=True,
+                verbose=False,  # Change to True to debug doctest failures.
+            )
+            if n_fails > 0:
+                raise Error(f"there were {n_fails} doctest failures from {module}")
+        except doctest.DocTestFailure as e:
+            if e.test.lineno is None:
+                lineno = ""
+            else:
+                lineno = f":{e.test.lineno + 1 + e.example.lineno}"
+            raise Error(
+                f"{e.test.name} ({module}{lineno}) failed with:"
+                + os.linesep
+                + os.linesep
+                + e.got
+            ) from None
+        except doctest.UnexpectedException as e:
+            if e.test.lineno is None:
+                lineno = ""
+            else:
+                lineno = f":{e.test.lineno + 1 + e.example.lineno}"
+            err_type, err, _ = e.exc_info
+            raise Error(
+                f"{err_type.__qualname__} encountered in {e.test.name} ({module}{lineno})"
+            ) from err
