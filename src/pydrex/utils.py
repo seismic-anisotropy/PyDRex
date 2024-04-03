@@ -14,6 +14,28 @@ from matplotlib.transforms import ScaledTranslation
 from pydrex import logger as _log
 
 
+def import_proc_pool():
+    """Import either `ray.util.multiprocessing.Pool` or `multiprocessing.Pool`.
+
+    Import a process `Pool` object either from Ray of from Python's stdlib.
+    Both offer the same API, the Ray implementation will be preferred if available.
+    Using the `Pool` provided by Ray allows for distributed memory multiprocessing.
+
+    Returns a tuple containing the `Pool` object and a boolean flag which is `True` if
+    Ray is available.
+
+    """
+    try:
+        from ray.util.multiprocessing import Pool
+
+        has_ray = True
+    except ImportError:
+        from multiprocessing import Pool
+
+        has_ray = False
+    return Pool, has_ray
+
+
 @nb.njit(fastmath=True)
 def strain_increment(dt, velocity_gradient):
     """Calculate strain increment for a given time increment and velocity gradient.

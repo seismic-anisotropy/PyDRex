@@ -3,7 +3,6 @@
 import contextlib as cl
 import functools as ft
 import pathlib as pl
-from multiprocessing import Pool
 from time import perf_counter
 
 import numpy as np
@@ -20,6 +19,8 @@ from pydrex import stats as _stats
 from pydrex import utils as _utils
 from pydrex import velocity as _velocity
 from pydrex import visualisation as _vis
+
+Pool, HAS_RAY = _utils.import_proc_pool()
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "2d_cornerflow"

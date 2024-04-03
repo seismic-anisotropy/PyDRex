@@ -2,7 +2,6 @@
 
 import contextlib as cl
 import functools as ft
-from multiprocessing import Pool
 from time import process_time
 
 import numpy as np
@@ -15,7 +14,14 @@ from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
+from pydrex import utils as _utils
 from pydrex import velocity as _velocity
+
+Pool, HAS_RAY = _utils.import_proc_pool()
+if HAS_RAY:
+    import ray
+
+    from pydrex import distributed as _dstr
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "3d_simple_shear"
@@ -185,9 +191,19 @@ class TestFraters2021:
                             for v in olA_mean_vectors
                         ]
                     )
-                    olA_strength[s, :] = _diagnostics.misorientation_indices(
-                        olA_resampled, _geo.LatticeSystem.orthorhombic, pool=pool
-                    )
+                    if HAS_RAY:
+                        olA_strength[s, :] = ray.get(
+                            _dstr.misorientation_indices.remote(
+                                ray.put(olA_resampled),
+                                _geo.LatticeSystem.orthorhombic,
+                                pool=pool,
+                            )
+                        )
+                    else:
+                        olA_strength[s, :] = _diagnostics.misorientation_indices(
+                            olA_resampled, _geo.LatticeSystem.orthorhombic, pool=pool
+                        )
+
                     del olivine, olA_resampled, olA_mean_vectors
 
                     _log.info("%s; # %d; postprocessing enstatite...", _id, _seeds[s])
@@ -212,9 +228,18 @@ class TestFraters2021:
                             for v in ens_mean_vectors
                         ]
                     )
-                    ens_strength[s, :] = _diagnostics.misorientation_indices(
-                        ens_resampled, _geo.LatticeSystem.orthorhombic, pool=pool
-                    )
+                    if HAS_RAY:
+                        olA_strength[s, :] = ray.get(
+                            _dstr.misorientation_indices.remote(
+                                ray.put(ens_resampled),
+                                _geo.LatticeSystem.orthorhombic,
+                                pool=pool,
+                            )
+                        )
+                    else:
+                        ens_strength[s, :] = _diagnostics.misorientation_indices(
+                            ens_resampled, _geo.LatticeSystem.orthorhombic, pool=pool
+                        )
                     del enstatite, ens_resampled, ens_mean_vectors
 
             _log.info("elapsed CPU time: %s", np.abs(process_time() - clock_start))

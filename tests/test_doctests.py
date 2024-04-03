@@ -19,6 +19,7 @@ def _get_submodule_list():
     np.set_printoptions()
     np.set_string_function(None)
     modules = ["pydrex." + m.name for m in pkgutil.iter_modules(pydrex.__path__)]
+    modules.remove("pydrex.distributed")
     try:
         from pydrex import mesh
     except ImportError:

@@ -17,7 +17,6 @@ r"""> PyDRex: Methods to calculate texture and strain diagnostics.
 """
 
 import functools as ft
-from multiprocessing import Pool
 
 import numba as nb
 import numpy as np
@@ -28,6 +27,12 @@ from pydrex import logger as _log
 from pydrex import stats as _stats
 from pydrex import tensors as _tensors
 from pydrex import utils as _utils
+
+Pool, HAS_RAY = _utils.import_proc_pool()
+if HAS_RAY:
+    import ray
+
+    from pydrex import distributed as _dstr
 
 
 def elasticity_components(voigt_matrices):
@@ -279,11 +284,12 @@ def misorientation_indices(
     The `orientation_stack` is a NxMx3x3 array of orientations where N is the number of
     texture snapshots and M is the number of grains.
 
-    Uses the multiprocessing library to calculate texture indices for multiple snapshots
-    simultaneously. If `ncpus` is `None` the number of CPU cores to use is chosen
-    automatically based on the maximum number available to the Python interpreter,
-    otherwise the specified number of cores is requested. Alternatively, an existing
-    instance of `multiprocessing.Pool` can be provided.
+    Uses either Ray or the Python multiprocessing library to calculate texture indices
+    for multiple snapshots simultaneously. If `ncpus` is `None` the number of CPU cores
+    to use is chosen automatically based on the maximum number available to the Python
+    interpreter, otherwise the specified number of cores is requested. Alternatively, an
+    existing instance of `multiprocessing.Pool` or `ray.util.multiprocessing.Pool` can
+    be provided.
 
     See `misorientation_index` for documentation of the remaining arguments.
 
@@ -303,8 +309,20 @@ def misorientation_indices(
             for i, out in enumerate(pool.imap(_run, orientation_stack)):
                 m_indices[i] = out
     else:
-        for i, out in enumerate(pool.imap(_run, orientation_stack)):
-            m_indices[i] = out
+        if HAS_RAY:
+            m_indices = np.array(
+                ray.get(
+                    [
+                        _dstr.misorientation_index.remote(
+                            ray.put(a), system=system, bins=bins
+                        )
+                        for a in orientation_stack
+                    ]
+                )
+            )
+        else:
+            for i, out in enumerate(pool.imap(_run, orientation_stack)):
+                m_indices[i] = out
     return m_indices
 
 

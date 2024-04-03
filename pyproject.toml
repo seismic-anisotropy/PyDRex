@@ -1,6 +1,6 @@
 # Use modern (PEP621, PEP660) setuptools build system.
-# PEP 660 editable installs: <https://github.com/pypa/setuptools/blob/main/CHANGES.rst#v6400>.
-# Python 3.11 support: <https://github.com/pypa/setuptools_scm/blob/main/CHANGELOG.rst#v710>.
+# PEP 660 editable installs: <https://github.com/pypa/setuptools/blob/main/NEWS.rst#v6400>.
+# Python 3.11 support: <https://github.com/pypa/setuptools_scm/blob/main/CHANGELOG.md#v710>.
 [build-system]
 requires = ["setuptools >= 64", "setuptools_scm[toml]>=7.1"]
 build-backend = "setuptools.build_meta"
@@ -9,8 +9,7 @@ build-backend = "setuptools.build_meta"
 # <https://github.com/pypa/setuptools_scm>.
 [tool.setuptools_scm]
 
-# Docs: <https://packaging.python.org/en/latest/specifications/declaring-project-metadata/>.
-# Example: <https://packaging.python.org/en/latest/specifications/declaring-project-metadata/#example>.
+# Docs: <https://packaging.python.org/en/latest/specifications/pyproject-toml/>.
 [project]
 name = "pydrex"
 dynamic = ["version"]  # Managed by setuptools_scm.
@@ -49,6 +48,7 @@ dependencies = [
 test = ["pytest"]
 doc = ["pdoc"]
 mesh = ["gmsh"]  # NOTE: Saying `import gmsh` is like saying "I don't want my CI to work".
+ray = ["ray >= 2.0.0"]
 dev = ["pytest", "uniplot", "pdoc", "ruff", "black", "isort", "ptpython"]
 lsp = ["python-lsp-server", "pyls-isort", "python-lsp-black", "python-lsp-ruff"]
 
