@@ -39,13 +39,13 @@ def test_doctests(module, capsys):
                 verbose=False,  # Change to True to debug doctest failures.
             )
             if n_fails > 0:
-                raise Error(f"there were {n_fails} doctest failures from {module}")
+                raise AssertionError(f"there were {n_fails} doctest failures from {module}")
         except doctest.DocTestFailure as e:
             if e.test.lineno is None:
                 lineno = ""
             else:
                 lineno = f":{e.test.lineno + 1 + e.example.lineno}"
-            raise Error(
+            raise AssertionError(
                 f"{e.test.name} ({module}{lineno}) failed with:"
                 + os.linesep
                 + os.linesep
