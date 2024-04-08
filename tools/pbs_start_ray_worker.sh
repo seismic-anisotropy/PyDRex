@@ -8,7 +8,6 @@ warn() { >&2 printf '%s\n' "$SCRIPTNAME: $1"; }
 source /etc/bashrc
 
 ulimit -s unlimited
-ulimit -n 65535
 USER_CFG=$PBS_O_WORKDIR/.cfg_${PBS_JOBID}
 HOSTNAME=`hostname`
 JOBDIR=$PBS_JOBFS

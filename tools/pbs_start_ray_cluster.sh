@@ -18,9 +18,6 @@ module prepend-path PATH "$HOME/.local/bin"
 command -v ray || { warn "unknown command 'ray'"; exit 1; }
 [ -x "pbs_start_ray_worker.sh" ] || { warn "cannot execute pbs_start_ray_worker.sh"; exit 1; }
 
-# https://docs.ray.io/en/latest/cluster/vms/user-guides/large-cluster-best-practices.html
-ulimit -n 65535
-
 USER_CFG=$PBS_O_WORKDIR/.cfg_${PBS_JOBID}
 
 NWORKERS=${RAY_NWORKERS:-${PBS_NCPUS}}
