@@ -166,6 +166,9 @@ class TestFraters2021:
                 switch_time_Ma * 1e6,
                 _id,
             )
+            if HAS_RAY:
+                ray.init(address="auto")
+                _log.info("using Ray cluster with %s", ray.cluster_resources())
             with Pool(processes=ncpus) as pool:
                 for s, out in enumerate(pool.imap_unordered(_run, _seeds)):
                     olivine, enstatite = out
