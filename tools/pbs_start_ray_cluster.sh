@@ -79,7 +79,7 @@ while [ ! -f ${LOG_FILE} ]; do
     sleep ${INTERVAL}
     ((t -= INTERVAL))
     while ((t <= 2)); do
-        warn "scheduler failed to start up within $TIMEOUT seconds, aborting."
+        warn "scheduler failed to start up within $TIMEOUT seconds, aborting"
         exit 1
     done
 done
@@ -106,6 +106,15 @@ TOT_NPROCS=0
 for node in `cat $PBS_NODEFILE | uniq`; do
     if [ $node != `hostname` ]; then
         pbs_tmrsh ${node} "${PBS_O_WORKDIR}/pbs_start_ray_worker.sh" &
+        ((t = TIMEOUT))
+        while ! grep "Ray runtime started." ${USER_CFG}/worker.${node}.log >& /dev/null; do
+            sleep ${INTERVAL}
+            ((t -= INTERVAL))
+            while ((t <= 2)); do
+                warn "ray worker failed to start on ${node}, aborting"
+                exit 1
+            done
+        done
     fi
     if [ ${PBS_NGPUS} -gt 0 ]; then
         TOT_NPROCS=$(( $TOT_NPROCS + $NGPUS ))
@@ -113,14 +122,3 @@ for node in `cat $PBS_NODEFILE | uniq`; do
         TOT_NPROCS=$(( $TOT_NPROCS + $NCPUS ))
     fi
 done
-
-echo "========== RAY cluster resources =========="
-if [ ${PBS_NGPUS} -gt 0 ]; then
-    echo "RAY NODE: GPU"
-    echo "RAY WORKERS: ${NGPUS}/Node, ${TOT_NPROCS} in total."
-    echo "RAY MEMORY: $(( GPU_MEM /1024/1024/1024 ))GiB/worker, $(( PBS_VMEM /1024/1024/1024 ))GiB in total."
-else
-    echo "RAY NODE: CPU"
-    echo "RAY WORKERS: ${NCPUS}/Node, ${TOT_NPROCS} in total."
-    echo "RAY MEMORY: $(( PROC_MEM /1024/1024/1024 ))GiB/worker, $(( PBS_VMEM /1024/1024/1024 ))GiB in total."
-fi
