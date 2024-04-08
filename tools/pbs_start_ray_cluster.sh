@@ -122,3 +122,6 @@ for node in `cat $PBS_NODEFILE | uniq`; do
         TOT_NPROCS=$(( $TOT_NPROCS + $NCPUS ))
     fi
 done
+
+# The dashboard address is also used for `ray job submit` etc.
+export RAY_ADDRESS="http://${IP_PREFIX}:${DASH_PORT}"
