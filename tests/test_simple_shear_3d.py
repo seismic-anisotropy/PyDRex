@@ -112,7 +112,7 @@ class TestFraters2021:
     @pytest.mark.slow
     @pytest.mark.parametrize("switch_time_Ma", [0, 1, 2.5, np.inf])
     def test_direction_change(
-        self, outdir, seeds, params_Fraters2021, switch_time_Ma, ncpus
+        self, outdir, seeds, params_Fraters2021, switch_time_Ma, ncpus, ray_session
     ):
         """Test a-axis alignment in simple shear with instantaneous geometry change.
 
@@ -166,9 +166,6 @@ class TestFraters2021:
                 switch_time_Ma * 1e6,
                 _id,
             )
-            if HAS_RAY:
-                ray.init(address="auto")
-                _log.info("using Ray cluster with %s", ray.cluster_resources())
             with Pool(processes=ncpus) as pool:
                 for s, out in enumerate(pool.imap_unordered(_run, _seeds)):
                     olivine, enstatite = out

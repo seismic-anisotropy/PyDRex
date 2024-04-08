@@ -13,6 +13,9 @@ from pydrex import utils as _utils
 from tests import test_vortex_2d as _test_vortex_2d
 
 _log.quiet_aliens()  # Stop imported modules from spamming the logs.
+_, HAS_RAY = _utils.import_proc_pool()
+if HAS_RAY:
+    import ray
 
 
 # Set up custom pytest CLI arguments.
@@ -150,6 +153,19 @@ def named_tempfile_kwargs(request):
         return {"delete": False}
     else:
         return dict()
+
+
+@pytest.fixture(scope="session")
+def ray_session():
+    if HAS_RAY:
+        # NOTE: Expects a running Ray cluster with a number of CPUS matching --ncpus.
+        if not ray.is_initialized():
+            ray.init(address="auto")
+            _log.info("using Ray cluster with %s", ray.cluster_resources())
+        yield None
+        if ray.is_initialized():
+            ray.shutdown()
+    yield None
 
 
 @pytest.fixture(scope="function")
