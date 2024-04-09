@@ -191,17 +191,20 @@ class TestFraters2021:
                             for v in olA_mean_vectors
                         ]
                     )
+                    olA_downsampled, _ = _stats.resample_orientations(
+                        olivine.orientations, olivine.fractions, seed=_seeds[s], n_samples=1000
+                    )
                     if HAS_RAY:
                         olA_strength[s, :] = ray.get(
                             _dstr.misorientation_indices.remote(
-                                ray.put(olA_resampled),
+                                ray.put(olA_downsampled),
                                 _geo.LatticeSystem.orthorhombic,
                                 pool=pool,
                             )
                         )
                     else:
                         olA_strength[s, :] = _diagnostics.misorientation_indices(
-                            olA_resampled, _geo.LatticeSystem.orthorhombic, pool=pool
+                            olA_downsampled, _geo.LatticeSystem.orthorhombic, pool=pool
                         )
 
                     del olivine, olA_resampled, olA_mean_vectors
@@ -228,17 +231,20 @@ class TestFraters2021:
                             for v in ens_mean_vectors
                         ]
                     )
+                    ens_downsampled, _ = _stats.resample_orientations(
+                        enstatite.orientations, enstatite.fractions, seed=_seeds[s], n_samples=1000
+                    )
                     if HAS_RAY:
                         olA_strength[s, :] = ray.get(
                             _dstr.misorientation_indices.remote(
-                                ray.put(ens_resampled),
+                                ray.put(ens_downsampled),
                                 _geo.LatticeSystem.orthorhombic,
                                 pool=pool,
                             )
                         )
                     else:
                         ens_strength[s, :] = _diagnostics.misorientation_indices(
-                            ens_resampled, _geo.LatticeSystem.orthorhombic, pool=pool
+                            ens_downsampled, _geo.LatticeSystem.orthorhombic, pool=pool
                         )
                     del enstatite, ens_resampled, ens_mean_vectors
 

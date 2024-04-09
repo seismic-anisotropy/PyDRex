@@ -86,7 +86,7 @@ def misorientation_hist(orientations, system: _geo.LatticeSystem, bins=None):
     See `_geo.LatticeSystem` for supported systems.
 
     .. warning::
-        This method must be able to allocate $ \frac{N!}{N-2!}× 4M $ floats
+        This method must be able to allocate $ \frac{N!}{(N-2)!} × 4M $ floats
         for N the length of `orientations` and M the number of symmetry operations for
         the given `system` (`numpy.float32` values are used to reduce the memory
         requirements)
