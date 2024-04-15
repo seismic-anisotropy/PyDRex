@@ -168,6 +168,8 @@ class TestCellOlivineA:
                 [20, 20],
                 cmap="cmc.batlow_r",
                 tick_formatter=lambda x, pos: str(x),
+                aspect="equal",
+                alpha=1,
             )
             fig_path.colorbar(s, ax=ax_path, aspect=25, label="Strain (ε)")
             fig_path.savefig(_io.resolve_path(f"{out_basepath}_path.pdf"))

@@ -165,6 +165,8 @@ def ray_session():
         yield None
         if ray.is_initialized():
             ray.shutdown()
+    else:
+        yield None
 
 
 @pytest.fixture(scope="function")
