@@ -19,7 +19,13 @@ import functools as ft
 import io
 import os
 import pathlib
-import tomllib
+import sys
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
+
 from importlib.resources import files
 
 import h5py
