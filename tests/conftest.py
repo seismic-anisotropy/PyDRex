@@ -1,5 +1,7 @@
 """> Configuration and fixtures for PyDRex tests."""
 
+import sys
+
 import matplotlib
 import pytest
 from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
@@ -140,6 +142,14 @@ def outdir(request):
 @pytest.fixture(scope="session")
 def ncpus(request):
     return max(1, request.config.getoption("--ncpus"))
+
+
+@pytest.fixture(scope="session")
+def named_tempfile_kwargs(request):
+    if sys.platform == "win32":
+        return {"delete": False}
+    else:
+        return dict()
 
 
 @pytest.fixture(scope="function")
