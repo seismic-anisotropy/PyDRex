@@ -285,11 +285,15 @@ def misorientation_indices(
     texture snapshots and M is the number of grains.
 
     Uses either Ray or the Python multiprocessing library to calculate texture indices
-    for multiple snapshots simultaneously. If `ncpus` is `None` the number of CPU cores
-    to use is chosen automatically based on the maximum number available to the Python
+    for multiple snapshots simultaneously. The arguments `ncpus` and `pool` are only
+    relevant the latter option: if `ncpus` is `None` the number of CPU cores to use is
+    chosen automatically based on the maximum number available to the Python
     interpreter, otherwise the specified number of cores is requested. Alternatively, an
-    existing instance of `multiprocessing.Pool` or `ray.util.multiprocessing.Pool` can
-    be provided.
+    existing instance of `multiprocessing.Pool` can be provided.
+
+    If Ray is installed, it will be automatically preferred. In this case, the number of
+    processors (actually Ray “workers”) should be set upon initialisation of the Ray
+    cluster (which can be distributed over the network).
 
     See `misorientation_index` for documentation of the remaining arguments.
 

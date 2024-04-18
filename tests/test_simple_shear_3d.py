@@ -168,6 +168,8 @@ class TestFraters2021:
             )
             with Pool(processes=ncpus) as pool:
                 for s, out in enumerate(pool.imap_unordered(_run, _seeds)):
+                    # if HAS_RAY:
+                    #     assert len(pool._actor_pool) == ncpus
                     olivine, enstatite = out
                     _log.info("%s; # %d; postprocessing olivine...", _id, _seeds[s])
                     olA_resampled, _ = _stats.resample_orientations(
@@ -194,18 +196,9 @@ class TestFraters2021:
                     olA_downsampled, _ = _stats.resample_orientations(
                         olivine.orientations, olivine.fractions, seed=_seeds[s], n_samples=1000
                     )
-                    if HAS_RAY:
-                        olA_strength[s, :] = ray.get(
-                            _dstr.misorientation_indices.remote(
-                                ray.put(olA_downsampled),
-                                _geo.LatticeSystem.orthorhombic,
-                                pool=pool,
-                            )
-                        )
-                    else:
-                        olA_strength[s, :] = _diagnostics.misorientation_indices(
-                            olA_downsampled, _geo.LatticeSystem.orthorhombic, pool=pool
-                        )
+                    olA_strength[s, :] = _diagnostics.misorientation_indices(
+                        olA_downsampled, _geo.LatticeSystem.orthorhombic, pool=pool
+                    )
 
                     del olivine, olA_resampled, olA_mean_vectors
 
@@ -234,18 +227,9 @@ class TestFraters2021:
                     ens_downsampled, _ = _stats.resample_orientations(
                         enstatite.orientations, enstatite.fractions, seed=_seeds[s], n_samples=1000
                     )
-                    if HAS_RAY:
-                        olA_strength[s, :] = ray.get(
-                            _dstr.misorientation_indices.remote(
-                                ray.put(ens_downsampled),
-                                _geo.LatticeSystem.orthorhombic,
-                                pool=pool,
-                            )
-                        )
-                    else:
-                        ens_strength[s, :] = _diagnostics.misorientation_indices(
-                            ens_downsampled, _geo.LatticeSystem.orthorhombic, pool=pool
-                        )
+                    ens_strength[s, :] = _diagnostics.misorientation_indices(
+                        ens_downsampled, _geo.LatticeSystem.orthorhombic, pool=pool
+                    )
                     del enstatite, ens_resampled, ens_mean_vectors
 
             _log.info("elapsed CPU time: %s", np.abs(process_time() - clock_start))
