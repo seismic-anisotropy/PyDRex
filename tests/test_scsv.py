@@ -99,7 +99,7 @@ def test_read_specfile():
 
 
 @pytest.mark.skipif(sys.platform == "win32", reason="Items are not equal")
-def test_save_specfile(outdir):
+def test_save_specfile(outdir, named_tempfile_kwargs):
     """Test SCSV spec file reproduction."""
     schema = {
         "delimiter": ",",
@@ -159,8 +159,8 @@ def test_save_specfile(outdir):
         _io.save_scsv(f"{outdir}/spec_out_alt.scsv", schema_alt, data_alt)
 
     # https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
-    temp = tempfile.NamedTemporaryFile(delete_on_close=False)
-    temp_alt = tempfile.NamedTemporaryFile(delete_on_close=False)
+    temp = tempfile.NamedTemporaryFile(**named_tempfile_kwargs)
+    temp_alt = tempfile.NamedTemporaryFile(**named_tempfile_kwargs)
     _io.save_scsv(temp.name, schema, data)
     _io.save_scsv(temp_alt.name, schema_alt, data_alt)
     raw_read = []
@@ -194,7 +194,7 @@ def test_read_Kaminski2002():
     # fmt: on
 
 
-def test_save_scsv_errors():
+def test_save_scsv_errors(named_tempfile_kwargs):
     """Check that we raise errors when attempting to write bad SCSV data."""
     schema = {
         "delimiter": ",",
@@ -208,7 +208,7 @@ def test_save_scsv_errors():
         ],
     }
     # https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
-    temp = tempfile.NamedTemporaryFile(delete_on_close=False)
+    temp = tempfile.NamedTemporaryFile(**named_tempfile_kwargs)
     with pytest.raises(_err.SCSVError):
         foo = [1, 5, 0.2]
         _io.save_scsv(temp.name, schema, [foo])
