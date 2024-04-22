@@ -123,7 +123,7 @@ def extract_h5part(file, phase, fabric, n_grains, output):
             mineral.orientations = _orientations
             mineral.save(output, postfix=_postfix)
             save_scsv(
-                output[:-4] + ".scsv",
+                output[:-4] + f"_{_postfix}" + ".scsv",
                 {
                     "delimiter": ",",
                     "missing": "-",

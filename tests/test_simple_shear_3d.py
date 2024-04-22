@@ -2,7 +2,6 @@
 
 import contextlib as cl
 import functools as ft
-from multiprocessing import Pool
 from time import process_time
 
 import numpy as np
@@ -15,7 +14,14 @@ from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import stats as _stats
+from pydrex import utils as _utils
 from pydrex import velocity as _velocity
+
+Pool, HAS_RAY = _utils.import_proc_pool()
+if HAS_RAY:
+    import ray
+
+    from pydrex import distributed as _dstr
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "3d_simple_shear"
@@ -106,7 +112,7 @@ class TestFraters2021:
     @pytest.mark.slow
     @pytest.mark.parametrize("switch_time_Ma", [0, 1, 2.5, np.inf])
     def test_direction_change(
-        self, outdir, seeds, params_Fraters2021, switch_time_Ma, ncpus
+        self, outdir, seeds, params_Fraters2021, switch_time_Ma, ncpus, ray_session
     ):
         """Test a-axis alignment in simple shear with instantaneous geometry change.
 
@@ -185,9 +191,13 @@ class TestFraters2021:
                             for v in olA_mean_vectors
                         ]
                     )
-                    olA_strength[s, :] = _diagnostics.misorientation_indices(
-                        olA_resampled, _geo.LatticeSystem.orthorhombic, pool=pool
+                    olA_downsampled, _ = _stats.resample_orientations(
+                        olivine.orientations, olivine.fractions, seed=_seeds[s], n_samples=1000
                     )
+                    olA_strength[s, :] = _diagnostics.misorientation_indices(
+                        olA_downsampled, _geo.LatticeSystem.orthorhombic, pool=pool
+                    )
+
                     del olivine, olA_resampled, olA_mean_vectors
 
                     _log.info("%s; # %d; postprocessing enstatite...", _id, _seeds[s])
@@ -212,8 +222,11 @@ class TestFraters2021:
                             for v in ens_mean_vectors
                         ]
                     )
+                    ens_downsampled, _ = _stats.resample_orientations(
+                        enstatite.orientations, enstatite.fractions, seed=_seeds[s], n_samples=1000
+                    )
                     ens_strength[s, :] = _diagnostics.misorientation_indices(
-                        ens_resampled, _geo.LatticeSystem.orthorhombic, pool=pool
+                        ens_downsampled, _geo.LatticeSystem.orthorhombic, pool=pool
                     )
                     del enstatite, ens_resampled, ens_mean_vectors
 

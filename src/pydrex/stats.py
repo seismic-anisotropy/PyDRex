@@ -7,7 +7,6 @@ import scipy.special as sp
 from scipy.spatial.transform import Rotation
 
 from pydrex import geometry as _geo
-from pydrex import logger as _log
 from pydrex import stats as _stats
 from pydrex import utils as _utils
 
@@ -87,7 +86,7 @@ def misorientation_hist(orientations, system: _geo.LatticeSystem, bins=None):
     See `_geo.LatticeSystem` for supported systems.
 
     .. warning::
-        This method must be able to allocate $ \frac{N!}{N-2!}× 4M $ floats
+        This method must be able to allocate $ \frac{N!}{(N-2)!} × 4M $ floats
         for N the length of `orientations` and M the number of symmetry operations for
         the given `system` (`numpy.float32` values are used to reduce the memory
         requirements)
@@ -105,8 +104,8 @@ def misorientation_hist(orientations, system: _geo.LatticeSystem, bins=None):
         (sp.comb(len(orientations), 2, exact=True), len(symmetry_ops), 4),
         dtype=np.float32,
     )
-    for i, e in enumerate(
-        it.combinations(Rotation.from_matrix(orientations).as_quat(), 2)
+    for i, e in enumerate(  # Copy is required for proper object referencing in Ray.
+        it.combinations(Rotation.from_matrix(orientations.copy()).as_quat(), 2)
     ):
         q1, q2 = list(e)
         for j, qs in enumerate(symmetry_ops):

@@ -229,8 +229,8 @@ def pathline_box2d(
             Y_grid,
             U.reshape(X_grid.shape),
             V.reshape(Y_grid.shape),
-            pivot="mid",
-            alpha=0.25,
+            pivot=kwargs.pop("pivot", "mid"),
+            alpha=kwargs.pop("alpha", 0.25),
             **kwargs,
         )
 
@@ -452,6 +452,7 @@ def grainsizes(ax, strains, fractions):
         part.set_alpha(1)
     parts["cbars"].set_alpha(0)
     parts["cmins"].set_visible(False)
+    parts["cmaxes"].set_visible(False)
     # parts["cmaxes"].set_color("red")
     # parts["cmaxes"].set_alpha(0.5)
     return fig, ax, parts
