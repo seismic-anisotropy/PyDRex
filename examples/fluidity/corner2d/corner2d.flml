@@ -83,6 +83,17 @@
     return INITIAL_POSITIONS</string_value>
           </python>
         </initial_position>
+        <initialise_during_simulation>
+          <python>
+            <string_value type="code" language="python" lines="20">def val(t):
+    from corner2d import INITIAL_POSITIONS
+
+    if 8.7e13 &lt; t &lt; 8.75e13 or 4.3e14 &lt; t &lt; 4.4e14:
+        return INITIAL_POSITIONS
+    else:
+        return []</string_value>
+          </python>
+        </initialise_during_simulation>
         <attributes>
           <scalar_attribute_array name="CPO_">
             <dimension>
