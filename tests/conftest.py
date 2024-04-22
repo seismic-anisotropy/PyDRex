@@ -162,11 +162,10 @@ def ray_session():
         if not ray.is_initialized():
             ray.init(address="auto")
             _log.info("using Ray cluster with %s", ray.cluster_resources())
-        yield None
+        yield
         if ray.is_initialized():
             ray.shutdown()
-    else:
-        yield None
+    yield
 
 
 @pytest.fixture(scope="function")

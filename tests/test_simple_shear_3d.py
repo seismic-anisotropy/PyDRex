@@ -168,8 +168,6 @@ class TestFraters2021:
             )
             with Pool(processes=ncpus) as pool:
                 for s, out in enumerate(pool.imap_unordered(_run, _seeds)):
-                    # if HAS_RAY:
-                    #     assert len(pool._actor_pool) == ncpus
                     olivine, enstatite = out
                     _log.info("%s; # %d; postprocessing olivine...", _id, _seeds[s])
                     olA_resampled, _ = _stats.resample_orientations(
