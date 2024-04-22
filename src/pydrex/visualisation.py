@@ -252,10 +252,10 @@ def pathline_box2d(
             colors,
             cmap=cmap,
             pivot="mid",
-            width=3e-3,
+            width=kwargs.pop("width", 3e-3),
             headaxislength=0,
             headlength=0,
-            zorder=10,
+            zorder=kwargs.pop("zorder", 10) + 1,  # Always above velocity vectors.
         )
     else:
         cpo = ax.scatter(P[:, 0], P[:, 1], marker=marker, c=colors, cmap=cmap)
@@ -273,6 +273,7 @@ def alignment(
     θ_fse=None,
     colors=None,
     cmaps=None,
+    **kwargs,
 ):
     """Plot `angles` (in degrees) versus `strains` on the given axis.
 
@@ -298,6 +299,9 @@ def alignment(
 
     If `colors` and `cmaps` are used, then angle values are colored individually within
     each angle series.
+
+    Additional keyword arguments are passed to `matplotlib.axes.Axes.scatter` if
+    `colors` is not `None`, or to `matplotlib.axes.Axes.plot` otherwise.
 
     Returns a tuple of the figure handle, the axes handle and the set of colors used for
     the data series plots.
@@ -328,12 +332,13 @@ def alignment(
                 label=label,
                 c=colors[i],
                 cmap=cmaps[i],
-                alpha=0.6,
-                edgecolor=plt.rcParams["axes.edgecolor"],
+                alpha=kwargs.pop("alpha", 0.6),
+                edgecolor=kwargs.pop("edgecolor", plt.rcParams["axes.edgecolor"]),
+                **kwargs,
             )
             _colors.append(colors[i])
         else:
-            lines = ax.plot(strains, θ_cpo, marker, alpha=0.6, label=label)
+            lines = ax.plot(strains, θ_cpo, marker, alpha=0.6, label=label, **kwargs)
             _colors.append(lines[0].get_color())
         if err is not None:
             ax.fill_between(
@@ -362,6 +367,7 @@ def strengths(
     cpo_threshold=None,
     colors=None,
     cmaps=None,
+    **kwargs,
 ):
     """Plot CPO `strengths` (e.g. M-indices) versus `strains` on the given axis.
 
@@ -380,6 +386,9 @@ def strengths(
 
     If `colors` and `cmaps` are used, then strength values are colored individually
     within each strength series.
+
+    Additional keyword arguments are passed to `matplotlib.axes.Axes.scatter` if
+    `colors` is not `None`, or to `matplotlib.axes.Axes.plot` otherwise.
 
     Returns a tuple of the figure handle, the axes handle and the set of colors used for
     the data series plots.
@@ -413,12 +422,15 @@ def strengths(
                 label=label,
                 c=colors[i],
                 cmap=cmaps[i],
-                alpha=0.6,
-                edgecolor=plt.rcParams["axes.edgecolor"],
+                alpha=kwargs.pop("alpha", 0.6),
+                edgecolor=kwargs.pop("edgecolor", plt.rcParams["axes.edgecolor"]),
+                **kwargs,
             )
             _colors.append(colors[i])
         else:
-            lines = ax.plot(strains, strength, marker, alpha=0.33, label=label)
+            lines = ax.plot(
+                strains, strength, marker, alpha=0.33, label=label, **kwargs
+            )
             _colors.append(lines[0].get_color())
         if err is not None:
             ax.fill_between(
