@@ -311,6 +311,10 @@ def add_subplot_labels(
         _txt = labelmap[txt] if labelmap is not None else txt
         if internal:
             trans = ScaledTranslation(10 / 72, -5 / 72, ax.figure.dpi_scale_trans)
+            if isinstance(loc, str):
+                raise ValueError(
+                    "'loc' argument must be a sequence of float when 'internal' is 'True'"
+                )
             ax.text(
                 *loc,
                 _txt,
