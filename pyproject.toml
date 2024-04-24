@@ -2,7 +2,7 @@
 # PEP 660 editable installs: <https://github.com/pypa/setuptools/blob/main/NEWS.rst#v6400>.
 # Python 3.11 support: <https://github.com/pypa/setuptools_scm/blob/main/CHANGELOG.md#v710>.
 [build-system]
-requires = ["setuptools >= 64", "setuptools_scm[toml]>=7.1"]
+requires = ["setuptools>=64", "setuptools_scm[toml]>=8"]
 build-backend = "setuptools.build_meta"
 
 # Automatically use the version number from vcs (e.g. git) tags,

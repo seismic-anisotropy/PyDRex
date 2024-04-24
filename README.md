@@ -1,7 +1,7 @@
 # PyDRex
 
 <p align="center" style="margin:4%;">
-    <img alt="PyDRex logo" src="./docs/assets/pydrex.png" width="25%"/>
+    <img alt="PyDRex logo" src="https://raw.githubusercontent.com/seismic-anisotropy/PyDRex/main/docs/assets/pydrex.png" width="25%"/>
 </p>
 
 #### Simulate crystallographic preferred orientation evolution in polycrystals
