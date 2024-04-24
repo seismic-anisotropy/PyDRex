@@ -4,7 +4,7 @@ r"""
 ---
 
 .. warning::
-    **This software is currently in early development (pre-alpha)
+    **This software is currently in early development (alpha)
     and therefore subject to breaking changes without notice.**
 
 ## About
