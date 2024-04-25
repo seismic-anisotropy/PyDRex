@@ -78,6 +78,9 @@
                     <a class="function" href="#pytest_collection_modifyitems">pytest_collection_modifyitems</a>
             </li>
             <li>
+                    <a class="function" href="#verbose">verbose</a>
+            </li>
+            <li>
                     <a class="function" href="#outdir">outdir</a>
             </li>
             <li>
@@ -296,119 +299,124 @@
 </span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>
 </span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>
 </span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>    <span class="n">_outdir</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--outdir&quot;</span><span class="p">)</span>
-</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>    <span class="k">yield</span> <span class="n">_outdir</span>
-</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>    <span class="c1">#  Create combined ensemble figure for 2D cell tests after they have all finished.</span>
-</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>    <span class="n">_test_vortex_2d</span><span class="o">.</span><span class="n">TestCellOlivineA</span><span class="o">.</span><span class="n">_make_ensemble_figure</span><span class="p">(</span><span class="n">_outdir</span><span class="p">)</span>
-</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>
-</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>
-</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a><span class="k">def</span> <span class="nf">ncpus</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a>    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--ncpus&quot;</span><span class="p">))</span>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a><span class="k">def</span> <span class="nf">verbose</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">verbose</span>
+</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>
+</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>
+</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a><span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>    <span class="n">_outdir</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--outdir&quot;</span><span class="p">)</span>
+</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>    <span class="k">yield</span> <span class="n">_outdir</span>
+</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>    <span class="c1">#  Create combined ensemble figure for 2D cell tests after they have all finished.</span>
+</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a>    <span class="n">_test_vortex_2d</span><span class="o">.</span><span class="n">TestCellOlivineA</span><span class="o">.</span><span class="n">_make_ensemble_figure</span><span class="p">(</span><span class="n">_outdir</span><span class="p">)</span>
 </span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a>
 </span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>
 </span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a><span class="k">def</span> <span class="nf">named_tempfile_kwargs</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
-</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;delete&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
-</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a>        <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
-</span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a>
-</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a>
-</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="k">def</span> <span class="nf">ray_session</span><span class="p">():</span>
-</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a>    <span class="k">if</span> <span class="n">HAS_RAY</span><span class="p">:</span>
-</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a>        <span class="c1"># NOTE: Expects a running Ray cluster with a number of CPUS matching --ncpus.</span>
-</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">ray</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
-</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a>            <span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
-</span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a>            <span class="n">_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;using Ray cluster with </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ray</span><span class="o">.</span><span class="n">cluster_resources</span><span class="p">())</span>
-</span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a>        <span class="k">yield</span>
-</span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a>        <span class="k">if</span> <span class="n">ray</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
-</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>            <span class="n">ray</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
-</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a>    <span class="k">yield</span>
-</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a>
-</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a>
-</span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;function&quot;</span><span class="p">)</span>
-</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a><span class="k">def</span> <span class="nf">console_handler</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a>    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Show console logs if -v/--verbose given.</span>
-</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a>        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pluginmanager</span><span class="o">.</span><span class="n">get_plugin</span><span class="p">(</span>
-</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a>            <span class="s2">&quot;pytest-console-logger&quot;</span>
-</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a>        <span class="p">)</span><span class="o">.</span><span class="n">log_cli_handler</span>
-</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a>    <span class="k">return</span> <span class="n">_log</span><span class="o">.</span><span class="n">CONSOLE_LOGGER</span>
-</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a>
-</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a>
-</span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a><span class="k">def</span> <span class="nf">params_Fraters2021</span><span class="p">():</span>
-</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_FRATERS2021</span>
+</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a><span class="k">def</span> <span class="nf">ncpus</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--ncpus&quot;</span><span class="p">))</span>
+</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>
+</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a>
+</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a><span class="k">def</span> <span class="nf">named_tempfile_kwargs</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a>    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
+</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;delete&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a>        <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
+</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a>
+</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a>
+</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a><span class="k">def</span> <span class="nf">ray_session</span><span class="p">():</span>
+</span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a>    <span class="k">if</span> <span class="n">HAS_RAY</span><span class="p">:</span>
+</span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a>        <span class="c1"># NOTE: Expects a running Ray cluster with a number of CPUS matching --ncpus.</span>
+</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">ray</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
+</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a>            <span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a>            <span class="n">_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;using Ray cluster with </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ray</span><span class="o">.</span><span class="n">cluster_resources</span><span class="p">())</span>
+</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a>        <span class="k">yield</span>
+</span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a>        <span class="k">if</span> <span class="n">ray</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
+</span><span id="L-172"><a href="#L-172"><span class="linenos">172</span></a>            <span class="n">ray</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+</span><span id="L-173"><a href="#L-173"><span class="linenos">173</span></a>    <span class="k">yield</span>
+</span><span id="L-174"><a href="#L-174"><span class="linenos">174</span></a>
+</span><span id="L-175"><a href="#L-175"><span class="linenos">175</span></a>
+</span><span id="L-176"><a href="#L-176"><span class="linenos">176</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;function&quot;</span><span class="p">)</span>
+</span><span id="L-177"><a href="#L-177"><span class="linenos">177</span></a><span class="k">def</span> <span class="nf">console_handler</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="L-178"><a href="#L-178"><span class="linenos">178</span></a>    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Show console logs if -v/--verbose given.</span>
+</span><span id="L-179"><a href="#L-179"><span class="linenos">179</span></a>        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pluginmanager</span><span class="o">.</span><span class="n">get_plugin</span><span class="p">(</span>
+</span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a>            <span class="s2">&quot;pytest-console-logger&quot;</span>
+</span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a>        <span class="p">)</span><span class="o">.</span><span class="n">log_cli_handler</span>
+</span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a>    <span class="k">return</span> <span class="n">_log</span><span class="o">.</span><span class="n">CONSOLE_LOGGER</span>
 </span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>
 </span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a>
 </span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_solid</span><span class="p">():</span>
-</span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SOLID</span>
+</span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a><span class="k">def</span> <span class="nf">params_Fraters2021</span><span class="p">():</span>
+</span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_FRATERS2021</span>
 </span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a>
 </span><span id="L-189"><a href="#L-189"><span class="linenos">189</span></a>
 </span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_shortdash</span><span class="p">():</span>
-</span><span id="L-192"><a href="#L-192"><span class="linenos">192</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SHORTDASH</span>
+</span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_solid</span><span class="p">():</span>
+</span><span id="L-192"><a href="#L-192"><span class="linenos">192</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SOLID</span>
 </span><span id="L-193"><a href="#L-193"><span class="linenos">193</span></a>
 </span><span id="L-194"><a href="#L-194"><span class="linenos">194</span></a>
 </span><span id="L-195"><a href="#L-195"><span class="linenos">195</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_longdash</span><span class="p">():</span>
-</span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_LONGDASH</span>
+</span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_shortdash</span><span class="p">():</span>
+</span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SHORTDASH</span>
 </span><span id="L-198"><a href="#L-198"><span class="linenos">198</span></a>
 </span><span id="L-199"><a href="#L-199"><span class="linenos">199</span></a>
 </span><span id="L-200"><a href="#L-200"><span class="linenos">200</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-201"><a href="#L-201"><span class="linenos">201</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_triangles</span><span class="p">():</span>
-</span><span id="L-202"><a href="#L-202"><span class="linenos">202</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_TRIANGLES</span>
+</span><span id="L-201"><a href="#L-201"><span class="linenos">201</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_longdash</span><span class="p">():</span>
+</span><span id="L-202"><a href="#L-202"><span class="linenos">202</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_LONGDASH</span>
 </span><span id="L-203"><a href="#L-203"><span class="linenos">203</span></a>
 </span><span id="L-204"><a href="#L-204"><span class="linenos">204</span></a>
 </span><span id="L-205"><a href="#L-205"><span class="linenos">205</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-206"><a href="#L-206"><span class="linenos">206</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_squares</span><span class="p">():</span>
-</span><span id="L-207"><a href="#L-207"><span class="linenos">207</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_SQUARES</span>
+</span><span id="L-206"><a href="#L-206"><span class="linenos">206</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_triangles</span><span class="p">():</span>
+</span><span id="L-207"><a href="#L-207"><span class="linenos">207</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_TRIANGLES</span>
 </span><span id="L-208"><a href="#L-208"><span class="linenos">208</span></a>
 </span><span id="L-209"><a href="#L-209"><span class="linenos">209</span></a>
 </span><span id="L-210"><a href="#L-210"><span class="linenos">210</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-211"><a href="#L-211"><span class="linenos">211</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_circles</span><span class="p">():</span>
-</span><span id="L-212"><a href="#L-212"><span class="linenos">212</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_CIRCLES</span>
+</span><span id="L-211"><a href="#L-211"><span class="linenos">211</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_squares</span><span class="p">():</span>
+</span><span id="L-212"><a href="#L-212"><span class="linenos">212</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_SQUARES</span>
 </span><span id="L-213"><a href="#L-213"><span class="linenos">213</span></a>
 </span><span id="L-214"><a href="#L-214"><span class="linenos">214</span></a>
 </span><span id="L-215"><a href="#L-215"><span class="linenos">215</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="L-216"><a href="#L-216"><span class="linenos">216</span></a><span class="k">def</span> <span class="nf">params_Hedjazian2017</span><span class="p">():</span>
-</span><span id="L-217"><a href="#L-217"><span class="linenos">217</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_HEDJAZIAN2017</span>
+</span><span id="L-216"><a href="#L-216"><span class="linenos">216</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_circles</span><span class="p">():</span>
+</span><span id="L-217"><a href="#L-217"><span class="linenos">217</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_CIRCLES</span>
 </span><span id="L-218"><a href="#L-218"><span class="linenos">218</span></a>
 </span><span id="L-219"><a href="#L-219"><span class="linenos">219</span></a>
-</span><span id="L-220"><a href="#L-220"><span class="linenos">220</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">])</span>
-</span><span id="L-221"><a href="#L-221"><span class="linenos">221</span></a><span class="k">def</span> <span class="nf">n_grains</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
+</span><span id="L-220"><a href="#L-220"><span class="linenos">220</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="L-221"><a href="#L-221"><span class="linenos">221</span></a><span class="k">def</span> <span class="nf">params_Hedjazian2017</span><span class="p">():</span>
+</span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_HEDJAZIAN2017</span>
 </span><span id="L-223"><a href="#L-223"><span class="linenos">223</span></a>
 </span><span id="L-224"><a href="#L-224"><span class="linenos">224</span></a>
-</span><span id="L-225"><a href="#L-225"><span class="linenos">225</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
-</span><span id="L-226"><a href="#L-226"><span class="linenos">226</span></a><span class="k">def</span> <span class="nf">hkl</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="L-225"><a href="#L-225"><span class="linenos">225</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">])</span>
+</span><span id="L-226"><a href="#L-226"><span class="linenos">226</span></a><span class="k">def</span> <span class="nf">n_grains</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
 </span><span id="L-227"><a href="#L-227"><span class="linenos">227</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
 </span><span id="L-228"><a href="#L-228"><span class="linenos">228</span></a>
 </span><span id="L-229"><a href="#L-229"><span class="linenos">229</span></a>
-</span><span id="L-230"><a href="#L-230"><span class="linenos">230</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">])</span>
-</span><span id="L-231"><a href="#L-231"><span class="linenos">231</span></a><span class="k">def</span> <span class="nf">ref_axes</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="L-230"><a href="#L-230"><span class="linenos">230</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+</span><span id="L-231"><a href="#L-231"><span class="linenos">231</span></a><span class="k">def</span> <span class="nf">hkl</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
 </span><span id="L-232"><a href="#L-232"><span class="linenos">232</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
 </span><span id="L-233"><a href="#L-233"><span class="linenos">233</span></a>
 </span><span id="L-234"><a href="#L-234"><span class="linenos">234</span></a>
-</span><span id="L-235"><a href="#L-235"><span class="linenos">235</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="L-236"><a href="#L-236"><span class="linenos">236</span></a><span class="k">def</span> <span class="nf">seeds</span><span class="p">():</span>
-</span><span id="L-237"><a href="#L-237"><span class="linenos">237</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;1000 unique seeds for ensemble runs that need an RNG seed.&quot;&quot;&quot;</span>
-</span><span id="L-238"><a href="#L-238"><span class="linenos">238</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;rng&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;seeds.scsv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">seeds</span>
+</span><span id="L-235"><a href="#L-235"><span class="linenos">235</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">])</span>
+</span><span id="L-236"><a href="#L-236"><span class="linenos">236</span></a><span class="k">def</span> <span class="nf">ref_axes</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="L-237"><a href="#L-237"><span class="linenos">237</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
+</span><span id="L-238"><a href="#L-238"><span class="linenos">238</span></a>
 </span><span id="L-239"><a href="#L-239"><span class="linenos">239</span></a>
-</span><span id="L-240"><a href="#L-240"><span class="linenos">240</span></a>
-</span><span id="L-241"><a href="#L-241"><span class="linenos">241</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="L-242"><a href="#L-242"><span class="linenos">242</span></a><span class="k">def</span> <span class="nf">seed</span><span class="p">():</span>
-</span><span id="L-243"><a href="#L-243"><span class="linenos">243</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Default seed for test RNG.&quot;&quot;&quot;</span>
-</span><span id="L-244"><a href="#L-244"><span class="linenos">244</span></a>    <span class="k">return</span> <span class="mi">8816</span>
+</span><span id="L-240"><a href="#L-240"><span class="linenos">240</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="L-241"><a href="#L-241"><span class="linenos">241</span></a><span class="k">def</span> <span class="nf">seeds</span><span class="p">():</span>
+</span><span id="L-242"><a href="#L-242"><span class="linenos">242</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;1000 unique seeds for ensemble runs that need an RNG seed.&quot;&quot;&quot;</span>
+</span><span id="L-243"><a href="#L-243"><span class="linenos">243</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;rng&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;seeds.scsv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">seeds</span>
+</span><span id="L-244"><a href="#L-244"><span class="linenos">244</span></a>
 </span><span id="L-245"><a href="#L-245"><span class="linenos">245</span></a>
-</span><span id="L-246"><a href="#L-246"><span class="linenos">246</span></a>
-</span><span id="L-247"><a href="#L-247"><span class="linenos">247</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="L-248"><a href="#L-248"><span class="linenos">248</span></a><span class="k">def</span> <span class="nf">seeds_nearX45</span><span class="p">():</span>
-</span><span id="L-249"><a href="#L-249"><span class="linenos">249</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;41 seeds which have the initial hexagonal symmetry axis near 45° from X.&quot;&quot;&quot;</span>
-</span><span id="L-250"><a href="#L-250"><span class="linenos">250</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;rng&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;hexaxis_nearX45_seeds.scsv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">seeds</span>
+</span><span id="L-246"><a href="#L-246"><span class="linenos">246</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="L-247"><a href="#L-247"><span class="linenos">247</span></a><span class="k">def</span> <span class="nf">seed</span><span class="p">():</span>
+</span><span id="L-248"><a href="#L-248"><span class="linenos">248</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Default seed for test RNG.&quot;&quot;&quot;</span>
+</span><span id="L-249"><a href="#L-249"><span class="linenos">249</span></a>    <span class="k">return</span> <span class="mi">8816</span>
+</span><span id="L-250"><a href="#L-250"><span class="linenos">250</span></a>
+</span><span id="L-251"><a href="#L-251"><span class="linenos">251</span></a>
+</span><span id="L-252"><a href="#L-252"><span class="linenos">252</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="L-253"><a href="#L-253"><span class="linenos">253</span></a><span class="k">def</span> <span class="nf">seeds_nearX45</span><span class="p">():</span>
+</span><span id="L-254"><a href="#L-254"><span class="linenos">254</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;41 seeds which have the initial hexagonal symmetry axis near 45° from X.&quot;&quot;&quot;</span>
+</span><span id="L-255"><a href="#L-255"><span class="linenos">255</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;rng&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;hexaxis_nearX45_seeds.scsv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">seeds</span>
 </span></pre></div>
 
 
@@ -691,6 +699,27 @@ create a single one for the entire test session here.</p>
     
 
                 </section>
+                <section id="verbose">
+                            <input id="verbose-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+                    <div class="decorator">@pytest.fixture(scope=&#39;session&#39;)</div>
+
+        <span class="def">def</span>
+        <span class="name">verbose</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">request</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="verbose-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#verbose"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="verbose-138"><a href="#verbose-138"><span class="linenos">138</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="verbose-139"><a href="#verbose-139"><span class="linenos">139</span></a><span class="k">def</span> <span class="nf">verbose</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="verbose-140"><a href="#verbose-140"><span class="linenos">140</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">verbose</span>
+</span></pre></div>
+
+
+    
+
+                </section>
                 <section id="outdir">
                             <input id="outdir-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
@@ -703,12 +732,12 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#outdir"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="outdir-138"><a href="#outdir-138"><span class="linenos">138</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="outdir-139"><a href="#outdir-139"><span class="linenos">139</span></a><span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="outdir-140"><a href="#outdir-140"><span class="linenos">140</span></a>    <span class="n">_outdir</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--outdir&quot;</span><span class="p">)</span>
-</span><span id="outdir-141"><a href="#outdir-141"><span class="linenos">141</span></a>    <span class="k">yield</span> <span class="n">_outdir</span>
-</span><span id="outdir-142"><a href="#outdir-142"><span class="linenos">142</span></a>    <span class="c1">#  Create combined ensemble figure for 2D cell tests after they have all finished.</span>
-</span><span id="outdir-143"><a href="#outdir-143"><span class="linenos">143</span></a>    <span class="n">_test_vortex_2d</span><span class="o">.</span><span class="n">TestCellOlivineA</span><span class="o">.</span><span class="n">_make_ensemble_figure</span><span class="p">(</span><span class="n">_outdir</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="outdir-143"><a href="#outdir-143"><span class="linenos">143</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="outdir-144"><a href="#outdir-144"><span class="linenos">144</span></a><span class="k">def</span> <span class="nf">outdir</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="outdir-145"><a href="#outdir-145"><span class="linenos">145</span></a>    <span class="n">_outdir</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--outdir&quot;</span><span class="p">)</span>
+</span><span id="outdir-146"><a href="#outdir-146"><span class="linenos">146</span></a>    <span class="k">yield</span> <span class="n">_outdir</span>
+</span><span id="outdir-147"><a href="#outdir-147"><span class="linenos">147</span></a>    <span class="c1">#  Create combined ensemble figure for 2D cell tests after they have all finished.</span>
+</span><span id="outdir-148"><a href="#outdir-148"><span class="linenos">148</span></a>    <span class="n">_test_vortex_2d</span><span class="o">.</span><span class="n">TestCellOlivineA</span><span class="o">.</span><span class="n">_make_ensemble_figure</span><span class="p">(</span><span class="n">_outdir</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -727,9 +756,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#ncpus"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="ncpus-146"><a href="#ncpus-146"><span class="linenos">146</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="ncpus-147"><a href="#ncpus-147"><span class="linenos">147</span></a><span class="k">def</span> <span class="nf">ncpus</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="ncpus-148"><a href="#ncpus-148"><span class="linenos">148</span></a>    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--ncpus&quot;</span><span class="p">))</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="ncpus-151"><a href="#ncpus-151"><span class="linenos">151</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="ncpus-152"><a href="#ncpus-152"><span class="linenos">152</span></a><span class="k">def</span> <span class="nf">ncpus</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="ncpus-153"><a href="#ncpus-153"><span class="linenos">153</span></a>    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getoption</span><span class="p">(</span><span class="s2">&quot;--ncpus&quot;</span><span class="p">))</span>
 </span></pre></div>
 
 
@@ -748,12 +777,12 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#named_tempfile_kwargs"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="named_tempfile_kwargs-151"><a href="#named_tempfile_kwargs-151"><span class="linenos">151</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="named_tempfile_kwargs-152"><a href="#named_tempfile_kwargs-152"><span class="linenos">152</span></a><span class="k">def</span> <span class="nf">named_tempfile_kwargs</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="named_tempfile_kwargs-153"><a href="#named_tempfile_kwargs-153"><span class="linenos">153</span></a>    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
-</span><span id="named_tempfile_kwargs-154"><a href="#named_tempfile_kwargs-154"><span class="linenos">154</span></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;delete&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
-</span><span id="named_tempfile_kwargs-155"><a href="#named_tempfile_kwargs-155"><span class="linenos">155</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="named_tempfile_kwargs-156"><a href="#named_tempfile_kwargs-156"><span class="linenos">156</span></a>        <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="named_tempfile_kwargs-156"><a href="#named_tempfile_kwargs-156"><span class="linenos">156</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="named_tempfile_kwargs-157"><a href="#named_tempfile_kwargs-157"><span class="linenos">157</span></a><span class="k">def</span> <span class="nf">named_tempfile_kwargs</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="named_tempfile_kwargs-158"><a href="#named_tempfile_kwargs-158"><span class="linenos">158</span></a>    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
+</span><span id="named_tempfile_kwargs-159"><a href="#named_tempfile_kwargs-159"><span class="linenos">159</span></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;delete&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+</span><span id="named_tempfile_kwargs-160"><a href="#named_tempfile_kwargs-160"><span class="linenos">160</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="named_tempfile_kwargs-161"><a href="#named_tempfile_kwargs-161"><span class="linenos">161</span></a>        <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
 </span></pre></div>
 
 
@@ -772,17 +801,17 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#ray_session"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="ray_session-159"><a href="#ray_session-159"><span class="linenos">159</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="ray_session-160"><a href="#ray_session-160"><span class="linenos">160</span></a><span class="k">def</span> <span class="nf">ray_session</span><span class="p">():</span>
-</span><span id="ray_session-161"><a href="#ray_session-161"><span class="linenos">161</span></a>    <span class="k">if</span> <span class="n">HAS_RAY</span><span class="p">:</span>
-</span><span id="ray_session-162"><a href="#ray_session-162"><span class="linenos">162</span></a>        <span class="c1"># NOTE: Expects a running Ray cluster with a number of CPUS matching --ncpus.</span>
-</span><span id="ray_session-163"><a href="#ray_session-163"><span class="linenos">163</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">ray</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
-</span><span id="ray_session-164"><a href="#ray_session-164"><span class="linenos">164</span></a>            <span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
-</span><span id="ray_session-165"><a href="#ray_session-165"><span class="linenos">165</span></a>            <span class="n">_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;using Ray cluster with </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ray</span><span class="o">.</span><span class="n">cluster_resources</span><span class="p">())</span>
-</span><span id="ray_session-166"><a href="#ray_session-166"><span class="linenos">166</span></a>        <span class="k">yield</span>
-</span><span id="ray_session-167"><a href="#ray_session-167"><span class="linenos">167</span></a>        <span class="k">if</span> <span class="n">ray</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
-</span><span id="ray_session-168"><a href="#ray_session-168"><span class="linenos">168</span></a>            <span class="n">ray</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
-</span><span id="ray_session-169"><a href="#ray_session-169"><span class="linenos">169</span></a>    <span class="k">yield</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="ray_session-164"><a href="#ray_session-164"><span class="linenos">164</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="ray_session-165"><a href="#ray_session-165"><span class="linenos">165</span></a><span class="k">def</span> <span class="nf">ray_session</span><span class="p">():</span>
+</span><span id="ray_session-166"><a href="#ray_session-166"><span class="linenos">166</span></a>    <span class="k">if</span> <span class="n">HAS_RAY</span><span class="p">:</span>
+</span><span id="ray_session-167"><a href="#ray_session-167"><span class="linenos">167</span></a>        <span class="c1"># NOTE: Expects a running Ray cluster with a number of CPUS matching --ncpus.</span>
+</span><span id="ray_session-168"><a href="#ray_session-168"><span class="linenos">168</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">ray</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
+</span><span id="ray_session-169"><a href="#ray_session-169"><span class="linenos">169</span></a>            <span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+</span><span id="ray_session-170"><a href="#ray_session-170"><span class="linenos">170</span></a>            <span class="n">_log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;using Ray cluster with </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ray</span><span class="o">.</span><span class="n">cluster_resources</span><span class="p">())</span>
+</span><span id="ray_session-171"><a href="#ray_session-171"><span class="linenos">171</span></a>        <span class="k">yield</span>
+</span><span id="ray_session-172"><a href="#ray_session-172"><span class="linenos">172</span></a>        <span class="k">if</span> <span class="n">ray</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
+</span><span id="ray_session-173"><a href="#ray_session-173"><span class="linenos">173</span></a>            <span class="n">ray</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+</span><span id="ray_session-174"><a href="#ray_session-174"><span class="linenos">174</span></a>    <span class="k">yield</span>
 </span></pre></div>
 
 
@@ -801,13 +830,13 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#console_handler"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="console_handler-172"><a href="#console_handler-172"><span class="linenos">172</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;function&quot;</span><span class="p">)</span>
-</span><span id="console_handler-173"><a href="#console_handler-173"><span class="linenos">173</span></a><span class="k">def</span> <span class="nf">console_handler</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="console_handler-174"><a href="#console_handler-174"><span class="linenos">174</span></a>    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Show console logs if -v/--verbose given.</span>
-</span><span id="console_handler-175"><a href="#console_handler-175"><span class="linenos">175</span></a>        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pluginmanager</span><span class="o">.</span><span class="n">get_plugin</span><span class="p">(</span>
-</span><span id="console_handler-176"><a href="#console_handler-176"><span class="linenos">176</span></a>            <span class="s2">&quot;pytest-console-logger&quot;</span>
-</span><span id="console_handler-177"><a href="#console_handler-177"><span class="linenos">177</span></a>        <span class="p">)</span><span class="o">.</span><span class="n">log_cli_handler</span>
-</span><span id="console_handler-178"><a href="#console_handler-178"><span class="linenos">178</span></a>    <span class="k">return</span> <span class="n">_log</span><span class="o">.</span><span class="n">CONSOLE_LOGGER</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="console_handler-177"><a href="#console_handler-177"><span class="linenos">177</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;function&quot;</span><span class="p">)</span>
+</span><span id="console_handler-178"><a href="#console_handler-178"><span class="linenos">178</span></a><span class="k">def</span> <span class="nf">console_handler</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="console_handler-179"><a href="#console_handler-179"><span class="linenos">179</span></a>    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Show console logs if -v/--verbose given.</span>
+</span><span id="console_handler-180"><a href="#console_handler-180"><span class="linenos">180</span></a>        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pluginmanager</span><span class="o">.</span><span class="n">get_plugin</span><span class="p">(</span>
+</span><span id="console_handler-181"><a href="#console_handler-181"><span class="linenos">181</span></a>            <span class="s2">&quot;pytest-console-logger&quot;</span>
+</span><span id="console_handler-182"><a href="#console_handler-182"><span class="linenos">182</span></a>        <span class="p">)</span><span class="o">.</span><span class="n">log_cli_handler</span>
+</span><span id="console_handler-183"><a href="#console_handler-183"><span class="linenos">183</span></a>    <span class="k">return</span> <span class="n">_log</span><span class="o">.</span><span class="n">CONSOLE_LOGGER</span>
 </span></pre></div>
 
 
@@ -826,9 +855,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Fraters2021"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Fraters2021-181"><a href="#params_Fraters2021-181"><span class="linenos">181</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Fraters2021-182"><a href="#params_Fraters2021-182"><span class="linenos">182</span></a><span class="k">def</span> <span class="nf">params_Fraters2021</span><span class="p">():</span>
-</span><span id="params_Fraters2021-183"><a href="#params_Fraters2021-183"><span class="linenos">183</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_FRATERS2021</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Fraters2021-186"><a href="#params_Fraters2021-186"><span class="linenos">186</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Fraters2021-187"><a href="#params_Fraters2021-187"><span class="linenos">187</span></a><span class="k">def</span> <span class="nf">params_Fraters2021</span><span class="p">():</span>
+</span><span id="params_Fraters2021-188"><a href="#params_Fraters2021-188"><span class="linenos">188</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_FRATERS2021</span>
 </span></pre></div>
 
 
@@ -847,9 +876,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Kaminski2001_fig5_solid"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2001_fig5_solid-186"><a href="#params_Kaminski2001_fig5_solid-186"><span class="linenos">186</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Kaminski2001_fig5_solid-187"><a href="#params_Kaminski2001_fig5_solid-187"><span class="linenos">187</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_solid</span><span class="p">():</span>
-</span><span id="params_Kaminski2001_fig5_solid-188"><a href="#params_Kaminski2001_fig5_solid-188"><span class="linenos">188</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SOLID</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2001_fig5_solid-191"><a href="#params_Kaminski2001_fig5_solid-191"><span class="linenos">191</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Kaminski2001_fig5_solid-192"><a href="#params_Kaminski2001_fig5_solid-192"><span class="linenos">192</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_solid</span><span class="p">():</span>
+</span><span id="params_Kaminski2001_fig5_solid-193"><a href="#params_Kaminski2001_fig5_solid-193"><span class="linenos">193</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SOLID</span>
 </span></pre></div>
 
 
@@ -868,9 +897,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Kaminski2001_fig5_shortdash"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2001_fig5_shortdash-191"><a href="#params_Kaminski2001_fig5_shortdash-191"><span class="linenos">191</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Kaminski2001_fig5_shortdash-192"><a href="#params_Kaminski2001_fig5_shortdash-192"><span class="linenos">192</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_shortdash</span><span class="p">():</span>
-</span><span id="params_Kaminski2001_fig5_shortdash-193"><a href="#params_Kaminski2001_fig5_shortdash-193"><span class="linenos">193</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SHORTDASH</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2001_fig5_shortdash-196"><a href="#params_Kaminski2001_fig5_shortdash-196"><span class="linenos">196</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Kaminski2001_fig5_shortdash-197"><a href="#params_Kaminski2001_fig5_shortdash-197"><span class="linenos">197</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_shortdash</span><span class="p">():</span>
+</span><span id="params_Kaminski2001_fig5_shortdash-198"><a href="#params_Kaminski2001_fig5_shortdash-198"><span class="linenos">198</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_SHORTDASH</span>
 </span></pre></div>
 
 
@@ -889,9 +918,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Kaminski2001_fig5_longdash"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2001_fig5_longdash-196"><a href="#params_Kaminski2001_fig5_longdash-196"><span class="linenos">196</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Kaminski2001_fig5_longdash-197"><a href="#params_Kaminski2001_fig5_longdash-197"><span class="linenos">197</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_longdash</span><span class="p">():</span>
-</span><span id="params_Kaminski2001_fig5_longdash-198"><a href="#params_Kaminski2001_fig5_longdash-198"><span class="linenos">198</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_LONGDASH</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2001_fig5_longdash-201"><a href="#params_Kaminski2001_fig5_longdash-201"><span class="linenos">201</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Kaminski2001_fig5_longdash-202"><a href="#params_Kaminski2001_fig5_longdash-202"><span class="linenos">202</span></a><span class="k">def</span> <span class="nf">params_Kaminski2001_fig5_longdash</span><span class="p">():</span>
+</span><span id="params_Kaminski2001_fig5_longdash-203"><a href="#params_Kaminski2001_fig5_longdash-203"><span class="linenos">203</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2001_FIG5_LONGDASH</span>
 </span></pre></div>
 
 
@@ -910,9 +939,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Kaminski2004_fig4_triangles"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2004_fig4_triangles-201"><a href="#params_Kaminski2004_fig4_triangles-201"><span class="linenos">201</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Kaminski2004_fig4_triangles-202"><a href="#params_Kaminski2004_fig4_triangles-202"><span class="linenos">202</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_triangles</span><span class="p">():</span>
-</span><span id="params_Kaminski2004_fig4_triangles-203"><a href="#params_Kaminski2004_fig4_triangles-203"><span class="linenos">203</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_TRIANGLES</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2004_fig4_triangles-206"><a href="#params_Kaminski2004_fig4_triangles-206"><span class="linenos">206</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Kaminski2004_fig4_triangles-207"><a href="#params_Kaminski2004_fig4_triangles-207"><span class="linenos">207</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_triangles</span><span class="p">():</span>
+</span><span id="params_Kaminski2004_fig4_triangles-208"><a href="#params_Kaminski2004_fig4_triangles-208"><span class="linenos">208</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_TRIANGLES</span>
 </span></pre></div>
 
 
@@ -931,9 +960,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Kaminski2004_fig4_squares"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2004_fig4_squares-206"><a href="#params_Kaminski2004_fig4_squares-206"><span class="linenos">206</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Kaminski2004_fig4_squares-207"><a href="#params_Kaminski2004_fig4_squares-207"><span class="linenos">207</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_squares</span><span class="p">():</span>
-</span><span id="params_Kaminski2004_fig4_squares-208"><a href="#params_Kaminski2004_fig4_squares-208"><span class="linenos">208</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_SQUARES</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2004_fig4_squares-211"><a href="#params_Kaminski2004_fig4_squares-211"><span class="linenos">211</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Kaminski2004_fig4_squares-212"><a href="#params_Kaminski2004_fig4_squares-212"><span class="linenos">212</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_squares</span><span class="p">():</span>
+</span><span id="params_Kaminski2004_fig4_squares-213"><a href="#params_Kaminski2004_fig4_squares-213"><span class="linenos">213</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_SQUARES</span>
 </span></pre></div>
 
 
@@ -952,9 +981,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Kaminski2004_fig4_circles"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2004_fig4_circles-211"><a href="#params_Kaminski2004_fig4_circles-211"><span class="linenos">211</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Kaminski2004_fig4_circles-212"><a href="#params_Kaminski2004_fig4_circles-212"><span class="linenos">212</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_circles</span><span class="p">():</span>
-</span><span id="params_Kaminski2004_fig4_circles-213"><a href="#params_Kaminski2004_fig4_circles-213"><span class="linenos">213</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_CIRCLES</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Kaminski2004_fig4_circles-216"><a href="#params_Kaminski2004_fig4_circles-216"><span class="linenos">216</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Kaminski2004_fig4_circles-217"><a href="#params_Kaminski2004_fig4_circles-217"><span class="linenos">217</span></a><span class="k">def</span> <span class="nf">params_Kaminski2004_fig4_circles</span><span class="p">():</span>
+</span><span id="params_Kaminski2004_fig4_circles-218"><a href="#params_Kaminski2004_fig4_circles-218"><span class="linenos">218</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_KAMINSKI2004_FIG4_CIRCLES</span>
 </span></pre></div>
 
 
@@ -973,9 +1002,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#params_Hedjazian2017"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Hedjazian2017-216"><a href="#params_Hedjazian2017-216"><span class="linenos">216</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
-</span><span id="params_Hedjazian2017-217"><a href="#params_Hedjazian2017-217"><span class="linenos">217</span></a><span class="k">def</span> <span class="nf">params_Hedjazian2017</span><span class="p">():</span>
-</span><span id="params_Hedjazian2017-218"><a href="#params_Hedjazian2017-218"><span class="linenos">218</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_HEDJAZIAN2017</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="params_Hedjazian2017-221"><a href="#params_Hedjazian2017-221"><span class="linenos">221</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+</span><span id="params_Hedjazian2017-222"><a href="#params_Hedjazian2017-222"><span class="linenos">222</span></a><span class="k">def</span> <span class="nf">params_Hedjazian2017</span><span class="p">():</span>
+</span><span id="params_Hedjazian2017-223"><a href="#params_Hedjazian2017-223"><span class="linenos">223</span></a>    <span class="k">return</span> <span class="n">_mock</span><span class="o">.</span><span class="n">PARAMS_HEDJAZIAN2017</span>
 </span></pre></div>
 
 
@@ -994,9 +1023,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#n_grains"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="n_grains-221"><a href="#n_grains-221"><span class="linenos">221</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">])</span>
-</span><span id="n_grains-222"><a href="#n_grains-222"><span class="linenos">222</span></a><span class="k">def</span> <span class="nf">n_grains</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="n_grains-223"><a href="#n_grains-223"><span class="linenos">223</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="n_grains-226"><a href="#n_grains-226"><span class="linenos">226</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">])</span>
+</span><span id="n_grains-227"><a href="#n_grains-227"><span class="linenos">227</span></a><span class="k">def</span> <span class="nf">n_grains</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="n_grains-228"><a href="#n_grains-228"><span class="linenos">228</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
 </span></pre></div>
 
 
@@ -1015,9 +1044,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#hkl"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="hkl-226"><a href="#hkl-226"><span class="linenos">226</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
-</span><span id="hkl-227"><a href="#hkl-227"><span class="linenos">227</span></a><span class="k">def</span> <span class="nf">hkl</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="hkl-228"><a href="#hkl-228"><span class="linenos">228</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="hkl-231"><a href="#hkl-231"><span class="linenos">231</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+</span><span id="hkl-232"><a href="#hkl-232"><span class="linenos">232</span></a><span class="k">def</span> <span class="nf">hkl</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="hkl-233"><a href="#hkl-233"><span class="linenos">233</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
 </span></pre></div>
 
 
@@ -1036,9 +1065,9 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#ref_axes"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="ref_axes-231"><a href="#ref_axes-231"><span class="linenos">231</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">])</span>
-</span><span id="ref_axes-232"><a href="#ref_axes-232"><span class="linenos">232</span></a><span class="k">def</span> <span class="nf">ref_axes</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
-</span><span id="ref_axes-233"><a href="#ref_axes-233"><span class="linenos">233</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="ref_axes-236"><a href="#ref_axes-236"><span class="linenos">236</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;xz&quot;</span><span class="p">,</span> <span class="s2">&quot;yz&quot;</span><span class="p">,</span> <span class="s2">&quot;xy&quot;</span><span class="p">])</span>
+</span><span id="ref_axes-237"><a href="#ref_axes-237"><span class="linenos">237</span></a><span class="k">def</span> <span class="nf">ref_axes</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+</span><span id="ref_axes-238"><a href="#ref_axes-238"><span class="linenos">238</span></a>    <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">param</span>
 </span></pre></div>
 
 
@@ -1057,10 +1086,10 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#seeds"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="seeds-236"><a href="#seeds-236"><span class="linenos">236</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="seeds-237"><a href="#seeds-237"><span class="linenos">237</span></a><span class="k">def</span> <span class="nf">seeds</span><span class="p">():</span>
-</span><span id="seeds-238"><a href="#seeds-238"><span class="linenos">238</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;1000 unique seeds for ensemble runs that need an RNG seed.&quot;&quot;&quot;</span>
-</span><span id="seeds-239"><a href="#seeds-239"><span class="linenos">239</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;rng&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;seeds.scsv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">seeds</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="seeds-241"><a href="#seeds-241"><span class="linenos">241</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="seeds-242"><a href="#seeds-242"><span class="linenos">242</span></a><span class="k">def</span> <span class="nf">seeds</span><span class="p">():</span>
+</span><span id="seeds-243"><a href="#seeds-243"><span class="linenos">243</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;1000 unique seeds for ensemble runs that need an RNG seed.&quot;&quot;&quot;</span>
+</span><span id="seeds-244"><a href="#seeds-244"><span class="linenos">244</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;rng&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;seeds.scsv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">seeds</span>
 </span></pre></div>
 
 
@@ -1081,10 +1110,10 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#seed"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="seed-242"><a href="#seed-242"><span class="linenos">242</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="seed-243"><a href="#seed-243"><span class="linenos">243</span></a><span class="k">def</span> <span class="nf">seed</span><span class="p">():</span>
-</span><span id="seed-244"><a href="#seed-244"><span class="linenos">244</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Default seed for test RNG.&quot;&quot;&quot;</span>
-</span><span id="seed-245"><a href="#seed-245"><span class="linenos">245</span></a>    <span class="k">return</span> <span class="mi">8816</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="seed-247"><a href="#seed-247"><span class="linenos">247</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="seed-248"><a href="#seed-248"><span class="linenos">248</span></a><span class="k">def</span> <span class="nf">seed</span><span class="p">():</span>
+</span><span id="seed-249"><a href="#seed-249"><span class="linenos">249</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Default seed for test RNG.&quot;&quot;&quot;</span>
+</span><span id="seed-250"><a href="#seed-250"><span class="linenos">250</span></a>    <span class="k">return</span> <span class="mi">8816</span>
 </span></pre></div>
 
 
@@ -1105,10 +1134,10 @@ create a single one for the entire test session here.</p>
 
     </div>
     <a class="headerlink" href="#seeds_nearX45"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="seeds_nearX45-248"><a href="#seeds_nearX45-248"><span class="linenos">248</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
-</span><span id="seeds_nearX45-249"><a href="#seeds_nearX45-249"><span class="linenos">249</span></a><span class="k">def</span> <span class="nf">seeds_nearX45</span><span class="p">():</span>
-</span><span id="seeds_nearX45-250"><a href="#seeds_nearX45-250"><span class="linenos">250</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;41 seeds which have the initial hexagonal symmetry axis near 45° from X.&quot;&quot;&quot;</span>
-</span><span id="seeds_nearX45-251"><a href="#seeds_nearX45-251"><span class="linenos">251</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;rng&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;hexaxis_nearX45_seeds.scsv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">seeds</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="seeds_nearX45-253"><a href="#seeds_nearX45-253"><span class="linenos">253</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
+</span><span id="seeds_nearX45-254"><a href="#seeds_nearX45-254"><span class="linenos">254</span></a><span class="k">def</span> <span class="nf">seeds_nearX45</span><span class="p">():</span>
+</span><span id="seeds_nearX45-255"><a href="#seeds_nearX45-255"><span class="linenos">255</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;41 seeds which have the initial hexagonal symmetry axis near 45° from X.&quot;&quot;&quot;</span>
+</span><span id="seeds_nearX45-256"><a href="#seeds_nearX45-256"><span class="linenos">256</span></a>    <span class="k">return</span> <span class="n">_io</span><span class="o">.</span><span class="n">read_scsv</span><span class="p">(</span><span class="n">_io</span><span class="o">.</span><span class="n">data</span><span class="p">(</span><span class="s2">&quot;rng&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;hexaxis_nearX45_seeds.scsv&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">seeds</span>
 </span></pre></div>
 
 

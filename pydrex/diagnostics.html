@@ -510,38 +510,39 @@ grain axis and the j-th external axis (in the global Eulerian frame).</p>
 </span><span id="L-392"><a href="#L-392"><span class="linenos">392</span></a>
 </span><span id="L-393"><a href="#L-393"><span class="linenos">393</span></a><span class="sd">    Examples:</span>
 </span><span id="L-394"><a href="#L-394"><span class="linenos">394</span></a>
-</span><span id="L-395"><a href="#L-395"><span class="linenos">395</span></a><span class="sd">    &gt;&gt;&gt; from numpy import asarray as Ŋ</span>
-</span><span id="L-396"><a href="#L-396"><span class="linenos">396</span></a><span class="sd">    &gt;&gt;&gt; smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([1e0, 0e0, 0e0]))</span>
-</span><span id="L-397"><a href="#L-397"><span class="linenos">397</span></a><span class="sd">    0.0</span>
-</span><span id="L-398"><a href="#L-398"><span class="linenos">398</span></a><span class="sd">    &gt;&gt;&gt; smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([0e0, 1e0, 0e0]))</span>
-</span><span id="L-399"><a href="#L-399"><span class="linenos">399</span></a><span class="sd">    90.0</span>
-</span><span id="L-400"><a href="#L-400"><span class="linenos">400</span></a><span class="sd">    &gt;&gt;&gt; smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([0e0, -1e0, 0e0]))</span>
-</span><span id="L-401"><a href="#L-401"><span class="linenos">401</span></a><span class="sd">    90.0</span>
-</span><span id="L-402"><a href="#L-402"><span class="linenos">402</span></a><span class="sd">    &gt;&gt;&gt; smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([np.sqrt(2), np.sqrt(2), 0e0]))</span>
-</span><span id="L-403"><a href="#L-403"><span class="linenos">403</span></a><span class="sd">    45.0</span>
-</span><span id="L-404"><a href="#L-404"><span class="linenos">404</span></a><span class="sd">    &gt;&gt;&gt; smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([-np.sqrt(2), np.sqrt(2), 0e0]))</span>
-</span><span id="L-405"><a href="#L-405"><span class="linenos">405</span></a><span class="sd">    45.0</span>
-</span><span id="L-406"><a href="#L-406"><span class="linenos">406</span></a>
-</span><span id="L-407"><a href="#L-407"><span class="linenos">407</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-408"><a href="#L-408"><span class="linenos">408</span></a>    <span class="k">if</span> <span class="n">plane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="L-409"><a href="#L-409"><span class="linenos">409</span></a>        <span class="n">_vector</span> <span class="o">=</span> <span class="n">vector</span> <span class="o">-</span> <span class="n">plane</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">plane</span><span class="p">)</span>
-</span><span id="L-410"><a href="#L-410"><span class="linenos">410</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="L-411"><a href="#L-411"><span class="linenos">411</span></a>        <span class="n">_vector</span> <span class="o">=</span> <span class="n">vector</span>
-</span><span id="L-412"><a href="#L-412"><span class="linenos">412</span></a>    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
-</span><span id="L-413"><a href="#L-413"><span class="linenos">413</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span>
-</span><span id="L-414"><a href="#L-414"><span class="linenos">414</span></a>            <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
-</span><span id="L-415"><a href="#L-415"><span class="linenos">415</span></a>                <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>  <span class="c1"># https://github.com/numba/numba/issues/3469</span>
-</span><span id="L-416"><a href="#L-416"><span class="linenos">416</span></a>                    <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">_vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
-</span><span id="L-417"><a href="#L-417"><span class="linenos">417</span></a>                    <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">_vector</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">))</span>
-</span><span id="L-418"><a href="#L-418"><span class="linenos">418</span></a>                <span class="p">),</span>
-</span><span id="L-419"><a href="#L-419"><span class="linenos">419</span></a>                <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-</span><span id="L-420"><a href="#L-420"><span class="linenos">420</span></a>                <span class="mi">1</span><span class="p">,</span>
-</span><span id="L-421"><a href="#L-421"><span class="linenos">421</span></a>            <span class="p">)</span>
-</span><span id="L-422"><a href="#L-422"><span class="linenos">422</span></a>        <span class="p">)</span>
-</span><span id="L-423"><a href="#L-423"><span class="linenos">423</span></a>    <span class="p">)</span>
-</span><span id="L-424"><a href="#L-424"><span class="linenos">424</span></a>    <span class="k">if</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
-</span><span id="L-425"><a href="#L-425"><span class="linenos">425</span></a>        <span class="k">return</span> <span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span>
-</span><span id="L-426"><a href="#L-426"><span class="linenos">426</span></a>    <span class="k">return</span> <span class="n">angle</span>
+</span><span id="L-395"><a href="#L-395"><span class="linenos">395</span></a><span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+</span><span id="L-396"><a href="#L-396"><span class="linenos">396</span></a><span class="sd">    &gt;&gt;&gt; def f64(x): return np.asarray(x, dtype=np.float64)</span>
+</span><span id="L-397"><a href="#L-397"><span class="linenos">397</span></a><span class="sd">    &gt;&gt;&gt; int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([1e0, 0e0, 0e0])))</span>
+</span><span id="L-398"><a href="#L-398"><span class="linenos">398</span></a><span class="sd">    0</span>
+</span><span id="L-399"><a href="#L-399"><span class="linenos">399</span></a><span class="sd">    &gt;&gt;&gt; int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([0e0, 1e0, 0e0])))</span>
+</span><span id="L-400"><a href="#L-400"><span class="linenos">400</span></a><span class="sd">    90</span>
+</span><span id="L-401"><a href="#L-401"><span class="linenos">401</span></a><span class="sd">    &gt;&gt;&gt; int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([0e0, -1e0, 0e0])))</span>
+</span><span id="L-402"><a href="#L-402"><span class="linenos">402</span></a><span class="sd">    90</span>
+</span><span id="L-403"><a href="#L-403"><span class="linenos">403</span></a><span class="sd">    &gt;&gt;&gt; int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([np.sqrt(2), np.sqrt(2), 0e0])))</span>
+</span><span id="L-404"><a href="#L-404"><span class="linenos">404</span></a><span class="sd">    45</span>
+</span><span id="L-405"><a href="#L-405"><span class="linenos">405</span></a><span class="sd">    &gt;&gt;&gt; int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([-np.sqrt(2), np.sqrt(2), 0e0])))</span>
+</span><span id="L-406"><a href="#L-406"><span class="linenos">406</span></a><span class="sd">    45</span>
+</span><span id="L-407"><a href="#L-407"><span class="linenos">407</span></a>
+</span><span id="L-408"><a href="#L-408"><span class="linenos">408</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-409"><a href="#L-409"><span class="linenos">409</span></a>    <span class="k">if</span> <span class="n">plane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-410"><a href="#L-410"><span class="linenos">410</span></a>        <span class="n">_vector</span> <span class="o">=</span> <span class="n">vector</span> <span class="o">-</span> <span class="n">plane</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">plane</span><span class="p">)</span>
+</span><span id="L-411"><a href="#L-411"><span class="linenos">411</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="L-412"><a href="#L-412"><span class="linenos">412</span></a>        <span class="n">_vector</span> <span class="o">=</span> <span class="n">vector</span>
+</span><span id="L-413"><a href="#L-413"><span class="linenos">413</span></a>    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
+</span><span id="L-414"><a href="#L-414"><span class="linenos">414</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span>
+</span><span id="L-415"><a href="#L-415"><span class="linenos">415</span></a>            <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
+</span><span id="L-416"><a href="#L-416"><span class="linenos">416</span></a>                <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>  <span class="c1"># https://github.com/numba/numba/issues/3469</span>
+</span><span id="L-417"><a href="#L-417"><span class="linenos">417</span></a>                    <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">_vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+</span><span id="L-418"><a href="#L-418"><span class="linenos">418</span></a>                    <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">_vector</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">))</span>
+</span><span id="L-419"><a href="#L-419"><span class="linenos">419</span></a>                <span class="p">),</span>
+</span><span id="L-420"><a href="#L-420"><span class="linenos">420</span></a>                <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+</span><span id="L-421"><a href="#L-421"><span class="linenos">421</span></a>                <span class="mi">1</span><span class="p">,</span>
+</span><span id="L-422"><a href="#L-422"><span class="linenos">422</span></a>            <span class="p">)</span>
+</span><span id="L-423"><a href="#L-423"><span class="linenos">423</span></a>        <span class="p">)</span>
+</span><span id="L-424"><a href="#L-424"><span class="linenos">424</span></a>    <span class="p">)</span>
+</span><span id="L-425"><a href="#L-425"><span class="linenos">425</span></a>    <span class="k">if</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
+</span><span id="L-426"><a href="#L-426"><span class="linenos">426</span></a>        <span class="k">return</span> <span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span>
+</span><span id="L-427"><a href="#L-427"><span class="linenos">427</span></a>    <span class="k">return</span> <span class="n">angle</span>
 </span></pre></div>
 
 
@@ -1141,38 +1142,39 @@ fluctuations compared to the raw eigenvalue diagnostics.</p>
 </span><span id="smallest_angle-393"><a href="#smallest_angle-393"><span class="linenos">393</span></a>
 </span><span id="smallest_angle-394"><a href="#smallest_angle-394"><span class="linenos">394</span></a><span class="sd">    Examples:</span>
 </span><span id="smallest_angle-395"><a href="#smallest_angle-395"><span class="linenos">395</span></a>
-</span><span id="smallest_angle-396"><a href="#smallest_angle-396"><span class="linenos">396</span></a><span class="sd">    &gt;&gt;&gt; from numpy import asarray as Ŋ</span>
-</span><span id="smallest_angle-397"><a href="#smallest_angle-397"><span class="linenos">397</span></a><span class="sd">    &gt;&gt;&gt; smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([1e0, 0e0, 0e0]))</span>
-</span><span id="smallest_angle-398"><a href="#smallest_angle-398"><span class="linenos">398</span></a><span class="sd">    0.0</span>
-</span><span id="smallest_angle-399"><a href="#smallest_angle-399"><span class="linenos">399</span></a><span class="sd">    &gt;&gt;&gt; smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([0e0, 1e0, 0e0]))</span>
-</span><span id="smallest_angle-400"><a href="#smallest_angle-400"><span class="linenos">400</span></a><span class="sd">    90.0</span>
-</span><span id="smallest_angle-401"><a href="#smallest_angle-401"><span class="linenos">401</span></a><span class="sd">    &gt;&gt;&gt; smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([0e0, -1e0, 0e0]))</span>
-</span><span id="smallest_angle-402"><a href="#smallest_angle-402"><span class="linenos">402</span></a><span class="sd">    90.0</span>
-</span><span id="smallest_angle-403"><a href="#smallest_angle-403"><span class="linenos">403</span></a><span class="sd">    &gt;&gt;&gt; smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([np.sqrt(2), np.sqrt(2), 0e0]))</span>
-</span><span id="smallest_angle-404"><a href="#smallest_angle-404"><span class="linenos">404</span></a><span class="sd">    45.0</span>
-</span><span id="smallest_angle-405"><a href="#smallest_angle-405"><span class="linenos">405</span></a><span class="sd">    &gt;&gt;&gt; smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([-np.sqrt(2), np.sqrt(2), 0e0]))</span>
-</span><span id="smallest_angle-406"><a href="#smallest_angle-406"><span class="linenos">406</span></a><span class="sd">    45.0</span>
-</span><span id="smallest_angle-407"><a href="#smallest_angle-407"><span class="linenos">407</span></a>
-</span><span id="smallest_angle-408"><a href="#smallest_angle-408"><span class="linenos">408</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="smallest_angle-409"><a href="#smallest_angle-409"><span class="linenos">409</span></a>    <span class="k">if</span> <span class="n">plane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="smallest_angle-410"><a href="#smallest_angle-410"><span class="linenos">410</span></a>        <span class="n">_vector</span> <span class="o">=</span> <span class="n">vector</span> <span class="o">-</span> <span class="n">plane</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">plane</span><span class="p">)</span>
-</span><span id="smallest_angle-411"><a href="#smallest_angle-411"><span class="linenos">411</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="smallest_angle-412"><a href="#smallest_angle-412"><span class="linenos">412</span></a>        <span class="n">_vector</span> <span class="o">=</span> <span class="n">vector</span>
-</span><span id="smallest_angle-413"><a href="#smallest_angle-413"><span class="linenos">413</span></a>    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
-</span><span id="smallest_angle-414"><a href="#smallest_angle-414"><span class="linenos">414</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span>
-</span><span id="smallest_angle-415"><a href="#smallest_angle-415"><span class="linenos">415</span></a>            <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
-</span><span id="smallest_angle-416"><a href="#smallest_angle-416"><span class="linenos">416</span></a>                <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>  <span class="c1"># https://github.com/numba/numba/issues/3469</span>
-</span><span id="smallest_angle-417"><a href="#smallest_angle-417"><span class="linenos">417</span></a>                    <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">_vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
-</span><span id="smallest_angle-418"><a href="#smallest_angle-418"><span class="linenos">418</span></a>                    <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">_vector</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">))</span>
-</span><span id="smallest_angle-419"><a href="#smallest_angle-419"><span class="linenos">419</span></a>                <span class="p">),</span>
-</span><span id="smallest_angle-420"><a href="#smallest_angle-420"><span class="linenos">420</span></a>                <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-</span><span id="smallest_angle-421"><a href="#smallest_angle-421"><span class="linenos">421</span></a>                <span class="mi">1</span><span class="p">,</span>
-</span><span id="smallest_angle-422"><a href="#smallest_angle-422"><span class="linenos">422</span></a>            <span class="p">)</span>
-</span><span id="smallest_angle-423"><a href="#smallest_angle-423"><span class="linenos">423</span></a>        <span class="p">)</span>
-</span><span id="smallest_angle-424"><a href="#smallest_angle-424"><span class="linenos">424</span></a>    <span class="p">)</span>
-</span><span id="smallest_angle-425"><a href="#smallest_angle-425"><span class="linenos">425</span></a>    <span class="k">if</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
-</span><span id="smallest_angle-426"><a href="#smallest_angle-426"><span class="linenos">426</span></a>        <span class="k">return</span> <span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span>
-</span><span id="smallest_angle-427"><a href="#smallest_angle-427"><span class="linenos">427</span></a>    <span class="k">return</span> <span class="n">angle</span>
+</span><span id="smallest_angle-396"><a href="#smallest_angle-396"><span class="linenos">396</span></a><span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+</span><span id="smallest_angle-397"><a href="#smallest_angle-397"><span class="linenos">397</span></a><span class="sd">    &gt;&gt;&gt; def f64(x): return np.asarray(x, dtype=np.float64)</span>
+</span><span id="smallest_angle-398"><a href="#smallest_angle-398"><span class="linenos">398</span></a><span class="sd">    &gt;&gt;&gt; int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([1e0, 0e0, 0e0])))</span>
+</span><span id="smallest_angle-399"><a href="#smallest_angle-399"><span class="linenos">399</span></a><span class="sd">    0</span>
+</span><span id="smallest_angle-400"><a href="#smallest_angle-400"><span class="linenos">400</span></a><span class="sd">    &gt;&gt;&gt; int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([0e0, 1e0, 0e0])))</span>
+</span><span id="smallest_angle-401"><a href="#smallest_angle-401"><span class="linenos">401</span></a><span class="sd">    90</span>
+</span><span id="smallest_angle-402"><a href="#smallest_angle-402"><span class="linenos">402</span></a><span class="sd">    &gt;&gt;&gt; int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([0e0, -1e0, 0e0])))</span>
+</span><span id="smallest_angle-403"><a href="#smallest_angle-403"><span class="linenos">403</span></a><span class="sd">    90</span>
+</span><span id="smallest_angle-404"><a href="#smallest_angle-404"><span class="linenos">404</span></a><span class="sd">    &gt;&gt;&gt; int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([np.sqrt(2), np.sqrt(2), 0e0])))</span>
+</span><span id="smallest_angle-405"><a href="#smallest_angle-405"><span class="linenos">405</span></a><span class="sd">    45</span>
+</span><span id="smallest_angle-406"><a href="#smallest_angle-406"><span class="linenos">406</span></a><span class="sd">    &gt;&gt;&gt; int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([-np.sqrt(2), np.sqrt(2), 0e0])))</span>
+</span><span id="smallest_angle-407"><a href="#smallest_angle-407"><span class="linenos">407</span></a><span class="sd">    45</span>
+</span><span id="smallest_angle-408"><a href="#smallest_angle-408"><span class="linenos">408</span></a>
+</span><span id="smallest_angle-409"><a href="#smallest_angle-409"><span class="linenos">409</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="smallest_angle-410"><a href="#smallest_angle-410"><span class="linenos">410</span></a>    <span class="k">if</span> <span class="n">plane</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="smallest_angle-411"><a href="#smallest_angle-411"><span class="linenos">411</span></a>        <span class="n">_vector</span> <span class="o">=</span> <span class="n">vector</span> <span class="o">-</span> <span class="n">plane</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="n">plane</span><span class="p">)</span>
+</span><span id="smallest_angle-412"><a href="#smallest_angle-412"><span class="linenos">412</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="smallest_angle-413"><a href="#smallest_angle-413"><span class="linenos">413</span></a>        <span class="n">_vector</span> <span class="o">=</span> <span class="n">vector</span>
+</span><span id="smallest_angle-414"><a href="#smallest_angle-414"><span class="linenos">414</span></a>    <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span>
+</span><span id="smallest_angle-415"><a href="#smallest_angle-415"><span class="linenos">415</span></a>        <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span>
+</span><span id="smallest_angle-416"><a href="#smallest_angle-416"><span class="linenos">416</span></a>            <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span>
+</span><span id="smallest_angle-417"><a href="#smallest_angle-417"><span class="linenos">417</span></a>                <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>  <span class="c1"># https://github.com/numba/numba/issues/3469</span>
+</span><span id="smallest_angle-418"><a href="#smallest_angle-418"><span class="linenos">418</span></a>                    <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">_vector</span><span class="p">,</span> <span class="n">axis</span><span class="p">)</span>
+</span><span id="smallest_angle-419"><a href="#smallest_angle-419"><span class="linenos">419</span></a>                    <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">_vector</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">axis</span><span class="p">))</span>
+</span><span id="smallest_angle-420"><a href="#smallest_angle-420"><span class="linenos">420</span></a>                <span class="p">),</span>
+</span><span id="smallest_angle-421"><a href="#smallest_angle-421"><span class="linenos">421</span></a>                <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+</span><span id="smallest_angle-422"><a href="#smallest_angle-422"><span class="linenos">422</span></a>                <span class="mi">1</span><span class="p">,</span>
+</span><span id="smallest_angle-423"><a href="#smallest_angle-423"><span class="linenos">423</span></a>            <span class="p">)</span>
+</span><span id="smallest_angle-424"><a href="#smallest_angle-424"><span class="linenos">424</span></a>        <span class="p">)</span>
+</span><span id="smallest_angle-425"><a href="#smallest_angle-425"><span class="linenos">425</span></a>    <span class="p">)</span>
+</span><span id="smallest_angle-426"><a href="#smallest_angle-426"><span class="linenos">426</span></a>    <span class="k">if</span> <span class="n">angle</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">:</span>
+</span><span id="smallest_angle-427"><a href="#smallest_angle-427"><span class="linenos">427</span></a>        <span class="k">return</span> <span class="mi">180</span> <span class="o">-</span> <span class="n">angle</span>
+</span><span id="smallest_angle-428"><a href="#smallest_angle-428"><span class="linenos">428</span></a>    <span class="k">return</span> <span class="n">angle</span>
 </span></pre></div>
 
 
@@ -1185,17 +1187,18 @@ before calculating the angle.</p>
 <p>Examples:</p>
 
 <div class="pdoc-code codehilite">
-<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">asarray</span> <span class="k">as</span> <span class="n">Ŋ</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">smallest_angle</span><span class="p">(</span><span class="n">Ŋ</span><span class="p">([</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">]),</span> <span class="n">Ŋ</span><span class="p">([</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">]))</span>
-<span class="go">0.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">smallest_angle</span><span class="p">(</span><span class="n">Ŋ</span><span class="p">([</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">]),</span> <span class="n">Ŋ</span><span class="p">([</span><span class="mf">0e0</span><span class="p">,</span> <span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">]))</span>
-<span class="go">90.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">smallest_angle</span><span class="p">(</span><span class="n">Ŋ</span><span class="p">([</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">]),</span> <span class="n">Ŋ</span><span class="p">([</span><span class="mf">0e0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">]))</span>
-<span class="go">90.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">smallest_angle</span><span class="p">(</span><span class="n">Ŋ</span><span class="p">([</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">]),</span> <span class="n">Ŋ</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="mf">0e0</span><span class="p">]))</span>
-<span class="go">45.0</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">smallest_angle</span><span class="p">(</span><span class="n">Ŋ</span><span class="p">([</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">]),</span> <span class="n">Ŋ</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="mf">0e0</span><span class="p">]))</span>
-<span class="go">45.0</span>
+<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">f64</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">int</span><span class="p">(</span><span class="n">smallest_angle</span><span class="p">(</span><span class="n">f64</span><span class="p">([</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">]),</span> <span class="n">f64</span><span class="p">([</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">])))</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">int</span><span class="p">(</span><span class="n">smallest_angle</span><span class="p">(</span><span class="n">f64</span><span class="p">([</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">]),</span> <span class="n">f64</span><span class="p">([</span><span class="mf">0e0</span><span class="p">,</span> <span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">])))</span>
+<span class="go">90</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">int</span><span class="p">(</span><span class="n">smallest_angle</span><span class="p">(</span><span class="n">f64</span><span class="p">([</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">]),</span> <span class="n">f64</span><span class="p">([</span><span class="mf">0e0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">])))</span>
+<span class="go">90</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">int</span><span class="p">(</span><span class="n">smallest_angle</span><span class="p">(</span><span class="n">f64</span><span class="p">([</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">]),</span> <span class="n">f64</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="mf">0e0</span><span class="p">])))</span>
+<span class="go">45</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">int</span><span class="p">(</span><span class="n">smallest_angle</span><span class="p">(</span><span class="n">f64</span><span class="p">([</span><span class="mf">1e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">,</span> <span class="mf">0e0</span><span class="p">]),</span> <span class="n">f64</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="mf">0e0</span><span class="p">])))</span>
+<span class="go">45</span>
 </code></pre>
 </div>
 </div>
