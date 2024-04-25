@@ -135,6 +135,11 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture(scope="session")
+def verbose(request):
+    return request.config.option.verbose
+
+
+@pytest.fixture(scope="session")
 def outdir(request):
     _outdir = request.config.getoption("--outdir")
     yield _outdir
