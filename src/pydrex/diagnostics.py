@@ -382,7 +382,7 @@ def coaxial_index(orientations, axis1="b", axis2="a"):
     return 0.5 * (2 - (P1 / (G1 + P1)) - (G2 / (G2 + P2)))
 
 
-@nb.njit(fastmath=False)
+@nb.njit(fastmath=True)
 def smallest_angle(vector, axis, plane=None):
     """Get smallest angle between a unit `vector` and a bidirectional `axis`.
 

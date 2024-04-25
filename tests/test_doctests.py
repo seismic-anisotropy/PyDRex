@@ -36,7 +36,7 @@ def test_doctests(module, capsys):
             n_fails, n_tests = doctest.testmod(
                 importlib.import_module(module),
                 raise_on_error=True,
-                verbose=False,  # Change to True to debug doctest failures.
+                verbose=True,  # Change to True to debug doctest failures.
             )
             if n_fails > 0:
                 raise AssertionError(f"there were {n_fails} doctest failures from {module}")
