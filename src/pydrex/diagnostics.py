@@ -392,17 +392,18 @@ def smallest_angle(vector, axis, plane=None):
 
     Examples:
 
-    >>> from numpy import asarray as Ŋ
-    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([1e0, 0e0, 0e0]))
-    0.0
-    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([0e0, 1e0, 0e0]))
-    90.0
-    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([0e0, -1e0, 0e0]))
-    90.0
-    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([np.sqrt(2), np.sqrt(2), 0e0]))
-    45.0
-    >>> smallest_angle(Ŋ([1e0, 0e0, 0e0]), Ŋ([-np.sqrt(2), np.sqrt(2), 0e0]))
-    45.0
+    >>> import numpy as np
+    >>> def f64(x): return np.asarray(x, dtype=np.float64)
+    >>> int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([1e0, 0e0, 0e0])))
+    0
+    >>> int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([0e0, 1e0, 0e0])))
+    90
+    >>> int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([0e0, -1e0, 0e0])))
+    90
+    >>> int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([np.sqrt(2), np.sqrt(2), 0e0])))
+    45
+    >>> int(smallest_angle(f64([1e0, 0e0, 0e0]), f64([-np.sqrt(2), np.sqrt(2), 0e0])))
+    45
 
     """
     if plane is not None:

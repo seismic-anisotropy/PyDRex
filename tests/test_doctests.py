@@ -28,7 +28,7 @@ def _get_submodule_list():
 
 
 @pytest.mark.parametrize("module", _get_submodule_list())
-def test_doctests(module, capsys):
+def test_doctests(module, capsys, verbose):
     """Run doctests for all submodules."""
     with capsys.disabled():  # Pytest output capturing messes with doctests.
         _log.info("running doctests for %s...", module)
@@ -36,7 +36,7 @@ def test_doctests(module, capsys):
             n_fails, n_tests = doctest.testmod(
                 importlib.import_module(module),
                 raise_on_error=True,
-                verbose=False,  # Change to True to debug doctest failures.
+                verbose=verbose > 1,  # Run pytest with -vv to show doctest details.
             )
             if n_fails > 0:
                 raise AssertionError(f"there were {n_fails} doctest failures from {module}")
