@@ -400,8 +400,11 @@ class Mineral:
         ...         get_velocity_gradient,
         ...         (t_start, t_end, get_position),
         ...     )
-        >>> np.all(deformation_gradient == np.eye(3) + get_velocity_gradient(t_end, np.nan))
-        True
+        >>> from numpy import testing as nt
+        >>> nt.assert_allclose(deformation_gradient,
+        ...     np.eye(3) + get_velocity_gradient(t_end, np.nan),
+        ...     atol=1e-15, rtol=0
+        ... )
 
         """
 
