@@ -10,6 +10,7 @@ crystallographic rotation rate and changes in fractional grain volumes.
 
 """
 
+from dataclasses import dataclass
 from enum import IntEnum, unique
 
 import numba as nb
@@ -28,14 +29,108 @@ PERMUTATION_SYMBOL = np.array(
         [[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
     ]
 )
+"""Sometimes called the Levi-Civita symbol."""
 
 
 @unique
 class MineralPhase(IntEnum):
-    """Supported mineral phases."""
+    """Supported mineral phases.
+
+    Forsterite and fayalite are grouped into “olivine”, becuase we treat them as
+    rheologically equivalent.
+
+    """
 
     olivine = 0
+    """(Mg,Fe)₂SiO₄"""
     enstatite = 1
+    """MgSiO₃"""
+
+
+@dataclass(frozen=True)
+class DefaultParams:
+    phase_content: tuple = (MineralPhase.olivine, MineralPhase.enstatite)
+    """Mineral phases present in the aggregate."""
+    phase_fractions: tuple = (1.0, 0.0)
+    """Volume fractions of each mineral phase present in the aggregate."""
+    stress_exponent: float = 1.5
+    """The value for $p$ in $ρ ∝ τᵖ$ where $ρ$ is the dislocation density and $τ$ the shear stress."""
+    deformation_exponent: float = 3.5
+    """The value for $n$ in $τ ∝ |D|^{1/n}$ where $τ$ is the shear stress and D the deformation rate."""
+    gbm_mobility: int = 125
+    """Dimensionless grain boundary mobility parameter (M*).
+
+    This controls the rate of all dynamic recrystallisation processes in
+    `DeformationRegime.matrix_dislocation`.
+
+    """
+    gbs_threshold: float = 0.3
+    """Grain boundary sliding threshold.
+
+    In `DeformationRegime.matrix_dislocation` or `DeformationRegime.sliding_dislocation`
+    this controls the smallest size of a grain, relative to its original size,
+    at which it will still deform via dislocation creep.
+    Smaller grains will instead deform via grain boundary sliding,
+    therefore not contributing to any further texture evolution.
+
+    """
+    nucleation_efficiency: float = 5.0
+    """Dimensionless nucleation efficiency (λ*).
+
+    This controls the nucleation of subgrains in `DeformationRegime.matrix_dislocation`.
+
+    """
+    number_of_grains: int = 3500
+    """Number of surrogate grains for numerical discretisation of the aggregate."""
+    initial_olivine_fabric: str = "A"
+    """Olivine fabric (CRSS distribution) at the beginning of the simulation."""
+    disl_Peierls_stress: float = 10
+    """Stress barrier for activation of dislocation motion at low temperatures.
+
+    .. note:: Not relevant if the unified dislocation creep flow law is used instead.
+
+    """
+    # NOTE: For now, we just roll this into the prefactors.
+    # water_fugacity: float = 1.5
+    # """Approximate constant water fugacity of the aggregate (GPa)."""
+    disl_prefactors: tuple = (1e-16, 1e-17)
+    """Prefactors for dislocation creep exponential & power laws (s⁻¹)."""
+    diff_prefactor: float = 1e-10
+    """Prefactor for diffusion creep power law (s⁻¹)."""
+    disl_lowtemp_switch: float = 0.7
+    """Threshold homologous temperature below which to use the exponential flow law.
+
+    The default value suggested here comes from
+    [Demouchy et al. 2023](http://dx.doi.org/10.2138/gselements.19.3.151).
+
+    .. note:: Not relevant if the unified dislocation creep flow law is used instead.
+
+    """
+    disl_activation_energy: float = 460.0
+    """Activation energy for dislocation creep power law (kJ/mol)."""
+    disl_activation_volume: float = 12.0
+    """Activation volume for dislocation creep power law (cm³/mol)."""
+    diff_activation_energy: float = 330.0
+    """Activation energy for diffusion creep power law (kJ/mol)."""
+    diff_activation_volume: float = 4.0
+    """Activation volume for diffusion creep power law (cm³/mol)."""
+    disl_coefficients: tuple = (
+        4.4e8,
+        -5.26e4,
+        2.11e-2,
+        1.74e-4,
+        -41.8,
+        4.21e-2,
+        -1.14e-5,
+    )
+    """Coefficients for polynomials used in the alternative dislocation creep flow law.
+
+    The defaults are for the TANH variant of the unified creep law, proposed in
+    [Garel et al. 2020](http://dx.doi.org/10.1016/j.epsl.2020.116243).
+    By contrast, [Gouriet et al. 2019](http://dx.doi.org/10.1016/j.epsl.2018.10.049)
+    used the ERF variant with: [4.4e8, -2.2e4, 3e-2, 1.3e-4, -42, 4.2e-2, -1.1e-5].
+
+    """
 
 
 @unique

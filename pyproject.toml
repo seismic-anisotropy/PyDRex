@@ -49,8 +49,8 @@ test = ["pytest"]
 doc = ["pdoc"]
 mesh = ["gmsh"]  # NOTE: Saying `import gmsh` is like saying "I don't want my CI to work".
 ray = ["ray >= 2.0.0"]
-dev = ["pytest", "uniplot", "pdoc", "ruff", "black", "isort", "ptpython"]
-lsp = ["python-lsp-server", "pyls-isort", "python-lsp-black", "python-lsp-ruff"]
+dev = ["black", "isort", "pdoc", "ptpython", "pyvista", "ruff", "uniplot", "pytest"]
+lsp = ["pyls-isort", "python-lsp-black", "python-lsp-ruff", "python-lsp-server"]
 
 [project.urls]
 repository = "https://github.com/seismic-anisotropy/PyDRex"

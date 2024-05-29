@@ -1,0 +1,70 @@
+# PyDRex TOML configuration specification for steady-state mesh input.
+# For this input method, PyDRex expects a mesh with the steady-state numerical velocity gradient field
+# and a SCSV text file specifying the FINAL locations of the polycrystals.
+# Polycrystals will first be back-propagated in the velocity field to establish flow pathlines,
+# and then forward-propagated, during which the CPO will be calculated.
+# The SCSV file should have column names 'X', 'Y', 'Z' for 3D or any two of those for 2D.
+
+# Simulation name is optional but recommended.
+name = "pydrex-spec-steady-mesh"
+
+[input]
+# The input mesh should (at least) provide a velocity gradient field.
+mesh = "../meshes/corner2d_2cmyr_5e5x1e5.vtu"
+# Polycrystals will be back-propagated from these locations until they reach an undeformed state.
+locations_final = "../meshes/corner2d_2cmyr_5e5x1e5.scsv"
+# The timestep to be used for polycrystal advection.
+timestep = 1e10
+# The amount of strain that every polycrystal must accumulate upon reaching its final location.
+# NOTE: In PyDRex, strain is quantified using the tensorial method: ε = γ/2.
+strain_final = 2.5
+
+[output]
+# Optional output directory which will be created if missing.
+# The directory path is relative to the parent directory of the TOML file,
+# unless an absolute path (starting with /) is used.
+directory = "../out_steady"
+# Optional choice of mineral phases to include in raw output.
+# Raw output means rotation matrices and grain volumes, so 10 floats per grain per mineral.
+# By default, raw output for all mineral phases is saved.
+# Disabling raw outputs does not affect compute time (as they must always be calculated).
+raw_output = ["olivine", "enstatite"]
+# Optional choice of mineral phases to include in diagnostic outputs.
+# Diagnostic output includes texture symmetry, strength and mean CPO axis.
+# By default, diagnostic output for all mineral phases is saved.
+# Disabling diagnostic outputs can significantly decrease computational requirements.
+# Requirements scale steeply with the number_of_grains, see the [parameters] section below.
+diagnostics = ["olivine", "enstatite"]
+# List of optional seismic anisotropy outputs.
+# Anisotropy outputs include the average anisotropic elasticity tensor Cᵢⱼ (Voigt 6x6, upper-triangular format),
+# the best-fitting hexagonal symmetry (i.e. transverse isotropy) axis,
+# the bulk and shear modulus values
+# and percentages of ||C|| attributed to various mineral symmetries.
+anisotropy = ["Voigt", "hexaxis", "moduli", "%decomp"]
+# Optional logging level for log files.
+# This sets the log level for all log files, overriding the default value of "WARNING".
+# Supported levels are controlled by Python's logging module.
+# Usually they are "CRITICAL", "ERROR", "WARNING", "INFO" and "DEBUG".
+log_level = "DEBUG"
+# Other outputs that are always present:
+# - The computed pathlines (SCSV text files)
+
+# Default values for simulation paramers are given below.
+[parameters]
+# Phase content and volume fractions (which must sum to 1).
+phase_content = ["olivine", "enstatite"]
+phase_fractions = [0.7, 0.3]
+# Optional initial olivine fabric (CRSS values for slip systems).
+initial_olivine_fabric = "A"
+# Optional D-Rex stress exponent, see documentation for details.
+stress_exponent = 1.5
+# Optional D-Rex deformation_exponent, see documentation for details.
+deformation_exponent = 3.5
+# Optional D-Rex grain boudary mobility, see documentation for details.
+gbm_mobility = 125
+# Optional D-Rex grain boundary sliding threshold, see documentation for details.
+gbs_threshold = 0.3
+# Optional D-Rex nucleation efficiency, see documentation for details.
+nucleation_efficiency = 5.0
+# Optional number of surrogate grains per mineral phase per polycrystal.
+number_of_grains = 5000

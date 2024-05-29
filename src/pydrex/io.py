@@ -39,19 +39,6 @@ from pydrex import exceptions as _err
 from pydrex import logger as _log
 from pydrex import velocity as _velocity
 
-DEFAULT_PARAMS = {
-    "olivine_fraction": 1.0,
-    "enstatite_fraction": 0.0,
-    "stress_exponent": 1.5,
-    "deformation_exponent": 3.5,
-    "gbm_mobility": 125,
-    "gbs_threshold": 0.3,
-    "nucleation_efficiency": 5.0,
-    "number_of_grains": 3500,
-    "initial_olivine_fabric": "A",
-}
-"""Default simulation parameters."""
-
 SCSV_TYPEMAP = {
     "string": str,
     "integer": int,
@@ -369,111 +356,38 @@ def parse_config(path):
         "name", f"pydrex.{np.random.default_rng().integers(1,1e10)}"
     )
 
-    _params = toml.get("parameters", {})
-    for key, default in DEFAULT_PARAMS.items():
-        _params[key] = _params.get(key, default)
+    toml["parameters"] = _parse_config_params(toml)
+    _params = toml["parameters"]
+    toml["input"] = _parse_config_input_common(toml, path)
+    _input = toml["input"]
 
-    try:
-        _input = toml["input"]
-    except KeyError:
-        raise _err.ConfigError(f"missing [input] section in '{path}'") from None
-    if "timestep" not in _input and "paths" not in _input:
-        raise _err.ConfigError(f"unspecified input timestep in '{path}'")
-
-    _input["timestep"] = _input.get("timestep", np.nan)
-    if not isinstance(_input["timestep"], float | int):
-        raise _err.ConfigError(
-            f"timestep must be float or int, not {type(input['timestep'])}"
-        )
-
-    _input["max_strain"] = _input.get("max_strain", np.inf)
-    if not isinstance(_input["max_strain"], float | int):
-        raise _err.ConfigError(
-            f"timestep must be float or int, not {type(input['max_strain'])}"
-        )
-
-    # Input option 1: velocity gradient mesh + final particle locations.
     if "mesh" in _input:
-        _input["mesh"] = meshio.read(resolve_path(_input["mesh"], path.parent))
-        _input["locations_final"] = read_scsv(
-            resolve_path(_input["locations_final"], path.parent)
-        )
-        if "velocity_gradient" in _input:
-            _log.warning(
-                "input mesh and velocity gradient callable are mutually exclusive;"
-                + " ignoring velocity gradient callable"
-            )
-        if "locations_initial" in _input:
-            _log.warning(
-                "initial particle locations are not used for pathline interpolation"
-                + " and will be ignored"
-            )
-        if "paths" in _input:
-            _log.warning(
-                "input mesh and input pathlines are mutually exclusive;"
-                + " ignoring input pathlines"
-            )
-        _input["velocity_gradient"] = None
-        _input["locations_initial"] = None
-        _input["paths"] = None
-
-    # Input option 2: velocity gradient callable + initial locations.
+        # Input option 1: velocity gradient mesh + final particle locations.
+        _input = _parse_config_input_steadymesh(_input, path)
     elif "velocity_gradient" in _input:
-        _velocity_gradient_func = getattr(_velocity, _input["velocity_gradient"][0])
-        _input["velocity_gradient"] = _velocity_gradient_func(
-            *_input["velocity_gradient"][1:]
-        )
-        _input["locations_initial"] = read_scsv(
-            resolve_path(_input["locations_initial"], path.parent)
-        )
-        if "locations_final" in _input:
-            _log.warning(
-                "final particle locations are not used for forward advection"
-                + " and will be ignored"
-            )
-        if "paths" in _input:
-            _log.warning(
-                "velocity gradient callable and input pathlines are mutually exclusive;"
-                + " ignoring input pathlines"
-            )
-        _input["locations_final"] = None
-        _input["paths"] = None
-        _input["mesh"] = None
-
-    # Input option 3: NPZ or SCSV files with pre-computed input pathlines.
+        # Input option 2: velocity gradient callable + initial locations.
+        _input = _parse_config_input_calcpaths(_input, path)
     elif "paths" in _input:
-        _input["paths"] = [
-            np.load(resolve_path(p, path.parent)) for p in _input["paths"]
-        ]
-        if "locations_initial" in _input:
-            _log.warning(
-                "input pathlines and initial particle locations are mutually exclusive;"
-                + " ignoring initial particle locations"
-            )
-        if "locations_final" in _input:
-            _log.warning(
-                "input pathlines and final particle locations are mutually exclusive;"
-                + " ignoring final particle locations"
-            )
-        _input["locations_initial"] = None
-        _input["locations_final"] = None
-        _input["mesh"] = None
+        # Input option 3: NPZ or SCSV files with pre-computed input pathlines.
+        _input = _parse_config_input_postpaths(_input, path)
     else:
         _input["paths"] = None
 
     # Output fields are optional, default: most data output, least logging output.
-    _output = toml.get("output", {})  # Defaults handled by _parse_output_options.
+    _output = toml.get("output", {})
     if "directory" in _output:
         _output["directory"] = resolve_path(_output["directory"], path.parent)
     else:
         _output["directory"] = resolve_path(pathlib.Path.cwd())
 
     # Raw output means rotation matrices and grain volumes.
-    _parse_output_options(_output, "raw_output")
+    _parse_output_options(_output, "raw_output", _params["phase_content"])
     # Diagnostic output means texture diagnostics (strength, symmetry, mean angle).
-    _parse_output_options(_output, "diagnostics")
+    _parse_output_options(_output, "diagnostics", _params["phase_content"])
     # Anisotropy output means hexagonal symmetry axis and ΔVp (%).
-    _output["anisotropy"] = _output.get("anisotropy", True)
+    _output["anisotropy"] = _output.get(
+        "anisotropy", ["Voigt", "hexaxis", "moduli", "%decomp"]
+    )
 
     # Optional SCSV or NPZ pathline outputs, not sensible if there are pathline inputs.
     if "paths" in _input and "paths" in _output:
@@ -487,17 +401,37 @@ def parse_config(path):
     # Default logging level for all log files.
     _output["log_level"] = _output.get("log_level", "WARNING")
 
-    # Only olivine and enstatite for now, so they must sum to 1.
-    if _params["olivine_fraction"] + _params["enstatite_fraction"] != 1.0:
+    return toml
+
+
+def _parse_config_params(toml):
+    """Parse DRex and other rheology parameters."""
+    _params = toml.get("parameters", {})
+    for key, default in _core.DefaultParams.asdict().items():
+        _params[key] = _params.get(key, default)
+
+    # Make sure volume fractions sum to 1.
+    if np.abs(np.sum(_params["phase_fractions"]) - 1.0) > 1e-16:
         raise _err.ConfigError(
-            "olivine_fraction and enstatite_fraction must sum to 1."
-            + f" You've provided olivine_fraction = {_params['olivine_fraction']} and"
-            + f" enstatite_fraction = {_params['enstatite_fraction']}."
+            "Volume fractions of mineral phase contents must sum to 1."
+            + f" You've provided phase_fractions = {_params['phase_fractions']}."
         )
-    if _params["olivine_fraction"] != 1.0:
-        _params["enstatite_fraction"] = 1 - _params["olivine_fraction"]
-    elif _params["enstatite_fraction"] != 0.0:
-        _params["olivine_fraction"] = 1 - _params["enstatite_fraction"]
+
+    # Make sure all mineral phases are accounted for and valid.
+    if len(_params["phase_content"]) != len(_params["phase_fractions"]):
+        raise _err.ConfigError(
+            "All mineral phase contents must have an associated volume fraction."
+            + f" You've provided phase_content = {_params['phase_content']} and"
+            + f" phase_fractions = {_params['phase_fractions']}."
+        )
+    try:
+        _params["phase_content"] = tuple(
+            getattr(_core.MineralPhase, ϕ) for ϕ in _params["phase_content"]
+        )
+    except AttributeError:
+        raise _err.ConfigError(
+            f"invalid phase content: {_params['phase_content']}"
+        ) from None
 
     # Make sure initial olivine fabric is valid.
     try:
@@ -508,7 +442,109 @@ def parse_config(path):
         raise _err.ConfigError(
             f"invalid initial olivine fabric: {_params['initial_olivine_fabric']}"
         ) from None
-    return toml
+
+    # Make sure we have enough unified dislocation creep law coefficients.
+    n_provided = len(_params["disl_coefficients"])
+    n_required = len(_core.DefaultParams.disl_coefficients)
+    if n_provided != n_required:
+        raise _err.ConfigError(
+            "not enough unified dislocation creep law coefficients."
+            + f"You've provided {n_provided}/{n_required} coefficients."
+        )
+    _params["disl_coefficients"] = tuple(_params["disl_coefficients"])
+
+    return _params
+
+
+def _parse_config_input_common(toml, path):
+    try:
+        _input = toml["input"]
+    except KeyError:
+        raise _err.ConfigError(f"missing [input] section in '{path}'") from None
+    if "timestep" not in _input and "paths" not in _input:
+        raise _err.ConfigError(f"unspecified input timestep in '{path}'")
+
+    _input["timestep"] = _input.get("timestep", np.nan)
+    if not isinstance(_input["timestep"], float | int):
+        raise _err.ConfigError(
+            f"timestep must be float or int, not {type(input['timestep'])}"
+        )
+
+    _input["strain_final"] = _input.get("strain_final", np.inf)
+    if not isinstance(_input["strain_final"], float | int):
+        raise _err.ConfigError(
+            f"final strain must be float or int, not {type(input['strain_final'])}"
+        )
+
+    return _input
+
+
+def _parse_config_input_steadymesh(input, path):
+    input["mesh"] = meshio.read(resolve_path(input["mesh"], path.parent))
+    input["locations_final"] = read_scsv(
+        resolve_path(input["locations_final"], path.parent)
+    )
+    if "velocity_gradient" in input:
+        _log.warning(
+            "input mesh and velocity gradient callable are mutually exclusive;"
+            + " ignoring velocity gradient callable"
+        )
+    if "locations_initial" in input:
+        _log.warning(
+            "initial particle locations are not used for pathline interpolation"
+            + " and will be ignored"
+        )
+    if "paths" in input:
+        _log.warning(
+            "input mesh and input pathlines are mutually exclusive;"
+            + " ignoring input pathlines"
+        )
+    input["velocity_gradient"] = None
+    input["locations_initial"] = None
+    input["paths"] = None
+    return input
+
+
+def _parse_config_input_calcpaths(input, path):
+    _velocity_gradient_func = getattr(_velocity, input["velocity_gradient"][0])
+    input["velocity_gradient"] = _velocity_gradient_func(
+        *input["velocity_gradient"][1:]
+    )
+    input["locations_initial"] = read_scsv(
+        resolve_path(input["locations_initial"], path.parent)
+    )
+    if "locations_final" in input:
+        _log.warning(
+            "final particle locations are not used for forward advection"
+            + " and will be ignored"
+        )
+    if "paths" in input:
+        _log.warning(
+            "velocity gradient callable and input pathlines are mutually exclusive;"
+            + " ignoring input pathlines"
+        )
+    input["locations_final"] = None
+    input["paths"] = None
+    input["mesh"] = None
+    return input
+
+
+def _parse_config_input_postpaths(input, path):
+    input["paths"] = [np.load(resolve_path(p, path.parent)) for p in input["paths"]]
+    if "locations_initial" in input:
+        _log.warning(
+            "input pathlines and initial particle locations are mutually exclusive;"
+            + " ignoring initial particle locations"
+        )
+    if "locations_final" in input:
+        _log.warning(
+            "input pathlines and final particle locations are mutually exclusive;"
+            + " ignoring final particle locations"
+        )
+    input["locations_initial"] = None
+    input["locations_final"] = None
+    input["mesh"] = None
+    return input
 
 
 def resolve_path(path, refdir=None):
@@ -528,18 +564,22 @@ def resolve_path(path, refdir=None):
     return _path.resolve()
 
 
-def _parse_output_options(output_opts, level):
+def _parse_output_options(output_opts, level, phase_content):
     try:
         output_opts[level] = [
-            getattr(_core.MineralPhase, phase)
-            for phase in output_opts.get(level, ["olivine", "enstatite"])
+            getattr(_core.MineralPhase, ϕ) for ϕ in output_opts[level]
         ]
     except AttributeError:
         raise _err.ConfigError(
-            f"unsupported mineral phase in {level} option.\n"
+            f"unsupported mineral phase in '{level}' output option.\n"
             + f" You supplied the value: {output_opts[level]}.\n"
-            + " Check pydrex.core.MineralPhase for supported options."
+            + " Check pydrex.core.MineralPhase for supported phases."
         ) from None
+    for phase in output_opts[level]:
+        if phase not in phase_content:
+            raise _err.ConfigError(
+                f"cannot output '{level}' for phase that is not being simulated"
+            )
 
 
 def _validate_scsv_schema(schema):

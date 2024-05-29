@@ -248,7 +248,7 @@ class Mineral:
     phase: int = _core.MineralPhase.olivine
     fabric: int = _core.MineralFabric.olivine_A
     regime: int = _core.DeformationRegime.dislocation
-    n_grains: int = _io.DEFAULT_PARAMS["number_of_grains"]
+    n_grains: int = _core.DefaultParams.number_of_grains
     # Initial condition, randomised if not given.
     fractions_init: np.ndarray = None
     orientations_init: np.ndarray = None
@@ -382,7 +382,7 @@ class Mineral:
         ...           phase=pydrex.MineralPhase.olivine,
         ...           fabric=pydrex.MineralFabric.olivine_A,
         ...           regime=pydrex.DeformationRegime.dislocation,
-        ...           n_grains=pydrex.DEFAULT_PARAMS["number_of_grains"],
+        ...           n_grains=pydrex.DefaultParams.number_of_grains,
         ... )
         >>> def get_velocity_gradient(t, x):  # Simple L for simple shear.
         ...     L = np.zeros((3, 3))
@@ -395,7 +395,7 @@ class Mineral:
         >>> for t_start, t_end in pairwise(timestamps):
         ...     # Update deformation_gradient, olA.orientations and olA.fractions.
         ...     deformation_gradient = olA.update_orientations(
-        ...         pydrex.DEFAULT_PARAMS,
+        ...         pydrex.DefaultParams.asdict(),
         ...         deformation_gradient,
         ...         get_velocity_gradient,
         ...         (t_start, t_end, get_position),
