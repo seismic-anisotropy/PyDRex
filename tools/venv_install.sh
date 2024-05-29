@@ -27,7 +27,7 @@ upgrade() {
     . .venv-"${PWD##*/}"/bin/activate
     [ -f requirements.txt ] && mv -i requirements.txt requirements.bak
     pip install --upgrade pip pip-tools && pip-compile --resolver=backtracking && pip-sync
-    pip install -e "$PWD[dev]"
+    pip install -e "${PWD}[dev,lsp,doc,test]"
 }
 
 if [ $# -eq 0 ]; then  # first install
@@ -35,12 +35,18 @@ if [ $# -eq 0 ]; then  # first install
     if [ -z "${PYTHON_BINARY:-}" ]; then
         PYTHON_BINARY="$(2>/dev/null pyenv prefix||printf '/usr')"/bin/python
     fi
-    [ $($PYTHON_BINARY --version|cut -d' ' -f2|cut -d'.' -f1) -eq 3 ] || {
+    [ "$($PYTHON_BINARY --version|cut -d' ' -f2|cut -d'.' -f1)" -eq 3 ] || {
         warn "Python 3 is required"; exit 1; }
-    [ $($PYTHON_BINARY --version|cut -d' ' -f2|cut -d'.' -f2) -gt 10 ] || {
-        warn "Python 3.11+ is required"; exit 1; }
+    [ "$($PYTHON_BINARY --version|cut -d' ' -f2|cut -d'.' -f2)" -gt 9 ] || {
+        warn "Python 3.10+ is required"; exit 1; }
     $PYTHON_BINARY -m venv .venv-"${PWD##*/}"
     upgrade
+    echo "/.venv-${PWD##*/}" >>.git/info/exclude
+    echo "/requirements.txt" >>.git/info/exclude
+    echo "/requirements.bak" >>.git/info/exclude
+    echo "$SCRIPTNAME: PyDRex development version installed in .venv-${PWD##*/}"
+    echo "$SCRIPTNAME: On Linux, execute 'source .venv-${PWD##*/}/bin/activate' to activate the environment."
+    echo "$SCRIPTNAME: Use the command 'deactivate' to subsequently deactivate the environment."
 fi
 
 while getopts "hu" OPT; do
