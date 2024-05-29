@@ -17,8 +17,10 @@ import collections as c
 import csv
 import functools as ft
 import io
+import itertools as it
 import os
 import pathlib
+import re
 import sys
 
 if sys.version_info >= (3, 11):
@@ -47,6 +49,15 @@ SCSV_TYPEMAP = {
     "complex": complex,
 }
 """Mapping of supported SCSV field types to corresponding Python types."""
+
+SCSV_TERSEMAP = {
+    "s": "string",
+    "i": "integer",
+    "f": "float",
+    "b": "boolean",
+    "c": "complex",
+}
+"""Mapping of supported terse format SCSV field types to their standard names."""
 
 _SCSV_DEFAULT_TYPE = "string"
 _SCSV_DEFAULT_FILL = ""
@@ -143,6 +154,92 @@ def extract_h5part(file, phase, fabric, n_grains, output):
                 },
                 [strains * 200, x, y, z],
             )
+
+
+def parse_scsv_schema(terse_schema):
+    """Parse terse scsv schema representation and return the expanded schema.
+
+    The terse schema is useful for command line tools and can be specified in a single
+    line of text. However, there are some limitations compared to using a Python
+    dictionary, all of which are edge cases and not recommended usage:
+    - the delimiter cannot be the character `d` or the character `m`
+    - the missing data encoding cannot be the character `m`
+    - fill values are not able to contain the colon (`:`) character
+    - the arbitrary unit/comment for any field is not able to contain parentheses
+
+    The delimiter is specified after the letter `d` and the missing data encoding after
+    `m`. These are succeeded by the column specs which are a sequence of column names
+    (which must be valid Python identifiers) and their (optional) data type, missing
+    data fill value, and unit/comment.
+
+    >>> #                   delimiter
+    >>> #                   | missing data encoding    column specifications
+    >>> #                   | |  ______________________|______________________________
+    >>> #                   v v /                                                     `
+    >>> schema = parse_scsv_schema(
+    ...     "d,m-:colA(s)colB(s:N/A:...)colC()colD(i:999999)colE(f:NaN:%)"
+    ... )
+    >>> schema["delimiter"]
+    ','
+    >>> schema["missing"]
+    '-'
+    >>> schema["fields"][0]
+    {'name': 'colA', 'type': 'string', 'fill': ''}
+    >>> schema["fields"][1]
+    {'name': 'colB', 'type': 'string', 'fill': 'N/A', 'unit': '...'}
+    >>> schema["fields"][2]
+    {'name': 'colC', 'type': 'string', 'fill': ''}
+    >>> schema["fields"][3]
+    {'name': 'colD', 'type': 'integer', 'fill': '999999'}
+    >>> schema["fields"][4]
+    {'name': 'colE', 'type': 'float', 'fill': 'NaN', 'unit': '%'}
+
+    """
+    if not terse_schema.startswith("d"):
+        raise _err.SCSVError(
+            "terse schema must start with delimiter specification (format: d<delimiter>)"
+        )
+    i_cols = terse_schema.find(":")
+    if i_cols < 4:
+        raise _err.SCSVError(
+            "could not parse missing data encoding from terse SCSV schema"
+        )
+    i_missing = terse_schema.find("m", 0, i_cols)
+    if i_missing < 2:
+        raise _err.SCSVError(
+            "could not parse missing data encoding from terse SCSV schema"
+        )
+
+    delimiter = terse_schema[1:i_missing]
+    missing = terse_schema[i_missing + 1 : i_cols]
+
+    raw_colspecs = re.split(r"\(|\)", terse_schema[i_cols + 1 :])
+    raw_colspecs.pop()  # Get rid of additional last empty string element.
+    if len(raw_colspecs) < 2:
+        raise _err.SCSVError("failed to parse any fields from terse SCSV schema")
+    if len(raw_colspecs) % 2 != 0:
+        raise _err.SCSVError("invalid field specifications in terse SCSV schema")
+
+    fields = []
+    for name, spec in it.batched(raw_colspecs, 2):
+        _spec = spec.split(":")
+        _type = _SCSV_DEFAULT_TYPE
+        if _spec[0] != "":
+            try:
+                _type = SCSV_TERSEMAP[_spec[0]]
+            except KeyError:
+                raise _err.SCSVError(
+                    f"invalid field type {_spec[0]} in terse SCSV schema"
+                ) from None
+        field = {
+            "name": name,
+            "type": _type,
+            "fill": _spec[1] if len(_spec) > 1 else _SCSV_DEFAULT_FILL,
+        }
+        if len(_spec) == 3:
+            field["unit"] = _spec[2]
+        fields.append(field)
+    return {"delimiter": delimiter, "missing": missing, "fields": fields}
 
 
 def read_scsv(file):
