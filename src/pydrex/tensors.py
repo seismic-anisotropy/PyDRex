@@ -10,13 +10,20 @@ symmetric 6x6 matrix.
 import numba as nb
 import numpy as np
 
-PERMUTATION_SYMBOL = np.array(
-    [
-        [[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]],
-        [[0.0, 0.0, -1.0], [0.0, 0.0, 0.0], [1.0, 0.0, 0.0]],
-        [[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
-    ]
-)
+
+@nb.njit(fastmath=True)
+def invariants_second_order(tensor):
+    """Calculate invariants of a second order tensor."""
+    return (
+        np.trace(tensor),
+        tensor[0, 0] * tensor[1, 1]
+        + tensor[1, 1] * tensor[2, 2]
+        + tensor[2, 2] * tensor[0, 0]
+        - tensor[0, 1] * tensor[1, 0]
+        - tensor[1, 2] * tensor[2, 1]
+        - tensor[2, 0] * tensor[0, 2],
+        np.linalg.det(tensor)
+    )
 
 
 @nb.njit(fastmath=True)

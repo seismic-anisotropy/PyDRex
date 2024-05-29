@@ -101,6 +101,20 @@ returned by `pydrex.core.get_crss`.
 """
 
 
+def peridotite_solidus(pressure, fit="Herzberg2000"):
+    """Get peridotite solidus (i.e. melting) temperature based on experimental fits.
+
+    Pressure is expected to be in GPa.
+
+    """
+    match fit:
+        case "Herzberg2000":
+            return 1086 - 5.7 * pressure + 390 * np.log(pressure)
+        case _:
+            raise ValueError("unsupported fit")
+
+
+
 # TODO: Compare to [Man & Huang, 2011](https://doi.org/10.1007/s10659-011-9312-y).
 def voigt_averages(minerals, phase_assemblage, phase_fractions):
     """Calculate elastic tensors as the Voigt averages of a collection of `mineral`s.
