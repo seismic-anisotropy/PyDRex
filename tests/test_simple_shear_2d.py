@@ -343,7 +343,8 @@ class TestOlivineA:
                     return_fse = False
 
                 params = {
-                    "olivine_fraction": 1.0,
+                    "phase_content": (_core.MineralPhase.olivine,),
+                    "phase_fractions": (1.0,),
                     "enstatite_fraction": 0.0,
                     "stress_exponent": 1.5,
                     "deformation_exponent": 3.5,

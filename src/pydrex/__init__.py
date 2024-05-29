@@ -151,7 +151,7 @@ from pydrex.io import data, read_scsv, save_scsv
 from pydrex.minerals import (
     OLIVINE_PRIMARY_AXIS,
     OLIVINE_SLIP_SYSTEMS,
-    OLIVINE_STIFFNESS,
+    StiffnessTensors,
     Mineral,
     voigt_averages,
 )

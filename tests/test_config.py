@@ -40,8 +40,8 @@ def test_steady_specfile():
     assert _output["anisotropy"] == ["Voigt", "hexaxis", "moduli", "%decomp"]
     assert _output["log_level"] == "DEBUG"
     assert config["parameters"] == {
-        "olivine_fraction": 1.0,
-        "enstatite_fraction": 0.0,
+        "phase_content": (_core.MineralPhase.olivine, _core.MineralPhase.enstatite),
+        "phase_fractions": [0.7, 0.3],
         "initial_olivine_fabric": _core.MineralFabric.olivine_A,
         "stress_exponent": 1.5,
         "deformation_exponent": 3.5,
@@ -49,6 +49,23 @@ def test_steady_specfile():
         "gbs_threshold": 0.3,
         "nucleation_efficiency": 5.0,
         "number_of_grains": 5000,
+        "disl_Peierls_stress": 10,
+        "disl_prefactors": (1e-16, 1e-17),
+        "diff_prefactor": 1e-10,
+        "disl_lowtemp_switch": 0.7,
+        "disl_activation_energy": 460.0,
+        "disl_activation_volume": 12.0,
+        "diff_activation_energy": 330.0,
+        "diff_activation_volume": 4.0,
+        "disl_coefficients": (
+            4.4e8,
+            -5.26e4,
+            2.11e-2,
+            1.74e-4,
+            -41.8,
+            4.21e-2,
+            -1.14e-5,
+        ),
     }
 
 
@@ -82,8 +99,8 @@ def test_specfile():
     assert _output["paths"] is None
     assert _output["log_level"] == "DEBUG"
     assert config["parameters"] == {
-        "olivine_fraction": 1.0,
-        "enstatite_fraction": 0.0,
+        "phase_content": (_core.MineralPhase.olivine,),
+        "phase_fractions": (1.0,),
         "initial_olivine_fabric": _core.MineralFabric.olivine_A,
         "stress_exponent": 1.5,
         "deformation_exponent": 3.5,
@@ -91,4 +108,21 @@ def test_specfile():
         "gbs_threshold": 0.3,
         "nucleation_efficiency": 5.0,
         "number_of_grains": 2000,
+        "disl_Peierls_stress": 10,
+        "disl_prefactors": (1e-16, 1e-17),
+        "diff_prefactor": 1e-10,
+        "disl_lowtemp_switch": 0.7,
+        "disl_activation_energy": 460.0,
+        "disl_activation_volume": 12.0,
+        "diff_activation_energy": 330.0,
+        "diff_activation_volume": 4.0,
+        "disl_coefficients": (
+            4.4e8,
+            -5.26e4,
+            2.11e-2,
+            1.74e-4,
+            -41.8,
+            4.21e-2,
+            -1.14e-5,
+        ),
     }

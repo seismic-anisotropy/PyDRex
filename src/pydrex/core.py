@@ -47,11 +47,41 @@ class MineralPhase(IntEnum):
     """MgSiO₃"""
 
 
+@unique
+class DeformationRegime(IntEnum):
+    """Deformation mechanism regimes."""
+
+    diffusion = 0
+    dislocation = 1
+    byerlee = 2
+    max_viscosity = 3
+
+
+@unique
+class MineralFabric(IntEnum):
+    """Supported mineral fabrics.
+
+    The following fabric types are supported:
+    - olivine A-E type fabrics according to e.g.
+      [Karato et al. (2008)](https://doi.org/10.1146%2Fannurev.earth.36.031207.124120).
+    - enstatite AB fabric, see
+      [Bernard et al. (2021)](https://doi.org/10.1016/j.tecto.2021.228954).
+
+    """
+
+    olivine_A = 0
+    olivine_B = 1
+    olivine_C = 2
+    olivine_D = 3
+    olivine_E = 4
+    enstatite_AB = 5
+
+
 @dataclass(frozen=True)
 class DefaultParams:
-    phase_content: tuple = (MineralPhase.olivine, MineralPhase.enstatite)
+    phase_content: tuple = (MineralPhase.olivine,)
     """Mineral phases present in the aggregate."""
-    phase_fractions: tuple = (1.0, 0.0)
+    phase_fractions: tuple = (1.0,)
     """Volume fractions of each mineral phase present in the aggregate."""
     stress_exponent: float = 1.5
     """The value for $p$ in $ρ ∝ τᵖ$ where $ρ$ is the dislocation density and $τ$ the shear stress."""
@@ -82,7 +112,7 @@ class DefaultParams:
     """
     number_of_grains: int = 3500
     """Number of surrogate grains for numerical discretisation of the aggregate."""
-    initial_olivine_fabric: str = "A"
+    initial_olivine_fabric: MineralFabric = MineralFabric.olivine_A
     """Olivine fabric (CRSS distribution) at the beginning of the simulation."""
     disl_Peierls_stress: float = 10
     """Stress barrier for activation of dislocation motion at low temperatures.
@@ -135,36 +165,6 @@ class DefaultParams:
     def asdict(self):
         """Return mutable copy of default arguments as a dictionary."""
         return asdict(self)
-
-
-@unique
-class DeformationRegime(IntEnum):
-    """Deformation mechanism regimes."""
-
-    diffusion = 0
-    dislocation = 1
-    byerlee = 2
-    max_viscosity = 3
-
-
-@unique
-class MineralFabric(IntEnum):
-    """Supported mineral fabrics.
-
-    The following fabric types are supported:
-    - olivine A-E type fabrics according to e.g.
-      [Karato et al. (2008)](https://doi.org/10.1146%2Fannurev.earth.36.031207.124120).
-    - enstatite AB fabric, see
-      [Bernard et al. (2021)](https://doi.org/10.1016/j.tecto.2021.228954).
-
-    """
-
-    olivine_A = 0
-    olivine_B = 1
-    olivine_C = 2
-    olivine_D = 3
-    olivine_E = 4
-    enstatite_AB = 5
 
 
 @nb.njit
