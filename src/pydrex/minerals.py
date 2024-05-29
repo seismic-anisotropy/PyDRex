@@ -194,7 +194,7 @@ class Mineral:
     >>> olA = pydrex.Mineral(
     ...     phase=pydrex.MineralPhase.olivine,
     ...     fabric=pydrex.MineralFabric.olivine_A,
-    ...     regime=pydrex.DeformationRegime.dislocation,
+    ...     regime=pydrex.DeformationRegime.matrix_dislocation,
     ...     n_grains=2000
     ... )
     >>> olA.phase
@@ -202,7 +202,7 @@ class Mineral:
     >>> olA.fabric
     <MineralFabric.olivine_A: 0>
     >>> olA.regime
-    <DeformationRegime.dislocation: 1>
+    <DeformationRegime.matrix_dislocation: 4>
     >>> olA.n_grains
     2000
 
@@ -254,7 +254,7 @@ class Mineral:
 
     phase: int = _core.MineralPhase.olivine
     fabric: int = _core.MineralFabric.olivine_A
-    regime: int = _core.DeformationRegime.dislocation
+    regime: int = _core.DeformationRegime.matrix_dislocation
     n_grains: int = _core.DefaultParams().number_of_grains
     # Initial condition, randomised if not given.
     fractions_init: np.ndarray = None
@@ -388,7 +388,7 @@ class Mineral:
         >>> olA = pydrex.Mineral(
         ...           phase=pydrex.MineralPhase.olivine,
         ...           fabric=pydrex.MineralFabric.olivine_A,
-        ...           regime=pydrex.DeformationRegime.dislocation,
+        ...           regime=pydrex.DeformationRegime.matrix_dislocation,
         ...           n_grains=pydrex.DefaultParams().number_of_grains,
         ... )
         >>> def get_velocity_gradient(t, x):  # Simple L for simple shear.
@@ -454,6 +454,7 @@ class Mineral:
             )
             # Uses nondimensional values of strain rate and velocity gradient.
             orientations_diff, fractions_diff = _core.derivatives(
+                regime=self.regime,
                 phase=self.phase,
                 fabric=self.fabric,
                 n_grains=self.n_grains,

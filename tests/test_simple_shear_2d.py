@@ -135,7 +135,7 @@ class TestOlivineA:
         mineral = _minerals.Mineral(
             phase=_core.MineralPhase.olivine,
             fabric=_core.MineralFabric.olivine_A,
-            regime=_core.DeformationRegime.dislocation,
+            regime=_core.DeformationRegime.matrix_dislocation,
             n_grains=params["number_of_grains"],
             seed=seed,
         )

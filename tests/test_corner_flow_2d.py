@@ -48,7 +48,7 @@ class TestOlivineA:
         mineral = _minerals.Mineral(
             _core.MineralPhase.olivine,
             _core.MineralFabric.olivine_A,
-            _core.DeformationRegime.dislocation,
+            _core.DeformationRegime.matrix_dislocation,
             n_grains=params["number_of_grains"],
             seed=seed,
         )

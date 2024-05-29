@@ -65,7 +65,7 @@ class TestFraters2021:
         olivine = _minerals.Mineral(
             phase=_core.MineralPhase.olivine,
             fabric=_core.MineralFabric.olivine_A,
-            regime=_core.DeformationRegime.dislocation,
+            regime=_core.DeformationRegime.matrix_dislocation,
             n_grains=params["number_of_grains"],
             seed=seed,
         )
@@ -73,7 +73,7 @@ class TestFraters2021:
             enstatite = _minerals.Mineral(
                 phase=_core.MineralPhase.enstatite,
                 fabric=_core.MineralFabric.enstatite_AB,
-                regime=_core.DeformationRegime.dislocation,
+                regime=_core.DeformationRegime.matrix_dislocation,
                 n_grains=params["number_of_grains"],
                 seed=seed,
             )

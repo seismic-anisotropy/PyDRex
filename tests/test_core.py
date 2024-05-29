@@ -36,6 +36,7 @@ class TestDislocationCreepOPX:
             for θ in np.mgrid[0 : 2 * np.pi : 360j]:
                 _log.debug("θ (°): %s", np.rad2deg(θ))
                 orientations_diff, fractions_diff = _core.derivatives(
+                    regime=_core.DeformationRegime.matrix_dislocation,
                     phase=_core.MineralPhase.enstatite,
                     fabric=_core.MineralFabric.enstatite_AB,
                     n_grains=1,
@@ -78,6 +79,7 @@ class TestDislocationCreepOPX:
                 )
                 np.testing.assert_allclose(deformation_rate.flatten(), np.zeros(9))
                 orientations_diff, fractions_diff = _core.derivatives(
+                    regime=_core.DeformationRegime.matrix_dislocation,
                     phase=_core.MineralPhase.enstatite,
                     fabric=_core.MineralFabric.enstatite_AB,
                     n_grains=1,
@@ -163,6 +165,7 @@ class TestDislocationCreepOlivineA:
                 _log.debug("deformation rate:\n%s", deformation_rate)
 
                 orientations_diff, fractions_diff = _core.derivatives(
+                    regime=_core.DeformationRegime.matrix_dislocation,
                     phase=_core.MineralPhase.olivine,
                     fabric=_core.MineralFabric.olivine_A,
                     n_grains=1,
@@ -278,6 +281,7 @@ class TestDislocationCreepOlivineA:
                 _log.debug("deformation rate:\n%s", deformation_rate)
 
                 orientations_diff, fractions_diff = _core.derivatives(
+                    regime=_core.DeformationRegime.matrix_dislocation,
                     phase=_core.MineralPhase.olivine,
                     fabric=_core.MineralFabric.olivine_A,
                     n_grains=1,
@@ -394,6 +398,7 @@ class TestDislocationCreepOlivineA:
                 _log.debug("deformation rate:\n%s", deformation_rate)
 
                 orientations_diff, fractions_diff = _core.derivatives(
+                    regime=_core.DeformationRegime.matrix_dislocation,
                     phase=_core.MineralPhase.olivine,
                     fabric=_core.MineralFabric.olivine_A,
                     n_grains=1,
@@ -510,6 +515,7 @@ class TestDislocationCreepOlivineA:
                 _log.debug("deformation rate:\n%s", deformation_rate)
 
                 orientations_diff, fractions_diff = _core.derivatives(
+                    regime=_core.DeformationRegime.matrix_dislocation,
                     phase=_core.MineralPhase.olivine,
                     fabric=_core.MineralFabric.olivine_A,
                     n_grains=1,
