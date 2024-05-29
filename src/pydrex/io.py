@@ -407,7 +407,7 @@ def parse_config(path):
 def _parse_config_params(toml):
     """Parse DRex and other rheology parameters."""
     _params = toml.get("parameters", {})
-    for key, default in _core.DefaultParams.asdict().items():
+    for key, default in _core.DefaultParams().asdict().items():
         _params[key] = _params.get(key, default)
 
     # Make sure volume fractions sum to 1.
@@ -445,7 +445,7 @@ def _parse_config_params(toml):
 
     # Make sure we have enough unified dislocation creep law coefficients.
     n_provided = len(_params["disl_coefficients"])
-    n_required = len(_core.DefaultParams.disl_coefficients)
+    n_required = len(_core.DefaultParams().disl_coefficients)
     if n_provided != n_required:
         raise _err.ConfigError(
             "not enough unified dislocation creep law coefficients."

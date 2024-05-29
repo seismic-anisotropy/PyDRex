@@ -10,7 +10,7 @@ crystallographic rotation rate and changes in fractional grain volumes.
 
 """
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from enum import IntEnum, unique
 
 import numba as nb
@@ -131,6 +131,10 @@ class DefaultParams:
     used the ERF variant with: [4.4e8, -2.2e4, 3e-2, 1.3e-4, -42, 4.2e-2, -1.1e-5].
 
     """
+
+    def asdict(self):
+        """Return mutable copy of default arguments as a dictionary."""
+        return asdict(self)
 
 
 @unique

@@ -147,7 +147,7 @@ from pydrex.geometry import (
     to_cartesian,
     to_spherical,
 )
-from pydrex.io import data, parse_scsv_schema, read_scsv, save_scsv
+from pydrex.io import data, read_scsv, save_scsv
 from pydrex.minerals import (
     OLIVINE_PRIMARY_AXIS,
     OLIVINE_SLIP_SYSTEMS,
