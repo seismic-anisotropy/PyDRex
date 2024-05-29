@@ -404,6 +404,23 @@ def parse_config(path):
     return toml
 
 
+def resolve_path(path, refdir=None):
+    """Resolve relative paths and create parent directories if necessary.
+
+    Relative paths are interpreted with respect to the current working directory,
+    i.e. the directory from whith the current Python process was executed,
+    unless a specific reference directory is provided with `refdir`.
+
+    """
+    cwd = pathlib.Path.cwd()
+    if refdir is None:
+        _path = cwd / path
+    else:
+        _path = refdir / path
+    _path.parent.mkdir(parents=True, exist_ok=True)
+    return _path.resolve()
+
+
 def _parse_config_params(toml):
     """Parse DRex and other rheology parameters."""
     _params = toml.get("parameters", {})
@@ -426,7 +443,7 @@ def _parse_config_params(toml):
         )
     try:
         _params["phase_content"] = tuple(
-            getattr(_core.MineralPhase, ϕ) for ϕ in _params["phase_content"]
+            _parse_phase(ϕ) for ϕ in _params["phase_content"]
         )
     except AttributeError:
         raise _err.ConfigError(
@@ -547,23 +564,6 @@ def _parse_config_input_postpaths(input, path):
     return input
 
 
-def resolve_path(path, refdir=None):
-    """Resolve relative paths and create parent directories if necessary.
-
-    Relative paths are interpreted with respect to the current working directory,
-    i.e. the directory from whith the current Python process was executed,
-    unless a specific reference directory is provided with `refdir`.
-
-    """
-    cwd = pathlib.Path.cwd()
-    if refdir is None:
-        _path = cwd / path
-    else:
-        _path = refdir / path
-    _path.parent.mkdir(parents=True, exist_ok=True)
-    return _path.resolve()
-
-
 def _parse_output_options(output_opts, level, phase_content):
     try:
         output_opts[level] = [
@@ -580,6 +580,22 @@ def _parse_output_options(output_opts, level, phase_content):
             raise _err.ConfigError(
                 f"cannot output '{level}' for phase that is not being simulated"
             )
+
+
+def _parse_phase(ϕ: str | _core.MineralPhase | int):
+    if isinstance(ϕ, str):
+        try:
+            return getattr(_core.MineralPhase, ϕ)
+        except AttributeError:
+            raise _err.ConfigError(f"invalid phase in phase content: {ϕ}") from None
+    elif isinstance(ϕ, _core.MineralPhase):
+        return ϕ
+    elif isinstance(ϕ, int):
+        try:
+            return _core.MineralPhase[ϕ]
+        except IndexError:
+            raise _err.ConfigError(f"invalid phase in phase content: {ϕ}") from None
+    raise _err.ConfigError(f"invalid phase in phase content: {ϕ}") from None
 
 
 def _validate_scsv_schema(schema):
