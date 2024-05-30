@@ -51,13 +51,13 @@ def elasticity_components(voigt_matrices):
     - `'percent_hexagonal'` — for each C, the percentage of ||C|| attributed to
       a hexagonally symmetric bulk medium
     - `'percent_tetragonal'` — for each C, the percentage of ||C|| attributed to
-      tetragonally symmetric bulk medium
+      a tetragonally symmetric bulk medium
     - `'percent_orthorhombic'` — for each C, the percentage of ||C|| attributed to
-      orthorhombically symmetric bulk medium
+      an orthorhombically symmetric bulk medium
     - `'percent_monoclinic'` — for each C, the percentage of ||C|| attributed to
-      monoclinically symmetric bulk medium
+      a monoclinically symmetric bulk medium
     - `'percent_triclinic'` — for each C, the percentage of ||C|| attributed to
-      triclinically "symmetric" bulk medium (no mirror planes)
+      a triclinically "symmetric" bulk medium (no mirror planes)
     - `'hexagonal_axis'` — for each C, the axis of hexagonal symmetry for the "closest"
       hexagonally symmetric approximation to C, a.k.a. the "transverse isotropy" axis
 
