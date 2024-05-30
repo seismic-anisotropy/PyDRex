@@ -102,13 +102,13 @@ returned by `pydrex.core.get_crss`.
 
 
 # TODO: Compare to [Man & Huang, 2011](https://doi.org/10.1007/s10659-011-9312-y).
-def voigt_averages(minerals, phase_content, phase_fractions):
+def voigt_averages(minerals, phase_assemblage, phase_fractions):
     """Calculate elastic tensors as the Voigt averages of a collection of `mineral`s.
 
     Args:
     - `minerals` — list of `pydrex.minerals.Mineral` instances storing orientations and
       fractional volumes of the grains within each distinct mineral phase
-    - `phase_content` (tuple) — tuple of `pydrex.core.MineralPhase`s
+    - `phase_assemblage` (tuple) — tuple of `pydrex.core.MineralPhase`s
     dictionary containing weights of each mineral
       phase, as a fraction of 1, in keys named "<phase>_fraction",
       e.g. "olivine_fraction"
@@ -146,7 +146,7 @@ def voigt_averages(minerals, phase_content, phase_fractions):
                                 mineral.orientations[i][n, ...].transpose(),
                             )
                             * mineral.fractions[i][n]
-                            * phase_fractions[phase_content.index(mineral.phase)]
+                            * phase_fractions[phase_assemblage.index(mineral.phase)]
                         )
                     case _core.MineralPhase.enstatite:
                         average_tensors[i] += _tensors.elastic_tensor_to_voigt(
@@ -155,7 +155,7 @@ def voigt_averages(minerals, phase_content, phase_fractions):
                                 minerals.orientations[i][n, ...].transpose(),
                             )
                             * mineral.fractions[i][n]
-                            * phase_fractions[phase_content.index(mineral.phase)]
+                            * phase_fractions[phase_assemblage.index(mineral.phase)]
                         )
                     case _:
                         raise ValueError(f"unsupported mineral phase: {mineral.phase}")
@@ -402,7 +402,7 @@ class Mineral:
         >>> for t_start, t_end in pairwise(timestamps):
         ...     # Update deformation_gradient, olA.orientations and olA.fractions.
         ...     deformation_gradient = olA.update_orientations(
-        ...         pydrex.DefaultParams().asdict(),
+        ...         pydrex.DefaultParams().as_dict(),
         ...         deformation_gradient,
         ...         get_velocity_gradient,
         ...         (t_start, t_end, get_position),
@@ -429,7 +429,7 @@ class Mineral:
             #     velocity_gradient.ravel(),
             # )
 
-            if self.phase not in config["phase_content"]:
+            if self.phase not in config["phase_assemblage"]:
                 # Warning rather than failure, so that we tolerate loops like:
                 # [m.update_orientations(...) for m in minerals]
                 # Where some minerals in the list might be (temporarily) superfluous.
@@ -440,7 +440,7 @@ class Mineral:
 
             try:
                 volume_fraction = config["phase_fractions"][
-                    config["phase_content"].index(self.phase)
+                    config["phase_assemblage"].index(self.phase)
                 ]
             except IndexError:
                 raise ValueError(

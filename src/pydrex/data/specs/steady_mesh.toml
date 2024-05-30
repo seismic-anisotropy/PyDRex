@@ -52,7 +52,7 @@ log_level = "DEBUG"
 # Default values for simulation paramers are given below.
 [parameters]
 # Phase content and volume fractions (which must sum to 1).
-phase_content = ["olivine", "enstatite"]
+phase_assemblage = ["olivine", "enstatite"]
 phase_fractions = [0.7, 0.3]
 # Optional initial olivine fabric (CRSS values for slip systems).
 initial_olivine_fabric = "A"

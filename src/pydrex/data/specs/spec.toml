@@ -80,7 +80,7 @@ log_level = "DEBUG"
 [parameters]
 
 # Optional mineral phase content to use for the aggregate.
-# phase_content = ["olivine", "enstatite"]
+# phase_assemblage = ["olivine", "enstatite"]
 
 # Optional volume fractions of the mineral phases present in the aggregate.
 # phase_fractions = [0.7, 0.3]

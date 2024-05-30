@@ -36,7 +36,7 @@ PERMUTATION_SYMBOL = np.array(
 class MineralPhase(IntEnum):
     """Supported mineral phases.
 
-    Forsterite and fayalite are grouped into “olivine”, becuase we treat them as
+    Forsterite and fayalite are grouped into “olivine”, because we treat them as
     rheologically equivalent.
 
     """
@@ -79,7 +79,7 @@ class MineralFabric(IntEnum):
 
 @dataclass(frozen=True)
 class DefaultParams:
-    phase_content: tuple = (MineralPhase.olivine,)
+    phase_assemblage: tuple = (MineralPhase.olivine,)
     """Mineral phases present in the aggregate."""
     phase_fractions: tuple = (1.0,)
     """Volume fractions of each mineral phase present in the aggregate."""
@@ -162,7 +162,7 @@ class DefaultParams:
 
     """
 
-    def asdict(self):
+    def as_dict(self):
         """Return mutable copy of default arguments as a dictionary."""
         return asdict(self)
 

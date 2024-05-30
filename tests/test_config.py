@@ -40,7 +40,7 @@ def test_steady_specfile():
     assert _output["anisotropy"] == ["Voigt", "hexaxis", "moduli", "%decomp"]
     assert _output["log_level"] == "DEBUG"
     assert config["parameters"] == {
-        "phase_content": (_core.MineralPhase.olivine, _core.MineralPhase.enstatite),
+        "phase_assemblage": (_core.MineralPhase.olivine, _core.MineralPhase.enstatite),
         "phase_fractions": [0.7, 0.3],
         "initial_olivine_fabric": _core.MineralFabric.olivine_A,
         "stress_exponent": 1.5,
@@ -99,7 +99,7 @@ def test_specfile():
     assert _output["paths"] is None
     assert _output["log_level"] == "DEBUG"
     assert config["parameters"] == {
-        "phase_content": (_core.MineralPhase.olivine,),
+        "phase_assemblage": (_core.MineralPhase.olivine,),
         "phase_fractions": (1.0,),
         "initial_olivine_fabric": _core.MineralFabric.olivine_A,
         "stress_exponent": 1.5,

@@ -381,9 +381,9 @@ def parse_config(path):
         _output["directory"] = resolve_path(pathlib.Path.cwd())
 
     # Raw output means rotation matrices and grain volumes.
-    _parse_output_options(_output, "raw_output", _params["phase_content"])
+    _parse_output_options(_output, "raw_output", _params["phase_assemblage"])
     # Diagnostic output means texture diagnostics (strength, symmetry, mean angle).
-    _parse_output_options(_output, "diagnostics", _params["phase_content"])
+    _parse_output_options(_output, "diagnostics", _params["phase_assemblage"])
     # Anisotropy output means hexagonal symmetry axis and ΔVp (%).
     _output["anisotropy"] = _output.get(
         "anisotropy", ["Voigt", "hexaxis", "moduli", "%decomp"]
@@ -424,7 +424,7 @@ def resolve_path(path, refdir=None):
 def _parse_config_params(toml):
     """Parse DRex and other rheology parameters."""
     _params = toml.get("parameters", {})
-    for key, default in _core.DefaultParams().asdict().items():
+    for key, default in _core.DefaultParams().as_dict().items():
         _params[key] = _params.get(key, default)
 
     # Make sure volume fractions sum to 1.
@@ -435,19 +435,19 @@ def _parse_config_params(toml):
         )
 
     # Make sure all mineral phases are accounted for and valid.
-    if len(_params["phase_content"]) != len(_params["phase_fractions"]):
+    if len(_params["phase_assemblage"]) != len(_params["phase_fractions"]):
         raise _err.ConfigError(
             "All mineral phase contents must have an associated volume fraction."
-            + f" You've provided phase_content = {_params['phase_content']} and"
+            + f" You've provided phase_assemblage = {_params['phase_assemblage']} and"
             + f" phase_fractions = {_params['phase_fractions']}."
         )
     try:
-        _params["phase_content"] = tuple(
-            _parse_phase(ϕ) for ϕ in _params["phase_content"]
+        _params["phase_assemblage"] = tuple(
+            _parse_phase(ϕ) for ϕ in _params["phase_assemblage"]
         )
     except AttributeError:
         raise _err.ConfigError(
-            f"invalid phase content: {_params['phase_content']}"
+            f"invalid phase content: {_params['phase_assemblage']}"
         ) from None
 
     # Make sure initial olivine fabric is valid.
@@ -564,7 +564,7 @@ def _parse_config_input_postpaths(input, path):
     return input
 
 
-def _parse_output_options(output_opts, level, phase_content):
+def _parse_output_options(output_opts, level, phase_assemblage):
     try:
         output_opts[level] = [
             getattr(_core.MineralPhase, ϕ) for ϕ in output_opts[level]
@@ -576,7 +576,7 @@ def _parse_output_options(output_opts, level, phase_content):
             + " Check pydrex.core.MineralPhase for supported phases."
         ) from None
     for phase in output_opts[level]:
-        if phase not in phase_content:
+        if phase not in phase_assemblage:
             raise _err.ConfigError(
                 f"cannot output '{level}' for phase that is not being simulated"
             )

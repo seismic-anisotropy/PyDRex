@@ -3,7 +3,7 @@
 from pydrex.core import MineralFabric, MineralPhase
 
 PARAMS_FRATERS2021 = {
-    "phase_content": (MineralPhase.olivine, MineralPhase.enstatite),
+    "phase_assemblage": (MineralPhase.olivine, MineralPhase.enstatite),
     "phase_fractions": (0.7, 0.3),
     "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
@@ -16,7 +16,7 @@ PARAMS_FRATERS2021 = {
 """Values used for tests 1, 2 and 4 in <https://doi.org/10.1029/2021gc009846>."""
 
 PARAMS_KAMINSKI2001_FIG5_SOLID = {
-    "phase_content": (MineralPhase.olivine,),
+    "phase_assemblage": (MineralPhase.olivine,),
     "phase_fractions": (1,),
     "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
@@ -29,7 +29,7 @@ PARAMS_KAMINSKI2001_FIG5_SOLID = {
 """Values used for the M*=0 test in <https://doi.org/10.1016/s0012-821x(01)00356-9>."""
 
 PARAMS_KAMINSKI2001_FIG5_SHORTDASH = {
-    "phase_content": (MineralPhase.olivine,),
+    "phase_assemblage": (MineralPhase.olivine,),
     "phase_fractions": (1,),
     "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
@@ -42,7 +42,7 @@ PARAMS_KAMINSKI2001_FIG5_SHORTDASH = {
 """Values used for the M*=50 test in <https://doi.org/10.1016/s0012-821x(01)00356-9>."""
 
 PARAMS_KAMINSKI2001_FIG5_LONGDASH = {
-    "phase_content": (MineralPhase.olivine,),
+    "phase_assemblage": (MineralPhase.olivine,),
     "phase_fractions": (1,),
     "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
@@ -55,7 +55,7 @@ PARAMS_KAMINSKI2001_FIG5_LONGDASH = {
 """Values used for the M*=200 test in <https://doi.org/10.1016/s0012-821x(01)00356-9>."""
 
 PARAMS_KAMINSKI2004_FIG4_TRIANGLES = {
-    "phase_content": (MineralPhase.olivine,),
+    "phase_assemblage": (MineralPhase.olivine,),
     "phase_fractions": (1,),
     "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
@@ -68,7 +68,7 @@ PARAMS_KAMINSKI2004_FIG4_TRIANGLES = {
 """Values used for the χ=0.4 test in <https://doi.org/10.1111/j.1365-246x.2004.02308.x>."""
 
 PARAMS_KAMINSKI2004_FIG4_SQUARES = {
-    "phase_content": (MineralPhase.olivine,),
+    "phase_assemblage": (MineralPhase.olivine,),
     "phase_fractions": (1,),
     "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
@@ -81,7 +81,7 @@ PARAMS_KAMINSKI2004_FIG4_SQUARES = {
 """Values used for the χ=0.2 test in <https://doi.org/10.1111/j.1365-246x.2004.02308.x>."""
 
 PARAMS_KAMINSKI2004_FIG4_CIRCLES = {
-    "phase_content": (MineralPhase.olivine,),
+    "phase_assemblage": (MineralPhase.olivine,),
     "phase_fractions": (1,),
     "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,
@@ -94,7 +94,7 @@ PARAMS_KAMINSKI2004_FIG4_CIRCLES = {
 """Values used for the χ=0 test in <https://doi.org/10.1111/j.1365-246x.2004.02308.x>."""
 
 PARAMS_HEDJAZIAN2017 = {
-    "phase_content": (MineralPhase.olivine, MineralPhase.enstatite),
+    "phase_assemblage": (MineralPhase.olivine, MineralPhase.enstatite),
     "phase_fractions": (0.7, 0.3),
     "initial_olivine_fabric": MineralFabric.olivine_A,
     "stress_exponent": 1.5,

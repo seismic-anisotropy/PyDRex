@@ -134,7 +134,7 @@ class TestCellOlivineA:
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_xz_N{n_grains}"
 
-        params = _core.DefaultParams().asdict()
+        params = _core.DefaultParams().as_dict()
         params["number_of_grains"] = n_grains
         get_velocity, get_velocity_gradient = _velocity.cell_2d("X", "Z", 1)
 
@@ -219,7 +219,7 @@ class TestCellOlivineA:
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_xz_ensemble_N{n_grains}"
 
-        params = _core.DefaultParams().asdict()
+        params = _core.DefaultParams().as_dict()
         params["number_of_grains"] = n_grains
         get_velocity, get_velocity_gradient = _velocity.cell_2d("X", "Z", 1)
 
