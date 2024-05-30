@@ -242,6 +242,7 @@ def derivatives(
     fractions,
     strain_rate,
     velocity_gradient,
+    deformation_gradient_spin,
     stress_exponent,
     deformation_exponent,
     nucleation_efficiency,
@@ -259,6 +260,8 @@ def derivatives(
     - `fractions` (array) — volume fractions of the grains relative to aggregate volume
     - `strain_rate` (array) — 3x3 dimensionless macroscopic strain-rate tensor
     - `velocity_gradient` (array) — 3x3 dimensionless macroscopic velocity gradient
+    - `deformation_gradient_spin` (array) — 3x3 spin tensor defining the rate of
+                                            rotation of the finite strain ellipse
     - `stress_exponent` (float) — `p` in `dislocation_density ∝ shear_stress^p`
     - `deformation_exponent` (float) — `n` in `shear_stress ∝ |deformation_rate|^(1/n)`
     - `nucleation_efficiency` (float) — parameter controlling grain nucleation
@@ -271,13 +274,19 @@ def derivatives(
     """
     if regime == DeformationRegime.min_viscosity:
         # Do absolutely nothing, all derivatives are zero.
+        # TODO: Consider resetting the texture to isotropic, treat it like a phase
+        # change or something?
         return (
             np.repeat(np.eye(3), n_grains).reshape(3, 3, n_grains).transpose(),
             np.zeros(n_grains),
         )
     elif regime == DeformationRegime.matrix_diffusion:
-        # Passive rotation based on macroscopic vorticity for diffusion creep.
-        vorticity = 0.5 * (velocity_gradient - velocity_gradient.transpose())
+        # Passive rotation based on macroscopic vorticity for diffusion creep?
+        # vorticity = 0.5 * (velocity_gradient - velocity_gradient.transpose())
+        # Passive rotation based on spin of F for diffusion creep.
+        vorticity = deformation_gradient_spin
+        # Or just don't change at all?
+        # vorticity = np.zeros((3, 3))
         # This 💃 is because numba doesn't let us use np.tile or even np.array([a] * n).
         return (
             np.repeat(vorticity.transpose(), n_grains)
@@ -315,9 +324,39 @@ def derivatives(
     elif regime == DeformationRegime.sliding_dislocation:
         raise ValueError("this deformation mechanism is not yet supported.")
     elif regime == DeformationRegime.frictional_yielding:
-        raise ValueError("this deformation mechanism is not yet supported.")
+        # For now, the same as matrix_dislocation, but we smooth the strain energy
+        # distribution and the orientation changes, since some energy is lost to
+        # micro-fracturing. Also increase the GBS threshold, dislocations will tend to
+        # pile up at grain boundaries.
+        # TODO: Maybe modify the stress/deformation exponents?
+        # TODO: Reduce nucleation efficiency?
+        strain_energies = np.empty(n_grains)
+        orientations_diff = np.empty((n_grains, 3, 3))
+        for grain_index in range(n_grains):
+            orientation_change, strain_energy = _get_rotation_and_strain(
+                phase,
+                fabric,
+                orientations[grain_index],
+                strain_rate,
+                velocity_gradient,
+                stress_exponent,
+                deformation_exponent,
+                nucleation_efficiency,
+            )
+            orientations_diff[grain_index] = 0.3 * orientation_change
+            strain_energies[grain_index] = strain_energy
+        # Volume average mean strain energy.
+        mean_energy = np.sum(fractions * strain_energies)
+        # Strain energy residuals, minus the energy lost to micro-fracturing.
+        strain_residuals = 0.3 * (mean_energy - strain_energies)
+        fractions_diff = volume_fraction * gbm_mobility * fractions * strain_residuals
+        return orientations_diff, fractions_diff
     elif regime == DeformationRegime.max_viscosity:
-        raise ValueError("this deformation mechanism is not yet supported.")
+        # Do absolutely nothing, all derivatives are zero.
+        return (
+            np.repeat(np.eye(3), n_grains).reshape(3, 3, n_grains).transpose(),
+            np.zeros(n_grains),
+        )
     else:
         raise ValueError(f"regime must be a valid `DeformationRegime`, not {regime}")
 

@@ -114,7 +114,6 @@ def peridotite_solidus(pressure, fit="Herzberg2000"):
             raise ValueError("unsupported fit")
 
 
-
 # TODO: Compare to [Man & Huang, 2011](https://doi.org/10.1007/s10659-011-9312-y).
 def voigt_averages(minerals, phase_assemblage, phase_fractions):
     """Calculate elastic tensors as the Voigt averages of a collection of `mineral`s.
@@ -466,6 +465,10 @@ class Mineral:
             deformation_gradient, orientations, fractions = _utils.extract_vars(
                 y, self.n_grains
             )
+            deformation_gradient_diff = velocity_gradient @ deformation_gradient
+            deformation_gradient_spin = _tensors.polar_decomp(
+                deformation_gradient_diff
+            )[1]
             # Uses nondimensional values of strain rate and velocity gradient.
             orientations_diff, fractions_diff = _core.derivatives(
                 regime=self.regime,
@@ -476,6 +479,7 @@ class Mineral:
                 fractions=fractions,
                 strain_rate=strain_rate / strain_rate_max,
                 velocity_gradient=velocity_gradient / strain_rate_max,
+                deformation_gradient_spin=deformation_gradient_spin,
                 stress_exponent=config["stress_exponent"],
                 deformation_exponent=config["deformation_exponent"],
                 nucleation_efficiency=config["nucleation_efficiency"],
@@ -484,7 +488,7 @@ class Mineral:
             )
             return np.hstack(
                 (
-                    (velocity_gradient @ deformation_gradient).flatten(),
+                    deformation_gradient_diff.flatten(),
                     orientations_diff.flatten() * strain_rate_max,
                     fractions_diff * strain_rate_max,
                 )
