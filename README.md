@@ -14,31 +14,38 @@ Documentation is accessible via Python's REPL `help()` and also [online](https:/
 ## Install
 
 Check `requires-python` in `pyproject.toml` for the minimum required Python
-version. The software is tested on Linux, MacOS and Windows.
-
-The package is currently not available on PyPi, so installation requires `git`.
-Install the package with Python's `pip`:
-
-    pip install git+https://github.com/adigitoleo/PyDRex#egg=pydrex
-
-Alternatively, clone the [source code](https://github.com/seismic-anisotropy/PyDRex).
-and execute `pip install "$PWD"` in the top-level folder.
-To install additional dependencies required only for the test suite,
-use `pip install "$PWD[test]"`.
-
-For a complete development install, including documentation generator dependencies,
-use `pip install -e "$PWD[dev]"`.
-
-The package metadata and full list of dependencies are specified in [`pyproject.toml`](pyproject.toml).
+version. The software is tested on Linux, MacOS and Windows, however large
+simulations require substantial computational resources usually afforded by HPC
+Linux clusters. Linux shell scripts for setting up a [Ray](https://www.ray.io/) cluster
+on distributed memory PBS systems are provided in the `tools` folder.
 
 Optional mesh generation using [gmsh](https://pypi.org/project/gmsh/) is available,
 however the `gmsh` module requires the [`glu`](https://gitlab.freedesktop.org/mesa/glu) library
-(that may not be installed by default on all systems).
+(which may require manual installation on some systems).
+
+Tagged package versions can be installed from [PyPi](https://pypi.org/project/pydrex/).
+To install the latest version, execute:
+
+    pip install pydrex
+
+Optional dependencies can be installed using `package[dependency]` syntax, e.g.
+
+    pip install pydrex[mesh,ray]
+
+For an evolving, bleeding edge variant use the latest commit on `main`:
+
+    pip install git+https://github.com/seismic-anisotropy/PyDRex#egg=pydrex
+
+The package metadata and full list of dependencies are declared in [`pyproject.toml`](pyproject.toml).
 
 ## Test
 
 Some tests can optionally output figures or extended diagnostics when run locally.
 Check the [test suite README](tests/README.md) for details.
+
+Further examples that demonstrate how PyDRex can be used within geodynamic
+simulations are provided in the `examples` folder.
+They have their own README file as well.
 
 ## Documentation
 
@@ -49,4 +56,16 @@ with the command:
 
 which will output the html documentation into a folder called `html`.
 The homepage will be `html/index.html`.
+Note that some submodules depend on optional dependencies,
+and should otherwise be excluded:
+
+    pdoc -t docs/template -o html --math pydrex !pydrex.mesh !pydrex.distributed tests
+
 See also the provided [GitHub actions workflow](.github/workflows/docs.yml).
+
+## Contributing
+
+For a development environment, clone the [source code](https://github.com/seismic-anisotropy/PyDRex)
+and execute the Bash script `tools/venv_install.sh`.
+This will set up a local Python virtual environment with an [editable install](https://setuptools.pypa.io/en/latest/userguide/development_mode.html)
+of PyDRex that can be activated/deactivated by following the displayed prompts.

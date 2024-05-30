@@ -40,7 +40,7 @@ def elasticity_components(voigt_matrices):
 
     Args:
     - `voigt_matrices` (array) — the Nx6x6 Voigt matrix representations of the averaged
-      elasticity tensors for a series of polycrystal textures
+      elasticity tensors for a series of N polycrystal textures
 
     Returns a dictionary with the following data series:
     - `'bulk_modulus'` — the computed bulk modulus for each Voigt matrix C
@@ -49,15 +49,15 @@ def elasticity_components(voigt_matrices):
       norm of the elastic tensor ||C|| that deviates from the norm of the "closest"
       isotropic elasticity tensor
     - `'percent_hexagonal'` — for each C, the percentage of ||C|| attributed to
-      hexagonally symmetric minerals
+      a hexagonally symmetric bulk medium
     - `'percent_tetragonal'` — for each C, the percentage of ||C|| attributed to
-      tetragonally symmetric minerals
+      a tetragonally symmetric bulk medium
     - `'percent_orthorhombic'` — for each C, the percentage of ||C|| attributed to
-      orthorhombically symmetric minerals
+      an orthorhombically symmetric bulk medium
     - `'percent_monoclinic'` — for each C, the percentage of ||C|| attributed to
-      monoclinically symmetric minerals
+      a monoclinically symmetric bulk medium
     - `'percent_triclinic'` — for each C, the percentage of ||C|| attributed to
-      triclinically "symmetric" minerals (no mirror planes)
+      a triclinically "symmetric" bulk medium (no mirror planes)
     - `'hexagonal_axis'` — for each C, the axis of hexagonal symmetry for the "closest"
       hexagonally symmetric approximation to C, a.k.a. the "transverse isotropy" axis
 
