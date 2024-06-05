@@ -49,8 +49,8 @@ test = ["pytest"]
 doc = ["pdoc"]
 mesh = ["gmsh"]  # NOTE: Saying `import gmsh` is like saying "I don't want my CI to work".
 ray = ["ray >= 2.0.0"]
-dev = ["pytest", "uniplot", "pdoc", "ruff", "black", "isort", "ptpython"]
-lsp = ["python-lsp-server", "pyls-isort", "python-lsp-black", "python-lsp-ruff"]
+dev = ["pdoc", "ptpython", "pyvista", "ruff", "uniplot", "pytest"]
+lsp = ["python-lsp-ruff", "python-lsp-server"]
 
 [project.urls]
 repository = "https://github.com/seismic-anisotropy/PyDRex"
@@ -82,11 +82,8 @@ testpaths = ["tests"]
 addopts = "--tb=short --show-capture=no"
 
 # Global linter and devtools settings.
-[tool.isort]
-profile = "black"
-filter_files = true
-# Ruff is faster than flake8 and supports pyproject.toml config, line length is 88 by default.
 [tool.ruff]
+# Ruff is faster than flake8 and supports pyproject.toml config, line length is 88 by default.
 exclude = [
     "src/initial_implementation",
     ".scsv",

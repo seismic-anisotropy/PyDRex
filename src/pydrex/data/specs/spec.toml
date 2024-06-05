@@ -41,7 +41,7 @@ timestep = 1e9
 
 # In cases where the pathlines do not exit the domain,
 # a maximum strain threshold can bee provided, after which advection is halted.
-# max_strain = 10
+# strain_final = 10
 
 # Output files/options are given in this section:
 [output]
@@ -79,15 +79,11 @@ log_level = "DEBUG"
 # DREX and simulation parameters are given in this section:
 [parameters]
 
-# Optional olivine volume fraction to use for multiphase simulations.
-# If enstatite_fraction is provided, they must sum to 1.
-# Otherwise, the remainder is assumed to be enstatite.
-# olivine_fraction = 1.
+# Optional mineral phase assemblage to use for the aggregate.
+# phase_assemblage = ["olivine", "enstatite"]
 
-# Optional enstatite volume fraction to use for multiphase simulations.
-# If olivine_fraction is provided, they must sum to 1.
-# Otherwise, the remainder is assumed to be olivine.
-# enstatite_fraction = 0.
+# Optional volume fractions of the mineral phases present in the aggregate.
+# phase_fractions = [0.7, 0.3]
 
 # Optional initial olivine fabric. A-type by default.
 initial_olivine_fabric = "A"

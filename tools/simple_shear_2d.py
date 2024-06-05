@@ -5,7 +5,6 @@ import numpy as np
 
 from pydrex import core as _core
 from pydrex import diagnostics as _diagnostics
-from pydrex import io as _io
 from pydrex import minerals as _minerals
 from pydrex import velocity as _velocity
 
@@ -13,7 +12,7 @@ shear_direction = np.array([0.0, 1.0, 0.0])
 strain_rate = 1e-4
 _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", strain_rate)
 timestamps = np.linspace(0, 1e4, 201)
-params = _io.DEFAULT_PARAMS
+params = _core.DefaultParams().as_dict()
 params["number_of_grains"] = 15**3
 params["gbs_threshold"] = 0
 seed = 245623452

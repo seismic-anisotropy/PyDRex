@@ -120,6 +120,7 @@ A draft of the input file spec is shown below:
 # `utils` or `visualisation` modules, which should be explicitly imported instead.
 import pydrex.axes  # Defines the 'pydrex.polefigure' Axes subclass.
 from pydrex.core import (
+    DefaultParams,
     DeformationRegime,
     MineralFabric,
     MineralPhase,
@@ -146,11 +147,11 @@ from pydrex.geometry import (
     to_cartesian,
     to_spherical,
 )
-from pydrex.io import DEFAULT_PARAMS, data, read_scsv, save_scsv
+from pydrex.io import data, read_scsv, save_scsv
 from pydrex.minerals import (
     OLIVINE_PRIMARY_AXIS,
     OLIVINE_SLIP_SYSTEMS,
-    OLIVINE_STIFFNESS,
+    StiffnessTensors,
     Mineral,
     voigt_averages,
 )

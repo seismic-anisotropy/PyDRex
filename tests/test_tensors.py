@@ -3,13 +3,13 @@
 import numpy as np
 
 from pydrex import tensors as _tensors
-from pydrex.minerals import ENSTATITE_STIFFNESS, OLIVINE_STIFFNESS
+from pydrex.minerals import StiffnessTensors
 
 
 def test_voigt_decompose():
     """Test decomposition of Voigt 6x6 matrix into distinct contractions."""
-    olivine_tensor = _tensors.voigt_to_elastic_tensor(OLIVINE_STIFFNESS)
-    dilat, voigt = _tensors.voigt_decompose(OLIVINE_STIFFNESS)
+    olivine_tensor = _tensors.voigt_to_elastic_tensor(StiffnessTensors().olivine)
+    dilat, voigt = _tensors.voigt_decompose(StiffnessTensors().olivine)
     np.testing.assert_array_equal(np.einsum("ijkk", olivine_tensor), dilat)
     np.testing.assert_array_equal(np.einsum("ijkj", olivine_tensor), voigt)
 
@@ -36,14 +36,14 @@ def test_voigt_tensor():
         ]
     )
     np.testing.assert_array_equal(
-        _tensors.voigt_to_elastic_tensor(OLIVINE_STIFFNESS),
+        _tensors.voigt_to_elastic_tensor(StiffnessTensors().olivine),
         olivine_tensor,
     )
     np.testing.assert_array_equal(
         _tensors.elastic_tensor_to_voigt(
-            _tensors.voigt_to_elastic_tensor(OLIVINE_STIFFNESS)
+            _tensors.voigt_to_elastic_tensor(StiffnessTensors().olivine)
         ),
-        OLIVINE_STIFFNESS,
+        StiffnessTensors().olivine,
     )
     np.testing.assert_array_equal(
         _tensors.voigt_to_elastic_tensor(
@@ -53,16 +53,16 @@ def test_voigt_tensor():
     )
     np.testing.assert_array_equal(
         _tensors.elastic_tensor_to_voigt(
-            _tensors.voigt_to_elastic_tensor(ENSTATITE_STIFFNESS)
+            _tensors.voigt_to_elastic_tensor(StiffnessTensors().enstatite)
         ),
-        ENSTATITE_STIFFNESS,
+        StiffnessTensors().enstatite,
     )
 
 
 def test_voigt_to_vector():
     """Test Voigt vector construction."""
     np.testing.assert_allclose(
-        _tensors.voigt_matrix_to_vector(ENSTATITE_STIFFNESS),
+        _tensors.voigt_matrix_to_vector(StiffnessTensors().enstatite),
         np.array(
             [
                 236.9,
@@ -91,9 +91,9 @@ def test_voigt_to_vector():
         atol=1e-9,
     )
     np.testing.assert_array_equal(
-        OLIVINE_STIFFNESS,
+        StiffnessTensors().olivine,
         _tensors.voigt_vector_to_matrix(
-            _tensors.voigt_matrix_to_vector(OLIVINE_STIFFNESS),
+            _tensors.voigt_matrix_to_vector(StiffnessTensors().olivine),
         ),
     )
     r = np.random.rand(6, 6)

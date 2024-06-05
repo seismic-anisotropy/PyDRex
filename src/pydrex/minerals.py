@@ -24,42 +24,56 @@ from pydrex import logger as _log
 from pydrex import tensors as _tensors
 from pydrex import utils as _utils
 
-OLIVINE_STIFFNESS = np.array(
-    [
-        [320.71, 69.84, 71.22, 0.0, 0.0, 0.0],
-        [69.84, 197.25, 74.8, 0.0, 0.0, 0.0],
-        [71.22, 74.8, 234.32, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 63.77, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 77.67, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 0.0, 78.36],
-    ]
-)
-"""Stiffness tensor for olivine (Voigt representation), with units of GPa.
 
-The source of the values used here is unknown, but they are copied
-from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz>
-[88K download]
+@dataclass
+class StiffnessTensors:
+    olivine: np.ndarray = field(
+        default_factory=lambda: np.array(
+            [
+                [320.71, 69.84, 71.22, 0.0, 0.0, 0.0],
+                [69.84, 197.25, 74.8, 0.0, 0.0, 0.0],
+                [71.22, 74.8, 234.32, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 63.77, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 77.67, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 78.36],
+            ]
+        )
+    )
+    """Stiffness tensor for olivine (Voigt representation), with units of GPa.
 
-"""
+    The source of the values used here is unknown, but they are copied
+    from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz>
+    [88K download]
 
+    """
+    enstatite: np.ndarray = field(
+        default_factory=lambda: np.array(
+            [
+                [236.9, 79.6, 63.2, 0.0, 0.0, 0.0],
+                [79.6, 180.5, 56.8, 0.0, 0.0, 0.0],
+                [63.2, 56.8, 230.4, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 84.3, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 79.4, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 80.1],
+            ]
+        )
+    )
+    """Stiffness tensor for enstatite (Voigt representation), with units of GPa.
 
-ENSTATITE_STIFFNESS = np.array(
-    [
-        [236.9, 79.6, 63.2, 0.0, 0.0, 0.0],
-        [79.6, 180.5, 56.8, 0.0, 0.0, 0.0],
-        [63.2, 56.8, 230.4, 0.0, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 84.3, 0.0, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 79.4, 0.0],
-        [0.0, 0.0, 0.0, 0.0, 0.0, 80.1],
-    ]
-)
-"""Stiffness tensor for enstatite (Voigt representation), with units of GPa.
+    The source of the values used here is unknown, but they are copied
+    from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz>
+    [88K download]
 
-The source of the values used here is unknown, but they are copied
-from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz>
-[88K download]
+    """
 
-"""
+    def __iter__(self):
+        # So that [S for S in StiffnessTensors()] can be indexed with `MineralPhase`s.
+        indexed = {
+            _core.MineralPhase.olivine: self.olivine,
+            _core.MineralPhase.enstatite: self.enstatite,
+        }
+        for _, v in sorted(indexed.items()):
+            yield v
 
 
 OLIVINE_PRIMARY_AXIS = {
@@ -88,13 +102,14 @@ returned by `pydrex.core.get_crss`.
 
 
 # TODO: Compare to [Man & Huang, 2011](https://doi.org/10.1007/s10659-011-9312-y).
-def voigt_averages(minerals, weights):
+def voigt_averages(minerals, phase_assemblage, phase_fractions):
     """Calculate elastic tensors as the Voigt averages of a collection of `mineral`s.
 
     Args:
     - `minerals` — list of `pydrex.minerals.Mineral` instances storing orientations and
       fractional volumes of the grains within each distinct mineral phase
-    - `weights` (dict) — dictionary containing weights of each mineral
+    - `phase_assemblage` (tuple) — tuple of `pydrex.core.MineralPhase`s
+    dictionary containing weights of each mineral
       phase, as a fraction of 1, in keys named "<phase>_fraction",
       e.g. "olivine_fraction"
 
@@ -115,7 +130,7 @@ def voigt_averages(minerals, weights):
             "cannot average minerals with variable-length grain volume arrays"
         )
 
-    elastic_tensors = {}
+    elastic_tensors = StiffnessTensors()
 
     # TODO: Perform rotation directly on the 6x6 matrices, see Carcione 2007.
     # This trick is implemented in cpo_elastic_tensor.cc in Aspect.
@@ -125,30 +140,22 @@ def voigt_averages(minerals, weights):
             for n in range(n_grains):
                 match mineral.phase:
                     case _core.MineralPhase.olivine:
-                        if "olivine" not in elastic_tensors:
-                            elastic_tensors["olivine"] = (
-                                _tensors.voigt_to_elastic_tensor(OLIVINE_STIFFNESS)
-                            )
                         average_tensors[i] += _tensors.elastic_tensor_to_voigt(
                             _tensors.rotate(
-                                elastic_tensors["olivine"],
+                                elastic_tensors.olivine,
                                 mineral.orientations[i][n, ...].transpose(),
                             )
                             * mineral.fractions[i][n]
-                            * weights["olivine_fraction"]
+                            * phase_fractions[phase_assemblage.index(mineral.phase)]
                         )
                     case _core.MineralPhase.enstatite:
-                        if "enstatite" not in elastic_tensors:
-                            elastic_tensors["enstatite"] = (
-                                _tensors.voigt_to_elastic_tensor(ENSTATITE_STIFFNESS)
-                            )
                         average_tensors[i] += _tensors.elastic_tensor_to_voigt(
                             _tensors.rotate(
                                 elastic_tensors["enstatite"],
                                 minerals.orientations[i][n, ...].transpose(),
                             )
                             * mineral.fractions[i][n]
-                            * weights["enstatite_fraction"]
+                            * phase_fractions[phase_assemblage.index(mineral.phase)]
                         )
                     case _:
                         raise ValueError(f"unsupported mineral phase: {mineral.phase}")
@@ -248,7 +255,7 @@ class Mineral:
     phase: int = _core.MineralPhase.olivine
     fabric: int = _core.MineralFabric.olivine_A
     regime: int = _core.DeformationRegime.dislocation
-    n_grains: int = _io.DEFAULT_PARAMS["number_of_grains"]
+    n_grains: int = _core.DefaultParams().number_of_grains
     # Initial condition, randomised if not given.
     fractions_init: np.ndarray = None
     orientations_init: np.ndarray = None
@@ -382,7 +389,7 @@ class Mineral:
         ...           phase=pydrex.MineralPhase.olivine,
         ...           fabric=pydrex.MineralFabric.olivine_A,
         ...           regime=pydrex.DeformationRegime.dislocation,
-        ...           n_grains=pydrex.DEFAULT_PARAMS["number_of_grains"],
+        ...           n_grains=pydrex.DefaultParams().number_of_grains,
         ... )
         >>> def get_velocity_gradient(t, x):  # Simple L for simple shear.
         ...     L = np.zeros((3, 3))
@@ -395,7 +402,7 @@ class Mineral:
         >>> for t_start, t_end in pairwise(timestamps):
         ...     # Update deformation_gradient, olA.orientations and olA.fractions.
         ...     deformation_gradient = olA.update_orientations(
-        ...         pydrex.DEFAULT_PARAMS,
+        ...         pydrex.DefaultParams().as_dict(),
         ...         deformation_gradient,
         ...         get_velocity_gradient,
         ...         (t_start, t_end, get_position),
@@ -422,11 +429,20 @@ class Mineral:
             #     velocity_gradient.ravel(),
             # )
 
-            if self.phase == _core.MineralPhase.olivine:
-                volume_fraction = config["olivine_fraction"]
-            elif self.phase == _core.MineralPhase.enstatite:
-                volume_fraction = config["enstatite_fraction"]
-            else:
+            if self.phase not in config["phase_assemblage"]:
+                # Warning rather than failure, so that we tolerate loops like:
+                # [m.update_orientations(...) for m in minerals]
+                # Where some minerals in the list might be (temporarily) superfluous.
+                _log.warning(
+                    "skipping %s mineral, phase omitted from configuration", self.phase
+                )
+                return
+
+            try:
+                volume_fraction = config["phase_fractions"][
+                    config["phase_assemblage"].index(self.phase)
+                ]
+            except IndexError:
                 raise ValueError(
                     f"phase must be a valid `MineralPhase`, not {self.phase}"
                 )
@@ -506,7 +522,7 @@ class Mineral:
         _log.debug(
             "    with velocity gradient interpolated between %s and %s",
             get_velocity_gradient(time_start, get_position(time_start)).ravel(),
-            get_velocity_gradient(time_end, get_position(time_end)).ravel()
+            get_velocity_gradient(time_end, get_position(time_end)).ravel(),
         )
         _log.debug(
             "    intermediate velocity gradient = %s",

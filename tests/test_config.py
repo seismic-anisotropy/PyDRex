@@ -9,6 +9,66 @@ from pydrex import io as _io
 from pydrex import velocity as _velocity
 
 
+def test_steady_specfile():
+    """Test TOML spec file for case of input mesh with steady velocity field."""
+    config = _io.parse_config(_io.data("specs") / "steady_mesh.toml")
+    assert list(config.keys()) == ["name", "input", "output", "parameters"]
+    assert config["name"] == "pydrex-spec-steady-mesh"
+    _input = config["input"]
+    _mesh = _input["mesh"]
+    assert _mesh.points.shape == (1705, 3)
+    assert list(_mesh.point_data.keys()) == [
+        "Pressure",
+        "Time",
+        "Velocity",
+        "VelocityGradient",
+    ]
+    assert _mesh.cells[0].type == "triangle"
+    assert _input["locations_final"].X == (500000.0, 500000.0, 500000.0, 500000.0)
+    assert _input["locations_final"].Z == (-20000.0, -40000.0, -60000.0, -80000.0)
+    assert _input["strain_final"] == 2.5
+    _output = config["output"]
+    assert _output["directory"].name == "out_steady"
+    assert _output["raw_output"] == [
+        _core.MineralPhase.olivine,
+        _core.MineralPhase.enstatite,
+    ]
+    assert _output["diagnostics"] == [
+        _core.MineralPhase.olivine,
+        _core.MineralPhase.enstatite,
+    ]
+    assert _output["anisotropy"] == ["Voigt", "hexaxis", "moduli", "%decomp"]
+    assert _output["log_level"] == "DEBUG"
+    assert config["parameters"] == {
+        "phase_assemblage": (_core.MineralPhase.olivine, _core.MineralPhase.enstatite),
+        "phase_fractions": [0.7, 0.3],
+        "initial_olivine_fabric": _core.MineralFabric.olivine_A,
+        "stress_exponent": 1.5,
+        "deformation_exponent": 3.5,
+        "gbm_mobility": 125,
+        "gbs_threshold": 0.3,
+        "nucleation_efficiency": 5.0,
+        "number_of_grains": 5000,
+        "disl_Peierls_stress": 10,
+        "disl_prefactors": (1e-16, 1e-17),
+        "diff_prefactor": 1e-10,
+        "disl_lowtemp_switch": 0.7,
+        "disl_activation_energy": 460.0,
+        "disl_activation_volume": 12.0,
+        "diff_activation_energy": 330.0,
+        "diff_activation_volume": 4.0,
+        "disl_coefficients": (
+            4.4e8,
+            -5.26e4,
+            2.11e-2,
+            1.74e-4,
+            -41.8,
+            4.21e-2,
+            -1.14e-5,
+        ),
+    }
+
+
 def test_specfile():
     """Test TOML spec file parsing."""
     config = _io.parse_config(_io.data("specs") / "spec.toml")
@@ -39,8 +99,8 @@ def test_specfile():
     assert _output["paths"] is None
     assert _output["log_level"] == "DEBUG"
     assert config["parameters"] == {
-        "olivine_fraction": 1.0,
-        "enstatite_fraction": 0.0,
+        "phase_assemblage": (_core.MineralPhase.olivine,),
+        "phase_fractions": (1.0,),
         "initial_olivine_fabric": _core.MineralFabric.olivine_A,
         "stress_exponent": 1.5,
         "deformation_exponent": 3.5,
@@ -48,4 +108,21 @@ def test_specfile():
         "gbs_threshold": 0.3,
         "nucleation_efficiency": 5.0,
         "number_of_grains": 2000,
+        "disl_Peierls_stress": 10,
+        "disl_prefactors": (1e-16, 1e-17),
+        "diff_prefactor": 1e-10,
+        "disl_lowtemp_switch": 0.7,
+        "disl_activation_energy": 460.0,
+        "disl_activation_volume": 12.0,
+        "diff_activation_energy": 330.0,
+        "diff_activation_volume": 4.0,
+        "disl_coefficients": (
+            4.4e8,
+            -5.26e4,
+            2.11e-2,
+            1.74e-4,
+            -41.8,
+            4.21e-2,
+            -1.14e-5,
+        ),
     }

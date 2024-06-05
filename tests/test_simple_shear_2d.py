@@ -255,7 +255,7 @@ class TestOlivineA:
     @pytest.mark.skipif(sys.platform == "win32", reason="Unable to allocate memory")
     def test_zero_recrystallisation(self, seed):
         """Check that M*=0 is a reliable switch to turn off recrystallisation."""
-        params = _io.DEFAULT_PARAMS
+        params = _core.DefaultParams().as_dict()
         params["gbm_mobility"] = 0
         strain_rate = 1
         timestamps = np.linspace(0, 1, 25)  # Solve until D₀t=1 (tensorial strain).
@@ -276,7 +276,7 @@ class TestOlivineA:
     @pytest.mark.parametrize("gbm_mobility", [50, 100, 150])
     def test_grainsize_median(self, seed, gbm_mobility):
         """Check that M*={50,100,150}, λ*=5 causes decreasing grain size median."""
-        params = _io.DEFAULT_PARAMS
+        params = _core.DefaultParams().as_dict()
         params["gbm_mobility"] = gbm_mobility
         params["nucleation_efficiency"] = 5
         strain_rate = 1
@@ -343,7 +343,8 @@ class TestOlivineA:
                     return_fse = False
 
                 params = {
-                    "olivine_fraction": 1.0,
+                    "phase_assemblage": (_core.MineralPhase.olivine,),
+                    "phase_fractions": (1.0,),
                     "enstatite_fraction": 0.0,
                     "stress_exponent": 1.5,
                     "deformation_exponent": 3.5,
@@ -451,7 +452,7 @@ class TestOlivineA:
         timestamps = np.linspace(0, 1e4, 51)  # Solve until D₀t=1 ('shear' γ=2).
         i_strain_40p = 10  # Index of 40% strain, lower strains are not relevant here.
         i_strain_100p = 25  # Index of 100% strain, when M*=0 matches FSE.
-        params = _io.DEFAULT_PARAMS
+        params = _core.DefaultParams().as_dict()
         params["gbs_threshold"] = 0  # No GBS, to match the Fortran parameters.
         gbm_mobilities = (0, 10, 50, 125, 200)  # Must be in ascending order.
         markers = ("x", ".", "*", "d", "s")
@@ -622,7 +623,7 @@ class TestOlivineA:
         $$
 
         Unlike `test_dvdx_GBM`,
-        grain boudary sliding is enabled here (see `_io.DEFAULT_PARAMS`).
+        grain boudary sliding is enabled here (see `_core.DefaultParams`).
         Data are provided by [Skemer & Hansen, 2016](http://dx.doi.org/10.1016/j.tecto.2015.12.003).
 
         """
@@ -630,7 +631,7 @@ class TestOlivineA:
         strain_rate = 1
         _, get_velocity_gradient = _velocity.simple_shear_2d("Y", "X", strain_rate)
         timestamps = np.linspace(0, 3.2, 65)  # Solve until D₀t=3.2 ('shear' γ=6.4).
-        params = _io.DEFAULT_PARAMS
+        params = _core.DefaultParams().as_dict()
         params["number_of_grains"] = 5000
         gbm_mobilities = (0, 10, 50, 125)  # Must be in ascending order.
         markers = ("x", "*", "1", ".")
@@ -814,7 +815,7 @@ class TestOlivineA:
                 get_velocity_gradient(np.nan, Ŋ(x)) for x in positions
             ]
 
-            params = _io.DEFAULT_PARAMS
+            params = _core.DefaultParams().as_dict()
             params["gbm_mobility"] = 10
             params["number_of_grains"] = 5000
             olA = _minerals.Mineral(n_grains=params["number_of_grains"], seed=seed)
