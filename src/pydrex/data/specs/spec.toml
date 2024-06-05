@@ -79,7 +79,7 @@ log_level = "DEBUG"
 # DREX and simulation parameters are given in this section:
 [parameters]
 
-# Optional mineral phase content to use for the aggregate.
+# Optional mineral phase assemblage to use for the aggregate.
 # phase_assemblage = ["olivine", "enstatite"]
 
 # Optional volume fractions of the mineral phases present in the aggregate.

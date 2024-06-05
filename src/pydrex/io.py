@@ -430,14 +430,14 @@ def _parse_config_params(toml):
     # Make sure volume fractions sum to 1.
     if np.abs(np.sum(_params["phase_fractions"]) - 1.0) > 1e-16:
         raise _err.ConfigError(
-            "Volume fractions of mineral phase contents must sum to 1."
+            "Volume fractions of mineral phases must sum to 1."
             + f" You've provided phase_fractions = {_params['phase_fractions']}."
         )
 
     # Make sure all mineral phases are accounted for and valid.
     if len(_params["phase_assemblage"]) != len(_params["phase_fractions"]):
         raise _err.ConfigError(
-            "All mineral phase contents must have an associated volume fraction."
+            "All mineral phases must have an associated volume fraction."
             + f" You've provided phase_assemblage = {_params['phase_assemblage']} and"
             + f" phase_fractions = {_params['phase_fractions']}."
         )
@@ -447,7 +447,7 @@ def _parse_config_params(toml):
         )
     except AttributeError:
         raise _err.ConfigError(
-            f"invalid phase content: {_params['phase_assemblage']}"
+            f"invalid phase assemblage: {_params['phase_assemblage']}"
         ) from None
 
     # Make sure initial olivine fabric is valid.
@@ -587,15 +587,15 @@ def _parse_phase(ϕ: str | _core.MineralPhase | int):
         try:
             return getattr(_core.MineralPhase, ϕ)
         except AttributeError:
-            raise _err.ConfigError(f"invalid phase in phase content: {ϕ}") from None
+            raise _err.ConfigError(f"invalid phase in phase assemblage: {ϕ}") from None
     elif isinstance(ϕ, _core.MineralPhase):
         return ϕ
     elif isinstance(ϕ, int):
         try:
             return _core.MineralPhase[ϕ]
         except IndexError:
-            raise _err.ConfigError(f"invalid phase in phase content: {ϕ}") from None
-    raise _err.ConfigError(f"invalid phase in phase content: {ϕ}") from None
+            raise _err.ConfigError(f"invalid phase in phase assemblage: {ϕ}") from None
+    raise _err.ConfigError(f"invalid phase in phase assemblage: {ϕ}") from None
 
 
 def _validate_scsv_schema(schema):
