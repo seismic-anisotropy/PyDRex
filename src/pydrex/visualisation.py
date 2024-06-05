@@ -640,7 +640,7 @@ def growth(
     return fig, ax, colors
 
 
-def figure_unless(ax):
+def figure_unless(ax: plt.Axes | None) -> tuple[plt.Figure, plt.Axes]:
     """Create figure and axes if `ax` is None, or return existing figure for `ax`.
 
     If `ax` is None, a new figure is created for the axes with a few opinionated default
@@ -649,11 +649,13 @@ def figure_unless(ax):
     Returns a tuple containing the figure handle and the axes object.
 
     """
+    fig: plt.Figure | None
     if ax is None:
         fig = plt.figure()
         ax = fig.add_subplot()
     else:
         fig = ax.get_figure()
+    assert fig is not None
     return fig, ax
 
 

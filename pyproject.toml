@@ -50,8 +50,8 @@ test = ["pytest"]
 doc = ["pdoc"]
 mesh = ["gmsh"]  # NOTE: Saying `import gmsh` is like saying "I don't want my CI to work".
 ray = ["ray >= 2.0.0"]
-dev = ["pdoc", "ptpython", "pyvista", "ruff", "uniplot", "pytest"]
-lsp = ["python-lsp-ruff", "python-lsp-server"]
+dev = ["pdoc", "ptpython", "pyvista", "ruff", "uniplot", "pytest", "mypy"]
+lsp = ["python-lsp-ruff", "python-lsp-server", "pylsp-mypy"]
 
 [project.urls]
 repository = "https://github.com/seismic-anisotropy/PyDRex"
@@ -94,3 +94,7 @@ exclude = [
 [tool.ruff.lint.per-file-ignores]
 "src/pydrex/__init__.py" = ["F401", "E501"]  # Don't complain about unused imports or long lines in __init__.py file.
 "tests/test_scsv.py" = ["E501"]  # Don't complain about long lines here.
+
+[[tool.mypy.overrides]]
+module = "pydrex"
+ignore_missing_imports = true
