@@ -1,10 +1,12 @@
 """> PyDRex: tests for CPO stability in 2D vortex and Stokes cell flows."""
 
+import contextlib as cl
 import functools as ft
 import sys
 
 import numpy as np
 import pytest
+from numpy import testing as nt
 
 from pydrex import core as _core
 from pydrex import diagnostics as _diagnostics
@@ -12,14 +14,119 @@ from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import pathlines as _path
+from pydrex import stats as _stats
 from pydrex import utils as _utils
 from pydrex import velocity as _velocity
 from pydrex import visualisation as _vis
+from pydrex import geometry as _geo
 
 Pool, HAS_RAY = _utils.import_proc_pool()
 
-# Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "2d_vortex"
+"""Subdirectory of `outdir` used to store outputs from these tests."""
+
+
+def run_singlephase(params: dict, seed: int, assert_each=None, **kwargs) -> tuple:
+    """Run 2D convection cell simulation for a single mineral phase.
+
+    Uses A-type olivine by default.
+
+    Args:
+    - `params` — see `pydrex.core.DefaultParams`
+    - `seed` — seed for random number generation
+    - `assert_each` — optional callable with signature `f(mineral,
+      deformation_gradient)` that performs assertions at each step
+
+    Optional keyword args are consumed by:
+    1. `pydrex.velocity.cell_2d` and
+    2. the `pydrex.minerals.Mineral` constructor
+
+    Returns a tuple containing:
+    1. the `mineral` (instance of `pydrex.minerals.Mineral`)
+    2. the resampled texture (a tuple of the orientations and fractions)
+    3. a tuple of `fig, ax, q, s` as returned from `pydrex.visualisation.pathline_box2d`
+
+    """
+    horizontal: str = kwargs.pop("horizontal", "X")
+    vertical: str = kwargs.pop("vertical", "Z")
+    velocity_edge: float = kwargs.pop("velocity_edge", 6.342e-10)
+    edge_length: float = kwargs.pop("edge_length", 2e5)
+
+    max_strain = kwargs.pop(
+        # This should be enough to go around the cell one time.
+        "max_strain",
+        int(np.ceil(velocity_edge * (edge_length / 2) ** 2)),
+    )
+    get_velocity, get_velocity_gradient = _velocity.cell_2d(
+        horizontal,
+        vertical,
+        velocity_edge,
+        edge_length,
+    )
+    mineral = _minerals.Mineral(
+        phase=kwargs.pop("phase", _core.MineralPhase.olivine),
+        fabric=kwargs.pop("fabric", _core.MineralFabric.olivine_A),
+        regime=kwargs.pop("regime", _core.DeformationRegime.matrix_dislocation),
+        n_grains=params["number_of_grains"],
+        seed=seed,
+        **kwargs,
+    )
+
+    size = edge_length / 2
+    dummy_dim = ({0, 1, 2} - set(_geo.to_indices2d(horizontal, vertical))).pop()
+
+    timestamps, get_position = _path.get_pathline(
+        _utils.add_dim([0.5, -0.75], dummy_dim) * size,
+        get_velocity,
+        get_velocity_gradient,
+        _utils.add_dim([-size, -size], dummy_dim),
+        _utils.add_dim([size, size], dummy_dim),
+        max_strain,
+        regular_steps=max_strain * 10,
+    )
+    positions = [get_position(t) for t in timestamps]
+    velocity_gradients = [  # Steady flow, time variable is np.nan.
+        get_velocity_gradient(np.nan, np.asarray(x)) for x in positions
+    ]
+
+    strains = np.empty_like(timestamps)
+    strains[0] = 0
+    deformation_gradient = np.eye(3)
+
+    for t, time in enumerate(timestamps[:-1], start=1):
+        strains[t] = strains[t - 1] + (
+            _utils.strain_increment(timestamps[t] - time, velocity_gradients[t])
+        )
+        _log.info("step %d/%d (ε = %.2f)", t, len(timestamps) - 1, strains[t])
+
+        deformation_gradient = mineral.update_orientations(
+            params,
+            deformation_gradient,
+            get_velocity_gradient,
+            pathline=(time, timestamps[t], get_position),
+        )
+        if assert_each is not None:
+            assert_each(mineral, deformation_gradient)
+
+    orientations, fractions = _stats.resample_orientations(
+        mineral.orientations, mineral.fractions, seed=seed
+    )
+    cpo_strengths =np.full(len(orientations), 1.0)
+    cpo_vectors = [_diagnostics.bingham_average(o) for o in orientations]
+    fig_path, ax_path, q, s = _vis.steady_box2d(
+        None,
+        (get_velocity, [20, 20]),
+        (positions, [-size, -size], [size, size]),
+        horizontal + vertical,
+        (cpo_strengths, cpo_vectors),
+        strains,
+        cmap="cmc.batlow_r",
+        aspect="equal",
+        alpha=1,
+    )
+    fig_path.colorbar(s, ax=ax_path, aspect=25, label="Strain (ε)")
+
+    return mineral, (orientations, fractions), (fig_path, ax_path, q, s)
 
 
 class TestCellOlivineA:
@@ -280,3 +387,70 @@ class TestCellOlivineA:
                 angles_mean=angles_mean,
                 angles_err=angles_err,
             )
+
+
+class TestDiffusionCreep:
+    """Tests for diffusion creep regime."""
+
+    class_id = "diff_creep"
+
+    def test_cell_olA(self, outdir, seed, ncpus, orientations_init_y):
+        params = _core.DefaultParams().as_dict()
+        params["gbm_mobility"] = 10
+
+        def get_assert_each(i):  # The order of orientations_init_y is significant.
+            @_utils.serializable
+            def assert_each(mineral, deformation_gradient):
+                # Check that surrogate grain sizes are not changing.
+                nt.assert_allclose(
+                    mineral.fractions[-1], mineral.fractions[-2], atol=1e-16, rtol=0
+                )
+                p, g, r = _diagnostics.symmetry_pgr(mineral.orientations[-1])
+                nt.assert_allclose(
+                    np.array([p, g, r]),
+                    _diagnostics.symmetry_pgr(mineral.orientations[-2]),
+                    atol=0.25,
+                    rtol=0,
+                )
+                match i:
+                    case 0:
+                        # Check that symmetry remains mostly random.
+                        assert r > 0.9, f"{r}"
+                    case 1:
+                        # Check that symmetry remains mostly girdled.
+                        assert g > 0.9, f"{g}"
+                    case 2:
+                        # Check that symmetry remains mostly clustered.
+                        assert p > 0.9, f"{g}"
+
+            return assert_each
+
+        @_utils.serializable
+        def _run(assert_each, orientations_init):
+            return run_singlephase(
+                params,
+                seed,
+                regime=_core.DeformationRegime.matrix_diffusion,
+                orientations_init=orientations_init,
+            )
+
+        optional_logging = cl.nullcontext()
+        if outdir is not None:
+            out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_olA"
+            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+
+        assert_each_list = [
+            get_assert_each(i) for i, _ in enumerate(orientations_init_y)
+        ]
+        orientations_init_list = [
+            f(params["number_of_grains"]) for f in orientations_init_y
+        ]
+        with optional_logging:
+            with Pool(processes=ncpus) as pool:
+                for i, out in enumerate(
+                    pool.starmap(_run, zip(assert_each_list, orientations_init_list))
+                ):
+                    mineral, resampled_texture, fig_objects = out
+                    fig_objects[0].savefig(
+                        _io.resolve_path(f"{out_basepath}_path_{i}.pdf")
+                    )

@@ -12,6 +12,8 @@ from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import utils as _utils
 
+# Use a non-interactive vector-graphics backend by default.
+plt.rcParams["backend"] = "PDF"
 # Get default figure size for easy referencing and scaling.
 DEFAULT_FIG_WIDTH, DEFAULT_FIG_HEIGHT = plt.rcParams["figure.figsize"]
 plt.rcParams["axes.grid"] = True
