@@ -4,6 +4,8 @@ import os
 import platform
 import subprocess
 
+import dill
+from functools import wraps
 import numba as nb
 import numpy as np
 from matplotlib.collections import PathCollection
@@ -34,6 +36,28 @@ def import_proc_pool():
 
         has_ray = False
     return Pool, has_ray
+
+
+class SerializedCallable:
+    """A serialized version of the callable f.
+
+    Serialization is performed using the dill library. The object is safe to pass into
+    `multiprocessing.Pool.map` and its alternatives.
+
+    .. note:: To serialize a lexical closure (i.e. a function defined inside a
+        function), use the `serializable` decorator.
+
+    """
+    def __init__(self, f):
+        self._f = dill.dumps(f, protocol=5, byref=True)
+
+    def __call__(self, *args, **kwargs):
+        return dill.loads(self._f)(*args, **kwargs)
+
+
+def serializable(f):
+    """Make wrapped function serializable."""
+    return SerializedCallable(f)
 
 
 @nb.njit(fastmath=True)
