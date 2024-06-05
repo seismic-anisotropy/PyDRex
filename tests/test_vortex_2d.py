@@ -156,16 +156,13 @@ class TestCellOlivineA:
         ]
         if outdir is not None:
             # First figure with the domain and pathline.
-            fig_path, ax_path, q, s = _vis.pathline_box2d(
+            fig_path, ax_path, q, s = _vis.steady_box2d(
                 None,
-                get_velocity,
+                (get_velocity, [20, 20]),
+                (positions, [-1, -1], [1, 1]),
                 "XZ",
+                None,
                 strains,
-                positions,
-                ".",
-                [-1, -1],
-                [1, 1],
-                [20, 20],
                 cmap="cmc.batlow_r",
                 tick_formatter=lambda x, pos: str(x),
                 aspect="equal",

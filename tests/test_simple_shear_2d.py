@@ -868,17 +868,12 @@ class TestOlivineA:
             assert cpo_angles[-1] < 10
 
         if outdir is not None:
-            fig, ax, _, _ = _vis.pathline_box2d(
+            fig, ax, _, _ = _vis.steady_box2d(
                 None,
-                get_velocity,
+                (get_velocity, [20, 20]),
+                (positions, Ŋ([-2e5, -2e5]), Ŋ([2e5, 2e5])),
                 "xz",
+                (cpo_vectors, misorient_indices),
                 strains,
-                positions,
-                ".",
-                Ŋ([-2e5, -2e5]),
-                Ŋ([2e5, 2e5]),
-                [20, 20],
-                cpo_vectors=cpo_vectors,
-                cpo_strengths=misorient_indices,
             )
             fig.savefig(f"{out_basepath}.pdf")
