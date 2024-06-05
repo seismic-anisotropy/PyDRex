@@ -101,11 +101,11 @@
 
                         <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">&quot;&quot;&quot;&gt; PyDRex: Mock objects for testing and reproducibility.&quot;&quot;&quot;</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a>
-</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="kn">from</span> <span class="nn">pydrex.core</span> <span class="kn">import</span> <span class="n">MineralFabric</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="kn">from</span> <span class="nn">pydrex.core</span> <span class="kn">import</span> <span class="n">MineralFabric</span><span class="p">,</span> <span class="n">MineralPhase</span>
 </span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a>
 </span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="n">PARAMS_FRATERS2021</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a>    <span class="s2">&quot;olivine_fraction&quot;</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>    <span class="s2">&quot;enstatite_fraction&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a>    <span class="s2">&quot;phase_assemblage&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">MineralPhase</span><span class="o">.</span><span class="n">olivine</span><span class="p">,</span> <span class="n">MineralPhase</span><span class="o">.</span><span class="n">enstatite</span><span class="p">),</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>    <span class="s2">&quot;phase_fractions&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span>
 </span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a>    <span class="s2">&quot;initial_olivine_fabric&quot;</span><span class="p">:</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">olivine_A</span><span class="p">,</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a>    <span class="s2">&quot;stress_exponent&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a>    <span class="s2">&quot;deformation_exponent&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
@@ -117,8 +117,8 @@
 </span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="sd">&quot;&quot;&quot;Values used for tests 1, 2 and 4 in &lt;https://doi.org/10.1029/2021gc009846&gt;.&quot;&quot;&quot;</span>
 </span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a>
 </span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="n">PARAMS_KAMINSKI2001_FIG5_SOLID</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a>    <span class="s2">&quot;olivine_fraction&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a>    <span class="s2">&quot;enstatite_fraction&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a>    <span class="s2">&quot;phase_assemblage&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">MineralPhase</span><span class="o">.</span><span class="n">olivine</span><span class="p">,),</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a>    <span class="s2">&quot;phase_fractions&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
 </span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a>    <span class="s2">&quot;initial_olivine_fabric&quot;</span><span class="p">:</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">olivine_A</span><span class="p">,</span>
 </span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a>    <span class="s2">&quot;stress_exponent&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
 </span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a>    <span class="s2">&quot;deformation_exponent&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
@@ -130,8 +130,8 @@
 </span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a><span class="sd">&quot;&quot;&quot;Values used for the M*=0 test in &lt;https://doi.org/10.1016/s0012-821x(01)00356-9&gt;.&quot;&quot;&quot;</span>
 </span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a>
 </span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a><span class="n">PARAMS_KAMINSKI2001_FIG5_SHORTDASH</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a>    <span class="s2">&quot;olivine_fraction&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a>    <span class="s2">&quot;enstatite_fraction&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a>    <span class="s2">&quot;phase_assemblage&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">MineralPhase</span><span class="o">.</span><span class="n">olivine</span><span class="p">,),</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a>    <span class="s2">&quot;phase_fractions&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
 </span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a>    <span class="s2">&quot;initial_olivine_fabric&quot;</span><span class="p">:</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">olivine_A</span><span class="p">,</span>
 </span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>    <span class="s2">&quot;stress_exponent&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
 </span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>    <span class="s2">&quot;deformation_exponent&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
@@ -143,8 +143,8 @@
 </span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a><span class="sd">&quot;&quot;&quot;Values used for the M*=50 test in &lt;https://doi.org/10.1016/s0012-821x(01)00356-9&gt;.&quot;&quot;&quot;</span>
 </span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>
 </span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="n">PARAMS_KAMINSKI2001_FIG5_LONGDASH</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a>    <span class="s2">&quot;olivine_fraction&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>    <span class="s2">&quot;enstatite_fraction&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a>    <span class="s2">&quot;phase_assemblage&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">MineralPhase</span><span class="o">.</span><span class="n">olivine</span><span class="p">,),</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>    <span class="s2">&quot;phase_fractions&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
 </span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>    <span class="s2">&quot;initial_olivine_fabric&quot;</span><span class="p">:</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">olivine_A</span><span class="p">,</span>
 </span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>    <span class="s2">&quot;stress_exponent&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
 </span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>    <span class="s2">&quot;deformation_exponent&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
@@ -156,8 +156,8 @@
 </span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a><span class="sd">&quot;&quot;&quot;Values used for the M*=200 test in &lt;https://doi.org/10.1016/s0012-821x(01)00356-9&gt;.&quot;&quot;&quot;</span>
 </span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>
 </span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="n">PARAMS_KAMINSKI2004_FIG4_TRIANGLES</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>    <span class="s2">&quot;olivine_fraction&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>    <span class="s2">&quot;enstatite_fraction&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>    <span class="s2">&quot;phase_assemblage&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">MineralPhase</span><span class="o">.</span><span class="n">olivine</span><span class="p">,),</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>    <span class="s2">&quot;phase_fractions&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
 </span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>    <span class="s2">&quot;initial_olivine_fabric&quot;</span><span class="p">:</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">olivine_A</span><span class="p">,</span>
 </span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>    <span class="s2">&quot;stress_exponent&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
 </span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>    <span class="s2">&quot;deformation_exponent&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
@@ -169,8 +169,8 @@
 </span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="sd">&quot;&quot;&quot;Values used for the χ=0.4 test in &lt;https://doi.org/10.1111/j.1365-246x.2004.02308.x&gt;.&quot;&quot;&quot;</span>
 </span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>
 </span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a><span class="n">PARAMS_KAMINSKI2004_FIG4_SQUARES</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>    <span class="s2">&quot;olivine_fraction&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>    <span class="s2">&quot;enstatite_fraction&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>    <span class="s2">&quot;phase_assemblage&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">MineralPhase</span><span class="o">.</span><span class="n">olivine</span><span class="p">,),</span>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>    <span class="s2">&quot;phase_fractions&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
 </span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>    <span class="s2">&quot;initial_olivine_fabric&quot;</span><span class="p">:</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">olivine_A</span><span class="p">,</span>
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>    <span class="s2">&quot;stress_exponent&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>    <span class="s2">&quot;deformation_exponent&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
@@ -182,8 +182,8 @@
 </span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="sd">&quot;&quot;&quot;Values used for the χ=0.2 test in &lt;https://doi.org/10.1111/j.1365-246x.2004.02308.x&gt;.&quot;&quot;&quot;</span>
 </span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a>
 </span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a><span class="n">PARAMS_KAMINSKI2004_FIG4_CIRCLES</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>    <span class="s2">&quot;olivine_fraction&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>    <span class="s2">&quot;enstatite_fraction&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>    <span class="s2">&quot;phase_assemblage&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">MineralPhase</span><span class="o">.</span><span class="n">olivine</span><span class="p">,),</span>
+</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>    <span class="s2">&quot;phase_fractions&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
 </span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>    <span class="s2">&quot;initial_olivine_fabric&quot;</span><span class="p">:</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">olivine_A</span><span class="p">,</span>
 </span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>    <span class="s2">&quot;stress_exponent&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
 </span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>    <span class="s2">&quot;deformation_exponent&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
@@ -195,8 +195,8 @@
 </span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="sd">&quot;&quot;&quot;Values used for the χ=0 test in &lt;https://doi.org/10.1111/j.1365-246x.2004.02308.x&gt;.&quot;&quot;&quot;</span>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="n">PARAMS_HEDJAZIAN2017</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>    <span class="s2">&quot;olivine_fraction&quot;</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span>
-</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>    <span class="s2">&quot;enstatite_fraction&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>    <span class="s2">&quot;phase_assemblage&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">MineralPhase</span><span class="o">.</span><span class="n">olivine</span><span class="p">,</span> <span class="n">MineralPhase</span><span class="o">.</span><span class="n">enstatite</span><span class="p">),</span>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>    <span class="s2">&quot;phase_fractions&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span>
 </span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>    <span class="s2">&quot;initial_olivine_fabric&quot;</span><span class="p">:</span> <span class="n">MineralFabric</span><span class="o">.</span><span class="n">olivine_A</span><span class="p">,</span>
 </span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>    <span class="s2">&quot;stress_exponent&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
 </span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>    <span class="s2">&quot;deformation_exponent&quot;</span><span class="p">:</span> <span class="mf">3.5</span><span class="p">,</span>
@@ -214,7 +214,7 @@
                     <div class="attr variable">
             <span class="name">PARAMS_FRATERS2021</span>        =
 <input id="PARAMS_FRATERS2021-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-            <label class="view-value-button pdoc-button" for="PARAMS_FRATERS2021-view-value"></label><span class="default_value">{&#39;olivine_fraction&#39;: 0.7, &#39;enstatite_fraction&#39;: 0.3, &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 125, &#39;gbs_threshold&#39;: 0.3, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 5000}</span>
+            <label class="view-value-button pdoc-button" for="PARAMS_FRATERS2021-view-value"></label><span class="default_value">{&#39;phase_assemblage&#39;: (&lt;MineralPhase.olivine: 0&gt;, &lt;MineralPhase.enstatite: 1&gt;), &#39;phase_fractions&#39;: (0.7, 0.3), &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 125, &#39;gbs_threshold&#39;: 0.3, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 5000}</span>
 
         
     </div>
@@ -229,7 +229,7 @@
                     <div class="attr variable">
             <span class="name">PARAMS_KAMINSKI2001_FIG5_SOLID</span>        =
 <input id="PARAMS_KAMINSKI2001_FIG5_SOLID-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-            <label class="view-value-button pdoc-button" for="PARAMS_KAMINSKI2001_FIG5_SOLID-view-value"></label><span class="default_value">{&#39;olivine_fraction&#39;: 1, &#39;enstatite_fraction&#39;: 0, &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 0, &#39;gbs_threshold&#39;: 0, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 3375}</span>
+            <label class="view-value-button pdoc-button" for="PARAMS_KAMINSKI2001_FIG5_SOLID-view-value"></label><span class="default_value">{&#39;phase_assemblage&#39;: (&lt;MineralPhase.olivine: 0&gt;,), &#39;phase_fractions&#39;: (1,), &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 0, &#39;gbs_threshold&#39;: 0, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 3375}</span>
 
         
     </div>
@@ -244,7 +244,7 @@
                     <div class="attr variable">
             <span class="name">PARAMS_KAMINSKI2001_FIG5_SHORTDASH</span>        =
 <input id="PARAMS_KAMINSKI2001_FIG5_SHORTDASH-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-            <label class="view-value-button pdoc-button" for="PARAMS_KAMINSKI2001_FIG5_SHORTDASH-view-value"></label><span class="default_value">{&#39;olivine_fraction&#39;: 1, &#39;enstatite_fraction&#39;: 0, &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 50, &#39;gbs_threshold&#39;: 0, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 3375}</span>
+            <label class="view-value-button pdoc-button" for="PARAMS_KAMINSKI2001_FIG5_SHORTDASH-view-value"></label><span class="default_value">{&#39;phase_assemblage&#39;: (&lt;MineralPhase.olivine: 0&gt;,), &#39;phase_fractions&#39;: (1,), &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 50, &#39;gbs_threshold&#39;: 0, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 3375}</span>
 
         
     </div>
@@ -259,7 +259,7 @@
                     <div class="attr variable">
             <span class="name">PARAMS_KAMINSKI2001_FIG5_LONGDASH</span>        =
 <input id="PARAMS_KAMINSKI2001_FIG5_LONGDASH-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-            <label class="view-value-button pdoc-button" for="PARAMS_KAMINSKI2001_FIG5_LONGDASH-view-value"></label><span class="default_value">{&#39;olivine_fraction&#39;: 1, &#39;enstatite_fraction&#39;: 0, &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 200, &#39;gbs_threshold&#39;: 0, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 3375}</span>
+            <label class="view-value-button pdoc-button" for="PARAMS_KAMINSKI2001_FIG5_LONGDASH-view-value"></label><span class="default_value">{&#39;phase_assemblage&#39;: (&lt;MineralPhase.olivine: 0&gt;,), &#39;phase_fractions&#39;: (1,), &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 200, &#39;gbs_threshold&#39;: 0, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 3375}</span>
 
         
     </div>
@@ -274,7 +274,7 @@
                     <div class="attr variable">
             <span class="name">PARAMS_KAMINSKI2004_FIG4_TRIANGLES</span>        =
 <input id="PARAMS_KAMINSKI2004_FIG4_TRIANGLES-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-            <label class="view-value-button pdoc-button" for="PARAMS_KAMINSKI2004_FIG4_TRIANGLES-view-value"></label><span class="default_value">{&#39;olivine_fraction&#39;: 1, &#39;enstatite_fraction&#39;: 0, &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 125, &#39;gbs_threshold&#39;: 0.4, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 4394}</span>
+            <label class="view-value-button pdoc-button" for="PARAMS_KAMINSKI2004_FIG4_TRIANGLES-view-value"></label><span class="default_value">{&#39;phase_assemblage&#39;: (&lt;MineralPhase.olivine: 0&gt;,), &#39;phase_fractions&#39;: (1,), &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 125, &#39;gbs_threshold&#39;: 0.4, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 4394}</span>
 
         
     </div>
@@ -289,7 +289,7 @@
                     <div class="attr variable">
             <span class="name">PARAMS_KAMINSKI2004_FIG4_SQUARES</span>        =
 <input id="PARAMS_KAMINSKI2004_FIG4_SQUARES-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-            <label class="view-value-button pdoc-button" for="PARAMS_KAMINSKI2004_FIG4_SQUARES-view-value"></label><span class="default_value">{&#39;olivine_fraction&#39;: 1, &#39;enstatite_fraction&#39;: 0, &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 125, &#39;gbs_threshold&#39;: 0.2, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 4394}</span>
+            <label class="view-value-button pdoc-button" for="PARAMS_KAMINSKI2004_FIG4_SQUARES-view-value"></label><span class="default_value">{&#39;phase_assemblage&#39;: (&lt;MineralPhase.olivine: 0&gt;,), &#39;phase_fractions&#39;: (1,), &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 125, &#39;gbs_threshold&#39;: 0.2, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 4394}</span>
 
         
     </div>
@@ -304,7 +304,7 @@
                     <div class="attr variable">
             <span class="name">PARAMS_KAMINSKI2004_FIG4_CIRCLES</span>        =
 <input id="PARAMS_KAMINSKI2004_FIG4_CIRCLES-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-            <label class="view-value-button pdoc-button" for="PARAMS_KAMINSKI2004_FIG4_CIRCLES-view-value"></label><span class="default_value">{&#39;olivine_fraction&#39;: 1, &#39;enstatite_fraction&#39;: 0, &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 125, &#39;gbs_threshold&#39;: 0, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 4394}</span>
+            <label class="view-value-button pdoc-button" for="PARAMS_KAMINSKI2004_FIG4_CIRCLES-view-value"></label><span class="default_value">{&#39;phase_assemblage&#39;: (&lt;MineralPhase.olivine: 0&gt;,), &#39;phase_fractions&#39;: (1,), &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 125, &#39;gbs_threshold&#39;: 0, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 4394}</span>
 
         
     </div>
@@ -319,7 +319,7 @@
                     <div class="attr variable">
             <span class="name">PARAMS_HEDJAZIAN2017</span>        =
 <input id="PARAMS_HEDJAZIAN2017-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-            <label class="view-value-button pdoc-button" for="PARAMS_HEDJAZIAN2017-view-value"></label><span class="default_value">{&#39;olivine_fraction&#39;: 0.7, &#39;enstatite_fraction&#39;: 0.3, &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 10, &#39;gbs_threshold&#39;: 0.2, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 2197}</span>
+            <label class="view-value-button pdoc-button" for="PARAMS_HEDJAZIAN2017-view-value"></label><span class="default_value">{&#39;phase_assemblage&#39;: (&lt;MineralPhase.olivine: 0&gt;, &lt;MineralPhase.enstatite: 1&gt;), &#39;phase_fractions&#39;: (0.7, 0.3), &#39;initial_olivine_fabric&#39;: &lt;MineralFabric.olivine_A: 0&gt;, &#39;stress_exponent&#39;: 1.5, &#39;deformation_exponent&#39;: 3.5, &#39;gbm_mobility&#39;: 10, &#39;gbs_threshold&#39;: 0.2, &#39;nucleation_efficiency&#39;: 5, &#39;number_of_grains&#39;: 2197}</span>
 
         
     </div>
