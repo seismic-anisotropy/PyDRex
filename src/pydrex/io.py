@@ -184,8 +184,7 @@ def parse_scsv_schema(terse_schema):
     >>> #                | |  ______________________|______________________________
     >>> #                v v /                                                     `
     >>> schemastring = "d,m-:colA(s)colB(s:N/A:...)colC()colD(i:999999)colE(f:NaN:%)"
-    >>> schema = parse_scsv_schema(
-    ... )
+    >>> schema = parse_scsv_schema(schemastring)
     >>> schema["delimiter"]
     ','
     >>> schema["missing"]

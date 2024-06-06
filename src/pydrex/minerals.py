@@ -101,7 +101,7 @@ returned by `pydrex.core.get_crss`.
 """
 
 
-def peridotite_solidus(pressure, fit="Herzberg2000"):
+def peridotite_solidus(pressure, fit="Hirschmann2000"):
     """Get peridotite solidus (i.e. melting) temperature based on experimental fits.
 
     Pressure is expected to be in GPa.
@@ -109,7 +109,11 @@ def peridotite_solidus(pressure, fit="Herzberg2000"):
     """
     match fit:
         case "Herzberg2000":
+            # https://doi.org/10.1029/2000GC000089
             return 1086 - 5.7 * pressure + 390 * np.log(pressure)
+        case "Hirschmann2000":
+            # https://doi.org/10.1029/2000GC000070
+            return 5.104 * pressure**2 + 132.899 * pressure + 1120.661
         case _:
             raise ValueError("unsupported fit")
 

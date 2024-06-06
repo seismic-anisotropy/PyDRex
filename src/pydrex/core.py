@@ -54,7 +54,7 @@ class DeformationRegime(IntEnum):
     The mechanism of deformation that dominates accommodation of plastic deformation
     depends in general both on material properties such as grain size and mineral phase
     content as well as on thermodynamic properties such as temperature, pressure and
-    water content (via its fugacity).
+    water fugacity.
 
     The activity of diffusive mechanisms depends more strongly on grain size, whereas
     that of dislocation mechanisms depends more strongly on temperature. High
@@ -69,6 +69,10 @@ class DeformationRegime(IntEnum):
     e.g. [Gouriet et al. 2019](http://dx.doi.org/10.1016/j.epsl.2018.10.049),
     [Garel et al. 2020](http://dx.doi.org/10.1016/j.epsl.2020.116243) and
     [Demouchy et al. 2023](http://dx.doi.org/10.2138/gselements.19.3.151).
+
+    .. note:: Although a draft texture evolution behaviour is implemented in the
+        `frictional_yielding` regime, it is experimental and not yet configurable via
+        the parameter interface.
 
     """
 
