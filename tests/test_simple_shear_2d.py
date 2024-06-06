@@ -331,7 +331,7 @@ class TestOlivineA:
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_dvdx_ensemble_{_id}"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
             labels = []
 
         with optional_logging:
@@ -467,7 +467,7 @@ class TestOlivineA:
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_mobility"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
             labels = []
 
         with optional_logging:
@@ -645,7 +645,7 @@ class TestOlivineA:
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_calibration"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
             labels = []
 
         with optional_logging:
@@ -792,7 +792,7 @@ class TestOlivineA:
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
 
         with optional_logging:
             shear_direction = Ŋ([1, 0, 0], dtype=np.float64)

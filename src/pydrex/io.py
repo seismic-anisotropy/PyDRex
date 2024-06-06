@@ -13,6 +13,7 @@ the `data/` folder of the source repository. For supported cell types, see
 
 """
 
+import contextlib as cl
 import collections as c
 import csv
 import functools as ft
@@ -22,6 +23,7 @@ import os
 import pathlib
 import re
 import sys
+import logging
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -38,6 +40,7 @@ from tqdm import tqdm
 
 from pydrex import core as _core
 from pydrex import exceptions as _err
+from pydrex import utils as _utils
 from pydrex import logger as _log
 from pydrex import velocity as _velocity
 
@@ -156,6 +159,7 @@ def extract_h5part(file, phase, fabric, n_grains, output):
             )
 
 
+@_utils.defined_if(sys.version_info >= (3, 12))
 def parse_scsv_schema(terse_schema):
     """Parse terse scsv schema representation and return the expanded schema.
 
@@ -171,6 +175,9 @@ def parse_scsv_schema(terse_schema):
     `m`. These are succeeded by the column specs which are a sequence of column names
     (which must be valid Python identifiers) and their (optional) data type, missing
     data fill value, and unit/comment.
+
+    .. note:: This function is only defined if the version of your Python interpreter is
+        greater than 3.11.x.
 
     >>> #                   delimiter
     >>> #                   | missing data encoding    column specifications
@@ -758,3 +765,19 @@ def data(directory):
         return resolve_path(resources / directory)
     else:
         raise NotADirectoryError(f"{resources / directory} is not a directory")
+
+
+@cl.contextmanager
+def logfile_enable(path, level=logging.DEBUG, mode="w"):
+    """Enable logging to a file at `path` with given `level`."""
+    logger_file = logging.FileHandler(resolve_path(path), mode=mode)
+    logger_file.setFormatter(
+        logging.Formatter(
+            "%(levelname)s [%(asctime)s] %(name)s: %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+    )
+    logger_file.setLevel(level)
+    _log.LOGGER.addHandler(logger_file)
+    yield
+    logger_file.close()

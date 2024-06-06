@@ -153,7 +153,7 @@ class TestFraters2021:
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_direction_change_{_id}"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
 
         with optional_logging:
             clock_start = process_time()

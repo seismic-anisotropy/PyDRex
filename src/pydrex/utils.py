@@ -48,6 +48,7 @@ class SerializedCallable:
         function), use the `serializable` decorator.
 
     """
+
     def __init__(self, f):
         self._f = dill.dumps(f, protocol=5, byref=True)
 
@@ -56,8 +57,27 @@ class SerializedCallable:
 
 
 def serializable(f):
-    """Make wrapped function serializable."""
+    """Make decorated function serializable."""
     return SerializedCallable(f)
+
+
+def defined_if(cond):
+    """Only define decorated function if `cond` is `True`."""
+
+    def _defined_if(f):
+        def not_f(*args, **kwargs):
+            # Throw the same as we would get from `type(undefined_symbol)`.
+            raise NameError(f"name '{f.__name__}' is not defined")
+
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            if cond:
+                return f(*args, **kwargs)
+            return not_f(*args, **kwargs)
+
+        return wrapper
+
+    return _defined_if
 
 
 @nb.njit(fastmath=True)

@@ -29,7 +29,7 @@ class TestDislocationCreepOPX:
         test_id = "dudz"
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(
+            optional_logging = _io.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
         with optional_logging:
@@ -66,7 +66,7 @@ class TestDislocationCreepOPX:
         test_id = "dvdx"
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(
+            optional_logging = _io.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
         with optional_logging:
@@ -128,7 +128,7 @@ class TestDislocationCreepOlivineA:
 
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(
+            optional_logging = _io.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
             initial_angles = []
@@ -245,7 +245,7 @@ class TestDislocationCreepOlivineA:
 
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(
+            optional_logging = _io.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
             initial_angles = []
@@ -363,7 +363,7 @@ class TestDislocationCreepOlivineA:
 
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(
+            optional_logging = _io.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
             initial_angles = []
@@ -481,7 +481,7 @@ class TestDislocationCreepOlivineA:
 
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(
+            optional_logging = _io.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
             initial_angles = []
@@ -608,7 +608,7 @@ class TestRecrystallisation2D:
         cos2θ = np.cos(2 * initial_angles)
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
 
         with optional_logging:
             initial_orientations = Rotation.from_rotvec(
@@ -705,7 +705,7 @@ class TestRecrystallisation2D:
         initial_angles = np.mgrid[0 : 2 * np.pi : 360000j]
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
 
         with optional_logging:
             initial_orientations = Rotation.from_euler(

@@ -118,7 +118,7 @@ class TestOlivineA:
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_prescribed"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
             npzpath = pl.Path(f"{out_basepath}.npz")
             labels = []
             angles = []
