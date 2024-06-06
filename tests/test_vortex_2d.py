@@ -111,7 +111,7 @@ def run_singlephase(params: dict, seed: int, assert_each=None, **kwargs) -> tupl
     orientations, fractions = _stats.resample_orientations(
         mineral.orientations, mineral.fractions, seed=seed
     )
-    cpo_strengths =np.full(len(orientations), 1.0)
+    cpo_strengths = np.full(len(orientations), 1.0)
     cpo_vectors = [_diagnostics.bingham_average(o) for o in orientations]
     fig_path, ax_path, q, s = _vis.steady_box2d(
         None,
@@ -234,7 +234,7 @@ class TestCellOlivineA:
         """Run 2D cell test with 10000 grains (~14GiB RAM requirement)."""
         self.test_xz(outdir, seed, 10000)
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Unable to allocate memory")
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Unable to allocate memory")
     @pytest.mark.parametrize("n_grains", [100, 500, 1000, 5000])
     def test_xz(self, outdir, seed, n_grains):
         """Test to check that 5000 grains is "enough" to resolve transient features."""
@@ -394,6 +394,7 @@ class TestDiffusionCreep:
 
     class_id = "diff_creep"
 
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Unable to allocate memory")
     def test_cell_olA(self, outdir, seed, ncpus, orientations_init_y):
         params = _core.DefaultParams().as_dict()
         params["gbm_mobility"] = 10
@@ -453,5 +454,5 @@ class TestDiffusionCreep:
                     mineral, resampled_texture, fig_objects = out
                     if outdir is not None:
                         fig_objects[0].savefig(
-                                _io.resolve_path(f"{out_basepath}_path_{i}.pdf")
-                                )
+                            _io.resolve_path(f"{out_basepath}_path_{i}.pdf")
+                        )

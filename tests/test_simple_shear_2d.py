@@ -252,7 +252,7 @@ class TestOlivineA:
         )
         return [cs_X0(strains), cs_X0d2(strains), cs_X0d4(strains)]
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Unable to allocate memory")
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Unable to allocate memory")
     def test_zero_recrystallisation(self, seed):
         """Check that M*=0 is a reliable switch to turn off recrystallisation."""
         params = _core.DefaultParams().as_dict()
@@ -272,7 +272,7 @@ class TestOlivineA:
         for fractions in mineral.fractions[1:]:
             nt.assert_allclose(fractions, mineral.fractions[0], atol=1e-15, rtol=0)
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Unable to allocate memory")
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Unable to allocate memory")
     @pytest.mark.parametrize("gbm_mobility", [50, 100, 150])
     def test_grainsize_median(self, seed, gbm_mobility):
         """Check that M*={50,100,150}, λ*=5 causes decreasing grain size median."""

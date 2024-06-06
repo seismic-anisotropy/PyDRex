@@ -24,7 +24,7 @@ class TestDislocationCreepOPX:
 
     class_id = "dislocation_creep_OPX"
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Not equal to tolerance")
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Not equal to tolerance")
     def test_shear_dudz(self, outdir):
         test_id = "dudz"
         optional_logging = cl.nullcontext()
@@ -113,7 +113,7 @@ class TestDislocationCreepOlivineA:
 
     class_id = "dislocation_creep_OlA"
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Not equal to tolerance")
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Not equal to tolerance")
     def test_shear_dvdx_slip_010_100(self, outdir):
         r"""Single grain of A-type olivine, slip on (010)[100].
 
@@ -348,7 +348,7 @@ class TestDislocationCreepOlivineA:
                 _io.resolve_path(f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.pdf")
             )
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Not equal to tolerance")
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Not equal to tolerance")
     def test_shear_dwdx_slip_001_100(self, outdir):
         r"""Single grain of A-type olivine, slip on (001)[100].
 
@@ -466,7 +466,7 @@ class TestDislocationCreepOlivineA:
                 _io.resolve_path(f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.pdf")
             )
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Not equal to tolerance")
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Not equal to tolerance")
     def test_shear_dvdz_slip_010_001(self, outdir):
         r"""Single grain of A-type olivine, slip on (010)[001].
 

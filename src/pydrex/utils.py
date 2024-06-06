@@ -1,5 +1,6 @@
 """> PyDRex: Miscellaneous utility methods."""
 
+import sys
 import os
 import platform
 import subprocess
@@ -36,6 +37,12 @@ def import_proc_pool():
 
         has_ray = False
     return Pool, has_ray
+
+
+def in_ci(platform: str) -> bool:
+    """Check if we are in a GitHub runner with the given operating system."""
+    # https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
+    return sys.platform == platform and os.getenv("CI") is not None
 
 
 class SerializedCallable:
