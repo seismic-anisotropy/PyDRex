@@ -451,6 +451,7 @@ class TestDiffusionCreep:
                     pool.starmap(_run, zip(assert_each_list, orientations_init_list))
                 ):
                     mineral, resampled_texture, fig_objects = out
-                    fig_objects[0].savefig(
-                        _io.resolve_path(f"{out_basepath}_path_{i}.pdf")
-                    )
+                    if outdir is not None:
+                        fig_objects[0].savefig(
+                                _io.resolve_path(f"{out_basepath}_path_{i}.pdf")
+                                )

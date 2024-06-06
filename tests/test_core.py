@@ -44,6 +44,7 @@ class TestDislocationCreepOPX:
                     fractions=np.array([1.0]),
                     strain_rate=np.array([[0, 0, 1], [0, 0, 0], [1, 0, 0]]),
                     velocity_gradient=np.array([[0, 0, 2], [0, 0, 0], [0, 0, 0]]),
+                    deformation_gradient_spin=np.full((3, 3), np.nan),
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
@@ -87,6 +88,7 @@ class TestDislocationCreepOPX:
                     fractions=np.array([1.0]),
                     strain_rate=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]]),
                     velocity_gradient=np.array([[0, 0, 0], [2, 0, 0], [0, 0, 0]]),
+                    deformation_gradient_spin=np.full((3, 3), np.nan),
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
@@ -173,6 +175,7 @@ class TestDislocationCreepOlivineA:
                     fractions=np.array([1.0]),
                     strain_rate=nondim_strain_rate,
                     velocity_gradient=nondim_velocity_gradient,
+                    deformation_gradient_spin=np.full((3, 3), np.nan),
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
@@ -289,6 +292,7 @@ class TestDislocationCreepOlivineA:
                     fractions=np.array([1.0]),
                     strain_rate=nondim_strain_rate,
                     velocity_gradient=nondim_velocity_gradient,
+                    deformation_gradient_spin=np.full((3, 3), np.nan),
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
@@ -406,6 +410,7 @@ class TestDislocationCreepOlivineA:
                     fractions=np.array([1.0]),
                     strain_rate=nondim_strain_rate,
                     velocity_gradient=nondim_velocity_gradient,
+                    deformation_gradient_spin=np.full((3, 3), np.nan),
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
@@ -523,6 +528,7 @@ class TestDislocationCreepOlivineA:
                     fractions=np.array([1.0]),
                     strain_rate=nondim_strain_rate,
                     velocity_gradient=nondim_velocity_gradient,
+                    deformation_gradient_spin=np.full((3, 3), np.nan),
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
@@ -609,6 +615,7 @@ class TestRecrystallisation2D:
                 [[0, 0, θ] for θ in initial_angles]
             )
             orientations_diff, fractions_diff = _core.derivatives(
+                regime=_core.DeformationRegime.matrix_dislocation,
                 phase=_core.MineralPhase.olivine,
                 fabric=_core.MineralFabric.olivine_A,
                 n_grains=360000,
@@ -616,6 +623,7 @@ class TestRecrystallisation2D:
                 fractions=np.full(360000, 1 / 360000),
                 strain_rate=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]]),
                 velocity_gradient=np.array([[0, 0, 0], [2, 0, 0], [0, 0, 0]]),
+                deformation_gradient_spin=np.full((3, 3), np.nan),
                 stress_exponent=1.5,
                 deformation_exponent=3.5,
                 nucleation_efficiency=5,
@@ -704,6 +712,7 @@ class TestRecrystallisation2D:
                 "zx", [[np.pi / 2, θ] for θ in initial_angles]
             )
             orientations_diff, fractions_diff = _core.derivatives(
+                regime=_core.DeformationRegime.matrix_dislocation,
                 phase=_core.MineralPhase.olivine,
                 fabric=_core.MineralFabric.olivine_A,
                 n_grains=360000,
@@ -711,6 +720,7 @@ class TestRecrystallisation2D:
                 fractions=np.full(360000, 1 / 360000),
                 strain_rate=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]]),
                 velocity_gradient=np.array([[0, 0, 0], [2, 0, 0], [0, 0, 0]]),
+                deformation_gradient_spin=np.full((3, 3), np.nan),
                 stress_exponent=1.5,
                 deformation_exponent=3.5,
                 nucleation_efficiency=5,
