@@ -466,7 +466,7 @@ class Mineral:
                 y, self.n_grains
             )
             deformation_gradient_diff = velocity_gradient @ deformation_gradient
-            deformation_gradient_spin = _tensors.polar_decomp(
+            deformation_gradient_spin = _tensors.polar_decompose(
                 deformation_gradient_diff
             )[1]
             # Uses nondimensional values of strain rate and velocity gradient.

@@ -179,12 +179,12 @@ def parse_scsv_schema(terse_schema):
     .. note:: This function is only defined if the version of your Python interpreter is
         greater than 3.11.x.
 
-    >>> #                   delimiter
-    >>> #                   | missing data encoding    column specifications
-    >>> #                   | |  ______________________|______________________________
-    >>> #                   v v /                                                     `
+    >>> #                delimiter
+    >>> #                | missing data encoding    column specifications
+    >>> #                | |  ______________________|______________________________
+    >>> #                v v /                                                     `
+    >>> schemastring = "d,m-:colA(s)colB(s:N/A:...)colC()colD(i:999999)colE(f:NaN:%)"
     >>> schema = parse_scsv_schema(
-    ...     "d,m-:colA(s)colB(s:N/A:...)colC()colD(i:999999)colE(f:NaN:%)"
     ... )
     >>> schema["delimiter"]
     ','

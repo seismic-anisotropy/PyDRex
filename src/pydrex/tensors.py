@@ -12,7 +12,7 @@ import numpy as np
 
 
 @nb.njit(fastmath=True)
-def polar_decomp(matrix, left=True):
+def polar_decompose(matrix, left=True):
     """Compute polar decomposition of M as either M = RU (right) or M = VP (left)."""
     U, S, Vh = np.linalg.svd(matrix)
     if left:
