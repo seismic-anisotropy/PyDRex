@@ -64,7 +64,12 @@ class SerializedCallable:
 
 
 def serializable(f):
-    """Make decorated function serializable."""
+    """Make decorated function serializable.
+
+    .. warning:: The decorated function cannot be a method, and it will loose it's
+        docstring. It is not possible to use `functools.wraps` to mitigate this.
+
+    """
     return SerializedCallable(f)
 
 
