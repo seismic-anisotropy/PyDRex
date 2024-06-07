@@ -98,16 +98,16 @@
 
                         <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">&quot;&quot;&quot;&gt; PyDRex: tests for the SCSV plain text file format.&quot;&quot;&quot;</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a>
-</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="kn">import</span> <span class="nn">sys</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="kn">import</span> <span class="nn">tempfile</span>
-</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a>
-</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="kn">import</span> <span class="nn">pytest</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">testing</span> <span class="k">as</span> <span class="n">nt</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a>
-</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="kn">from</span> <span class="nn">pydrex</span> <span class="kn">import</span> <span class="n">exceptions</span> <span class="k">as</span> <span class="n">_err</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="kn">from</span> <span class="nn">pydrex</span> <span class="kn">import</span> <span class="n">io</span> <span class="k">as</span> <span class="n">_io</span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="kn">from</span> <span class="nn">pydrex</span> <span class="kn">import</span> <span class="n">logger</span> <span class="k">as</span> <span class="n">_log</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="kn">import</span> <span class="nn">tempfile</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">import</span> <span class="nn">pytest</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">testing</span> <span class="k">as</span> <span class="n">nt</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="kn">from</span> <span class="nn">pydrex</span> <span class="kn">import</span> <span class="n">exceptions</span> <span class="k">as</span> <span class="n">_err</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="kn">from</span> <span class="nn">pydrex</span> <span class="kn">import</span> <span class="n">io</span> <span class="k">as</span> <span class="n">_io</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="kn">from</span> <span class="nn">pydrex</span> <span class="kn">import</span> <span class="n">logger</span> <span class="k">as</span> <span class="n">_log</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="kn">from</span> <span class="nn">pydrex</span> <span class="kn">import</span> <span class="n">utils</span> <span class="k">as</span> <span class="n">_utils</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>
 </span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="k">def</span> <span class="nf">test_validate_schema</span><span class="p">(</span><span class="n">console_handler</span><span class="p">):</span>
@@ -196,7 +196,7 @@
 </span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>    <span class="n">nt</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">complex_column</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.1</span> <span class="o">+</span> <span class="mi">0</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">+</span> <span class="mi">0</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="mi">1</span><span class="n">j</span><span class="p">])</span>
 </span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>
 </span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>
-</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">skipif</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;Items are not equal&quot;</span><span class="p">)</span>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">skipif</span><span class="p">(</span><span class="n">_utils</span><span class="o">.</span><span class="n">in_ci</span><span class="p">(</span><span class="s2">&quot;win32&quot;</span><span class="p">),</span> <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;Items are not equal&quot;</span><span class="p">)</span>
 </span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a><span class="k">def</span> <span class="nf">test_save_specfile</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">named_tempfile_kwargs</span><span class="p">):</span>
 </span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test SCSV spec file reproduction.&quot;&quot;&quot;</span>
 </span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>    <span class="n">schema</span> <span class="o">=</span> <span class="p">{</span>
@@ -585,7 +585,7 @@
                 <section id="test_save_specfile">
                             <input id="test_save_specfile-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
-                    <div class="decorator">@pytest.mark.skipif(sys.platform == &#39;win32&#39;, reason=&#39;Items are not equal&#39;)</div>
+                    <div class="decorator">@pytest.mark.skipif(_utils.in_ci(&#39;win32&#39;), reason=&#39;Items are not equal&#39;)</div>
 
         <span class="def">def</span>
         <span class="name">test_save_specfile</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">outdir</span>, </span><span class="param"><span class="n">named_tempfile_kwargs</span></span><span class="return-annotation">):</span></span>
@@ -594,7 +594,7 @@
 
     </div>
     <a class="headerlink" href="#test_save_specfile"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="test_save_specfile-102"><a href="#test_save_specfile-102"><span class="linenos">102</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">skipif</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;Items are not equal&quot;</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="test_save_specfile-102"><a href="#test_save_specfile-102"><span class="linenos">102</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">skipif</span><span class="p">(</span><span class="n">_utils</span><span class="o">.</span><span class="n">in_ci</span><span class="p">(</span><span class="s2">&quot;win32&quot;</span><span class="p">),</span> <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;Items are not equal&quot;</span><span class="p">)</span>
 </span><span id="test_save_specfile-103"><a href="#test_save_specfile-103"><span class="linenos">103</span></a><span class="k">def</span> <span class="nf">test_save_specfile</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="n">named_tempfile_kwargs</span><span class="p">):</span>
 </span><span id="test_save_specfile-104"><a href="#test_save_specfile-104"><span class="linenos">104</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test SCSV spec file reproduction.&quot;&quot;&quot;</span>
 </span><span id="test_save_specfile-105"><a href="#test_save_specfile-105"><span class="linenos">105</span></a>    <span class="n">schema</span> <span class="o">=</span> <span class="p">{</span>

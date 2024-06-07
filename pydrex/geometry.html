@@ -96,7 +96,7 @@
                     <a class="function" href="#shirley_concentric_squaredisk">shirley_concentric_squaredisk</a>
             </li>
             <li>
-                    <a class="function" href="#to_indices">to_indices</a>
+                    <a class="function" href="#to_indices2d">to_indices2d</a>
             </li>
     </ul>
 
@@ -436,7 +436,7 @@
 </span><span id="L-311"><a href="#L-311"><span class="linenos">311</span></a>    <span class="k">return</span> <span class="n">x_disk</span><span class="p">,</span> <span class="n">y_disk</span>
 </span><span id="L-312"><a href="#L-312"><span class="linenos">312</span></a>
 </span><span id="L-313"><a href="#L-313"><span class="linenos">313</span></a>
-</span><span id="L-314"><a href="#L-314"><span class="linenos">314</span></a><span class="k">def</span> <span class="nf">to_indices</span><span class="p">(</span><span class="n">horizontal</span><span class="p">,</span> <span class="n">vertical</span><span class="p">):</span>
+</span><span id="L-314"><a href="#L-314"><span class="linenos">314</span></a><span class="k">def</span> <span class="nf">to_indices2d</span><span class="p">(</span><span class="n">horizontal</span><span class="p">,</span> <span class="n">vertical</span><span class="p">):</span>
 </span><span id="L-315"><a href="#L-315"><span class="linenos">315</span></a>    <span class="n">_geometry</span> <span class="o">=</span> <span class="p">(</span><span class="n">horizontal</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">vertical</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
 </span><span id="L-316"><a href="#L-316"><span class="linenos">316</span></a>    <span class="k">match</span> <span class="n">_geometry</span><span class="p">:</span>
 </span><span id="L-317"><a href="#L-317"><span class="linenos">317</span></a>        <span class="k">case</span> <span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">):</span>
@@ -1092,35 +1092,35 @@ is optimised to preserve area. See also: <a href="http://marc-b-reynolds.github.
 
 
                 </section>
-                <section id="to_indices">
-                            <input id="to_indices-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+                <section id="to_indices2d">
+                            <input id="to_indices2d-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">to_indices</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">horizontal</span>, </span><span class="param"><span class="n">vertical</span></span><span class="return-annotation">):</span></span>
+        <span class="name">to_indices2d</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">horizontal</span>, </span><span class="param"><span class="n">vertical</span></span><span class="return-annotation">):</span></span>
 
-                <label class="view-source-button" for="to_indices-view-source"><span>View Source</span></label>
+                <label class="view-source-button" for="to_indices2d-view-source"><span>View Source</span></label>
 
     </div>
-    <a class="headerlink" href="#to_indices"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="to_indices-315"><a href="#to_indices-315"><span class="linenos">315</span></a><span class="k">def</span> <span class="nf">to_indices</span><span class="p">(</span><span class="n">horizontal</span><span class="p">,</span> <span class="n">vertical</span><span class="p">):</span>
-</span><span id="to_indices-316"><a href="#to_indices-316"><span class="linenos">316</span></a>    <span class="n">_geometry</span> <span class="o">=</span> <span class="p">(</span><span class="n">horizontal</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">vertical</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
-</span><span id="to_indices-317"><a href="#to_indices-317"><span class="linenos">317</span></a>    <span class="k">match</span> <span class="n">_geometry</span><span class="p">:</span>
-</span><span id="to_indices-318"><a href="#to_indices-318"><span class="linenos">318</span></a>        <span class="k">case</span> <span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">):</span>
-</span><span id="to_indices-319"><a href="#to_indices-319"><span class="linenos">319</span></a>            <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-</span><span id="to_indices-320"><a href="#to_indices-320"><span class="linenos">320</span></a>        <span class="k">case</span> <span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">):</span>
-</span><span id="to_indices-321"><a href="#to_indices-321"><span class="linenos">321</span></a>            <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-</span><span id="to_indices-322"><a href="#to_indices-322"><span class="linenos">322</span></a>        <span class="k">case</span> <span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">):</span>
-</span><span id="to_indices-323"><a href="#to_indices-323"><span class="linenos">323</span></a>            <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-</span><span id="to_indices-324"><a href="#to_indices-324"><span class="linenos">324</span></a>        <span class="k">case</span> <span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">):</span>
-</span><span id="to_indices-325"><a href="#to_indices-325"><span class="linenos">325</span></a>            <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-</span><span id="to_indices-326"><a href="#to_indices-326"><span class="linenos">326</span></a>        <span class="k">case</span> <span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">):</span>
-</span><span id="to_indices-327"><a href="#to_indices-327"><span class="linenos">327</span></a>            <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-</span><span id="to_indices-328"><a href="#to_indices-328"><span class="linenos">328</span></a>        <span class="k">case</span> <span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">):</span>
-</span><span id="to_indices-329"><a href="#to_indices-329"><span class="linenos">329</span></a>            <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-</span><span id="to_indices-330"><a href="#to_indices-330"><span class="linenos">330</span></a>        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-</span><span id="to_indices-331"><a href="#to_indices-331"><span class="linenos">331</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span>
-</span><span id="to_indices-332"><a href="#to_indices-332"><span class="linenos">332</span></a>    <span class="k">return</span> <span class="n">indices</span>
+    <a class="headerlink" href="#to_indices2d"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="to_indices2d-315"><a href="#to_indices2d-315"><span class="linenos">315</span></a><span class="k">def</span> <span class="nf">to_indices2d</span><span class="p">(</span><span class="n">horizontal</span><span class="p">,</span> <span class="n">vertical</span><span class="p">):</span>
+</span><span id="to_indices2d-316"><a href="#to_indices2d-316"><span class="linenos">316</span></a>    <span class="n">_geometry</span> <span class="o">=</span> <span class="p">(</span><span class="n">horizontal</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">vertical</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+</span><span id="to_indices2d-317"><a href="#to_indices2d-317"><span class="linenos">317</span></a>    <span class="k">match</span> <span class="n">_geometry</span><span class="p">:</span>
+</span><span id="to_indices2d-318"><a href="#to_indices2d-318"><span class="linenos">318</span></a>        <span class="k">case</span> <span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">):</span>
+</span><span id="to_indices2d-319"><a href="#to_indices2d-319"><span class="linenos">319</span></a>            <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span><span id="to_indices2d-320"><a href="#to_indices2d-320"><span class="linenos">320</span></a>        <span class="k">case</span> <span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">):</span>
+</span><span id="to_indices2d-321"><a href="#to_indices2d-321"><span class="linenos">321</span></a>            <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</span><span id="to_indices2d-322"><a href="#to_indices2d-322"><span class="linenos">322</span></a>        <span class="k">case</span> <span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">):</span>
+</span><span id="to_indices2d-323"><a href="#to_indices2d-323"><span class="linenos">323</span></a>            <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span><span id="to_indices2d-324"><a href="#to_indices2d-324"><span class="linenos">324</span></a>        <span class="k">case</span> <span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="s2">&quot;Z&quot;</span><span class="p">):</span>
+</span><span id="to_indices2d-325"><a href="#to_indices2d-325"><span class="linenos">325</span></a>            <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</span><span id="to_indices2d-326"><a href="#to_indices2d-326"><span class="linenos">326</span></a>        <span class="k">case</span> <span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="s2">&quot;X&quot;</span><span class="p">):</span>
+</span><span id="to_indices2d-327"><a href="#to_indices2d-327"><span class="linenos">327</span></a>            <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span><span id="to_indices2d-328"><a href="#to_indices2d-328"><span class="linenos">328</span></a>        <span class="k">case</span> <span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">,</span> <span class="s2">&quot;Y&quot;</span><span class="p">):</span>
+</span><span id="to_indices2d-329"><a href="#to_indices2d-329"><span class="linenos">329</span></a>            <span class="n">indices</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span><span id="to_indices2d-330"><a href="#to_indices2d-330"><span class="linenos">330</span></a>        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
+</span><span id="to_indices2d-331"><a href="#to_indices2d-331"><span class="linenos">331</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span>
+</span><span id="to_indices2d-332"><a href="#to_indices2d-332"><span class="linenos">332</span></a>    <span class="k">return</span> <span class="n">indices</span>
 </span></pre></div>
 
 
