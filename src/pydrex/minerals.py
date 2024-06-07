@@ -127,10 +127,9 @@ def voigt_averages(minerals, phase_assemblage, phase_fractions):
     Args:
     - `minerals` — list of `pydrex.minerals.Mineral` instances storing orientations and
       fractional volumes of the grains within each distinct mineral phase
-    - `phase_assemblage` (tuple) — tuple of `pydrex.core.MineralPhase`s
-    dictionary containing weights of each mineral
-      phase, as a fraction of 1, in keys named "<phase>_fraction",
-      e.g. "olivine_fraction"
+    - `phase_assemblage` — collection of `pydrex.core.MineralPhase`s
+    - `phase_fractions` — collection of volume fractions for each phase in
+      `phase_assemblage` (values should sum to 1).
 
     Raises a ValueError if the minerals contain an unequal number of grains or stored
     texture results.
@@ -185,7 +184,7 @@ def voigt_averages(minerals, phase_assemblage, phase_fractions):
 class Mineral:
     """Class for storing polycrystal texture for a single mineral phase.
 
-    A `Mineral` stores texture data for an aggregate of grains*.
+    A `Mineral` stores texture data for an aggregate of grains¹.
     Additionally, mineral fabric type and deformation regime are also tracked.
     To provide an initial texture for the mineral, use the constructor arguments
     `fractions_init` and `orientations_init`. By default,
@@ -197,7 +196,7 @@ class Mineral:
     updated macroscopic deformation gradient based on the provided initial deformation
     gradient.
 
-    *Note that the "number of grains" is a static integer value that
+    ¹Note that the "number of grains" is a static integer value that
     does not track the actual number of physical grains in the deforming polycrystal.
     Instead, this number acts as a "number of bins" for the statistical resolution of
     the crystallographic orientation distribution. The value is roughly equivalent to
