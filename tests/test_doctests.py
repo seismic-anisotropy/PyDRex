@@ -4,11 +4,11 @@ import doctest
 import importlib
 import os
 import pkgutil
+from importlib.util import find_spec
 
 import numpy as np
-import pytest
-
 import pydrex
+import pytest
 from pydrex import logger as _log
 from pydrex.exceptions import Error
 
@@ -20,9 +20,7 @@ def _get_submodule_list():
     np.set_string_function(None)
     modules = ["pydrex." + m.name for m in pkgutil.iter_modules(pydrex.__path__)]
     modules.remove("pydrex.distributed")
-    try:
-        from pydrex import mesh
-    except ImportError:
+    if find_spec("pydrex.mesh") is None:
         modules.remove("pydrex.mesh")
     return modules
 
@@ -39,7 +37,9 @@ def test_doctests(module, capsys, verbose):
                 verbose=verbose > 1,  # Run pytest with -vv to show doctest details.
             )
             if n_fails > 0:
-                raise AssertionError(f"there were {n_fails} doctest failures from {module}")
+                raise AssertionError(
+                    f"there were {n_fails} doctest failures from {module}"
+                )
         except doctest.DocTestFailure as e:
             if e.test.lineno is None:
                 lineno = ""
@@ -59,7 +59,9 @@ def test_doctests(module, capsys, verbose):
             err_type, err, _ = e.exc_info
             if err_type == NameError:  # Raised on missing optional functions.
                 # Issue warning but let the test suite pass.
-                _log.warning("skipping doctest of missing optional symbol in %s", module)
+                _log.warning(
+                    "skipping doctest of missing optional symbol in %s", module
+                )
             else:
                 raise Error(
                     f"{err_type.__qualname__} encountered in {e.test.name} ({module}{lineno})"

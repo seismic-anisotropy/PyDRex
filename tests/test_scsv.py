@@ -5,7 +5,6 @@ import tempfile
 import numpy as np
 import pytest
 from numpy import testing as nt
-
 from pydrex import exceptions as _err
 from pydrex import io as _io
 from pydrex import logger as _log

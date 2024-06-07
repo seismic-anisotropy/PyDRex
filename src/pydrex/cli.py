@@ -24,7 +24,7 @@ class CliTool:
     def __call__(self):
         return NotImplementedError
 
-    def _get_args(self) -> argparse.Namespace:
+    def _get_args(self) -> argparse.Namespace | type[NotImplementedError]:
         return NotImplementedError
 
 
@@ -91,6 +91,7 @@ class MeshGenerator(CliTool):
             )
 
     def _get_args(self) -> argparse.Namespace:
+        assert self.__doc__ is not None, f"missing docstring for {self}"
         description, epilog = self.__doc__.split(os.linesep + os.linesep, 1)
         parser = argparse.ArgumentParser(description=description, epilog=epilog)
         parser.add_argument("size", help="width,height[,depth] of the mesh")
@@ -146,6 +147,7 @@ class H5partExtractor(CliTool):
         )
 
     def _get_args(self) -> argparse.Namespace:
+        assert self.__doc__ is not None, f"missing docstring for {self}"
         description, epilog = self.__doc__.split(os.linesep + os.linesep, 1)
         parser = argparse.ArgumentParser(description=description, epilog=epilog)
         parser.add_argument("input", help="input file (.h5part)")
@@ -201,6 +203,7 @@ class NPZFileInspector(CliTool):
                 print(f" - {name}")
 
     def _get_args(self) -> argparse.Namespace:
+        assert self.__doc__ is not None, f"missing docstring for {self}"
         description, epilog = self.__doc__.split(os.linesep + os.linesep, 1)
         parser = argparse.ArgumentParser(description=description, epilog=epilog)
         parser.add_argument("input", help="input file (.npz)")

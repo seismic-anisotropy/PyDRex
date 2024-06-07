@@ -276,13 +276,13 @@ class Mineral:
     regime: int = _core.DeformationRegime.matrix_dislocation
     n_grains: int = _core.DefaultParams().number_of_grains
     # Initial condition, randomised if not given.
-    fractions_init: np.ndarray = None
-    orientations_init: np.ndarray = None
+    fractions_init: np.ndarray | None = None
+    orientations_init: np.ndarray | None = None
     fractions: list = field(default_factory=list)
     orientations: list = field(default_factory=list)
-    seed: int = None
-    lband: int = None
-    uband: int = None
+    seed: int | None = None
+    lband: int | None = None
+    uband: int | None = None
 
     def __str__(self):
         # String output, used for str(self) and f"{self}", etc.
