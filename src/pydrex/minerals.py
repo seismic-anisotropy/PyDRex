@@ -101,6 +101,23 @@ returned by `pydrex.core.get_crss`.
 """
 
 
+def peridotite_solidus(pressure, fit="Hirschmann2000"):
+    """Get peridotite solidus (i.e. melting) temperature based on experimental fits.
+
+    Pressure is expected to be in GPa.
+
+    """
+    match fit:
+        case "Herzberg2000":
+            # https://doi.org/10.1029/2000GC000089
+            return 1086 - 5.7 * pressure + 390 * np.log(pressure)
+        case "Hirschmann2000":
+            # https://doi.org/10.1029/2000GC000070
+            return 5.104 * pressure**2 + 132.899 * pressure + 1120.661
+        case _:
+            raise ValueError("unsupported fit")
+
+
 # TODO: Compare to [Man & Huang, 2011](https://doi.org/10.1007/s10659-011-9312-y).
 def voigt_averages(minerals, phase_assemblage, phase_fractions):
     """Calculate elastic tensors as the Voigt averages of a collection of `mineral`s.
@@ -194,7 +211,7 @@ class Mineral:
     >>> olA = pydrex.Mineral(
     ...     phase=pydrex.MineralPhase.olivine,
     ...     fabric=pydrex.MineralFabric.olivine_A,
-    ...     regime=pydrex.DeformationRegime.dislocation,
+    ...     regime=pydrex.DeformationRegime.matrix_dislocation,
     ...     n_grains=2000
     ... )
     >>> olA.phase
@@ -202,7 +219,7 @@ class Mineral:
     >>> olA.fabric
     <MineralFabric.olivine_A: 0>
     >>> olA.regime
-    <DeformationRegime.dislocation: 1>
+    <DeformationRegime.matrix_dislocation: 4>
     >>> olA.n_grains
     2000
 
@@ -254,7 +271,7 @@ class Mineral:
 
     phase: int = _core.MineralPhase.olivine
     fabric: int = _core.MineralFabric.olivine_A
-    regime: int = _core.DeformationRegime.dislocation
+    regime: int = _core.DeformationRegime.matrix_dislocation
     n_grains: int = _core.DefaultParams().number_of_grains
     # Initial condition, randomised if not given.
     fractions_init: np.ndarray = None
@@ -388,7 +405,7 @@ class Mineral:
         >>> olA = pydrex.Mineral(
         ...           phase=pydrex.MineralPhase.olivine,
         ...           fabric=pydrex.MineralFabric.olivine_A,
-        ...           regime=pydrex.DeformationRegime.dislocation,
+        ...           regime=pydrex.DeformationRegime.matrix_dislocation,
         ...           n_grains=pydrex.DefaultParams().number_of_grains,
         ... )
         >>> def get_velocity_gradient(t, x):  # Simple L for simple shear.
@@ -452,8 +469,13 @@ class Mineral:
             deformation_gradient, orientations, fractions = _utils.extract_vars(
                 y, self.n_grains
             )
+            deformation_gradient_diff = velocity_gradient @ deformation_gradient
+            deformation_gradient_spin = _tensors.polar_decompose(
+                deformation_gradient_diff
+            )[1]
             # Uses nondimensional values of strain rate and velocity gradient.
             orientations_diff, fractions_diff = _core.derivatives(
+                regime=self.regime,
                 phase=self.phase,
                 fabric=self.fabric,
                 n_grains=self.n_grains,
@@ -461,6 +483,7 @@ class Mineral:
                 fractions=fractions,
                 strain_rate=strain_rate / strain_rate_max,
                 velocity_gradient=velocity_gradient / strain_rate_max,
+                deformation_gradient_spin=deformation_gradient_spin,
                 stress_exponent=config["stress_exponent"],
                 deformation_exponent=config["deformation_exponent"],
                 nucleation_efficiency=config["nucleation_efficiency"],
@@ -469,7 +492,7 @@ class Mineral:
             )
             return np.hstack(
                 (
-                    (velocity_gradient @ deformation_gradient).flatten(),
+                    deformation_gradient_diff.flatten(),
                     orientations_diff.flatten() * strain_rate_max,
                     fractions_diff * strain_rate_max,
                 )

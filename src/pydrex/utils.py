@@ -1,9 +1,12 @@
 """> PyDRex: Miscellaneous utility methods."""
 
+import sys
 import os
 import platform
 import subprocess
 
+import dill
+from functools import wraps
 import numba as nb
 import numpy as np
 from matplotlib.collections import PathCollection
@@ -34,6 +37,59 @@ def import_proc_pool():
 
         has_ray = False
     return Pool, has_ray
+
+
+def in_ci(platform: str) -> bool:
+    """Check if we are in a GitHub runner with the given operating system."""
+    # https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
+    return sys.platform == platform and os.getenv("CI") is not None
+
+
+class SerializedCallable:
+    """A serialized version of the callable f.
+
+    Serialization is performed using the dill library. The object is safe to pass into
+    `multiprocessing.Pool.map` and its alternatives.
+
+    .. note:: To serialize a lexical closure (i.e. a function defined inside a
+        function), use the `serializable` decorator.
+
+    """
+
+    def __init__(self, f):
+        self._f = dill.dumps(f, protocol=5, byref=True)
+
+    def __call__(self, *args, **kwargs):
+        return dill.loads(self._f)(*args, **kwargs)
+
+
+def serializable(f):
+    """Make decorated function serializable.
+
+    .. warning:: The decorated function cannot be a method, and it will loose its
+        docstring. It is not possible to use `functools.wraps` to mitigate this.
+
+    """
+    return SerializedCallable(f)
+
+
+def defined_if(cond):
+    """Only define decorated function if `cond` is `True`."""
+
+    def _defined_if(f):
+        def not_f(*args, **kwargs):
+            # Throw the same as we would get from `type(undefined_symbol)`.
+            raise NameError(f"name '{f.__name__}' is not defined")
+
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            if cond:
+                return f(*args, **kwargs)
+            return not_f(*args, **kwargs)
+
+        return wrapper
+
+    return _defined_if
 
 
 @nb.njit(fastmath=True)

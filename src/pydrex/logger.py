@@ -33,13 +33,14 @@ with handler_level("ERROR"):
 _log.info("this message will be printed to the console")
 ```
 
-To save debug logs to a file, the `logfile_enable` context manager is recommended.
+To save logs to a file, the `pydrex.io.logfile_enable` context manager is recommended.
 Always use the old printf style formatting for log messages, not fstrings,
 otherwise compute time will be wasted on string conversions when logging is disabled:
 
 ```python
+from pydrex import io as _io
 _log.quiet_aliens()  # Suppress third-party log messages except CRITICAL from Numba.
-with _log.logfile_enable("my_log_file.log"):  # Overwrite existing file unless mode="a".
+with _io.logfile_enable("my_log_file.log"):  # Overwrite existing file unless mode="a".
     value = 42
     _log.critical("critical error with value: %s", value)
     _log.error("runtime error with value: %s", value)
@@ -59,7 +60,7 @@ import sys
 
 import numpy as np
 
-from pydrex import io as _io
+# NOTE: Do NOT import any pydrex submodules here to avoid cyclical imports.
 
 np.set_printoptions(
     formatter={"float_kind": np.format_float_scientific},
@@ -131,22 +132,6 @@ def handler_level(level, handler=CONSOLE_LOGGER):
     handler.setLevel(level)
     yield
     handler.setLevel(default_level)
-
-
-@cl.contextmanager
-def logfile_enable(path, level=logging.DEBUG, mode="w"):
-    """Enable logging to a file at `path` with given `level`."""
-    logger_file = logging.FileHandler(_io.resolve_path(path), mode=mode)
-    logger_file.setFormatter(
-        logging.Formatter(
-            "%(levelname)s [%(asctime)s] %(name)s: %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
-    )
-    logger_file.setLevel(level)
-    LOGGER.addHandler(logger_file)
-    yield
-    logger_file.close()
 
 
 def critical(msg, *args, **kwargs):

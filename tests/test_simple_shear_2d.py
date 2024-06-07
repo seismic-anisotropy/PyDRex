@@ -135,7 +135,7 @@ class TestOlivineA:
         mineral = _minerals.Mineral(
             phase=_core.MineralPhase.olivine,
             fabric=_core.MineralFabric.olivine_A,
-            regime=_core.DeformationRegime.dislocation,
+            regime=_core.DeformationRegime.matrix_dislocation,
             n_grains=params["number_of_grains"],
             seed=seed,
         )
@@ -252,7 +252,7 @@ class TestOlivineA:
         )
         return [cs_X0(strains), cs_X0d2(strains), cs_X0d4(strains)]
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Unable to allocate memory")
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Unable to allocate memory")
     def test_zero_recrystallisation(self, seed):
         """Check that M*=0 is a reliable switch to turn off recrystallisation."""
         params = _core.DefaultParams().as_dict()
@@ -272,7 +272,7 @@ class TestOlivineA:
         for fractions in mineral.fractions[1:]:
             nt.assert_allclose(fractions, mineral.fractions[0], atol=1e-15, rtol=0)
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Unable to allocate memory")
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Unable to allocate memory")
     @pytest.mark.parametrize("gbm_mobility", [50, 100, 150])
     def test_grainsize_median(self, seed, gbm_mobility):
         """Check that M*={50,100,150}, λ*=5 causes decreasing grain size median."""
@@ -331,7 +331,7 @@ class TestOlivineA:
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_dvdx_ensemble_{_id}"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
             labels = []
 
         with optional_logging:
@@ -467,7 +467,7 @@ class TestOlivineA:
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_mobility"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
             labels = []
 
         with optional_logging:
@@ -645,7 +645,7 @@ class TestOlivineA:
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_calibration"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
             labels = []
 
         with optional_logging:
@@ -792,7 +792,7 @@ class TestOlivineA:
         optional_logging = cl.nullcontext()
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
 
         with optional_logging:
             shear_direction = Ŋ([1, 0, 0], dtype=np.float64)
@@ -868,17 +868,12 @@ class TestOlivineA:
             assert cpo_angles[-1] < 10
 
         if outdir is not None:
-            fig, ax, _, _ = _vis.pathline_box2d(
+            fig, ax, _, _ = _vis.steady_box2d(
                 None,
-                get_velocity,
+                (get_velocity, [20, 20]),
+                (positions, Ŋ([-2e5, -2e5]), Ŋ([2e5, 2e5])),
                 "xz",
+                (cpo_vectors, misorient_indices),
                 strains,
-                positions,
-                ".",
-                Ŋ([-2e5, -2e5]),
-                Ŋ([2e5, 2e5]),
-                [20, 20],
-                cpo_vectors=cpo_vectors,
-                cpo_strengths=misorient_indices,
             )
             fig.savefig(f"{out_basepath}.pdf")

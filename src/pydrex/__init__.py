@@ -139,33 +139,24 @@ from pydrex.diagnostics import (
 )
 from pydrex.geometry import (
     LatticeSystem,
-    lambert_equal_area,
     misorientation_angles,
     poles,
-    shirley_concentric_squaredisk,
     symmetry_operations,
     to_cartesian,
+    to_indices2d,
     to_spherical,
 )
-from pydrex.io import data, read_scsv, save_scsv
+from pydrex.io import data, read_scsv, save_scsv, logfile_enable
 from pydrex.minerals import (
     OLIVINE_PRIMARY_AXIS,
     OLIVINE_SLIP_SYSTEMS,
     StiffnessTensors,
     Mineral,
+    peridotite_solidus,
     voigt_averages,
 )
-from pydrex.pathlines import get_pathline
 from pydrex.stats import (
     misorientation_hist,
     misorientations_random,
     resample_orientations,
-)
-from pydrex.tensors import (
-    elastic_tensor_to_voigt,
-    rotate,
-    voigt_decompose,
-    voigt_matrix_to_vector,
-    voigt_to_elastic_tensor,
-    voigt_vector_to_matrix,
 )

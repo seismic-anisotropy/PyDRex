@@ -3,8 +3,10 @@
 import sys
 
 import matplotlib
+import numpy as np
 import pytest
 from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
+from scipy.spatial.transform import Rotation
 
 from pydrex import io as _io
 from pydrex import logger as _log
@@ -220,6 +222,20 @@ def params_Kaminski2004_fig4_circles():
 @pytest.fixture
 def params_Hedjazian2017():
     return _mock.PARAMS_HEDJAZIAN2017
+
+
+@pytest.fixture(scope="session")
+def orientations_init_y():
+    rng = np.random.default_rng(seed=8816)
+    return [
+        lambda n_grains: None,  # For random orientations.
+        lambda n_grains: Rotation.from_euler(  # A girdle around Y.
+            "y", [[x * np.pi * 2] for x in rng.random(n_grains)]
+        ).as_matrix(),
+        lambda n_grains: Rotation.from_euler(  # Clustered orientations.
+            "y", [[x * np.pi / 8] for x in rng.random(n_grains)]
+        ).as_matrix(),
+    ]
 
 
 @pytest.fixture(scope="session", params=[100, 500, 1000, 5000, 10000])

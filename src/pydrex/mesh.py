@@ -194,7 +194,7 @@ def rectangle(name, ref_axes, center, width, height, resolution, **kwargs):
 
     """
 
-    h, v = _geo.to_indices(*ref_axes)
+    h, v = _geo.to_indices2d(*ref_axes)
     center_h, center_v = center
     point_constraints = np.zeros((4, 4))  # x, y, z, nearby_edge_length
     # TODO: Support "center" which should trigger creation of an additional

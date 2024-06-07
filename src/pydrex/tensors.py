@@ -10,13 +10,30 @@ symmetric 6x6 matrix.
 import numba as nb
 import numpy as np
 
-PERMUTATION_SYMBOL = np.array(
-    [
-        [[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, -1.0, 0.0]],
-        [[0.0, 0.0, -1.0], [0.0, 0.0, 0.0], [1.0, 0.0, 0.0]],
-        [[0.0, 1.0, 0.0], [-1.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
-    ]
-)
+
+@nb.njit(fastmath=True)
+def polar_decompose(matrix, left=True):
+    """Compute polar decomposition of M as either M = RU (right) or M = VP (left)."""
+    U, S, Vh = np.linalg.svd(matrix)
+    if left:
+        return U @ Vh, U @ (np.diag(S) @ U.transpose())
+    U_matrix = Vh.transpose() @ (np.diag(S) @ Vh)
+    return matrix @ np.linalg.inv(U_matrix), U_matrix
+
+
+@nb.njit(fastmath=True)
+def invariants_second_order(tensor):
+    """Calculate invariants of a second order tensor."""
+    return (
+        np.trace(tensor),
+        tensor[0, 0] * tensor[1, 1]
+        + tensor[1, 1] * tensor[2, 2]
+        + tensor[2, 2] * tensor[0, 0]
+        - tensor[0, 1] * tensor[1, 0]
+        - tensor[1, 2] * tensor[2, 1]
+        - tensor[2, 0] * tensor[0, 2],
+        np.linalg.det(tensor),
+    )
 
 
 @nb.njit(fastmath=True)

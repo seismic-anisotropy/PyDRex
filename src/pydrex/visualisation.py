@@ -7,10 +7,13 @@ from matplotlib import pyplot as plt
 
 from pydrex import axes as _axes
 from pydrex import core as _core
+from pydrex import geometry as _geo
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import utils as _utils
 
+# Use a non-interactive vector-graphics backend by default.
+plt.rcParams["backend"] = "PDF"
 # Get default figure size for easy referencing and scaling.
 DEFAULT_FIG_WIDTH, DEFAULT_FIG_HEIGHT = plt.rcParams["figure.figsize"]
 plt.rcParams["axes.grid"] = True
@@ -26,6 +29,10 @@ if "pydrex.polefigure" not in mproj.get_projection_names():
         "failed to find pydrex.polefigure projection; it should be registered in %s",
         _axes,
     )
+
+
+def default_tick_formatter(x, pos):
+    return f"{x/1e3:.1f}"
 
 
 def polefigures(
@@ -144,44 +151,41 @@ def polefigures(
     fig.savefig(_io.resolve_path(savefile))
 
 
-def pathline_box2d(
-    ax,
-    get_velocity,
-    ref_axes,
+def steady_box2d(
+    ax: plt.Axes | None,
+    velocity: tuple,
+    geometry: tuple,
+    ref_axes: str,
+    cpo: tuple | None,
     colors,
-    positions,
-    marker,
-    min_coords,
-    max_coords,
-    resolution,
     aspect="equal",
     cmap=cmc.batlow,
-    cpo_vectors=None,
-    cpo_strengths=None,
-    tick_formatter=lambda x, pos: f"{x/1e3:.1f}",
+    marker=".",
+    tick_formatter=default_tick_formatter,
+    label_suffix="(km)",
     **kwargs,
-):
-    """Plot pathlines and velocity arrows for a 2D box domain.
+) -> tuple:
+    """Plot pathlines and steady-state velocity arrows for a 2D box domain.
 
     If `ax` is None, a new figure and axes are created with `figure_unless`.
 
     Args:
-    - `get_velocity` (callable) — callable with signature f(t, x) that returns the 3D
-      velocity vector at a given time (not used) and 3D position vector
-    - `ref_axes` (two letters from {"x", "y", "z"}) — labels for the horizontal and
+    - `velocity` — tuple containing a velocity callable¹ and the 2D resolution of the
+      velocity arrow grid, e.g. [20, 20] for 20x20 arrows over the rectangular domain
+    - `geometry` — tuple containing the array of 3D pathline positions and two 2D
+      coordinates (of the lower-left and upper-right domain corners)
+    - `ref_axes` — two letters from {"x", "y", "z"} used to label the horizontal and
       vertical axes (these also define the projection for the 3D velocity/position)
-    - `colors` (array) — monotonic values along a representative pathline in the flow
-    - `positions` (Nx3 array) — 3D position vectors along the same pathline
-    - `min_coords` (array) — 2D coordinates of the lower left corner of the domain
-    - `max_coords` (array) — 2D coordinates of the upper right corner of the domain
-    - `resolution` (array) — 2D resolution of the velocity arrow grid (i.e. number of
-      grid points in the horizontal and vertical directions) which can be set to None to
-      prevent drawing velocity vectors
-    - `aspect` (str|float, optional) — see `matplotlib.axes.Axes.set_aspect`
-    - `cmap` (Matplotlib color map, optional) — color map for `colors`
-    - `cpo_vectors` (array, optional) — vectors to plot as bars at pathline locations
-    - `cpo_strengths` (array, optional) — strengths used to scale the cpo bars
-    - `tick_formatter` (callable, optional) — function used to format tick labels
+    - `cpo` — tuple containing one array of CPO strengths and one of 3D CPO vectors;
+      alternatively set this to `None` and use `marker` to only plot pathline positions
+    - `colors` — monotonic, increasing values along the pathline (e.g. time or strain)
+    - `aspect` — optional, see `matplotlib.axes.Axes.set_aspect`
+    - `cmap` — optional custom color map for `colors`
+    - `marker` — optional pathline position marker used when `cpo` is `None`
+    - `tick_formatter` — optional custom tick formatter callable
+    - `label_suffix` — optional suffix added to the axes labels
+
+    ¹with signature `f(t, x)` where `t` is not used and `x` is a 3D position vector
 
     Additional keyword arguments are passed to the `matplotlib.axes.Axes.quiver` call
     used to plot the velocity vectors.
@@ -191,11 +195,14 @@ def pathline_box2d(
 
     """
     fig, ax = figure_unless(ax)
-    ax.set_xlabel(ref_axes[0])
-    ax.set_ylabel(ref_axes[1])
+    ax.set_xlabel(f"{ref_axes[0]} {label_suffix}")
+    ax.set_ylabel(f"{ref_axes[1]} {label_suffix}")
 
+    get_velocity, resolution = velocity
+    positions, min_coords, max_coords = geometry
     x_min, y_min = min_coords
     x_max, y_max = max_coords
+
     ax.set_xlim((x_min, x_max))
     ax.set_ylim((y_min, y_max))
     ax.set_aspect(aspect)
@@ -234,21 +241,22 @@ def pathline_box2d(
             **kwargs,
         )
 
-    P = np.asarray([[p[horizontal], p[vertical]] for p in positions])
-    if cpo_vectors is not None:
-        if cpo_strengths is None:
-            cpo_strengths = np.full(len(cpo_vectors), 1.0)
-        C = np.asarray(
-            [
-                f * np.asarray([c[horizontal], c[vertical]])
-                for f, c in zip(cpo_strengths, cpo_vectors, strict=True)
-            ]
-        )
-        cpo = ax.quiver(
-            P[:, 0],
-            P[:, 1],
-            C[:, 0],
-            C[:, 1],
+    dummy_dim = ({0, 1, 2} - set(_geo.to_indices2d(*ref_axes))).pop()
+    xi_2D = np.asarray([_utils.remove_dim(p, dummy_dim) for p in positions])
+    qcoll: plt.Quiver | plt.PathCollection
+    if cpo is None:
+        qcoll = ax.scatter(xi_2D[:, 0], xi_2D[:, 1], marker=marker, c=colors, cmap=cmap)
+    else:
+        cpo_strengths, cpo_vectors = cpo
+        cpo_2D = np.asarray([
+            s * _utils.remove_dim(v, dummy_dim)
+            for s, v in zip(cpo_strengths, cpo_vectors, strict=True)
+        ])
+        qcoll = ax.quiver(
+            xi_2D[:, 0],
+            xi_2D[:, 1],
+            cpo_2D[:, 0],
+            cpo_2D[:, 1],
             colors,
             cmap=cmap,
             pivot="mid",
@@ -257,9 +265,7 @@ def pathline_box2d(
             headlength=0,
             zorder=kwargs.pop("zorder", 10) + 1,  # Always above velocity vectors.
         )
-    else:
-        cpo = ax.scatter(P[:, 0], P[:, 1], marker=marker, c=colors, cmap=cmap)
-    return fig, ax, velocities, cpo
+    return fig, ax, velocities, qcoll
 
 
 def alignment(
@@ -636,7 +642,7 @@ def growth(
     return fig, ax, colors
 
 
-def figure_unless(ax):
+def figure_unless(ax: plt.Axes | None) -> tuple[plt.Figure, plt.Axes]:
     """Create figure and axes if `ax` is None, or return existing figure for `ax`.
 
     If `ax` is None, a new figure is created for the axes with a few opinionated default
@@ -645,11 +651,13 @@ def figure_unless(ax):
     Returns a tuple containing the figure handle and the axes object.
 
     """
+    fig: plt.Figure | None
     if ax is None:
         fig = plt.figure()
         ax = fig.add_subplot()
     else:
         fig = ax.get_figure()
+    assert fig is not None
     return fig, ax
 
 

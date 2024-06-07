@@ -57,6 +57,10 @@ def test_doctests(module, capsys, verbose):
             else:
                 lineno = f":{e.test.lineno + 1 + e.example.lineno}"
             err_type, err, _ = e.exc_info
-            raise Error(
-                f"{err_type.__qualname__} encountered in {e.test.name} ({module}{lineno})"
-            ) from err
+            if err_type == NameError:  # Raised on missing optional functions.
+                # Issue warning but let the test suite pass.
+                _log.warning("skipping doctest of missing optional symbol in %s", module)
+            else:
+                raise Error(
+                    f"{err_type.__qualname__} encountered in {e.test.name} ({module}{lineno})"
+                ) from err

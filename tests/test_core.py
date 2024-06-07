@@ -24,18 +24,19 @@ class TestDislocationCreepOPX:
 
     class_id = "dislocation_creep_OPX"
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Not equal to tolerance")
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Not equal to tolerance")
     def test_shear_dudz(self, outdir):
         test_id = "dudz"
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(
+            optional_logging = _io.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
         with optional_logging:
             for θ in np.mgrid[0 : 2 * np.pi : 360j]:
                 _log.debug("θ (°): %s", np.rad2deg(θ))
                 orientations_diff, fractions_diff = _core.derivatives(
+                    regime=_core.DeformationRegime.matrix_dislocation,
                     phase=_core.MineralPhase.enstatite,
                     fabric=_core.MineralFabric.enstatite_AB,
                     n_grains=1,
@@ -43,6 +44,7 @@ class TestDislocationCreepOPX:
                     fractions=np.array([1.0]),
                     strain_rate=np.array([[0, 0, 1], [0, 0, 0], [1, 0, 0]]),
                     velocity_gradient=np.array([[0, 0, 2], [0, 0, 0], [0, 0, 0]]),
+                    deformation_gradient_spin=np.full((3, 3), np.nan),
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
@@ -64,7 +66,7 @@ class TestDislocationCreepOPX:
         test_id = "dvdx"
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(
+            optional_logging = _io.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
         with optional_logging:
@@ -78,6 +80,7 @@ class TestDislocationCreepOPX:
                 )
                 np.testing.assert_allclose(deformation_rate.flatten(), np.zeros(9))
                 orientations_diff, fractions_diff = _core.derivatives(
+                    regime=_core.DeformationRegime.matrix_dislocation,
                     phase=_core.MineralPhase.enstatite,
                     fabric=_core.MineralFabric.enstatite_AB,
                     n_grains=1,
@@ -85,6 +88,7 @@ class TestDislocationCreepOPX:
                     fractions=np.array([1.0]),
                     strain_rate=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]]),
                     velocity_gradient=np.array([[0, 0, 0], [2, 0, 0], [0, 0, 0]]),
+                    deformation_gradient_spin=np.full((3, 3), np.nan),
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
@@ -109,7 +113,7 @@ class TestDislocationCreepOlivineA:
 
     class_id = "dislocation_creep_OlA"
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Not equal to tolerance")
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Not equal to tolerance")
     def test_shear_dvdx_slip_010_100(self, outdir):
         r"""Single grain of A-type olivine, slip on (010)[100].
 
@@ -124,7 +128,7 @@ class TestDislocationCreepOlivineA:
 
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(
+            optional_logging = _io.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
             initial_angles = []
@@ -163,6 +167,7 @@ class TestDislocationCreepOlivineA:
                 _log.debug("deformation rate:\n%s", deformation_rate)
 
                 orientations_diff, fractions_diff = _core.derivatives(
+                    regime=_core.DeformationRegime.matrix_dislocation,
                     phase=_core.MineralPhase.olivine,
                     fabric=_core.MineralFabric.olivine_A,
                     n_grains=1,
@@ -170,6 +175,7 @@ class TestDislocationCreepOlivineA:
                     fractions=np.array([1.0]),
                     strain_rate=nondim_strain_rate,
                     velocity_gradient=nondim_velocity_gradient,
+                    deformation_gradient_spin=np.full((3, 3), np.nan),
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
@@ -239,7 +245,7 @@ class TestDislocationCreepOlivineA:
 
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(
+            optional_logging = _io.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
             initial_angles = []
@@ -278,6 +284,7 @@ class TestDislocationCreepOlivineA:
                 _log.debug("deformation rate:\n%s", deformation_rate)
 
                 orientations_diff, fractions_diff = _core.derivatives(
+                    regime=_core.DeformationRegime.matrix_dislocation,
                     phase=_core.MineralPhase.olivine,
                     fabric=_core.MineralFabric.olivine_A,
                     n_grains=1,
@@ -285,6 +292,7 @@ class TestDislocationCreepOlivineA:
                     fractions=np.array([1.0]),
                     strain_rate=nondim_strain_rate,
                     velocity_gradient=nondim_velocity_gradient,
+                    deformation_gradient_spin=np.full((3, 3), np.nan),
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
@@ -340,7 +348,7 @@ class TestDislocationCreepOlivineA:
                 _io.resolve_path(f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.pdf")
             )
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Not equal to tolerance")
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Not equal to tolerance")
     def test_shear_dwdx_slip_001_100(self, outdir):
         r"""Single grain of A-type olivine, slip on (001)[100].
 
@@ -355,7 +363,7 @@ class TestDislocationCreepOlivineA:
 
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(
+            optional_logging = _io.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
             initial_angles = []
@@ -394,6 +402,7 @@ class TestDislocationCreepOlivineA:
                 _log.debug("deformation rate:\n%s", deformation_rate)
 
                 orientations_diff, fractions_diff = _core.derivatives(
+                    regime=_core.DeformationRegime.matrix_dislocation,
                     phase=_core.MineralPhase.olivine,
                     fabric=_core.MineralFabric.olivine_A,
                     n_grains=1,
@@ -401,6 +410,7 @@ class TestDislocationCreepOlivineA:
                     fractions=np.array([1.0]),
                     strain_rate=nondim_strain_rate,
                     velocity_gradient=nondim_velocity_gradient,
+                    deformation_gradient_spin=np.full((3, 3), np.nan),
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
@@ -456,7 +466,7 @@ class TestDislocationCreepOlivineA:
                 _io.resolve_path(f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.pdf")
             )
 
-    @pytest.mark.skipif(sys.platform == "win32", reason="Not equal to tolerance")
+    @pytest.mark.skipif(_utils.in_ci("win32"), reason="Not equal to tolerance")
     def test_shear_dvdz_slip_010_001(self, outdir):
         r"""Single grain of A-type olivine, slip on (010)[001].
 
@@ -471,7 +481,7 @@ class TestDislocationCreepOlivineA:
 
         optional_logging = cl.nullcontext()
         if outdir is not None:
-            optional_logging = _log.logfile_enable(
+            optional_logging = _io.logfile_enable(
                 f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}.log"
             )
             initial_angles = []
@@ -510,6 +520,7 @@ class TestDislocationCreepOlivineA:
                 _log.debug("deformation rate:\n%s", deformation_rate)
 
                 orientations_diff, fractions_diff = _core.derivatives(
+                    regime=_core.DeformationRegime.matrix_dislocation,
                     phase=_core.MineralPhase.olivine,
                     fabric=_core.MineralFabric.olivine_A,
                     n_grains=1,
@@ -517,6 +528,7 @@ class TestDislocationCreepOlivineA:
                     fractions=np.array([1.0]),
                     strain_rate=nondim_strain_rate,
                     velocity_gradient=nondim_velocity_gradient,
+                    deformation_gradient_spin=np.full((3, 3), np.nan),
                     stress_exponent=1.5,
                     deformation_exponent=3.5,
                     nucleation_efficiency=5,
@@ -596,13 +608,14 @@ class TestRecrystallisation2D:
         cos2θ = np.cos(2 * initial_angles)
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
 
         with optional_logging:
             initial_orientations = Rotation.from_rotvec(
                 [[0, 0, θ] for θ in initial_angles]
             )
             orientations_diff, fractions_diff = _core.derivatives(
+                regime=_core.DeformationRegime.matrix_dislocation,
                 phase=_core.MineralPhase.olivine,
                 fabric=_core.MineralFabric.olivine_A,
                 n_grains=360000,
@@ -610,6 +623,7 @@ class TestRecrystallisation2D:
                 fractions=np.full(360000, 1 / 360000),
                 strain_rate=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]]),
                 velocity_gradient=np.array([[0, 0, 0], [2, 0, 0], [0, 0, 0]]),
+                deformation_gradient_spin=np.full((3, 3), np.nan),
                 stress_exponent=1.5,
                 deformation_exponent=3.5,
                 nucleation_efficiency=5,
@@ -691,13 +705,14 @@ class TestRecrystallisation2D:
         initial_angles = np.mgrid[0 : 2 * np.pi : 360000j]
         if outdir is not None:
             out_basepath = f"{outdir}/{SUBDIR}/{self.class_id}_{test_id}"
-            optional_logging = _log.logfile_enable(f"{out_basepath}.log")
+            optional_logging = _io.logfile_enable(f"{out_basepath}.log")
 
         with optional_logging:
             initial_orientations = Rotation.from_euler(
                 "zx", [[np.pi / 2, θ] for θ in initial_angles]
             )
             orientations_diff, fractions_diff = _core.derivatives(
+                regime=_core.DeformationRegime.matrix_dislocation,
                 phase=_core.MineralPhase.olivine,
                 fabric=_core.MineralFabric.olivine_A,
                 n_grains=360000,
@@ -705,6 +720,7 @@ class TestRecrystallisation2D:
                 fractions=np.full(360000, 1 / 360000),
                 strain_rate=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 0]]),
                 velocity_gradient=np.array([[0, 0, 0], [2, 0, 0], [0, 0, 0]]),
+                deformation_gradient_spin=np.full((3, 3), np.nan),
                 stress_exponent=1.5,
                 deformation_exponent=3.5,
                 nucleation_efficiency=5,

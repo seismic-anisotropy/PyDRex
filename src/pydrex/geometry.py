@@ -311,7 +311,7 @@ def shirley_concentric_squaredisk(xvals, yvals):
     return x_disk, y_disk
 
 
-def to_indices(horizontal, vertical):
+def to_indices2d(horizontal, vertical):
     _geometry = (horizontal.upper(), vertical.upper())
     match _geometry:
         case ("X", "Y"):

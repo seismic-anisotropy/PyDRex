@@ -133,7 +133,7 @@ def simple_shear_2d(direction, deformation_plane, strain_rate):
 
     """
     try:
-        indices = _geo.to_indices(direction, deformation_plane)
+        indices = _geo.to_indices2d(direction, deformation_plane)
     except ValueError:
         raise ValueError(
             "unsupported shear type with"
@@ -232,7 +232,7 @@ def cell_2d(horizontal, vertical, velocity_edge, edge_length=2):
     if edge_length < 0:
         raise ValueError(f"edge length of 2D cell must be positive, not {edge_length}")
     try:
-        indices = _geo.to_indices(horizontal, vertical)
+        indices = _geo.to_indices2d(horizontal, vertical)
     except ValueError:
         raise ValueError(
             "unsupported convection cell geometry with"
@@ -306,7 +306,7 @@ def corner_2d(horizontal, vertical, plate_speed):
 
     """
     try:
-        indices = _geo.to_indices(horizontal, vertical)
+        indices = _geo.to_indices2d(horizontal, vertical)
     except ValueError:
         raise ValueError(
             "unsupported convection cell geometry with"
