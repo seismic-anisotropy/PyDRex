@@ -50,7 +50,7 @@ test = ["pytest"]
 doc = ["pdoc"]
 mesh = ["gmsh"]  # NOTE: Saying `import gmsh` is like saying "I don't want my CI to work".
 ray = ["ray >= 2.0.0"]
-dev = ["pdoc", "ptpython", "pyvista", "ruff", "uniplot", "pytest", "mypy"]
+dev = ["pdoc", "pre-commit", "ptpython", "pyvista", "ruff", "uniplot", "pytest", "mypy"]
 lsp = ["python-lsp-ruff", "python-lsp-server", "pylsp-mypy"]
 
 [project.urls]
