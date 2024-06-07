@@ -1,7 +1,6 @@
 """> PyDRex: Tests for tensor operations."""
 
 import numpy as np
-
 from pydrex import tensors as _tensors
 from pydrex.minerals import StiffnessTensors
 

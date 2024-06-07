@@ -239,7 +239,7 @@ def default_ncpus():
                 return int(out.stdout.strip()) - 1
             case "Windows":
                 return int(os.environ["NUMBER_OF_PROCESSORS"]) - 1
-    except AttributeError or subprocess.CalledProcessError or KeyError:
+    except (AttributeError, subprocess.CalledProcessError, KeyError):
         return 1
 
 

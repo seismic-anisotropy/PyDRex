@@ -6,12 +6,12 @@ import matplotlib
 import numpy as np
 import pytest
 from _pytest.logging import LoggingPlugin, _LiveLoggingStreamHandler
-from scipy.spatial.transform import Rotation
-
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import mock as _mock
 from pydrex import utils as _utils
+from scipy.spatial.transform import Rotation
+
 from tests import test_vortex_2d as _test_vortex_2d
 
 _log.quiet_aliens()  # Stop imported modules from spamming the logs.

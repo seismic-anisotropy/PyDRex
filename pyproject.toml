@@ -96,5 +96,5 @@ exclude = [
 "tests/test_scsv.py" = ["E501"]  # Don't complain about long lines here.
 
 [[tool.mypy.overrides]]
-module = "pydrex"
+module = "pydrex.*,numba.*,h5py.*,meshio.*,gmsh.*,dill.*,cmcrameri.*,scipy.*,ray.*"
 ignore_missing_imports = true

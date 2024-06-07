@@ -13,17 +13,17 @@ the `data/` folder of the source repository. For supported cell types, see
 
 """
 
-import contextlib as cl
 import collections as c
+import contextlib as cl
 import csv
 import functools as ft
 import io
 import itertools as it
+import logging
 import os
 import pathlib
 import re
 import sys
-import logging
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -40,8 +40,8 @@ from tqdm import tqdm
 
 from pydrex import core as _core
 from pydrex import exceptions as _err
-from pydrex import utils as _utils
 from pydrex import logger as _log
+from pydrex import utils as _utils
 from pydrex import velocity as _velocity
 
 SCSV_TYPEMAP = {

@@ -1,19 +1,17 @@
 """> PyDRex: Tests for core D-Rex routines."""
 
 import contextlib as cl
-import sys
 
 import numpy as np
 import pytest
 from numpy import testing as nt
-from scipy.spatial.transform import Rotation
-
 from pydrex import core as _core
 from pydrex import io as _io
 from pydrex import logger as _log
 from pydrex import minerals as _minerals
 from pydrex import utils as _utils
 from pydrex import visualisation as _vis
+from scipy.spatial.transform import Rotation
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "core"
