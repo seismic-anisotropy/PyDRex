@@ -4,7 +4,6 @@ import doctest
 import importlib
 import os
 import pkgutil
-from importlib.util import find_spec
 
 import numpy as np
 import pydrex
@@ -19,9 +18,11 @@ def _get_submodule_list():
     np.set_printoptions()
     np.set_string_function(None)
     modules = ["pydrex." + m.name for m in pkgutil.iter_modules(pydrex.__path__)]
-    modules.remove("pydrex.distributed")
-    if find_spec("pydrex.mesh") is None:
-        modules.remove("pydrex.mesh")
+    for module in modules:
+        try:
+            importlib.import_module(module)
+        except ModuleNotFoundError:
+            modules.remove(module)
     return modules
 
 
@@ -61,6 +62,11 @@ def test_doctests(module, capsys, verbose):
                 # Issue warning but let the test suite pass.
                 _log.warning(
                     "skipping doctest of missing optional symbol in %s", module
+                )
+            elif err_type == np.core._exceptions._ArrayMemoryError:
+                # Faiures to allocate should not be fatal to the doctest test suite.
+                _log.warning(
+                    "skipping doctests for module %s due to insufficient memory", module
                 )
             else:
                 raise Error(
