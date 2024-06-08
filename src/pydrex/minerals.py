@@ -108,6 +108,7 @@ def peridotite_solidus(pressure, fit="Hirschmann2000"):
     Supported fits:
     - ["Hirschmann2000"](https://doi.org/10.1029/2000GC000070)
     - ["Herzberg2000"](https://doi.org/10.1029/2000GC000089)
+    - ["Duvernay2024"](https://doi.org/10.1029/2023GC011288)
 
     """
     match fit:
@@ -115,6 +116,8 @@ def peridotite_solidus(pressure, fit="Hirschmann2000"):
             return 1086 - 5.7 * pressure + 390 * np.log(pressure)
         case "Hirschmann2000":
             return -5.104 * pressure**2 + 132.899 * pressure + 1120.661
+        case "Duvernay2024":
+            return -6.8 * pressure**2 + 141.4 * pressure + 1101.3
         case _:
             raise ValueError("unsupported fit")
 
