@@ -2,7 +2,6 @@
 
 import contextlib as cl
 import functools as ft
-import sys
 
 import numpy as np
 import pytest

@@ -464,6 +464,9 @@ class Mineral:
                 )
                 return
 
+            if get_regime is not None:
+                self.regime = get_regime(t, position)
+
             try:
                 volume_fraction = params["phase_fractions"][
                     params["phase_assemblage"].index(self.phase)
