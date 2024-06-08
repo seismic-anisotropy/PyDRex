@@ -12,7 +12,7 @@ from pydrex import stats as _stats
 class PoleFigureAxes(mplax.Axes):
     """Axes class designed for crystallographic pole figures.
 
-    Thin matplotlib Axes wrapper for crystallographic pole figures.
+    Thin `matplotlib.axes.Axes` wrapper for crystallographic pole figures.
 
     .. note::
         Projections are not performed automatically using default methods like
@@ -60,27 +60,26 @@ class PoleFigureAxes(mplax.Axes):
 
     def polefigure(
         self,
-        data,
-        density=False,
-        ref_axes="xz",
+        data: np.ndarray,
+        density: bool = False,
+        ref_axes: str = "xz",
         hkl=[1, 0, 0],
-        density_kwargs=None,
+        density_kwargs: dict | None = None,
         **kwargs,
     ):
         """Plot pole figure of crystallographic texture.
 
-        Args:
-        - `data` (array) — Nx3x3 array of orientation matrices
-        - `density` (bool, optional) — plot contoured pole figures, False by default
-        - `ref_axes` (string, optional) — letters specifying the horizontal and vertical
-          axes of the pole figure, and respective labels
-        - `hkl` (array, optional) — crystallographic axis (one of the slip
-          directions of olivine, i.e. [1, 0, 0], [0, 1, 0] or [0, 0, 1])
-        - `density_kwargs` (dict, optional) — keyword arguments to pass to
+        - `data` — Nx3x3 array of orientation matrices
+        - `density` (optional) — plot contoured pole figures, False by default
+        - `ref_axes` (optional) — letters specifying the horizontal and vertical axes of
+          the pole figure, and respective labels
+        - `hkl` (optional) — crystallographic axis (one of the slip directions of
+          the mineral phase, e.g. [1, 0, 0], [0, 1, 0] or [0, 0, 1])
+        - `density_kwargs` (optional) — keyword arguments to pass to
           `pydrex.stats.point_density` if `density=True`
 
         Any additional keyword arguments are passed to either `tripcolor` if
-        `density=True` or `scatter` if `density=False`
+        `density=True` or `scatter` if `density=False`.
 
         """
         if density_kwargs is None:

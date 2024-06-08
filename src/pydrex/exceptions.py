@@ -11,7 +11,7 @@ class MissingDependencyError(Error):
     """Exception raised when optional dependencies are missing.
 
     Attributes:
-        message — explanation of the error
+    - message — explanation of the error
 
     """
 
@@ -23,7 +23,7 @@ class ConfigError(Error):
     """Exception raised for errors in the input configuration.
 
     Attributes:
-        message — explanation of the error
+    - message — explanation of the error
 
     """
 
@@ -35,7 +35,7 @@ class MeshError(Error):
     """Exception raised for errors in the input mesh.
 
     Attributes:
-        message — explanation of the error
+    - message — explanation of the error
 
     """
 
@@ -47,7 +47,7 @@ class IterationError(Error):
     """Exception raised for errors in numerical iteration schemes.
 
     Attributes:
-        message — explanation of the error
+    - message — explanation of the error
 
     """
 
@@ -72,7 +72,7 @@ class ModelContextError(Error):
     """Exception raised for errors in `mesh.Model` context state.
 
     Attributes:
-        message — explanation of the error
+    - message — explanation of the error
 
     """
 

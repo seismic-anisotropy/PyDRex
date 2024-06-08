@@ -97,15 +97,16 @@ def _corner_2d_grad(t, x, horizontal, vertical, plate_speed):
     return prefactor * grad_v
 
 
-def simple_shear_2d(direction, deformation_plane, strain_rate):
+def simple_shear_2d(
+    direction: str, deformation_plane: str, strain_rate: float
+) -> tuple:
     """Return simple shear velocity and velocity gradient callables.
 
     The returned callables have signature f(t, x) where x is a 3D position vector.
 
-    Args:
     - `direction` (one of {"X", "Y", "Z"}) — velocity vector direction
     - `deformation_plane` (one of {"X", "Y", "Z"}) — direction of velocity gradient
-    - `strain_rate` (float) — 1/2 × magnitude of the largest eigenvalue of the velocity
+    - `strain_rate` — 1/2 × magnitude of the largest eigenvalue of the velocity
       gradient
 
     .. note::
@@ -156,7 +157,9 @@ def simple_shear_2d(direction, deformation_plane, strain_rate):
     )
 
 
-def cell_2d(horizontal, vertical, velocity_edge, edge_length=2):
+def cell_2d(
+    horizontal: str, vertical: str, velocity_edge: float, edge_length: float = 2.0
+) -> tuple:
     r"""Get velocity and velocity gradient callables for a steady-state 2D Stokes cell.
 
     The cell is centered at (0,0) and the velocity field is defined by:
@@ -169,11 +172,10 @@ def cell_2d(horizontal, vertical, velocity_edge, edge_length=2):
 
     The returned callables have signature f(t, x) where x is a 3D position vector.
 
-    Args:
     - `horizontal` (one of {"X", "Y", "Z"}) — horizontal direction
     - `vertical` (one of {"X", "Y", "Z"}) — vertical direction
-    - `velocity_edge` (float) — velocity magnitude at the center of the cell edge
-    - `edge_length` (float, optional) — the edge length of the cell (= 2 by default)
+    - `velocity_edge` — velocity magnitude at the center of the cell edge
+    - `edge_length` (optional) — the edge length of the cell (= 2 by default)
 
     Examples:
 
@@ -257,7 +259,7 @@ def cell_2d(horizontal, vertical, velocity_edge, edge_length=2):
     )
 
 
-def corner_2d(horizontal, vertical, plate_speed):
+def corner_2d(horizontal: str, vertical: str, plate_speed: float) -> tuple:
     r"""Get velocity and velocity gradient callables for a steady-state 2D corner flow.
 
     The velocity field is defined by:
@@ -299,7 +301,6 @@ def corner_2d(horizontal, vertical, plate_speed):
 
     The returned callables have signature f(t, x) where x is a 3D position vector.
 
-    Args:
     - `horizontal` (one of {"X", "Y", "Z"}) — horizontal direction
     - `vertical` (one of {"X", "Y", "Z"}) — vertical direction
     - `plate_speed` (float) — speed of the “plate” i.e. upper boundary

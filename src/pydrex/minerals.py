@@ -124,7 +124,6 @@ def peridotite_solidus(pressure, fit="Hirschmann2000"):
 def voigt_averages(minerals, phase_assemblage, phase_fractions):
     """Calculate elastic tensors as the Voigt averages of a collection of `mineral`s.
 
-    Args:
     - `minerals` — list of `pydrex.minerals.Mineral` instances storing orientations and
       fractional volumes of the grains within each distinct mineral phase
     - `phase_assemblage` — collection of `pydrex.core.MineralPhase`s
@@ -370,10 +369,11 @@ class Mineral:
 
     def update_orientations(
         self,
-        config,
-        deformation_gradient,
+        params: dict,
+        deformation_gradient: np.ndarray,
         get_velocity_gradient,
-        pathline,
+        pathline: tuple,
+        get_regime=None,
         **kwargs,
     ):
         """Update orientations and volume distribution for the `Mineral`.
@@ -382,16 +382,24 @@ class Mineral:
         for minerals undergoing plastic deformation. Return the updated deformation
         gradient measuring the corresponding macroscopic deformation.
 
-        Args:
-        - `config` (dict) — PyDRex configuration dictionary
-        - `deformation_gradient` (array) — 3x3 deformation gradient tensor
-        - `get_velocity_gradient` (function) — callable with signature f(t, x) that
-          returns a 3x3 velocity gradient matrix at time t and position x (3D vector)
-        - `pathline` (tuple) — tuple consisting of:
-            1. the time at which to start the CPO integration (t_start)
-            2. the time at which to stop the CPO integration (t_end)
-            3. callable with signature f(t) that returns the position of the mineral at
-                time t ∈ [t_start, t_end]
+        .. note:: For multi-phase simulations, the return value should only be collected
+            for the last phase, i.e. the last call to `update_orientations`. This value
+            should be passed on to subsequent calls to `update_orientations` as the
+            `deformation_gradient` argument.
+
+        - `params` — dictionary with the same keys as the return value of
+          `pydrex.core.DefaultParams.as_dict()`
+        - `deformation_gradient` — 3x3 deformation gradient tensor
+        - `get_velocity_gradient` — callable with signature `f(t, x)` that returns a 3x3
+          velocity gradient matrix at time `t` and position `x` (3D vector)
+        - `pathline` — tuple consisting of:
+            1. the time at which to start the CPO integration
+            2. the time at which to stop the CPO integration
+            3. a callable with signature `f(t)` that returns the position of the mineral
+            at time `t` where $t ∈ [t_{start}, t_{end}]$
+        - `get_regime` (optional) — callable with signature f(t, x) that returns a
+          `pydrex.core.DeformationRegime` declaring the dominant deformation mechanism
+          at time `t` and position `x` (3D vector)
 
         Any additional (optional) keyword arguments are passed to
         `scipy.integrate.LSODA`.

@@ -11,15 +11,19 @@ from pydrex import stats as _stats
 from pydrex import utils as _utils
 
 
-def resample_orientations(orientations, fractions, n_samples=None, seed=None):
+def resample_orientations(
+    orientations: np.ndarray,
+    fractions: np.ndarray,
+    n_samples: int | None = None,
+    seed: int | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
     """Return new samples from `orientations` weighted by the volume distribution.
 
-    Args:
-    - `orientations` (array) — NxMx3x3 array of orientations
-    - `fractions` (array) — NxM array of grain volume fractions
-    - `n_samples` (int) — optional number of samples to return, default is M
-    - `seed` (int) — optional seed for the random number generator, which is used to
-      pick random grain volume samples from the discrete distribution
+    - `orientations` — NxMx3x3 array of orientations
+    - `fractions` — NxM array of grain volume fractions
+    - `n_samples` — optional number of samples to return, default is M
+    - `seed` — optional seed for the random number generator, which is used to pick
+      random grain volume samples from the discrete distribution
 
     Returns the Nx`n_samples`x3x3 orientations and associated sorted (ascending) grain
     volumes.
@@ -76,7 +80,9 @@ def _scatter_matrix(orientations, row):
     return scatter
 
 
-def misorientation_hist(orientations, system: _geo.LatticeSystem, bins=None):
+def misorientation_hist(
+    orientations: np.ndarray, system: _geo.LatticeSystem, bins: int | None = None
+):
     r"""Calculate misorientation histogram for polycrystal orientations.
 
     The `bins` argument is passed to `numpy.histogram`.
@@ -121,7 +127,7 @@ def misorientation_hist(orientations, system: _geo.LatticeSystem, bins=None):
     return np.histogram(misorientations_data, bins=θmax, range=(0, θmax), density=True)
 
 
-def misorientations_random(low, high, system: _geo.LatticeSystem):
+def misorientations_random(low: float, high: float, system: _geo.LatticeSystem):
     """Get expected count of misorientation angles for an isotropic aggregate.
 
     Estimate the expected number of misorientation angles between grains
@@ -194,7 +200,7 @@ def misorientations_random(low, high, system: _geo.LatticeSystem):
     return np.sum(counts_both) / 2
 
 
-def _max_misorientation(system):
+def _max_misorientation(system: _geo.LatticeSystem):
     # Maximum misorientation angle for two grains of the given lattice symmetry system.
     s = _geo.LatticeSystem
     match system:

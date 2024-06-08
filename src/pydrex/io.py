@@ -66,7 +66,9 @@ _SCSV_DEFAULT_TYPE = "string"
 _SCSV_DEFAULT_FILL = ""
 
 
-def extract_h5part(file, phase, fabric, n_grains, output):
+def extract_h5part(
+    file, phase: _core.MineralPhase, fabric: _core.MineralFabric, n_grains: int, output
+):
     """Extract CPO data from Fluidity h5part file and save to canonical formats."""
     from pydrex.minerals import Mineral
 
@@ -160,7 +162,7 @@ def extract_h5part(file, phase, fabric, n_grains, output):
 
 
 @_utils.defined_if(sys.version_info >= (3, 12))
-def parse_scsv_schema(terse_schema):
+def parse_scsv_schema(terse_schema: str) -> dict:
     """Parse terse scsv schema representation and return the expanded schema.
 
     The terse schema is useful for command line tools and can be specified in a single
@@ -336,7 +338,6 @@ def read_scsv(file):
 def write_scsv_header(stream, schema, comments=None):
     """Write YAML header to an SCSV stream.
 
-    Args:
     - `stream` — open output stream (e.g. file handle) where data should be written
     - `schema` — SCSV schema dictionary, with 'delimiter', 'missing' and 'fields' keys
     - `comments` (optional) — array of comments to be written above the schema, each on
@@ -379,7 +380,6 @@ def write_scsv_header(stream, schema, comments=None):
 def save_scsv(file, schema, data, **kwargs):
     """Save data to SCSV file.
 
-    Args:
     - `file` — path to the file where the data should be written
     - `schema` — SCSV schema dictionary, with 'delimiter', 'missing' and 'fields' keys
     - `data` — data arrays (columns) of equal length
@@ -685,7 +685,7 @@ def _parse_output_options(output_opts, level, phase_assemblage):
             )
 
 
-def _parse_phase(ϕ: str | _core.MineralPhase | int):
+def _parse_phase(ϕ: str | _core.MineralPhase | int) -> _core.MineralPhase:
     if isinstance(ϕ, str):
         try:
             return getattr(_core.MineralPhase, ϕ)
@@ -695,7 +695,7 @@ def _parse_phase(ϕ: str | _core.MineralPhase | int):
         return ϕ
     elif isinstance(ϕ, int):
         try:
-            return _core.MineralPhase[ϕ]
+            return _core.MineralPhase(ϕ)
         except IndexError:
             raise _err.ConfigError(f"invalid phase in phase assemblage: {ϕ}") from None
     raise _err.ConfigError(f"invalid phase in phase assemblage: {ϕ}") from None

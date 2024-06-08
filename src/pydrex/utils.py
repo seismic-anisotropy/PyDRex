@@ -1,12 +1,12 @@
 """> PyDRex: Miscellaneous utility methods."""
 
-import sys
 import os
 import platform
 import subprocess
+import sys
+from functools import wraps
 
 import dill
-from functools import wraps
 import numba as nb
 import numpy as np
 from matplotlib.collections import PathCollection
@@ -17,7 +17,7 @@ from matplotlib.transforms import ScaledTranslation
 from pydrex import logger as _log
 
 
-def import_proc_pool():
+def import_proc_pool() -> tuple:
     """Import either `ray.util.multiprocessing.Pool` or `multiprocessing.Pool`.
 
     Import a process `Pool` object either from Ray of from Python's stdlib.
@@ -109,7 +109,9 @@ def strain_increment(dt, velocity_gradient):
 
 
 @nb.njit
-def apply_gbs(orientations, fractions, gbs_threshold, orientations_prev, n_grains):
+def apply_gbs(
+    orientations, fractions, gbs_threshold, orientations_prev, n_grains
+) -> tuple[np.ndarray, np.ndarray]:
     """Apply grain boundary sliding for small grains."""
     mask = fractions < (gbs_threshold / n_grains)
     # _log.debug(
@@ -131,7 +133,7 @@ def apply_gbs(orientations, fractions, gbs_threshold, orientations_prev, n_grain
 
 
 @nb.njit
-def extract_vars(y, n_grains):
+def extract_vars(y, n_grains) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Extract deformation gradient, orientation matrices and grain sizes from y."""
     deformation_gradient = y[:9].reshape((3, 3))
     orientations = y[9 : n_grains * 9 + 9].reshape((n_grains, 3, 3)).clip(-1, 1)
@@ -218,7 +220,7 @@ def add_dim(a, dim, val=0):
     return _a
 
 
-def default_ncpus():
+def default_ncpus() -> int:
     """Get a safe default number of CPUs available for multiprocessing.
 
     On Linux platforms that support it, the method `os.sched_getaffinity()` is used.
@@ -239,6 +241,8 @@ def default_ncpus():
                 return int(out.stdout.strip()) - 1
             case "Windows":
                 return int(os.environ["NUMBER_OF_PROCESSORS"]) - 1
+            case _:
+                return 1
     except (AttributeError, subprocess.CalledProcessError, KeyError):
         return 1
 

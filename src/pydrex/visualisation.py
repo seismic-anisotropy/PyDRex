@@ -169,7 +169,6 @@ def steady_box2d(
 
     If `ax` is None, a new figure and axes are created with `figure_unless`.
 
-    Args:
     - `velocity` — tuple containing a velocity callable¹ and the 2D resolution of the
       velocity arrow grid, e.g. [20, 20] for 20x20 arrows over the rectangular domain
     - `geometry` — tuple containing the array of 3D pathline positions and two 2D
@@ -248,10 +247,12 @@ def steady_box2d(
         qcoll = ax.scatter(xi_2D[:, 0], xi_2D[:, 1], marker=marker, c=colors, cmap=cmap)
     else:
         cpo_strengths, cpo_vectors = cpo
-        cpo_2D = np.asarray([
-            s * _utils.remove_dim(v, dummy_dim)
-            for s, v in zip(cpo_strengths, cpo_vectors, strict=True)
-        ])
+        cpo_2D = np.asarray(
+            [
+                s * _utils.remove_dim(v, dummy_dim)
+                for s, v in zip(cpo_strengths, cpo_vectors, strict=True)
+            ]
+        )
         qcoll = ax.quiver(
             xi_2D[:, 0],
             xi_2D[:, 1],
@@ -269,18 +270,18 @@ def steady_box2d(
 
 
 def alignment(
-    ax,
-    strains,
-    angles,
-    markers,
-    labels,
-    err=None,
-    θ_max=90,
-    θ_fse=None,
-    colors=None,
+    ax: plt.Axes | None,
+    strains: np.ndarray,
+    angles: np.ndarray,
+    markers: list[str] | tuple[str],
+    labels: list[str] | tuple[str],
+    err: np.ndarray | None = None,
+    θ_max: int = 90,
+    θ_fse: np.ndarray | None = None,
+    colors: np.ndarray | None = None,
     cmaps=None,
     **kwargs,
-):
+) -> tuple:
     """Plot `angles` (in degrees) versus `strains` on the given axis.
 
     Alignment angles could be either bingham averages or the a-axis in the hexagonal
@@ -290,18 +291,17 @@ def alignment(
 
     If `ax` is None, a new figure and axes are created with `figure_unless`.
 
-    Args:
-    - `strains` (array) — X-values, accumulated strain (tensorial) during CPO evolution,
-      may be a 2D array of multiple strain series
-    - `angles` (array) — Y-values, may be a 2D array of multiple angle series
-    - `markers` (sequence) — MatPlotLib markers to use for the data series
-    - `labels` (sequence) — labels to use for the data series
-    - `err` (array, optional) — standard errors for the `angles`, shapes must match
-    - `θ_max` (int) — maximum angle (°) to show on the plot, should be less than 90
-    - `θ_fse` (array, optional) — an array of angles from the long axis of the finite
-      strain ellipsoid to the reference direction (e.g. shear direction)
-    - `colors` (array, optional) — color coordinates for series of angles
-    - `cmaps` (Matplotlib color maps, optional) — color maps for `colors`
+    - `strains` — X-values, accumulated strain (tensorial) during CPO evolution, may be
+      a 2D array of multiple strain series
+    - `angles` — Y-values, may be a 2D array of multiple angle series
+    - `markers` — MatPlotLib markers to use for the data series
+    - `labels` — labels to use for the data series
+    - `err` (optional) — standard errors for the `angles`, shapes must match
+    - `θ_max` — maximum angle (°) to show on the plot, should be less than 90
+    - `θ_fse` (optional) — an array of angles from the long axis of the finite strain
+      ellipsoid to the reference direction (e.g. shear direction)
+    - `colors` (optional) — color coordinates for series of angles
+    - `cmaps` (optional) — color maps for `colors`
 
     If `colors` and `cmaps` are used, then angle values are colored individually within
     each angle series.
@@ -363,15 +363,15 @@ def alignment(
 
 
 def strengths(
-    ax,
-    strains,
-    strengths,
-    ylabel,
-    markers,
-    labels,
-    err=None,
-    cpo_threshold=None,
-    colors=None,
+    ax: plt.Axes | None,
+    strains: np.ndarray,
+    strengths: np.ndarray,
+    ylabel: str,
+    markers: list[str] | tuple[str],
+    labels: list[str] | tuple[str],
+    err: np.ndarray | None = None,
+    cpo_threshold: float | None = None,
+    colors: np.ndarray | None = None,
     cmaps=None,
     **kwargs,
 ):
@@ -379,16 +379,16 @@ def strengths(
 
     If `ax` is None, a new figure and axes are created with `figure_unless`.
 
-    Args:
-    - `strains` (array) — X-values, accumulated strain (tensorial) during CPO evolution,
-      may be a 2D array of multiple strain series
-    - `strengths` (array) — Y-values, may be a 2D array of multiple strength series
-    - `markers` (sequence) — MatPlotLib markers to use for the data series
-    - `labels` (sequence) — labels to use for the data series
-    - `err` (array, optional) — standard errors for the `strengths`, shapes must match
-    - `colors` (array, optional) — color coordinates for series of strengths
-    - `cpo_threshold` (float, optional) — plot a dashed line at this threshold
-    - `cmaps` (Matplotlib color maps, optional) — color maps for `colors`
+    - `strains` — X-values, accumulated strain (tensorial) during CPO evolution, may be
+      a 2D array of multiple strain series
+    - `strengths` — Y-values, may be a 2D array of multiple strength series
+    - `ylabel` — label for the Y axis, depending on chosen texture strength measure
+    - `markers` — MatPlotLib markers to use for the data series
+    - `labels` — labels to use for the data series
+    - `err` (optional) — standard errors for the `strengths`, shapes must match
+    - `colors` (optional) — color coordinates for series of strengths
+    - `cpo_threshold` (optional) — plot a dashed line at this threshold
+    - `cmaps` — color maps for `colors`
 
     If `colors` and `cmaps` are used, then strength values are colored individually
     within each strength series.
@@ -452,7 +452,7 @@ def strengths(
     return fig, ax, _colors
 
 
-def grainsizes(ax, strains, fractions):
+def grainsizes(ax, strains, fractions) -> tuple:
     """Plot grain volume `fractions` versus `strains` on the given axis.
 
     If `ax` is None, a new figure and axes are created with `figure_unless`.
@@ -478,7 +478,7 @@ def grainsizes(ax, strains, fractions):
 
 def show_Skemer2016_ShearStrainAngles(
     ax, studies, markers, colors, fillstyles, labels, fabric
-):
+) -> tuple:
     """Show data from `src/pydrex/data/thirdparty/Skemer2016_ShearStrainAngles.scsv`.
 
     Plot data from the Skemer 2016 datafile on the axis given by `ax`. Select the
@@ -540,7 +540,7 @@ def spin(
     target_rotation_rates=None,
     labels=("target", "computed"),
     shear_axis=None,
-):
+) -> tuple:
     """Plot rotation rates of grains with known, unique initial [100] angles from X.
 
     If `ax` is None, a new figure and axes are created with `figure_unless`.
@@ -595,7 +595,7 @@ def growth(
     target_fractions_diff=None,
     labels=("target", "computed"),
     shear_axis=None,
-):
+) -> tuple:
     """Plot grain growth of grains with known, unique initial [100] angles from X.
 
     If `ax` is None, a new figure and axes are created with `figure_unless`.
@@ -661,7 +661,7 @@ def figure_unless(ax: plt.Axes | None) -> tuple[plt.Figure, plt.Axes]:
     return fig, ax
 
 
-def figure(figscale=None, **kwargs):
+def figure(figscale: tuple[float, float] | None = None, **kwargs) -> plt.Figure:
     """Create new figure with a few opinionated default settings.
 
     (e.g. grid, constrained layout, high DPI).
