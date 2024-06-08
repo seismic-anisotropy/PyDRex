@@ -1,6 +1,6 @@
 # PyDRex tests
 
-Running the tests requires [pytest](https://docs.pytest.org).
+Running the tests requires [pytest](https://docs.pytest.org), and up to ~16GB RAM.
 From the root of the source tree, run `pytest`.
 To print more verbose information (including INFO level logging),
 such as detailed test progress, use the flag `pytest -v`.
