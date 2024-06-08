@@ -455,7 +455,7 @@ class Mineral:
             #     velocity_gradient.ravel(),
             # )
 
-            if self.phase not in config["phase_assemblage"]:
+            if self.phase not in params["phase_assemblage"]:
                 # Warning rather than failure, so that we tolerate loops like:
                 # [m.update_orientations(...) for m in minerals]
                 # Where some minerals in the list might be (temporarily) superfluous.
@@ -465,8 +465,8 @@ class Mineral:
                 return
 
             try:
-                volume_fraction = config["phase_fractions"][
-                    config["phase_assemblage"].index(self.phase)
+                volume_fraction = params["phase_fractions"][
+                    params["phase_assemblage"].index(self.phase)
                 ]
             except IndexError:
                 raise ValueError(
@@ -493,10 +493,10 @@ class Mineral:
                 strain_rate=strain_rate / strain_rate_max,
                 velocity_gradient=velocity_gradient / strain_rate_max,
                 deformation_gradient_spin=deformation_gradient_spin,
-                stress_exponent=config["stress_exponent"],
-                deformation_exponent=config["deformation_exponent"],
-                nucleation_efficiency=config["nucleation_efficiency"],
-                gbm_mobility=config["gbm_mobility"],
+                stress_exponent=params["stress_exponent"],
+                deformation_exponent=params["deformation_exponent"],
+                nucleation_efficiency=params["nucleation_efficiency"],
+                gbm_mobility=params["gbm_mobility"],
                 volume_fraction=volume_fraction,
             )
             return np.hstack(
@@ -522,7 +522,7 @@ class Mineral:
             orientations, fractions = _utils.apply_gbs(
                 orientations,
                 fractions,
-                config["gbs_threshold"],
+                params["gbs_threshold"],
                 self.orientations[-1],
                 self.n_grains,
             )
