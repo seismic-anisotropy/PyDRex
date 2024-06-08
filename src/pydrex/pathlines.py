@@ -28,7 +28,6 @@ def get_pathline(
         The pathline is calculated backwards in time (t < 0) from the given endpoint.
         Therefore, the returned position callable should be evaluated at negative times.
 
-    Args:
     - `final_location` (array) — coordinates of the final location
     - `get_velocity` (callable) — returns velocity vector at a point
     - `get_velocity_gradient` (callable) — returns velocity gradient matrix at a point

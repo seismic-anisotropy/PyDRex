@@ -48,6 +48,26 @@ class MineralPhase(IntEnum):
 
 
 @unique
+class MineralFabric(IntEnum):
+    """Supported mineral fabrics.
+
+    The following fabric types are supported:
+    - olivine A-E type fabrics according to e.g.
+      [Karato et al. (2008)](https://doi.org/10.1146%2Fannurev.earth.36.031207.124120).
+    - enstatite AB fabric, see
+      [Bernard et al. (2021)](https://doi.org/10.1016/j.tecto.2021.228954).
+
+    """
+
+    olivine_A = 0
+    olivine_B = 1
+    olivine_C = 2
+    olivine_D = 3
+    olivine_E = 4
+    enstatite_AB = 5
+
+
+@unique
 class DeformationRegime(IntEnum):
     r"""Ordinals to track distinct regimes of dominant deformation mechanisms.
 
@@ -92,26 +112,6 @@ class DeformationRegime(IntEnum):
     """Frictional sliding along micro-fractures (Byerlee's law for yield strength)."""
     max_viscosity = 7
     """Arbitrary upper-bound viscosity regime."""
-
-
-@unique
-class MineralFabric(IntEnum):
-    """Supported mineral fabrics.
-
-    The following fabric types are supported:
-    - olivine A-E type fabrics according to e.g.
-      [Karato et al. (2008)](https://doi.org/10.1146%2Fannurev.earth.36.031207.124120).
-    - enstatite AB fabric, see
-      [Bernard et al. (2021)](https://doi.org/10.1016/j.tecto.2021.228954).
-
-    """
-
-    olivine_A = 0
-    olivine_B = 1
-    olivine_C = 2
-    olivine_D = 3
-    olivine_E = 4
-    enstatite_AB = 5
 
 
 @dataclass(frozen=True)
@@ -205,7 +205,7 @@ class DefaultParams:
 
 
 @nb.njit
-def get_crss(phase, fabric):
+def get_crss(phase: MineralPhase, fabric: MineralFabric) -> np.ndarray:
     """Get Critical Resolved Shear Stress for the mineral `phase` and `fabric`.
 
     Returns an array of the normalised threshold stresses required to activate slip on
@@ -238,48 +238,45 @@ def get_crss(phase, fabric):
 # (only primitives and numpy containers allowed).
 @nb.njit(fastmath=True)
 def derivatives(
-    regime,
-    phase,
-    fabric,
-    n_grains,
-    orientations,
-    fractions,
-    strain_rate,
-    velocity_gradient,
-    deformation_gradient_spin,
-    stress_exponent,
-    deformation_exponent,
-    nucleation_efficiency,
-    gbm_mobility,
-    volume_fraction,
+    regime: DeformationRegime,
+    phase: MineralPhase,
+    fabric: MineralFabric,
+    n_grains: int,
+    orientations: np.ndarray,
+    fractions: np.ndarray,
+    strain_rate: np.ndarray,
+    velocity_gradient: np.ndarray,
+    deformation_gradient_spin: np.ndarray,
+    stress_exponent: float,
+    deformation_exponent: float,
+    nucleation_efficiency: float,
+    gbm_mobility: float,
+    volume_fraction: float,
 ):
     """Get derivatives of orientation and volume distribution.
 
-    Args:
-    - `regime` (`DeformationRegime`) — ordinal number of the local deformation mechanism
-    - `phase` (`MineralPhase`) — ordinal number of the mineral phase
-    - `fabric` (`MineralFabric`) — ordinal number of the fabric type
-    - `n_grains` (int) — number of "grains" i.e. discrete volume segments
-    - `orientations` (array) — `n_grains`x3x3 orientations (direction cosines)
-    - `fractions` (array) — volume fractions of the grains relative to aggregate volume
-    - `strain_rate` (array) — 3x3 dimensionless macroscopic strain-rate tensor
-    - `velocity_gradient` (array) — 3x3 dimensionless macroscopic velocity gradient
-    - `deformation_gradient_spin` (array) — 3x3 spin tensor defining the rate of
-                                            rotation of the finite strain ellipse
-    - `stress_exponent` (float) — `p` in `dislocation_density ∝ shear_stress^p`
-    - `deformation_exponent` (float) — `n` in `shear_stress ∝ |deformation_rate|^(1/n)`
-    - `nucleation_efficiency` (float) — parameter controlling grain nucleation
-    - `gmb_mobility` (float) — grain boundary mobility parameter
-    - `volume_fraction` (float) — volume fraction of the mineral phase relative to
-                                  other phases (multiphase simulations)
+    - `regime` — ordinal number of the local deformation mechanism
+    - `phase` — ordinal number of the mineral phase
+    - `fabric` — ordinal number of the fabric type
+    - `n_grains` — number of "grains" i.e. discrete volume segments
+    - `orientations` — `n_grains`x3x3 orientations (direction cosines)
+    - `fractions` — volume fractions of the grains relative to aggregate volume
+    - `strain_rate` — 3x3 dimensionless macroscopic strain-rate tensor
+    - `velocity_gradient` — 3x3 dimensionless macroscopic velocity gradient
+    - `deformation_gradient_spin` — 3x3 spin tensor defining the rate of rotation of the
+      finite strain ellipse
+    - `stress_exponent` — `p` in `dislocation_density ∝ shear_stress^p`
+    - `deformation_exponent` — `n` in `shear_stress ∝ |deformation_rate|^(1/n)`
+    - `nucleation_efficiency` — parameter controlling grain nucleation
+    - `gmb_mobility` — grain boundary mobility parameter
+    - `volume_fraction` — volume fraction of the mineral phase relative to other phases
+      (multiphase simulations)
 
     Returns a tuple with the rotation rates and grain volume fraction changes.
 
     """
     if regime == DeformationRegime.min_viscosity:
         # Do absolutely nothing, all derivatives are zero.
-        # TODO: Consider resetting the texture to isotropic, treat it like a phase
-        # change or something?
         return (
             np.repeat(np.eye(3), n_grains).reshape(3, 3, n_grains).transpose(),
             np.zeros(n_grains),
@@ -366,16 +363,17 @@ def derivatives(
 
 
 @nb.njit(fastmath=True)
-def _get_deformation_rate(phase, orientation, slip_rates):
+def _get_deformation_rate(
+    phase: MineralPhase, orientation: np.ndarray, slip_rates: np.ndarray
+):
     """Calculate deformation rate tensor for olivine or enstatite.
 
     Calculate the deformation rate with respect to the local coordinate frame,
     defined by the principal strain axes (finite strain ellipsoid).
 
-    Args:
-    - `phase` (`MineralPhase`) — ordinal number of the mineral phase
-    - `orientation` (array) — 3x3 orientation matrix (direction cosines)
-    - `slip_rates` (array) — slip rates relative to slip rate on softest slip system
+    - `phase` — ordinal number of the mineral phase
+    - `orientation` — 3x3 orientation matrix (direction cosines)
+    - `slip_rates` — slip rates relative to slip rate on softest slip system
 
     """
     # This is called the 'G'/'slip' tensor in the Fortran code, aka the Schmid tensor.
@@ -392,12 +390,11 @@ def _get_deformation_rate(phase, orientation, slip_rates):
 
 
 @nb.njit(fastmath=True)
-def _get_slip_rate_softest(deformation_rate, velocity_gradient):
+def _get_slip_rate_softest(deformation_rate: np.ndarray, velocity_gradient: np.ndarray):
     """Calculate dimensionless strain rate on the softest slip system.
 
-    Args:
-    - `deformation_rate` (array) — 3x3 dimensionless deformation rate matrix
-    - `velocity_gradient` (array) — 3x3 dimensionless velocity gradient matrix
+    - `deformation_rate` — 3x3 dimensionless deformation rate matrix
+    - `velocity_gradient` — 3x3 dimensionless velocity gradient matrix
 
     """
     # See eq. 4 in Fraters 2021.
@@ -430,15 +427,18 @@ def _get_slip_rate_softest(deformation_rate, velocity_gradient):
 
 
 @nb.njit(fastmath=True)
-def _get_slip_rates_olivine(invariants, slip_indices, crss, deformation_exponent):
+def _get_slip_rates_olivine(
+    invariants: np.ndarray,
+    slip_indices: np.ndarray,
+    crss: np.ndarray,
+    deformation_exponent: float,
+):
     """Calculate relative slip rates of the active slip systems for olivine.
 
-    Args:
-    - `invariants` (array) — strain rate invariants for the four slip systems
-    - `slip_indices` (array) — indices that sort the CRSS by increasing slip-rate
-                               activity
-    - `crss` (array) — reference resolved shear stresses (CRSS), see `pydrex.fabric`
-    - `deformation_exponent` (float) — `n` in `shear_stress ∝ |deformation_rate|^(1/n)`
+    - `invariants` — strain rate invariants for the four slip systems
+    - `slip_indices` — indices that sort the CRSS by increasing slip-rate activity
+    - `crss` — reference resolved shear stresses (CRSS), see `pydrex.fabric`
+    - `deformation_exponent` — `n` in `shear_stress ∝ |deformation_rate|^(1/n)`
 
     """
     i_inac, i_min, i_int, i_max = slip_indices
@@ -457,7 +457,7 @@ def _get_slip_rates_olivine(invariants, slip_indices, crss, deformation_exponent
 
 
 @nb.njit(fastmath=True)
-def _get_slip_invariants(strain_rate, orientation):
+def _get_slip_invariants(strain_rate: np.ndarray, orientation: np.ndarray):
     r"""Calculate strain rate invariants for minerals with four slip systems.
 
     Calculates $I = ∑_{ij} l_{i} n_{j} \dot{ε}_{ij}$ for each slip sytem of:
@@ -468,9 +468,8 @@ def _get_slip_invariants(strain_rate, orientation):
     Only the last return value is relevant for enstatite.
     These are not configurable for now.
 
-    Args:
-    - `strain_rate` (array) — 3x3 dimensionless strain rate matrix
-    - `orientation` (array) — 3x3 orientation matrix (direction cosines)
+    - `strain_rate` — 3x3 dimensionless strain rate matrix
+    - `orientation` — 3x3 orientation matrix (direction cosines)
 
     """
     invariants = np.zeros(4)
@@ -489,15 +488,17 @@ def _get_slip_invariants(strain_rate, orientation):
 
 @nb.njit(fastmath=True)
 def _get_orientation_change(
-    orientation, velocity_gradient, deformation_rate, slip_rate_softest
+    orientation: np.ndarray,
+    velocity_gradient: np.ndarray,
+    deformation_rate: np.ndarray,
+    slip_rate_softest: float,
 ):
     """Calculate the rotation rate for a grain undergoing dislocation creep.
 
-    Args:
-    - `orientation` (array) — 3x3 orientation matrix (direction cosines)
-    - `velocity_gradient` (array) — 3x3 dimensionless velocity gradient matrix
-    - `deformation_rate` (float) — 3x3 dimensionless deformation rate matrix
-    - `slip_rate_softest` (float) — slip rate on the softest (most active) slip system
+    - `orientation` — 3x3 orientation matrix (direction cosines)
+    - `velocity_gradient` — 3x3 dimensionless velocity gradient matrix
+    - `deformation_rate` — 3x3 dimensionless deformation rate matrix
+    - `slip_rate_softest` — slip rate on the softest (most active) slip system
 
     """
     orientation_change = np.zeros((3, 3))
@@ -531,25 +532,23 @@ def _get_orientation_change(
 
 @nb.njit(fastmath=True)
 def _get_strain_energy(
-    crss,
-    slip_rates,
-    slip_indices,
-    slip_rate_softest,
-    stress_exponent,
-    deformation_exponent,
-    nucleation_efficiency,
+    crss: np.ndarray,
+    slip_rates: np.ndarray,
+    slip_indices: np.ndarray,
+    slip_rate_softest: float,
+    stress_exponent: float,
+    deformation_exponent: float,
+    nucleation_efficiency: float,
 ):
     """Calculate strain energy due to dislocations for an olivine grain.
 
-    Args:
-    - `crss` (array) — reference resolved shear stresses (CRSS), see `pydrex.fabric`
-    - `slip_rates` (array) — slip rates relative to slip rate on softest slip system
-    - `slip_indices` (array) — indices that sort the CRSS by increasing slip-rate
-                               activity
-    - `slip_rate_softest` (float) — slip rate on the softest (most active) slip system
-    - `stress_exponent` (float) — `p` in `dislocation_density ∝ shear_stress^p`
-    - `deformation_exponent` (float) — `n` in `shear_stress ∝ |deformation_rate|^(1/n)`
-    - `nucleation_efficiency` (float) — parameter controlling grain nucleation
+    - `crss` — reference resolved shear stresses (CRSS), see `pydrex.fabric`
+    - `slip_rates` — slip rates relative to slip rate on softest slip system
+    - `slip_indices` — indices that sort the CRSS by increasing slip-rate activity
+    - `slip_rate_softest` — slip rate on the softest (most active) slip system
+    - `stress_exponent` — `p` in `dislocation_density ∝ shear_stress^p`
+    - `deformation_exponent` — `n` in `shear_stress ∝ |deformation_rate|^(1/n)`
+    - `nucleation_efficiency` — parameter controlling grain nucleation
 
     Note that "new" grains are assumed to rotate with their parent.
 
@@ -575,26 +574,25 @@ def _get_strain_energy(
 
 @nb.njit(fastmath=True)
 def _get_rotation_and_strain(
-    phase,
-    fabric,
-    orientation,
-    strain_rate,
-    velocity_gradient,
-    stress_exponent,
-    deformation_exponent,
-    nucleation_efficiency,
+    phase: MineralPhase,
+    fabric: MineralFabric,
+    orientation: np.ndarray,
+    strain_rate: np.ndarray,
+    velocity_gradient: np.ndarray,
+    stress_exponent: float,
+    deformation_exponent: float,
+    nucleation_efficiency: float,
 ):
     """Get the crystal axes rotation rate and strain energy of individual grain.
 
-    Args:
-    - `phase` (`MineralPhase`) — ordinal number of the mineral phase
-    - `fabric` (`MineralFabric`) — ordinal number of the fabric type
-    - `orientation` (array) — 3x3 orientation matrix (direction cosines)
-    - `strain_rate` (array) — 3x3 dimensionless strain rate matrix
-    - `velocity_gradient` (array) — 3x3 dimensionless velocity gradient matrix
-    - `stress_exponent` (float) — `p` in `dislocation_density ∝ shear_stress^p`
-    - `deformation_exponent` (float) — `n` in `shear_stress ∝ |deformation_rate|^(1/n)`
-    - `nucleation_efficiency (float) — parameter controlling grain nucleation
+    - `phase` — ordinal number of the mineral phase
+    - `fabric` — ordinal number of the fabric type
+    - `orientation` — 3x3 orientation matrix (direction cosines)
+    - `strain_rate` — 3x3 dimensionless strain rate matrix
+    - `velocity_gradient` — 3x3 dimensionless velocity gradient matrix
+    - `stress_exponent` — `p` in `dislocation_density ∝ shear_stress^p`
+    - `deformation_exponent` — `n` in `shear_stress ∝ |deformation_rate|^(1/n)`
+    - `nucleation_efficiency — parameter controlling grain nucleation
 
     Note that "new" grains are assumed to rotate with their parent.
 

@@ -37,7 +37,7 @@ def invariants_second_order(tensor):
 
 
 @nb.njit(fastmath=True)
-def voigt_decompose(matrix):
+def voigt_decompose(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Decompose elastic tensor (as 6x6 Voigt matrix) into distinct contractions.
 
     Return the only two independent contractions of the elastic tensor given as a 6x6

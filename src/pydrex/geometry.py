@@ -34,7 +34,10 @@ class LatticeSystem(Enum):
     hexagonal = (6, 12)
 
 
-def to_cartesian(ϕ, θ, r=1):
+# TODO: Wait for PEP 695 support: https://github.com/python/mypy/issues/15277
+# type T = np.ndarray | float
+# def to_cartesian(ϕ: T, θ: T, r: T = 1) -> tuple[T, T, T]:
+def to_cartesian(ϕ, θ, r=1) -> tuple:
     """Convert spherical to cartesian coordinates in ℝ³.
 
     Spherical coordinate convention:
@@ -51,7 +54,7 @@ def to_cartesian(ϕ, θ, r=1):
     return (r * np.sin(θ) * np.cos(ϕ), r * np.sin(θ) * np.sin(ϕ), r * np.cos(θ))
 
 
-def to_spherical(x, y, z):
+def to_spherical(x, y, z) -> tuple:
     """Convert cartesian coordinates in ℝ³ to spherical coordinates.
 
     Spherical coordinate convention:
@@ -69,7 +72,7 @@ def to_spherical(x, y, z):
 
 
 @nb.njit(fastmath=True)
-def misorientation_angles(q1_array, q2_array):
+def misorientation_angles(q1_array: np.ndarray, q2_array: np.ndarray) -> np.ndarray:
     """Calculate minimum misorientation angles for collections of rotation quaternions.
 
     Calculate the smallest angular distance between any quaternions `q1_array[:, i]` and
@@ -115,7 +118,7 @@ def misorientation_angles(q1_array, q2_array):
     return np.array([np.min(a) for a in angles])
 
 
-def symmetry_operations(system: LatticeSystem):
+def symmetry_operations(system: LatticeSystem) -> list:
     """Get sequence of symmetry operations for the given `LatticeSystem`.
 
     Returned transforms are either quaternions (for rotations of the lattice) or 4x4
@@ -179,7 +182,7 @@ def symmetry_operations(system: LatticeSystem):
             raise ValueError(f"unsupported lattice system: {system}")
 
 
-def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
+def poles(orientations: np.ndarray, ref_axes: str = "xz", hkl=[1, 0, 0]) -> tuple:
     """Extract 3D vectors of crystallographic directions from orientation matrices.
 
     Expects `orientations` to be an array with shape (N, 3, 3).
@@ -208,7 +211,7 @@ def poles(orientations, ref_axes="xz", hkl=[1, 0, 0]):
     return xvals, yvals, zvals
 
 
-def lambert_equal_area(xvals, yvals, zvals):
+def lambert_equal_area(xvals, yvals, zvals) -> tuple:
     """Project axial data from a 3D sphere onto a 2D disk.
 
     Project points from a 3D sphere of radius 1, given in Cartesian coordinates,
@@ -246,7 +249,7 @@ def lambert_equal_area(xvals, yvals, zvals):
     return prefactor.filled() * xvals, prefactor.filled() * yvals
 
 
-def shirley_concentric_squaredisk(xvals, yvals):
+def shirley_concentric_squaredisk(xvals, yvals) -> tuple:
     """Project points from a square onto a disk using the concentric Shirley method.
 
     The concentric method of [Shirley & Chiu (1997)](https://doi.org/10.1080/10867651.1997.10487479)
@@ -311,7 +314,7 @@ def shirley_concentric_squaredisk(xvals, yvals):
     return x_disk, y_disk
 
 
-def to_indices2d(horizontal, vertical):
+def to_indices2d(horizontal: str, vertical: str) -> tuple[int, int]:
     _geometry = (horizontal.upper(), vertical.upper())
     match _geometry:
         case ("X", "Y"):

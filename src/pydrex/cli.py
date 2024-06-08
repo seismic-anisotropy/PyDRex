@@ -265,6 +265,7 @@ class PoleFigureVisualiser(CliTool):
             _log.error(str(e))
 
     def _get_args(self) -> argparse.Namespace:
+        assert self.__doc__ is not None, f"missing docstring for {self}"
         description, epilog = self.__doc__.split(os.linesep + os.linesep, 1)
         parser = argparse.ArgumentParser(description=description, epilog=epilog)
         parser.add_argument("input", help="input file (.npz)")
@@ -336,13 +337,13 @@ class PoleFigureVisualiser(CliTool):
 
 # These are not the final names of the executables (those are set in pyproject.toml).
 _CLI_HANDLERS = namedtuple(
-    "CLI_HANDLERS",
-    {
+    "_CLI_HANDLERS",
+    (
         "pole_figure_visualiser",
         "npz_file_inspector",
         "mesh_generator",
         "h5part_extractor",
-    },
+    ),
 )
 CLI_HANDLERS = _CLI_HANDLERS(
     pole_figure_visualiser=PoleFigureVisualiser(),

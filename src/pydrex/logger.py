@@ -118,14 +118,13 @@ sys.excepthook = handle_exception
 
 
 @cl.contextmanager
-def handler_level(level, handler=CONSOLE_LOGGER):
+def handler_level(level: str, handler: logging.Handler=CONSOLE_LOGGER):
     """Set logging handler level for current context.
 
-    Args:
-    - `level` (string) — logging level name e.g. "DEBUG", "ERROR", etc.
-      See Python's logging module for details.
-    - `handler` (optional, `logging.Handler`) — alternative handler to control instead
-      of the default, `CONSOLE_LOGGER`.
+    - `level` — logging level name e.g. "DEBUG", "ERROR", etc. See Python's logging
+      module for details.
+    - `handler` (optional) — alternative handler to control instead of the default,
+      `CONSOLE_LOGGER`.
 
     """
     default_level = handler.level

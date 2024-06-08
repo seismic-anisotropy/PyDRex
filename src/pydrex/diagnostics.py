@@ -35,11 +35,10 @@ if HAS_RAY:
     from pydrex import distributed as _dstr
 
 
-def elasticity_components(voigt_matrices):
+def elasticity_components(voigt_matrices: np.ndarray):
     """Calculate elasticity decompositions for the given elasticity tensors.
 
-    Args:
-    - `voigt_matrices` (array) — the Nx6x6 Voigt matrix representations of the averaged
+    - `voigt_matrices` — the Nx6x6 Voigt matrix representations of the averaged
       elasticity tensors for a series of N polycrystal textures
 
     Returns a dictionary with the following data series:
@@ -183,7 +182,7 @@ def elasticity_components(voigt_matrices):
     return out
 
 
-def bingham_average(orientations, axis="a"):
+def bingham_average(orientations: np.ndarray, axis: str = "a"):
     """Compute Bingham average of orientation matrices.
 
     Returns the antipodally symmetric average orientation
@@ -214,7 +213,7 @@ def bingham_average(orientations, axis="a"):
     return mean_vector / la.norm(mean_vector)
 
 
-def finite_strain(deformation_gradient, driver="ev"):
+def finite_strain(deformation_gradient: np.ndarray, driver="ev"):
     """Extract measures of finite strain from the deformation gradient.
 
     Extracts the largest principal strain value and the vector defining the axis of
@@ -231,7 +230,7 @@ def finite_strain(deformation_gradient, driver="ev"):
     return np.sqrt(B_λ[-1]) - 1, B_v[:, -1]
 
 
-def symmetry_pgr(orientations, axis="a"):
+def symmetry_pgr(orientations: np.ndarray, axis="a"):
     r"""Compute texture symmetry eigenvalue diagnostics from grain orientation matrices.
 
     Compute Point, Girdle and Random symmetry diagnostics
@@ -272,10 +271,10 @@ def symmetry_pgr(orientations, axis="a"):
 
 
 def misorientation_indices(
-    orientation_stack,
+    orientation_stack: np.ndarray,
     system: _geo.LatticeSystem,
-    bins=None,
-    ncpus=None,
+    bins: int | None = None,
+    ncpus: int | None = None,
     pool=None,
 ):
     """Calculate M-indices for a series of polycrystal textures.
@@ -330,7 +329,9 @@ def misorientation_indices(
     return m_indices
 
 
-def misorientation_index(orientations, system: _geo.LatticeSystem, bins=None):
+def misorientation_index(
+    orientations: np.ndarray, system: _geo.LatticeSystem, bins: int | None = None
+):
     r"""Calculate M-index for polycrystal orientations.
 
     The `bins` argument is passed to `numpy.histogram`.
@@ -366,7 +367,7 @@ def misorientation_index(orientations, system: _geo.LatticeSystem, bins=None):
     )
 
 
-def coaxial_index(orientations, axis1="b", axis2="a"):
+def coaxial_index(orientations: np.ndarray, axis1: str = "b", axis2: str = "a"):
     r"""Calculate coaxial “BA” index for a combination of two crystal axes.
 
     The BA index of [Mainprice et al. (2015)](https://doi.org/10.1144/SP409.8)
@@ -383,7 +384,9 @@ def coaxial_index(orientations, axis1="b", axis2="a"):
 
 
 @nb.njit(fastmath=True)
-def smallest_angle(vector, axis, plane=None):
+def smallest_angle(
+    vector: np.ndarray, axis: np.ndarray, plane: np.ndarray | None = None
+):
     """Get smallest angle between a unit `vector` and a bidirectional `axis`.
 
     The axis is specified using either of its two parallel unit vectors.
