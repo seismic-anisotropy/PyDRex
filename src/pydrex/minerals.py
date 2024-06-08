@@ -100,6 +100,25 @@ class StiffnessTensors:
             yield v
 
 
+def peridotite_solidus(pressure, fit="Hirschmann2000"):
+    """Get peridotite solidus (i.e. melting) temperature based on experimental fits.
+
+    Pressure is expected to be in GPa.
+
+    Supported fits:
+    - ["Hirschmann2000"](https://doi.org/10.1029/2000GC000070)
+    - ["Herzberg2000"](https://doi.org/10.1029/2000GC000089)
+
+    """
+    match fit:
+        case "Herzberg2000":
+            return 1086 - 5.7 * pressure + 390 * np.log(pressure)
+        case "Hirschmann2000":
+            return -5.104 * pressure**2 + 132.899 * pressure + 1120.661
+        case _:
+            raise ValueError("unsupported fit")
+
+
 @dataclass
 class Mineral:
     """Class for storing polycrystal texture for a single mineral phase.
@@ -722,22 +741,3 @@ def voigt_averages(
                     case _:
                         raise ValueError(f"unsupported mineral phase: {mineral.phase}")
     return average_tensors
-
-
-def peridotite_solidus(pressure, fit="Hirschmann2000"):
-    """Get peridotite solidus (i.e. melting) temperature based on experimental fits.
-
-    Pressure is expected to be in GPa.
-
-    Supported fits:
-    - ["Hirschmann2000"](https://doi.org/10.1029/2000GC000070)
-    - ["Herzberg2000"](https://doi.org/10.1029/2000GC000089)
-
-    """
-    match fit:
-        case "Herzberg2000":
-            return 1086 - 5.7 * pressure + 390 * np.log(pressure)
-        case "Hirschmann2000":
-            return 5.104 * pressure**2 + 132.899 * pressure + 1120.661
-        case _:
-            raise ValueError("unsupported fit")
