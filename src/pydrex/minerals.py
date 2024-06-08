@@ -115,7 +115,7 @@ def peridotite_solidus(pressure, fit="Hirschmann2000"):
         case "Herzberg2000":
             return 1086 - 5.7 * pressure + 390 * np.log(pressure)
         case "Hirschmann2000":
-            return 5.104 * pressure**2 + 132.899 * pressure + 1120.661
+            return -5.104 * pressure**2 + 132.899 * pressure + 1120.661
         case _:
             raise ValueError("unsupported fit")
 
