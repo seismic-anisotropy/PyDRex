@@ -82,6 +82,10 @@ class DeformationRegime(IntEnum):
     e.g. dislocation climb. Dislocation mechanisms are often accompanied by dynamic
     recrystallisation, which acts as an additional recovery mechanism.
 
+    Diffusive mechanisms are expected, however, to become dominant at depth, as these
+    mechanisms are primarily facilitated by Si diffusion in olivine, which is
+    temperature-dependent.
+
     Rheology in the intra-granular dislocation regime was classically described by
     separate flow laws depending on temperature; a power-law at high temperature
     [$\dot{ε} ∝ σⁿ$] and an exponential-law at low temperature [$\dot{ε} ∝ \exp(σ)$].
@@ -178,7 +182,13 @@ class DefaultParams:
     disl_activation_volume: float = 12.0
     """Activation volume for dislocation creep power law (cm³/mol)."""
     diff_activation_energy: float = 330.0
-    """Activation energy for diffusion creep power law (kJ/mol)."""
+    """Activation energy for diffusion creep power law (kJ/mol).
+
+    - 530 kJ/mol reported for Si self-diffusion in olivine¹
+
+    ¹[Dohmen et al. 2002](http://dx.doi.org/10.1029/2002GL015480)
+
+    """
     diff_activation_volume: float = 4.0
     """Activation volume for diffusion creep power law (cm³/mol)."""
     disl_coefficients: tuple = (
@@ -298,6 +308,10 @@ def derivatives(
     elif regime == DeformationRegime.boundary_diffusion:
         raise ValueError("this deformation mechanism is not yet supported.")
     elif regime == DeformationRegime.sliding_diffusion:
+        # Miyazaki et al. 2013 wrote controversial Nature article proposing that CPO can
+        # develop in the diffGBS regime. However, Karato 2024 gives some convincing
+        # arguments in the Journal of Geodynamics for why their results are likely
+        # inapplicable to Earth's upper mantle.
         raise ValueError("this deformation mechanism is not yet supported.")
     elif regime == DeformationRegime.matrix_dislocation:
         # Based on subroutine DERIV in original Fortran.
