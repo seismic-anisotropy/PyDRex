@@ -120,7 +120,7 @@ def peridotite_solidus(pressure, fit="Hirschmann2000"):
         case "Duvernay2024":
             return -6.8 * pressure**2 + 141.4 * pressure + 1101.3
         case _:
-            raise ValueError("unsupported fit")
+            raise ValueError(f"unsupported fit '{fit}'")
 
 
 # TODO: Compare to [Man & Huang, 2011](https://doi.org/10.1007/s10659-011-9312-y).
