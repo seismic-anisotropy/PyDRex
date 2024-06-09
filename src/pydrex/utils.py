@@ -9,6 +9,7 @@ from functools import wraps
 import dill
 import numba as nb
 import numpy as np
+import scipy.special as sp
 from matplotlib.collections import PathCollection
 from matplotlib.legend_handler import HandlerLine2D, HandlerPathCollection
 from matplotlib.pyplot import Line2D
@@ -90,6 +91,53 @@ def defined_if(cond):
         return wrapper
 
     return _defined_if
+
+
+def halfspace(
+    age, z, surface_temp=273, diff_temp=1350, diffusivity=2.23e-6, fit="Korenaga2016"
+):
+    r"""Get halfspace cooling temperature based on the chosen fit.
+
+    $$T₀ + ΔT ⋅ \mathrm{erf}\left(\frac{z}{2 \sqrt{κ t}}\right) + Q$$
+
+    Temperatures $T₀$ (surface), $ΔT$ (base - surface) and $Q$ (adiabatic correction)
+    are expected to be in Kelvin. The diffusivity $κ$ is expected to be in m²s⁻¹. Depth
+    $z$ is in metres and age $t$ is in seconds. Supported fits are:
+    - ["Korenaga2016"](http://dx.doi.org/10.1002/2016JB013395)¹, which implements $κ(z)$
+    - "Standard", i.e. $Q = 0$
+
+    ¹Although the fit is found in the 2016 paper, the equation is discussed as a
+    reference model in [Korenaga et al. 2021](https://doi.org/10.1029/2020JB021528).
+    The thermal diffusivity below 7km depth is hardcoded to 3.47e-7.
+
+    """
+    match fit:
+        case "Korenaga2016":
+            a1 = 0.602e-3
+            a2 = -6.045e-10
+            adiabatic = a1 * z + a2 * z**2
+            if z < 7:
+                κ = 3.45e-7
+            else:
+                b0 = -1.255
+                b1 = 9.944
+                b2 = -25.0619
+                b3 = 32.2944
+                b4 = -22.2017
+                b5 = 7.7336
+                b6 = -1.0622
+                coeffs = (b0, b1, b2, b3, b4, b5, b6)
+                z_ref = 1e5
+                κ_0 = diffusivity
+                κ = κ_0 * np.sum(
+                    [b * (z / z_ref) ** (n / 2) for n, b in enumerate(coeffs)]
+                )
+        case "Standard":
+            κ = diffusivity
+            adiabatic = 0.0
+        case _:
+            raise ValueError(f"unsupported fit '{fit}'")
+    return surface_temp + diff_temp * sp.erf(z / (2 * np.sqrt(κ * age))) + adiabatic
 
 
 @nb.njit(fastmath=True)
