@@ -49,13 +49,22 @@ class MeshGenerator(CliTool):
 
         args = self._get_args()
 
-        if args.kind == "rectangle":
-            if args.center is None:
-                center = (0, 0)
-            else:
-                center = [float(s) for s in args.center.split(",")]
-                assert len(center) == 2
+        if args.center is None:
+            center = (0, 0)
+        else:
+            center = [float(s) for s in args.center.split(",")]
+            assert len(center) == 2
 
+        if args.custom_points is not None:
+            _custom_points = [
+                [*map(float, point.split(":"))]
+                for point in args.custom_points.split(",")
+            ]
+            # Extract the insertion indices and parse into tuple.
+            custom_indices = [int(point[0]) for point in _custom_points]
+            custom_points = (custom_indices, [point[1:] for point in _custom_points])
+
+        if args.kind == "rectangle":
             width, height = map(float, args.size.split(","))
             _loc_map = {
                 "G": "global",
@@ -88,6 +97,7 @@ class MeshGenerator(CliTool):
                 width,
                 height,
                 resolution,
+                custom_constraints=custom_points,
             )
 
     def _get_args(self) -> argparse.Namespace:
@@ -119,6 +129,12 @@ class MeshGenerator(CliTool):
         )
         parser.add_argument(
             "-k", "--kind", help="kind of mesh, e.g. 'rectangle'", default="rectangle"
+        )
+        parser.add_argument(
+            "-p",
+            "--custom-points",
+            help="comma-separated custom point constraints (in the format index:x1:x2[:x3]:resolution)",
+            default=None,
         )
         return parser.parse_args()
 
