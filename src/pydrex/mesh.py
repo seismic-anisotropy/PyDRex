@@ -268,7 +268,7 @@ def rectangle(
             axis=0,
         )
 
-    _log.info("point_constraints: %s", point_constraints)
+    _log.debug("creating mesh with point constraints:\n\t%s", point_constraints)
 
     with Model(name, 2, **kwargs) as model:
         model.point_constraints = point_constraints
