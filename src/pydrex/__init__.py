@@ -154,6 +154,7 @@ from pydrex.minerals import (
     StiffnessTensors,
     peridotite_solidus,
     voigt_averages,
+    update_all,
 )
 from pydrex.stats import (
     misorientation_hist,
