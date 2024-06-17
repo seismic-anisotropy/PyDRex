@@ -15,14 +15,14 @@ WIDTH := 1e6
 DEPTH := -4e5
 HALF_WIDTH := $(shell python3 -c 'print($(WIDTH)/2)')
 HALF_DEPTH := $(shell python3 -c 'print($(DEPTH)/2)')
-RESOLUTION_HI := 1e3
+RESOLUTION_HI := 5e2
 RESOLUTION_LO := 1e4
-RESOLUTION_MED := 5e3
+RESOLUTION_MED := 1e3
 # Initial options for temperature field.
 SURFACE_TEMP := 273
 DIFF_TEMP := 1350
 THERM_DIFFUSIVITY := 2.23e-6
-THERM_FIT := "Korenaga2016"
+THERM_FIT := "Standard"
 MIN_AGE := 1
 # Initial conditions, used to parametrise velocity fields and spawn particles.
 # INIT_HORIZ can be a space-delimited array of values (for multiple particles).
@@ -37,15 +37,15 @@ PLATE_SPEED := 2.0
 # GBS_THRESHOLD := 0.3
 # NUCLEATION_EFFICIENCY := 5
 
-all: $(OUT_DIR)/$(SIM_NAME)_$(NPROCS).flml
+all: $(OUT_DIR)/$(SIM_NAME)_P$(NPROCS).flml
 	@echo "********** Running fluidity in parallel with verbose logging enabled..."
 	cd $(OUT_DIR) && mpiexec -np $(NPROCS) fluidity -v2 -l $<
 
-$(OUT_DIR)/$(SIM_NAME)_$(NPROCS).flml: $(OUT_DIR)/$(SIM_NAME).flml \
+$(OUT_DIR)/$(SIM_NAME)_P$(NPROCS).flml: $(OUT_DIR)/$(SIM_NAME).flml \
 	$(OUT_DIR)/$(SIM_NAME).msh $(OUT_DIR)/$(SIM_NAME).py $(OUT_DIR)/$(SIM_NAME).ini
 	@echo "********** Creating parallel flml file using flredecomp..."
 	./envcheck.sh -f
-	cd $(OUT_DIR) && mpiexec -np $(NPROCS) flredecomp -i 1 -o $(NPROCS) $(SIM_NAME) $(SIM_NAME)_$(NPROCS)
+	cd $(OUT_DIR) && mpiexec -np $(NPROCS) flredecomp -i 1 -o $(NPROCS) $(SIM_NAME) $(SIM_NAME)_P$(NPROCS)
 
 $(OUT_DIR)/$(SIM_NAME).ini: $(OUT_DIR)/$(SIM_NAME).py
 	@echo "********** Setting up initial conditions and recryst. parameters..."
@@ -82,6 +82,11 @@ $(OUT_DIR)/$(SIM_NAME).flml: $(SRC_DIR)/$(SIM_NAME).flml
 $(OUT_DIR)/$(SIM_NAME).geo: $(SRC_DIR)/$(SIM_NAME).geo
 	@echo "********* Copying the .geo file..."
 	mkdir -p $(@D)
+	sed -i "s/width = .*;/width = $(WIDTH);/" $<
+	sed -i "s/depth = .*;/depth = $(DEPTH);/" $<
+	sed -i "s/res_hi = .*;/res_hi = $(RESOLUTION_HI);/" $<
+	sed -i "s/res_lo = .*;/res_lo = $(RESOLUTION_LO);/" $<
+	sed -i "s/res_med = .*;/res_med = $(RESOLUTION_MED);/" $<
 	cp -f $< $@
 
 .PHONY: all clean

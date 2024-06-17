@@ -1,8 +1,8 @@
 width = 1e6;
-depth = -4e5;
-res_hi = 1e3;
+depth = 1e6;
+res_hi = 5e2;
 res_lo = 1e4;
-res_med = 5e3;
+res_med = 1e3;
 Point(1) = {-width/2., 0, 0, res_med};
 Point(2) = {0, 0, 0, res_hi};
 Point(3) = {width/2., 0, 0, res_med};
