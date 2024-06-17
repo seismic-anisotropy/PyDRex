@@ -723,8 +723,8 @@ def voigt_averages(
                     case _core.MineralPhase.enstatite:
                         average_tensors[i] += _tensors.elastic_tensor_to_voigt(
                             _tensors.rotate(
-                                elastic_tensors["enstatite"],
-                                minerals.orientations[i][n, ...].transpose(),
+                                elastic_tensors.enstatite,
+                                mineral.orientations[i][n, ...].transpose(),
                             )
                             * mineral.fractions[i][n]
                             * phase_fractions[phase_assemblage.index(mineral.phase)]
