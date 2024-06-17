@@ -677,6 +677,7 @@ def voigt_averages(
     minerals: list[Mineral],
     phase_assemblage: list[_core.MineralPhase],
     phase_fractions: list[float],
+    elastic_tensors: StiffnessTensors = StiffnessTensors(),
 ):
     """Calculate elastic tensors as the Voigt averages of a collection of `mineral`s.
 
@@ -701,8 +702,6 @@ def voigt_averages(
         raise ValueError(
             "cannot average minerals with variable-length grain volume arrays"
         )
-
-    elastic_tensors = StiffnessTensors()
 
     # TODO: Perform rotation directly on the 6x6 matrices, see Carcione 2007.
     # This trick is implemented in cpo_elastic_tensor.cc in Aspect.
