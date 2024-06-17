@@ -16,7 +16,6 @@ def _get_submodule_list():
     # Reset NumPy print options because doctests are just string matches, and typing out
     # so many significant digits in doctests is annoying.
     np.set_printoptions()
-    np.set_string_function(None)
     modules = ["pydrex." + m.name for m in pkgutil.iter_modules(pydrex.__path__)]
     for module in modules:
         try:

@@ -63,10 +63,12 @@ import numpy as np
 # NOTE: Do NOT import any pydrex submodules here to avoid cyclical imports.
 
 np.set_printoptions(
-    formatter={"float_kind": np.format_float_scientific},
+    formatter={
+        "float_kind": np.format_float_scientific,
+        "object": ft.partial(np.array2string, separator=", "),
+    },
     linewidth=1000,
 )
-np.set_string_function(ft.partial(np.array2string, separator=", "), repr=False)
 
 
 class ConsoleFormatter(logging.Formatter):
@@ -118,7 +120,7 @@ sys.excepthook = handle_exception
 
 
 @cl.contextmanager
-def handler_level(level: str, handler: logging.Handler=CONSOLE_LOGGER):
+def handler_level(level: str, handler: logging.Handler = CONSOLE_LOGGER):
     """Set logging handler level for current context.
 
     - `level` — logging level name e.g. "DEBUG", "ERROR", etc. See Python's logging
