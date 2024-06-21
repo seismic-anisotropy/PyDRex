@@ -158,7 +158,7 @@ symmetric 6x6 matrix.</p>
 </span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>
 </span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="nd">@nb</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="k">def</span> <span class="nf">voigt_decompose</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="k">def</span> <span class="nf">voigt_decompose</span><span class="p">(</span><span class="n">matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 </span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Decompose elastic tensor (as 6x6 Voigt matrix) into distinct contractions.</span>
 </span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>
 </span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="sd">    Return the only two independent contractions of the elastic tensor given as a 6x6</span>
@@ -463,14 +463,14 @@ symmetric 6x6 matrix.</p>
                     <div class="decorator">@nb.njit(fastmath=True)</div>
 
         <span class="def">def</span>
-        <span class="name">voigt_decompose</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">matrix</span></span><span class="return-annotation">):</span></span>
+        <span class="name">voigt_decompose</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">matrix</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span></span><span class="return-annotation">) -> <span class="nb">tuple</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>:</span></span>
 
                 <label class="view-source-button" for="voigt_decompose-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#voigt_decompose"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="voigt_decompose-40"><a href="#voigt_decompose-40"><span class="linenos">40</span></a><span class="nd">@nb</span><span class="o">.</span><span class="n">njit</span><span class="p">(</span><span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="voigt_decompose-41"><a href="#voigt_decompose-41"><span class="linenos">41</span></a><span class="k">def</span> <span class="nf">voigt_decompose</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+</span><span id="voigt_decompose-41"><a href="#voigt_decompose-41"><span class="linenos">41</span></a><span class="k">def</span> <span class="nf">voigt_decompose</span><span class="p">(</span><span class="n">matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 </span><span id="voigt_decompose-42"><a href="#voigt_decompose-42"><span class="linenos">42</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Decompose elastic tensor (as 6x6 Voigt matrix) into distinct contractions.</span>
 </span><span id="voigt_decompose-43"><a href="#voigt_decompose-43"><span class="linenos">43</span></a>
 </span><span id="voigt_decompose-44"><a href="#voigt_decompose-44"><span class="linenos">44</span></a><span class="sd">    Return the only two independent contractions of the elastic tensor given as a 6x6</span>
