@@ -190,6 +190,30 @@ def extract_vars(y, n_grains) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     return deformation_gradient, orientations, fractions
 
 
+def pad_with(a, x=np.nan):
+    """Pad a list of arrays with `x` and return as a new 2D array with regular shape.
+
+    >>> pad_with([[1, 2, 3], [4, 5], [6]])
+    array([[ 1.,  2.,  3.],
+           [ 4.,  5., nan],
+           [ 6., nan, nan]])
+    >>> pad_with([[1, 2, 3], [4, 5], [6]], x=0)
+    array([[1, 2, 3],
+           [4, 5, 0],
+           [6, 0, 0]])
+    >>> pad_with([[1, 2, 3]])
+    array([[1., 2., 3.]])
+    >>> pad_with([[1, 2, 3]], x=0)
+    array([[1, 2, 3]])
+
+    """
+    longest = max([len(d) for d in a])
+    out = np.full((len(a), longest), x)
+    for i, d in enumerate(a):
+        out[i, : len(d)] = d
+    return out
+
+
 def remove_nans(a):
     """Remove NaN values from array."""
     a = np.asarray(a)
