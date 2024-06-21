@@ -651,25 +651,16 @@ def update_all(
 
     """
     for i, mineral in enumerate(minerals):
-        if i == len(minerals) - 1:  # Collect new deformation gradient at last.
-            deformation_gradient = mineral.update_orientations(
-                params=params,
-                deformation_gradient=deformation_gradient,
-                get_velocity_gradient=get_velocity_gradient,
-                pathline=pathline,
-                get_regime=get_regime,
-                **kwargs,
-            )
-        else:
-            mineral.update_orientations(
-                params=params,
-                deformation_gradient=deformation_gradient,
-                get_velocity_gradient=get_velocity_gradient,
-                pathline=pathline,
-                get_regime=get_regime,
-                **kwargs,
-            )
-    return deformation_gradient
+        # Deformation gradient is independent of mineral phase.
+        new_deformation_gradient = mineral.update_orientations(
+            params=params,
+            deformation_gradient=deformation_gradient,
+            get_velocity_gradient=get_velocity_gradient,
+            pathline=pathline,
+            get_regime=get_regime,
+            **kwargs,
+        )
+    return new_deformation_gradient
 
 
 # TODO: Compare to [Man & Huang, 2011](https://doi.org/10.1007/s10659-011-9312-y).
