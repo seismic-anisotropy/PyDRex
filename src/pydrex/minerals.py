@@ -24,6 +24,30 @@ from pydrex import logger as _log
 from pydrex import tensors as _tensors
 from pydrex import utils as _utils
 
+OLIVINE_PRIMARY_AXIS = {
+    _core.MineralFabric.olivine_A: "a",
+    _core.MineralFabric.olivine_B: "c",
+    _core.MineralFabric.olivine_C: "c",
+    _core.MineralFabric.olivine_D: "a",
+    _core.MineralFabric.olivine_E: "a",
+}
+"""Primary slip axis name for for the given olivine `fabric`."""
+
+
+OLIVINE_SLIP_SYSTEMS = (
+    ([0, 1, 0], [1, 0, 0]),
+    ([0, 0, 1], [1, 0, 0]),
+    ([0, 1, 0], [0, 0, 1]),
+    ([1, 0, 0], [0, 0, 1]),
+)
+"""Slip systems for olivine in conventional order.
+
+Tuples contain the slip plane normal and slip direction vectors.
+The order of slip systems returned matches the order of critical shear stresses
+returned by `pydrex.core.get_crss`.
+
+"""
+
 
 @dataclass
 class StiffnessTensors:
@@ -74,109 +98,6 @@ class StiffnessTensors:
         }
         for _, v in sorted(indexed.items()):
             yield v
-
-
-OLIVINE_PRIMARY_AXIS = {
-    _core.MineralFabric.olivine_A: "a",
-    _core.MineralFabric.olivine_B: "c",
-    _core.MineralFabric.olivine_C: "c",
-    _core.MineralFabric.olivine_D: "a",
-    _core.MineralFabric.olivine_E: "a",
-}
-"""Primary slip axis name for for the given olivine `fabric`."""
-
-
-OLIVINE_SLIP_SYSTEMS = (
-    ([0, 1, 0], [1, 0, 0]),
-    ([0, 0, 1], [1, 0, 0]),
-    ([0, 1, 0], [0, 0, 1]),
-    ([1, 0, 0], [0, 0, 1]),
-)
-"""Slip systems for olivine in conventional order.
-
-Tuples contain the slip plane normal and slip direction vectors.
-The order of slip systems returned matches the order of critical shear stresses
-returned by `pydrex.core.get_crss`.
-
-"""
-
-
-def peridotite_solidus(pressure, fit="Hirschmann2000"):
-    """Get peridotite solidus (i.e. melting) temperature based on experimental fits.
-
-    Pressure is expected to be in GPa.
-
-    Supported fits:
-    - ["Hirschmann2000"](https://doi.org/10.1029/2000GC000070)
-    - ["Herzberg2000"](https://doi.org/10.1029/2000GC000089)
-
-    """
-    match fit:
-        case "Herzberg2000":
-            return 1086 - 5.7 * pressure + 390 * np.log(pressure)
-        case "Hirschmann2000":
-            return 5.104 * pressure**2 + 132.899 * pressure + 1120.661
-        case _:
-            raise ValueError("unsupported fit")
-
-
-# TODO: Compare to [Man & Huang, 2011](https://doi.org/10.1007/s10659-011-9312-y).
-def voigt_averages(minerals, phase_assemblage, phase_fractions):
-    """Calculate elastic tensors as the Voigt averages of a collection of `mineral`s.
-
-    - `minerals` — list of `pydrex.minerals.Mineral` instances storing orientations and
-      fractional volumes of the grains within each distinct mineral phase
-    - `phase_assemblage` — collection of `pydrex.core.MineralPhase`s
-    - `phase_fractions` — collection of volume fractions for each phase in
-      `phase_assemblage` (values should sum to 1).
-
-    Raises a ValueError if the minerals contain an unequal number of grains or stored
-    texture results.
-
-    """
-    n_grains = minerals[0].n_grains
-    if not np.all([m.n_grains == n_grains for m in minerals[1:]]):
-        raise ValueError("cannot average minerals with unequal grain counts")
-    n_steps = len(minerals[0].orientations)
-    if not np.all([len(m.orientations) == n_steps for m in minerals[1:]]):
-        raise ValueError(
-            "cannot average minerals with variable-length orientation arrays"
-        )
-    if not np.all([len(m.fractions) == n_steps for m in minerals]):
-        raise ValueError(
-            "cannot average minerals with variable-length grain volume arrays"
-        )
-
-    elastic_tensors = StiffnessTensors()
-
-    # TODO: Perform rotation directly on the 6x6 matrices, see Carcione 2007.
-    # This trick is implemented in cpo_elastic_tensor.cc in Aspect.
-    average_tensors = np.zeros((n_steps, 6, 6))
-    for i in range(n_steps):
-        for mineral in minerals:
-            for n in range(n_grains):
-                match mineral.phase:
-                    case _core.MineralPhase.olivine:
-                        average_tensors[i] += _tensors.elastic_tensor_to_voigt(
-                            _tensors.rotate(
-                                elastic_tensors.olivine,
-                                mineral.orientations[i][n, ...].transpose(),
-                            )
-                            * mineral.fractions[i][n]
-                            * phase_fractions[phase_assemblage.index(mineral.phase)]
-                        )
-                    case _core.MineralPhase.enstatite:
-                        average_tensors[i] += _tensors.elastic_tensor_to_voigt(
-                            _tensors.rotate(
-                                elastic_tensors["enstatite"],
-                                minerals.orientations[i][n, ...].transpose(),
-                            )
-                            * mineral.fractions[i][n]
-                            * phase_fractions[phase_assemblage.index(mineral.phase)]
-                        )
-                    case _:
-                        raise ValueError(f"unsupported mineral phase: {mineral.phase}")
-    return average_tensors
 
 
 @dataclass
@@ -375,7 +296,7 @@ class Mineral:
         pathline: tuple,
         get_regime=None,
         **kwargs,
-    ):
+    ) -> np.ndarray:
         """Update orientations and volume distribution for the `Mineral`.
 
         Update crystalline orientations and grain volume distribution
@@ -712,3 +633,111 @@ class Mineral:
         mineral.fractions = fractions
         mineral.orientations = orientations
         return mineral
+
+
+def update_all(
+    minerals: list[Mineral],
+    params: dict,
+    deformation_gradient: np.ndarray,
+    get_velocity_gradient,
+    pathline: tuple,
+    get_regime=None,
+    **kwargs,
+) -> np.ndarray:
+    """Update orientations and volume distributions for all mineral phases.
+
+    Returns the updated deformation gradient tensor which measures the accumulated
+    macroscopic strain.
+
+    """
+    for i, mineral in enumerate(minerals):
+        # Deformation gradient is independent of mineral phase.
+        new_deformation_gradient = mineral.update_orientations(
+            params=params,
+            deformation_gradient=deformation_gradient,
+            get_velocity_gradient=get_velocity_gradient,
+            pathline=pathline,
+            get_regime=get_regime,
+            **kwargs,
+        )
+    return new_deformation_gradient
+
+
+# TODO: Compare to [Man & Huang, 2011](https://doi.org/10.1007/s10659-011-9312-y).
+def voigt_averages(
+    minerals: list[Mineral],
+    phase_assemblage: list[_core.MineralPhase],
+    phase_fractions: list[float],
+    elastic_tensors: StiffnessTensors = StiffnessTensors(),
+):
+    """Calculate elastic tensors as the Voigt averages of a collection of `mineral`s.
+
+    - `minerals` — mineral phases storing orientations and fractional volumes of grains
+    - `phase_assemblage` — collection of unique mineral phases in the aggregate
+    - `phase_fractions` — collection of volume fractions for each phase in
+      `phase_assemblage` (values should sum to 1).
+
+    Raises a ValueError if the minerals contain an unequal number of grains or stored
+    texture results.
+
+    """
+    n_grains = minerals[0].n_grains
+    if not np.all([m.n_grains == n_grains for m in minerals[1:]]):
+        raise ValueError("cannot average minerals with unequal grain counts")
+    n_steps = len(minerals[0].orientations)
+    if not np.all([len(m.orientations) == n_steps for m in minerals[1:]]):
+        raise ValueError(
+            "cannot average minerals with variable-length orientation arrays"
+        )
+    if not np.all([len(m.fractions) == n_steps for m in minerals]):
+        raise ValueError(
+            "cannot average minerals with variable-length grain volume arrays"
+        )
+
+    # TODO: Perform rotation directly on the 6x6 matrices, see Carcione 2007.
+    # This trick is implemented in cpo_elastic_tensor.cc in Aspect.
+    average_tensors = np.zeros((n_steps, 6, 6))
+    for i in range(n_steps):
+        for mineral in minerals:
+            for n in range(n_grains):
+                match mineral.phase:
+                    case _core.MineralPhase.olivine:
+                        average_tensors[i] += _tensors.elastic_tensor_to_voigt(
+                            _tensors.rotate(
+                                elastic_tensors.olivine,
+                                mineral.orientations[i][n, ...].transpose(),
+                            )
+                            * mineral.fractions[i][n]
+                            * phase_fractions[phase_assemblage.index(mineral.phase)]
+                        )
+                    case _core.MineralPhase.enstatite:
+                        average_tensors[i] += _tensors.elastic_tensor_to_voigt(
+                            _tensors.rotate(
+                                elastic_tensors.enstatite,
+                                mineral.orientations[i][n, ...].transpose(),
+                            )
+                            * mineral.fractions[i][n]
+                            * phase_fractions[phase_assemblage.index(mineral.phase)]
+                        )
+                    case _:
+                        raise ValueError(f"unsupported mineral phase: {mineral.phase}")
+    return average_tensors
+
+
+def peridotite_solidus(pressure, fit="Hirschmann2000"):
+    """Get peridotite solidus (i.e. melting) temperature based on experimental fits.
+
+    Pressure is expected to be in GPa.
+
+    Supported fits:
+    - ["Hirschmann2000"](https://doi.org/10.1029/2000GC000070)
+    - ["Herzberg2000"](https://doi.org/10.1029/2000GC000089)
+
+    """
+    match fit:
+        case "Herzberg2000":
+            return 1086 - 5.7 * pressure + 390 * np.log(pressure)
+        case "Hirschmann2000":
+            return 5.104 * pressure**2 + 132.899 * pressure + 1120.661
+        case _:
+            raise ValueError("unsupported fit")
