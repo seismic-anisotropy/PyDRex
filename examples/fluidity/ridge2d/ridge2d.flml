@@ -672,7 +672,7 @@ for i in range(field.node_count):
         <tensor_field name="Gamma">
           <anisotropic_symmetric>
             <constant>
-              <real_value symmetric="true" rank="2" dim1="dim" dim2="dim" shape="2 2">1.0 1.0 1.0 1.0</real_value>
+              <real_value symmetric="true" rank="2" dim1="dim" dim2="dim" shape="2 2">1.0 0.0 0.0 1.0</real_value>
             </constant>
           </anisotropic_symmetric>
         </tensor_field>
@@ -695,7 +695,7 @@ for i in range(field.node_count):
             <courant_number name="ControlVolumeCFLNumber"/>
           </maximum_courant_number_per_subcycle>
           <scale_advection_time>
-            <real_value rank="0">2</real_value>
+            <real_value rank="0">5</real_value>
           </scale_advection_time>
           <control_volumes/>
         </temporal_discretisation>
