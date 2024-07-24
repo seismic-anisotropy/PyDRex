@@ -166,8 +166,15 @@ class DefaultParams:
     # """Approximate constant water fugacity of the aggregate (GPa)."""
     disl_prefactors: tuple = (1e-16, 1e-17)
     """Prefactors for dislocation creep exponential & power laws (s⁻¹)."""
-    diff_prefactor: float = 1e-10
-    """Prefactor for diffusion creep power law (s⁻¹)."""
+    diff_prefactors: tuple = (1e-10, 1e-10)
+    r"""Prefactors for (matrix and boundary) diffusion creep power laws (s⁻¹).
+
+    Dependence on molar volume and physical grain size are suppressed because these
+    diagnostics are not readily available. The prefactor is roughly equal to
+    $(Vₘ D⁰)/d²$ for $Vₘ$ the molar volume, $D⁰$ the reference diffusion coefficient and
+    $d²$ an average grain size assumed to be constant.
+
+    """
     disl_lowtemp_switch: float = 0.7
     """Threshold homologous temperature below which to use the exponential flow law.
 
@@ -181,16 +188,16 @@ class DefaultParams:
     """Activation energy for dislocation creep power law (kJ/mol)."""
     disl_activation_volume: float = 12.0
     """Activation volume for dislocation creep power law (cm³/mol)."""
-    diff_activation_energy: float = 330.0
-    """Activation energy for diffusion creep power law (kJ/mol).
+    diff_activation_energies: tuple = (330.0, 330)
+    """Activation energies for (matrix and boundary) diffusion creep power laws (kJ/mol).
 
     - 530 kJ/mol reported for Si self-diffusion in olivine¹
 
     ¹[Dohmen et al. 2002](http://dx.doi.org/10.1029/2002GL015480)
 
     """
-    diff_activation_volume: float = 4.0
-    """Activation volume for diffusion creep power law (cm³/mol)."""
+    diff_activation_volumes: tuple = (4.0, 4.0)
+    """Activation volumes for (matrix and boundary) diffusion creep power laws (cm³/mol)."""
     disl_coefficients: tuple = (
         4.4e8,
         -5.26e4,
