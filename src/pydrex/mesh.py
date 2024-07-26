@@ -8,6 +8,7 @@ import numpy as np
 from pydrex import exceptions as _err
 from pydrex import geometry as _geo
 from pydrex import logger as _log
+from pydrex import utils as _utils
 
 
 @dataclass
@@ -137,8 +138,37 @@ class Model:
             )
 
 
-def rectangle(name, ref_axes, center, width, height, resolution, **kwargs):
+def rectangle(
+    name: str,
+    ref_axes: tuple[str, str],
+    center: tuple[float, float],
+    width: float,
+    height: float,
+    resolution: dict,
+    **kwargs,
+) -> Model:
     """Generate a rectangular (2D) mesh.
+
+    - `name` — the name of the mesh object and the base of the filename (without the
+      file extension)
+    - `ref_axes` — two letters from {"x", "y", "z"} that set the conventional labels for
+      the dimensions of the 2D mesh, and indicate where to insert the dummy index in the
+      `custom_constraints` optional keyword arg
+    - `width` — size of the mesh along the first dimension according to `ref_axes`
+    - `height` — size of the mesh along the second dimension according to `ref_axes`
+    - `resolution` — dictionary for convenient definition of standard resolution
+      constraints, with float values for any of the keys "global", "north", "south",
+      "east", "west", "north-east", "north-west", "south-east" and "south-west"
+      (settings are applied in this order!)
+
+    Returns the `Model` object containing mesh information, and writes the mesh to a
+    file. The optional keyword argument `custom_constraints` accepts a tuple containing
+    1. the indices in `Model.point_constraints` before which to insert the custom
+        constraints (by default the four corner points are ordered anti-clockwise from
+        the bottom left for meshes with $xᵢ> 0$).
+    2. a 2D array of shape Nx3 where rows define constraints `[x1, x2, resolution]`.
+
+    Remaining keyword arguments are passed to the `Model` constructor.
 
     Examples:
 
@@ -197,9 +227,6 @@ def rectangle(name, ref_axes, center, width, height, resolution, **kwargs):
     h, v = _geo.to_indices2d(*ref_axes)
     center_h, center_v = center
     point_constraints = np.zeros((4, 4))  # x, y, z, nearby_edge_length
-    # TODO: Support "center" which should trigger creation of an additional
-    # point_constraint that is not connected by lines but just anchors the central
-    # resolution constraint (assuming this is possible in gmsh).
     _loc_map = {
         "global": range(4),
         "north": (2, 3),
@@ -229,6 +256,19 @@ def rectangle(name, ref_axes, center, width, height, resolution, **kwargs):
             case 3:
                 p[h] = center_h - width / 2
                 p[v] = center_v + height / 2
+
+    custom_constraints = kwargs.pop("custom_constraints", None)
+    if custom_constraints is not None:
+        dummy_index = ({0, 1, 2} - set([h, v])).pop()
+        indices, constraints = custom_constraints
+        point_constraints = np.insert(
+            point_constraints,
+            indices,
+            [_utils.add_dim(c, dummy_index) for c in constraints],
+            axis=0,
+        )
+
+    _log.debug("creating mesh with point constraints:\n\t%s", point_constraints)
 
     with Model(name, 2, **kwargs) as model:
         model.point_constraints = point_constraints

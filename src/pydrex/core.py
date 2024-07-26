@@ -82,6 +82,10 @@ class DeformationRegime(IntEnum):
     e.g. dislocation climb. Dislocation mechanisms are often accompanied by dynamic
     recrystallisation, which acts as an additional recovery mechanism.
 
+    Diffusive mechanisms are expected, however, to become dominant at depth, as these
+    mechanisms are primarily facilitated by Si diffusion in olivine, which is
+    temperature-dependent.
+
     Rheology in the intra-granular dislocation regime was classically described by
     separate flow laws depending on temperature; a power-law at high temperature
     [$\dot{ε} ∝ σⁿ$] and an exponential-law at low temperature [$\dot{ε} ∝ \exp(σ)$].
@@ -121,14 +125,27 @@ class DefaultParams:
     phase_fractions: tuple = (1.0,)
     """Volume fractions of each mineral phase present in the aggregate."""
     stress_exponent: float = 1.5
-    """The value for $p$ in $ρ ∝ τᵖ$ where $ρ$ is the dislocation density and $τ$ the shear stress."""
+    """The value for $p$ in $ρ ∝ τᵖ$ where $ρ$ is the dislocation density and $τ$ the shear stress.
+
+    Default value taken from [Kaminski et al. 2004](https://doi.org/10.1111/j.1365-246X.2004.02308.x)
+    based on studies referenced therein.
+
+    """
     deformation_exponent: float = 3.5
-    """The value for $n$ in $τ ∝ |D|^{1/n}$ where $τ$ is the shear stress and D the deformation rate."""
+    """The value for $n$ in $τ ∝ |D|^{1/n}$ where $τ$ is the shear stress and D the deformation rate.
+
+    Default value taken from [Kaminski et al. 2004](https://doi.org/10.1111/j.1365-246X.2004.02308.x)
+    based on studies referenced therein.
+
+    """
     gbm_mobility: int = 125
     """Dimensionless grain boundary mobility parameter (M*).
 
     This controls the rate of all dynamic recrystallisation processes in
     `DeformationRegime.matrix_dislocation`.
+
+    .. note:: This parameter is not easy to constrain. Reasonable values may lie in the
+        range [10, 150]. Comparing outputs for multiple M* values is recommended.
 
     """
     gbs_threshold: float = 0.3
@@ -140,30 +157,64 @@ class DefaultParams:
     Smaller grains will instead deform via grain boundary sliding,
     therefore not contributing to any further texture evolution.
 
+    .. note:: Values for this parameter do NOT correspond to a physical grain size
+        threshold. Grains in PyDRex are a surrogate numerical discretisation. There are
+        likely to be feedbacks between this parameter and `number_of_grains`. Values of
+        ~0.3 have been used in numerous studies which employed ~3000 grains.
+
     """
     nucleation_efficiency: float = 5.0
     """Dimensionless nucleation efficiency (λ*).
 
     This controls the nucleation of subgrains in `DeformationRegime.matrix_dislocation`.
 
+    The default value comes from [Kaminski & Ribe 2001](https://doi.org/10.1016%2Fs0012-821x%2801%2900356-9).
+
     """
     number_of_grains: int = 3500
-    """Number of surrogate grains for numerical discretisation of the aggregate."""
-    initial_olivine_fabric: MineralFabric = MineralFabric.olivine_A
-    """Olivine fabric (CRSS distribution) at the beginning of the simulation."""
-    disl_Peierls_stress: float = 10
-    """Stress barrier for activation of dislocation motion at low temperatures.
+    """Number of surrogate grains for numerical discretisation of the aggregate.
 
-    .. note:: Not relevant if the unified dislocation creep flow law is used instead.
+    This is a numerical discretisation, so generally more grains is better. However,
+    there is a sharp tradeoff in performance, especially for M-index calculation.
+
+    """
+    initial_olivine_fabric: MineralFabric = MineralFabric.olivine_A
+    """Olivine fabric (CRSS distribution) at the beginning of the simulation.
+
+    In general, the fabric should be allowed to change during the simulation,
+    but that is not yet implemented.
+
+    """
+    disl_Peierls_stress: float = 2
+    """Stress barrier in GPa for activation of dislocation motion at low temperatures.
+
+    - 2GPa suggested by [Demouchy et al. 2023](http://dx.doi.org/10.2138/gselements.19.3.151)
+
+    .. note:: Not relevant if the unified dislocation creep flow law is used.
 
     """
     # NOTE: For now, we just roll this into the prefactors.
     # water_fugacity: float = 1.5
     # """Approximate constant water fugacity of the aggregate (GPa)."""
+    # TODO: Check units of Garel 2020 pre-exp value below.
+    # TODO: Find and add references for the other value.
     disl_prefactors: tuple = (1e-16, 1e-17)
-    """Prefactors for dislocation creep exponential & power laws (s⁻¹)."""
-    diff_prefactor: float = 1e-10
-    """Prefactor for diffusion creep power law (s⁻¹)."""
+    """Prefactors for dislocation creep exponential & power laws (s⁻¹).
+
+    - B = 1.7e-16 s⁻¹ for the exponential law suggested by [Demouchy et al. 2023](http://dx.doi.org/10.2138/gselements.19.3.151)
+    - pre-exponential factor of 4.4e-17 Pa⁻ⁿs⁻¹ used for the exponential law by [Garel et al. 2020](http://dx.doi.org/10.1016/j.epsl.2020.116243)
+
+    """
+    # TODO: Add references, tweak default values if necessary.
+    diff_prefactors: tuple = (1e-10, 1e-10)
+    r"""Prefactors for (matrix and boundary) diffusion creep power laws (s⁻¹).
+
+    Dependence on molar volume and physical grain size are suppressed because these
+    diagnostics are not readily available. The prefactor is roughly equal to
+    $(Vₘ D⁰)/d²$ for $Vₘ$ the molar volume, $D⁰$ the reference diffusion coefficient and
+    $d²$ an average grain size assumed to be constant.
+
+    """
     disl_lowtemp_switch: float = 0.7
     """Threshold homologous temperature below which to use the exponential flow law.
 
@@ -173,22 +224,47 @@ class DefaultParams:
     .. note:: Not relevant if the unified dislocation creep flow law is used instead.
 
     """
+    # TODO: Add more references from experimental studies/reviews.
     disl_activation_energy: float = 460.0
-    """Activation energy for dislocation creep power law (kJ/mol)."""
+    """Activation energy for dislocation creep power law (kJ/mol).
+
+    - 443 kJ/mol used by [Gouriet et al. 2019](http://dx.doi.org/10.1016/j.epsl.2018.10.049),
+        but for an exponential law
+    - 540 kJ/mol used by [Garel et al. 2020](http://dx.doi.org/10.1016/j.epsl.2020.116243)
+
+    """
+    # TODO: Add more references, tweak default if necessary.
     disl_activation_volume: float = 12.0
-    """Activation volume for dislocation creep power law (cm³/mol)."""
-    diff_activation_energy: float = 330.0
-    """Activation energy for diffusion creep power law (kJ/mol)."""
-    diff_activation_volume: float = 4.0
-    """Activation volume for diffusion creep power law (cm³/mol)."""
+    """Activation volume for dislocation creep power law (cm³/mol).
+
+    - 0, 6 and 12 cm³/mol used by [Garel et al. 2020](http://dx.doi.org/10.1016/j.epsl.2020.116243)
+
+    """
+    # TODO: Add more references, justify choice of lower value than Garel 2020.
+    diff_activation_energies: tuple = (430.0, 330)
+    """Activation energies for (matrix and boundary) diffusion creep power laws (kJ/mol).
+
+    - 530 kJ/mol reported for Si self-diffusion in olivine¹
+    - 410 kJ/mol used by [Garel et al. 2020](http://dx.doi.org/10.1016/j.epsl.2020.116243)
+
+    ¹[Dohmen et al. 2002](http://dx.doi.org/10.1029/2002GL015480)
+
+    """
+    # TODO: Add more references, tweak default values if necessary.
+    diff_activation_volumes: tuple = (4.0, 4.0)
+    """Activation volumes for (matrix and boundary) diffusion creep power laws (cm³/mol).
+
+    - 4 kJ/mol used by [Garel et al. 2020](http://dx.doi.org/10.1016/j.epsl.2020.116243)
+
+    """
     disl_coefficients: tuple = (
-        4.4e8,
-        -5.26e4,
-        2.11e-2,
-        1.74e-4,
-        -41.8,
-        4.21e-2,
-        -1.14e-5,
+        4.4e8,  # a₀
+        -5.26e4,  # b₀
+        2.11e-2,  # a₁
+        1.74e-4,  # b₁
+        -41.8,  # a₂
+        4.21e-2,  # b₂
+        -1.14e-5,  # c₂
     )
     """Coefficients for polynomials used in the alternative dislocation creep flow law.
 
@@ -298,6 +374,10 @@ def derivatives(
     elif regime == DeformationRegime.boundary_diffusion:
         raise ValueError("this deformation mechanism is not yet supported.")
     elif regime == DeformationRegime.sliding_diffusion:
+        # Miyazaki et al. 2013 wrote controversial Nature article proposing that CPO can
+        # develop in the diffGBS regime. However, Karato 2024 gives some convincing
+        # arguments in the Journal of Geodynamics for why their results are likely
+        # inapplicable to Earth's upper mantle.
         raise ValueError("this deformation mechanism is not yet supported.")
     elif regime == DeformationRegime.matrix_dislocation:
         # Based on subroutine DERIV in original Fortran.

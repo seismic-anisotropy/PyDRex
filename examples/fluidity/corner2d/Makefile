@@ -27,7 +27,7 @@ GBM_MOBILITY := 10
 GBS_THRESHOLD := 0.3
 NUCLEATION_EFFICIENCY := 5
 
-$(OUT_DIR)/fluidity.log-0: $(OUT_DIR)/$(SIM_NAME).flml \
+all: $(OUT_DIR)/$(SIM_NAME).flml \
 	$(OUT_DIR)/$(SIM_NAME).msh $(OUT_DIR)/$(SIM_NAME).py $(OUT_DIR)/$(SIM_NAME).ini
 	@echo "********** Running fluidity with verbose logging enabled..."
 	./envcheck.sh -f
@@ -61,6 +61,6 @@ $(OUT_DIR)/$(SIM_NAME).msh:
 	pydrex-mesh -k="rectangle" -a xy $(WIDTH),$(DEPTH) \
 		-c $(HALF_WIDTH),-$(HALF_DEPTH) -r NW:$(RESOLUTION_HI),SE:$(RESOLUTION_LO) $@
 
-.PHONY: clean
+.PHONY: all clean
 clean:
 	rm -rf $(OUT_DIR)
