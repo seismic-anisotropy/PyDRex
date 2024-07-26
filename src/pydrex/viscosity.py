@@ -23,15 +23,6 @@ import pydrex.minerals as _minerals
 from pydrex.core import DefaultParams
 
 
-def harmonic_mean(viscosities: tuple[float, ...], bounds: tuple[float, float]):
-    """Calculate harmonic mean of `viscosities` and clip result between `bounds`."""
-    # Defensive .clip for each component as well.
-    return np.clip(
-        len(viscosities) / np.sum([1 / np.clip(μ, *bounds) for μ in viscosities]),
-        *bounds,
-    )
-
-
 def frictional_yielding(
     strain_rate_invariant_II,
     pressure,

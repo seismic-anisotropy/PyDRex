@@ -161,4 +161,3 @@ from pydrex.stats import (
     misorientations_random,
     resample_orientations,
 )
-from pydrex.viscosity import harmonic_mean

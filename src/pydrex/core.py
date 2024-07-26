@@ -202,9 +202,7 @@ class DefaultParams:
     """Prefactors for dislocation creep exponential & power laws (s⁻¹).
 
     - B = 1.7e-16 s⁻¹ for the exponential law suggested by [Demouchy et al. 2023](http://dx.doi.org/10.2138/gselements.19.3.151)
-    - pre-exponential factor of 4.4e-17 Pa⁻ⁿs⁻¹ used for the exponential law by [Garel et al. 2020](http://dx.doi.org/10.1016/j.epsl.2020.116243)ᵃ
-
-    ᵃCheck units, why is the Pa⁻ⁿ in there...
+    - pre-exponential factor of 4.4e-17 Pa⁻ⁿs⁻¹ used for the exponential law by [Garel et al. 2020](http://dx.doi.org/10.1016/j.epsl.2020.116243)
 
     """
     # TODO: Add references, tweak default values if necessary.

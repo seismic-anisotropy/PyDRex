@@ -383,7 +383,8 @@
             <mesh name="CoordinateMesh"/>
             <algorithm name="tensor_python_diagnostic" material_phase_support="single">
               <string_value type="code" language="python" lines="20">import numpy as np
-#from pydrex.viscosity import harmonic_mean
+#import numpy as np
+#from scipy.stats import hmean
 #from ridge2d import MAX_VISC, MIN_VISC
 #
 #μ_diff_field = state.scalar_fields["MatrixDiffusionRheology"]
@@ -400,7 +401,7 @@
 #    μ_diff = μ_diff_field.node_val(i)
 #    μ_disl = μ_disl_field.node_val(i)
 #    μ_yield = μ_yield_field.node_val(i)
-#    μ_eff *= harmonic_mean((μ_diff, μ_disl, μ_yield), (MIN_VISC, MAX_VISC))
+#    μ_eff *= np.clip(hmean(μ_diff, μ_disl, μ_yield), MIN_VISC, MAX_VISC)
 
 for i in range(field.node_count):
     μ_eff = np.ones(field.dimension)
