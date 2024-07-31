@@ -41,6 +41,10 @@ if [ $# -eq 0 ]; then  # first install
         warn "Python 3.10+ is required"; exit 1; }
     $PYTHON_BINARY -m venv .venv-"${PWD##*/}"
     upgrade
+    2>/dev/null 1>&2 command -v pre-commit || {
+        warn "Skipping installation of pre-commit hooks, which requires the pre-commit command.";
+        warn "To install them later, run `pre-commit install` in the local PyDRex clone."
+    }
     2>/dev/null 1>&2 command -v pre-commit && pre-commit install
     echo "/.venv-${PWD##*/}" >>.git/info/exclude
     echo "/requirements.txt" >>.git/info/exclude
