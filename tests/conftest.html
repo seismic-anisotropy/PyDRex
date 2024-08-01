@@ -326,7 +326,7 @@
 </span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a>    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
 </span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;delete&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 </span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a>        <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
+</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a>        <span class="k">return</span> <span class="p">{}</span>
 </span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a>
 </span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a>
 </span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span>
@@ -801,7 +801,7 @@ create a single one for the entire test session here.</p>
 </span><span id="named_tempfile_kwargs-160"><a href="#named_tempfile_kwargs-160"><span class="linenos">160</span></a>    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
 </span><span id="named_tempfile_kwargs-161"><a href="#named_tempfile_kwargs-161"><span class="linenos">161</span></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;delete&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 </span><span id="named_tempfile_kwargs-162"><a href="#named_tempfile_kwargs-162"><span class="linenos">162</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="named_tempfile_kwargs-163"><a href="#named_tempfile_kwargs-163"><span class="linenos">163</span></a>        <span class="k">return</span> <span class="nb">dict</span><span class="p">()</span>
+</span><span id="named_tempfile_kwargs-163"><a href="#named_tempfile_kwargs-163"><span class="linenos">163</span></a>        <span class="k">return</span> <span class="p">{}</span>
 </span></pre></div>
 
 
