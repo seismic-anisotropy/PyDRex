@@ -2,7 +2,6 @@
 
 import contextlib as cl
 import functools as ft
-import sys
 from time import process_time
 
 import numpy as np

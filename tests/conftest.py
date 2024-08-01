@@ -159,7 +159,7 @@ def named_tempfile_kwargs(request):
     if sys.platform == "win32":
         return {"delete": False}
     else:
-        return dict()
+        return {}
 
 
 @pytest.fixture(scope="session")

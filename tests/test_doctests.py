@@ -57,12 +57,12 @@ def test_doctests(module, capsys, verbose):
             else:
                 lineno = f":{e.test.lineno + 1 + e.example.lineno}"
             err_type, err, _ = e.exc_info
-            if err_type == NameError:  # Raised on missing optional functions.
+            if err_type is NameError:  # Raised on missing optional functions.
                 # Issue warning but let the test suite pass.
                 _log.warning(
                     "skipping doctest of missing optional symbol in %s", module
                 )
-            elif err_type == np.core._exceptions._ArrayMemoryError:
+            elif err_type is np.core._exceptions._ArrayMemoryError:
                 # Faiures to allocate should not be fatal to the doctest test suite.
                 _log.warning(
                     "skipping doctests for module %s due to insufficient memory", module

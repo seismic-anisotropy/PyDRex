@@ -19,9 +19,9 @@ from pydrex import velocity as _velocity
 
 Pool, HAS_RAY = _utils.import_proc_pool()
 if HAS_RAY:
-    import ray
+    import ray  # noqa: F401
 
-    from pydrex import distributed as _dstr
+    from pydrex import distributed as _dstr  # noqa: F401
 
 # Subdirectory of `outdir` used to store outputs from these tests.
 SUBDIR = "3d_simple_shear"
@@ -192,7 +192,10 @@ class TestFraters2021:
                         ]
                     )
                     olA_downsampled, _ = _stats.resample_orientations(
-                        olivine.orientations, olivine.fractions, seed=_seeds[s], n_samples=1000
+                        olivine.orientations,
+                        olivine.fractions,
+                        seed=_seeds[s],
+                        n_samples=1000,
                     )
                     olA_strength[s, :] = _diagnostics.misorientation_indices(
                         olA_downsampled, _geo.LatticeSystem.orthorhombic, pool=pool
@@ -223,7 +226,10 @@ class TestFraters2021:
                         ]
                     )
                     ens_downsampled, _ = _stats.resample_orientations(
-                        enstatite.orientations, enstatite.fractions, seed=_seeds[s], n_samples=1000
+                        enstatite.orientations,
+                        enstatite.fractions,
+                        seed=_seeds[s],
+                        n_samples=1000,
                     )
                     ens_strength[s, :] = _diagnostics.misorientation_indices(
                         ens_downsampled, _geo.LatticeSystem.orthorhombic, pool=pool
