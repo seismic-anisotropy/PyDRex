@@ -36,7 +36,7 @@ For an evolving, bleeding edge variant use the latest commit on `main`:
 
     pip install git+https://github.com/seismic-anisotropy/PyDRex#egg=pydrex
 
-However, note that pip does not know how to uninstall dependencies of pacakges.
+However, note that pip does not know how to uninstall dependencies of packages.
 Versioned source distributions, which include tests and examples, are also
 available from the [PyPI downloads page](https://pypi.org/project/pydrex/#files).
 These include package metadata and a full list of dependencies
