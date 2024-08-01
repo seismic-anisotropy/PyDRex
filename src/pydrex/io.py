@@ -747,7 +747,7 @@ def _parse_scsv_cell(func, data, missingstr=None, fillval=None):
         if fillval == "NaN":
             return func(np.nan)
         return func(fillval)
-    elif isinstance(func, bool):
+    elif func.__qualname__ == "bool":
         return _parse_scsv_bool(data)
     return func(data.strip())
 
