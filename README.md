@@ -8,10 +8,10 @@
 
 This repository contains a Python 3 reimplementation of the D-Rex model
 for the evolution of crystallographic preferred orientation in polycrystals.
-The code is available for use under the [GNU GPL v3](LICENSE) license.
+The code is available for use under the [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
 Documentation is accessible via Python's REPL `help()` and also [online](https://seismic-anisotropy.github.io/PyDRex/).
 
-## Install
+## Installing
 
 Check `requires-python` in `pyproject.toml` for the minimum required Python
 version. The software is tested on Linux, MacOS and Windows, however large
@@ -36,18 +36,25 @@ For an evolving, bleeding edge variant use the latest commit on `main`:
 
     pip install git+https://github.com/seismic-anisotropy/PyDRex#egg=pydrex
 
-The package metadata and full list of dependencies are declared in [`pyproject.toml`](pyproject.toml).
+However, note that pip does not know how to uninstall dependencies of packages.
+Versioned source distributions, which include tests and examples, are also
+available from the [PyPI downloads page](https://pypi.org/project/pydrex/#files).
+These include package metadata and a full list of dependencies
+declared in the `pyproject.toml` file.
 
-## Test
+## Testing
+
+Running tests or examples requires a local git clone or unpacked source distribution.
 
 Some tests can optionally output figures or extended diagnostics when run locally.
-Check the [test suite README](tests/README.md) for details.
+Testing locally requires a local git clone or source distribution of PyDRex.
+Check the `tests/README.md` file for details.
 
 Further examples that demonstrate how PyDRex can be used within geodynamic
 simulations are provided in the `examples` folder.
 They have their own README file as well.
 
-## Documentation
+## Building offline documentation
 
 The documentation can be built offline using [pdoc](https://github.com/mitmproxy/pdoc),
 with the command:
@@ -61,7 +68,7 @@ and should otherwise be excluded:
 
     pdoc -t docs/template -o html --math pydrex !pydrex.mesh !pydrex.distributed tests
 
-See also the provided [GitHub actions workflow](.github/workflows/docs.yml).
+See also the provided [GitHub actions workflow](https://raw.githubusercontent.com/seismic-anisotropy/PyDRex/main/.github/workflows/docs.yml).
 
 ## Contributing
 

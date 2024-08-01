@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `pydrex.viscosity` module with effective viscosity contributions for
+  different deformation mechanisms based on a selection of proposed
+  constitutive equations
+- Option to use Herzberg et al. 2000 peridotite solidus fit
+- Decorator to serialize lexical closures using `dill`
 - `pydrex.update_all` to update texture of multiphase aggregates simultaneously
 - `get_regime` argument to `update_all`/`update_orientations` to allow for
   temporally variable deformation regimes
@@ -22,9 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Symbol names for default stiffness tensors (now members of
   `minerals.StiffnessTensors` — use your own preferred stiffness tensors by
   passing a custom instance when e.g. calculating Voigt averages)
+- Default parameter namespace (moved from `io.DEFAULT_PARAMS` to
+  `core.DefaultParams`)
 
 ### Fixed
 - Handling of enstatite in Voigt averaging
+- Handling of optional keyword args in some visualisation functions
 
 
 ## [0.0.1] - 2024-04-24
