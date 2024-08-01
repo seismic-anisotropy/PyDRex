@@ -1,7 +1,7 @@
 # PyDRex
 
-<p align="center" style="margin:4%;">
-    <img alt="PyDRex logo" src="https://raw.githubusercontent.com/seismic-anisotropy/PyDRex/main/docs/assets/pydrex.png" width="25%"/>
+<p align="center" style="margin:50px;">
+    <img alt="PyDRex logo" src="https://raw.githubusercontent.com/seismic-anisotropy/PyDRex/main/docs/assets/logo265.png">
 </p>
 
 #### Simulate crystallographic preferred orientation evolution in polycrystals
@@ -45,34 +45,27 @@ declared in the `pyproject.toml` file.
 ## Testing
 
 Running tests or examples requires a local git clone or unpacked source distribution.
+Install test suite dependencies with `pip install '.[test]'`.
 
 Some tests can optionally output figures or extended diagnostics when run locally.
-Testing locally requires a local git clone or source distribution of PyDRex.
 Check the `tests/README.md` file for details.
 
 Further examples that demonstrate how PyDRex can be used within geodynamic
-simulations are provided in the `examples` folder.
+simulations are provided in subfolders of the `examples` folder.
 They have their own README file as well.
 
 ## Building offline documentation
 
-The documentation can be built offline using [pdoc](https://github.com/mitmproxy/pdoc),
-with the command:
+The documentation can be built offline from a git clone or source distribution.
+Install documentation builder dependencies with `pip install '.[doc]'`.
 
-    pdoc -t docs/template -o html --math pydrex tests
-
-which will output the html documentation into a folder called `html`.
+Run the make command `make html` which will output the documentation,
+including the generated API reference, into a folder called `html`.
 The homepage will be `html/index.html`.
-Note that some submodules depend on optional dependencies,
-and should otherwise be excluded:
-
-    pdoc -t docs/template -o html --math pydrex !pydrex.mesh !pydrex.distributed tests
-
-See also the provided [GitHub actions workflow](https://raw.githubusercontent.com/seismic-anisotropy/PyDRex/main/.github/workflows/docs.yml).
 
 ## Contributing
 
-For a development environment, clone the [source code](https://github.com/seismic-anisotropy/PyDRex)
+For a Linux development environment, clone the [source code](https://github.com/seismic-anisotropy/PyDRex)
 and execute the Bash script `tools/venv_install.sh`.
 This will set up a local Python virtual environment with an [editable install](https://setuptools.pypa.io/en/latest/userguide/development_mode.html)
 of PyDRex that can be activated/deactivated by following the displayed prompts.
