@@ -23,9 +23,9 @@ authors = [
     {name = "Chris Mathews"},
 ]
 keywords = ["CPO", "LPO", "olivine", "deformation", "anisotropy", "crystallography"]
-classifiers = [
+classifiers = [  # List of possible classifiers: <https://pypi.org/classifiers/>.
     "Programming Language :: Python :: 3",
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Topic :: Scientific/Engineering :: Physics",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
@@ -46,17 +46,33 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest"]
-doc = ["pdoc"]
-mesh = ["gmsh"]  # NOTE: Saying `import gmsh` is like saying "I don't want my CI to work".
-ray = ["ray >= 2.0.0"]
-dev = ["pdoc", "pre-commit", "ptpython", "pyvista", "ruff", "uniplot", "pytest", "mypy"]
-lsp = ["python-lsp-ruff", "python-lsp-server", "pylsp-mypy"]
+# These optional dependencies are relevant for built distributions (e.g. via pip):
+mesh = ["gmsh"]  # Required for pydrex-mesh, doesn't play nice with CI.
+ray = ["ray >= 2.0.0"]  # Required for distributed-memory examples.
+# These optional dependencies are only relevant for source distributions:
+test = ["pytest"]  # Minimal test dependencies, for CI.
+doc = ["pdoc"]  # Minimal html docs dependencies, for CI.
+dev = [  # Full developer dependencies, including packaging and visualisation tools.
+    "build",
+    "mypy",
+    "pdoc",
+    "pre-commit",
+    "ptpython",
+    "pytest",
+    "pyvista",
+    "ruff",
+    "twine",
+    "uniplot",
+]
+# Language server protocol support for modern editors/linters.
+lsp = ["python-lsp-ruff", "python-lsp-server", "pylsp-mypy", "fortls"]
 
+# Metadata for PyPI landing page.
 [project.urls]
 repository = "https://github.com/seismic-anisotropy/PyDRex"
 documentation = "https://seismic-anisotropy.github.io/PyDRex/"
 
+# CLI entry points.
 [project.scripts]
 pydrex-polefigures = "pydrex.cli:CLI_HANDLERS.pole_figure_visualiser"
 pydrex-mesh = "pydrex.cli:CLI_HANDLERS.mesh_generator"
@@ -64,13 +80,15 @@ pydrex-h5party="pydrex.cli:CLI_HANDLERS.h5part_extractor"
 npzshow = "pydrex.cli:CLI_HANDLERS.npz_file_inspector"
 
 # Make setuptools include datafiles in wheels/packages.
-# Data files must be inside the package directory.
+# Data files must be inside the src/<package> directory.
 [tool.setuptools]
 include-package-data = true
 
-# Use src/<package> layout to keep things clean.
 [tool.setuptools.packages.find]
+# Use src/<package> layout to keep things clean.
 where = ["src"]
+# Special exclude rules for the wheel, NOTE: Use foo* glob instead of foo/*.
+exclude = ["initial_implementation*"]
 
 # Some global pytest configuration settings, avoids having an extra pytest.ini file.
 [tool.pytest.ini_options]
@@ -95,6 +113,7 @@ exclude = [
 "src/pydrex/__init__.py" = ["F401", "E501"]  # Don't complain about unused imports or long lines in __init__.py file.
 "tests/test_scsv.py" = ["E501"]  # Don't complain about long lines here.
 
+# Silence mypy noise about packages that don't have type hints/stubs.
 [[tool.mypy.overrides]]
 module = "pydrex.*,numba.*,h5py.*,meshio.*,gmsh.*,dill.*,cmcrameri.*,scipy.*,ray.*"
 ignore_missing_imports = true
