@@ -425,7 +425,7 @@ def save_scsv(file, schema, data, **kwargs):
                             f"invalid data for column '{names[i]}'."
                             + f" Cannot parse {d} as type '{t.__qualname__}'."
                         ) from None
-                    if t == bool:
+                    if isinstance(t, bool):
                         row.append(d)
                     elif t in (float, complex):
                         if np.isnan(d) and np.isnan(t(f)):
@@ -747,7 +747,7 @@ def _parse_scsv_cell(func, data, missingstr=None, fillval=None):
         if fillval == "NaN":
             return func(np.nan)
         return func(fillval)
-    elif func == bool:
+    elif func.__qualname__ == "bool":
         return _parse_scsv_bool(data)
     return func(data.strip())
 

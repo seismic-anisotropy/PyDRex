@@ -259,7 +259,7 @@ def rectangle(
 
     custom_constraints = kwargs.pop("custom_constraints", None)
     if custom_constraints is not None:
-        dummy_index = ({0, 1, 2} - set([h, v])).pop()
+        dummy_index = ({0, 1, 2} - {h, v}).pop()
         indices, constraints = custom_constraints
         point_constraints = np.insert(
             point_constraints,
