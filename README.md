@@ -59,13 +59,13 @@ They have their own README file as well.
 The documentation can be built offline from a git clone or source distribution.
 Install documentation builder dependencies with `pip install '.[doc]'`.
 
-Run the make command `make html` which will output the documentation,
-including the generated API reference, into a folder called `html`.
+Run `make html` from the terminal to generate PyDRex's documentation
+(available in the `html` directory), including the API reference.
 The homepage will be `html/index.html`.
 
 ## Contributing
 
-For a Linux development environment, clone the [source code](https://github.com/seismic-anisotropy/PyDRex)
+For a Linux or MacOS development environment, clone the [source code](https://github.com/seismic-anisotropy/PyDRex)
 and execute the Bash script `tools/venv_install.sh`.
 This will set up a local Python virtual environment with an [editable install](https://setuptools.pypa.io/en/latest/userguide/development_mode.html)
 of PyDRex that can be activated/deactivated by following the displayed prompts.
