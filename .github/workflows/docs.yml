@@ -12,7 +12,8 @@ on:  # Always attempt html build on push & PR, but only deploy when there is a n
   workflow_dispatch:  # Allows to manually trigger the job from the web UI.
 
 jobs:
-  deploy:
+  build:
+    name: Build documentation (and deploy for git tag)
     runs-on: ubuntu-latest
     permissions:
       contents: write
