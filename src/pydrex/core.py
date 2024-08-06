@@ -695,7 +695,7 @@ def _get_rotation_and_strain(
     deformation_exponent: float,
     nucleation_efficiency: float,
 ):
-    """Get the crystal axes rotation rate and strain energy of individual grain.
+    """Get the crystal axes rotation rate and strain energy of an individual grain.
 
     - `phase` — ordinal number of the mineral phase
     - `fabric` — ordinal number of the fabric type
