@@ -46,7 +46,7 @@ def test_validate_schema(console_handler):
 
     # NOTE: NamedTemporaryFile() already opens the file.
     # Attempting to open it again will cause a crash on Windows so close the file first.
-    with _log.handler_level("CRITICAL", console_handler):
+    with _io.log_cli_level("CRITICAL", console_handler):
         with pytest.raises(_err.SCSVError):
             temp = tempfile.NamedTemporaryFile()
             temp.close()

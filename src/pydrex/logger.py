@@ -53,7 +53,7 @@ True
 False
 
 Usually, a filename should be given to the `pydrex.io.logfile_enable` context manager.
-In these examples, (open) temporary files and streams are used for demonstration.
+In this example, (open) temporary files and streams are used for demonstration.
 
 >>> import tempfile
 >>> import io
@@ -65,14 +65,6 @@ In these examples, (open) temporary files and streams are used for demonstration
 ...     with open(tmp.file.name) as f:
 ...         print(f.readline())
 DEBUG [...] pydrex: debug message ...
-
->>> _ = cli_handler.setStream(sys.stderr)  # Doctests don't check stderr.
->>> pydrex_logger.info("info message")
->>> with pydrex.io.logfile_enable(sys.stdout):  # doctest: +ELLIPSIS
-...     pydrex_logger.debug("debug message to stdout")
-...     pydrex_logger.info("info message to stdout")
-DEBUG [...] pydrex: debug message to stdout
-INFO [...] pydrex: info message to stdout
 
 ### Information for PyDRex developers
 
