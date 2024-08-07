@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ability to toggle verbose doctest output using `pytest -vv`
 
 ### Changed
+- Symbol name of `pydrex.logger.handler_level` to `pydrex.io.log_cli_level`
 - Call signature for steady flow 2D box visualisation function
 - Symbol names for default stiffness tensors (now members of
   `minerals.StiffnessTensors` — use your own preferred stiffness tensors by
@@ -34,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Handling of enstatite in Voigt averaging
 - Handling of optional keyword args in some visualisation functions
 
+### Removed
+- Access to `io` symbols in global `pydrex` namespace (use `pydrex.io` instead)
 
 ## [0.0.1] - 2024-04-24
 

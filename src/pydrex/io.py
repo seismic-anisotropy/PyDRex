@@ -767,16 +767,49 @@ def data(directory):
 
 
 @cl.contextmanager
-def logfile_enable(path, level=logging.DEBUG, mode="w"):
-    """Enable logging to a file at `path` with given `level`."""
-    logger_file = logging.FileHandler(resolve_path(path), mode=mode)
-    logger_file.setFormatter(
-        logging.Formatter(
-            "%(levelname)s [%(asctime)s] %(name)s: %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
+def logfile_enable(path, level: str | int = logging.DEBUG, mode="w"):
+    """Enable logging to a file at `path` with given `level`.
+
+    See the `pydrex.logger` documentation for examples.
+
+    Logging levels are documented here:
+    - <https://docs.python.org/3/library/logging.html#logging-levels>
+
+    """
+    formatter = logging.Formatter(
+        "%(levelname)s [%(asctime)s] %(name)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
-    logger_file.setLevel(level)
-    _log.LOGGER.addHandler(logger_file)
+    # Path can be an io.TextIOWrapper or io.StringIO, for testing purposes.
+    logger_file: logging.StreamHandler | logging.FileHandler
+    if isinstance(path, (io.StringIO, io.TextIOWrapper)):
+        logger_file = logging.StreamHandler(path)
+        logger_file.setFormatter(formatter)
+        logger_file.setLevel(level)
+        _log.LOGGER.addHandler(logger_file)
+    else:
+        _log.critical("%s", type(path))
+        logger_file = logging.FileHandler(resolve_path(path), mode=mode)
+        logger_file.setFormatter(formatter)
+        logger_file.setLevel(level)
+        _log.LOGGER.addHandler(logger_file)
     yield
-    logger_file.close()
+    if not isinstance(path, (io.StringIO, io.TextIOWrapper)):
+        logger_file.close()
+    _log.LOGGER.removeHandler(logger_file)
+
+
+@cl.contextmanager
+def log_cli_level(level: str | int, handler: logging.Handler = _log.CONSOLE_LOGGER):
+    """Set console logging handler level for current context.
+
+    See the `pydrex.logger` documentation for examples.
+
+    Logging levels are documented here:
+    - <https://docs.python.org/3/library/logging.html#logging-levels>
+
+    """
+    default_level = handler.level
+    handler.setLevel(level)
+    yield
+    handler.setLevel(default_level)
