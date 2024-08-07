@@ -57,7 +57,8 @@ In these examples, (open) temporary files and streams are used for demonstration
 
 >>> import tempfile
 >>> import io
->>> tmp = tempfile.NamedTemporaryFile()
+>>> kwargs = { "delete_on_close": False } if sys.platform == "win32" else {}
+>>> tmp = tempfile.NamedTemporaryFile(**kwargs)
 >>> pydrex_logger.debug("debug message")
 >>> with pydrex.io.logfile_enable(io.TextIOWrapper(tmp.file)):  # doctest: +ELLIPSIS
 ...     pydrex_logger.debug("debug message in %s", tmp.file.name)
