@@ -90,7 +90,7 @@ include-package-data = true
 # Use src/<package> layout to keep things clean.
 where = ["src"]
 # Special exclude rules for the wheel, NOTE: Use foo* glob instead of foo/*.
-exclude = ["initial_implementation*"]
+exclude = ["initial_implementation*", "fortran_modules*"]
 
 # Some global pytest configuration settings, avoids having an extra pytest.ini file.
 [tool.pytest.ini_options]
