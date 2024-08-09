@@ -19,10 +19,15 @@ html:
 		--favicon "https://raw.githubusercontent.com/seismic-anisotropy/PyDRex/main/docs/assets/favicon32.png" \
 		--footer-text "PyDRex $(VERSION)"
 
+live_docs:
+	pdoc -t docs/template pydrex !pydrex.mesh !pydrex.distributed tests \
+		--favicon "https://raw.githubusercontent.com/seismic-anisotropy/PyDRex/main/docs/assets/favicon32.png" \
+		--footer-text "PyDRex $(VERSION)"
+
 clean:
 	rm -rf dist
 	rm -rf out
 	rm -rf html
 	rm -rf pdoc.log
 
-.PHONY: release test clean
+.PHONY: release test live_docs clean
