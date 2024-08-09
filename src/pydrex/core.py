@@ -118,8 +118,23 @@ class DeformationRegime(IntEnum):
     """Arbitrary upper-bound viscosity regime."""
 
 
+# Because frozen=True doesn't guarantee recursive immutabillity,
+# check hashability in a doctest to ensure that this is actually immutable.
+# Remember to use tuples instead of lists for members.
 @dataclass(frozen=True)
 class DefaultParams:
+    """Immutable record of default parameters for PyDRex.
+
+    Use `as_dict` to get a mutable copy.
+
+    >>> defaults = DefaultParams()
+    >>> from collections.abc import Hashable
+    >>> isinstance(defaults, Hashable)  # supports hash()
+    True
+    >>> isinstance(defaults.as_dict(), Hashable)
+    False
+
+    """
     phase_assemblage: tuple = (MineralPhase.olivine,)
     """Mineral phases present in the aggregate."""
     phase_fractions: tuple = (1.0,)
