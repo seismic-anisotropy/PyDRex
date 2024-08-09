@@ -205,43 +205,8 @@ def console_handler(request):
 
 
 @pytest.fixture
-def params_Fraters2021():
-    return _mock.PARAMS_FRATERS2021
-
-
-@pytest.fixture
-def params_Kaminski2001_fig5_solid():
-    return _mock.PARAMS_KAMINSKI2001_FIG5_SOLID
-
-
-@pytest.fixture
-def params_Kaminski2001_fig5_shortdash():
-    return _mock.PARAMS_KAMINSKI2001_FIG5_SHORTDASH
-
-
-@pytest.fixture
-def params_Kaminski2001_fig5_longdash():
-    return _mock.PARAMS_KAMINSKI2001_FIG5_LONGDASH
-
-
-@pytest.fixture
-def params_Kaminski2004_fig4_triangles():
-    return _mock.PARAMS_KAMINSKI2004_FIG4_TRIANGLES
-
-
-@pytest.fixture
-def params_Kaminski2004_fig4_squares():
-    return _mock.PARAMS_KAMINSKI2004_FIG4_SQUARES
-
-
-@pytest.fixture
-def params_Kaminski2004_fig4_circles():
-    return _mock.PARAMS_KAMINSKI2004_FIG4_CIRCLES
-
-
-@pytest.fixture
-def params_Hedjazian2017():
-    return _mock.PARAMS_HEDJAZIAN2017
+def mock():
+    return _mock
 
 
 @pytest.fixture(scope="session")

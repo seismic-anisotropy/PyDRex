@@ -120,6 +120,7 @@ class DeformationRegime(IntEnum):
 
 # Because frozen=True doesn't guarantee recursive immutabillity,
 # check hashability in a doctest to ensure that this is actually immutable.
+# This also ensures that subclasses are immutable (see pydrex.mock).
 # Remember to use tuples instead of lists for members.
 @dataclass(frozen=True)
 class DefaultParams:
