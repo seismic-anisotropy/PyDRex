@@ -1,7 +1,6 @@
 """> Configuration and fixtures for PyDRex tests."""
 
 import argparse
-import sys
 
 import matplotlib
 import numpy as np
@@ -175,14 +174,6 @@ def ncpus(request):
 
 
 @pytest.fixture(scope="session")
-def named_tempfile_kwargs(request):
-    if sys.platform == "win32":
-        return {"delete": False}
-    else:
-        return {}
-
-
-@pytest.fixture(scope="session")
 def ray_session():
     if HAS_RAY:
         # NOTE: Expects a running Ray cluster with a number of CPUS matching --ncpus.
@@ -195,9 +186,16 @@ def ray_session():
     yield
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def console_handler(request):
-    if request.config.option.verbose > 0:  # Show console logs if -v/--verbose given.
+    """Return the live logging handler for pydrex.
+
+    If `-v`/`--verbose` is passed to the pytest command,
+    this returns the handler of the 'pydrex-live-logger' pytest plugin.
+    Otherwise, returns the default pydrex CLI logging handler.
+
+    """
+    if request.config.option.verbose > 0:
         return request.config.pluginmanager.get_plugin(
             "pydrex-live-logger"
         ).log_cli_handler

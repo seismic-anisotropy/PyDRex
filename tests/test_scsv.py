@@ -1,7 +1,5 @@
 """> PyDRex: tests for the SCSV plain text file format."""
 
-import tempfile
-
 import numpy as np
 import pytest
 from numpy import testing as nt
@@ -11,7 +9,7 @@ from pydrex import logger as _log
 from pydrex import utils as _utils
 
 
-def test_validate_schema(console_handler):
+def test_validate_schema(tmp_path, console_handler):
     """Test SCSV schema validation."""
     schema_nofill = {
         "delimiter": ",",
@@ -44,38 +42,29 @@ def test_validate_schema(console_handler):
         "fields": [{"name": "baddelim", "type": "float", "fill": "NaN"}],
     }
 
-    # NOTE: NamedTemporaryFile() already opens the file.
-    # Attempting to open it again will cause a crash on Windows so close the file first.
     with _io.log_cli_level("CRITICAL", console_handler):
         with pytest.raises(_err.SCSVError):
-            temp = tempfile.NamedTemporaryFile()
-            temp.close()
-            _io.save_scsv(temp.name, schema_nofill, [[0.1]])
+            temp = tmp_path / "temp.scsv"
+            _io.save_scsv(temp, schema_nofill, [[0.1]])
         with pytest.raises(_err.SCSVError):
-            temp = tempfile.NamedTemporaryFile()
-            temp.close()
-            _io.save_scsv(temp.name, schema_nomissing, [[0.1]])
+            temp = tmp_path / "temp.scsv"
+            _io.save_scsv(temp, schema_nomissing, [[0.1]])
         with pytest.raises(_err.SCSVError):
-            temp = tempfile.NamedTemporaryFile()
-            temp.close()
-            _io.save_scsv(temp.name, schema_nofields, [[0.1]])
+            temp = tmp_path / "temp.scsv"
+            _io.save_scsv(temp, schema_nofields, [[0.1]])
         with pytest.raises(_err.SCSVError):
-            temp = tempfile.NamedTemporaryFile()
-            temp.close()
-            _io.save_scsv(temp.name, schema_badfieldname, [[0.1]])
+            temp = tmp_path / "temp.scsv"
+            _io.save_scsv(temp, schema_badfieldname, [[0.1]])
         with pytest.raises(_err.SCSVError):
-            temp = tempfile.NamedTemporaryFile()
-            temp.close()
-            _io.save_scsv(temp.name, schema_delimiter_eq_missing, [[0.1]])
+            temp = tmp_path / "temp.scsv"
+            _io.save_scsv(temp, schema_delimiter_eq_missing, [[0.1]])
         with pytest.raises(_err.SCSVError):
-            temp = tempfile.NamedTemporaryFile()
-            temp.close()
-            _io.save_scsv(temp.name, schema_delimiter_in_missing, [[0.1]])
+            temp = tmp_path / "temp.scsv"
+            _io.save_scsv(temp, schema_delimiter_in_missing, [[0.1]])
         # CSV module already raises a TypeError on long delimiters.
         with pytest.raises(TypeError):
-            temp = tempfile.NamedTemporaryFile()
-            temp.close()
-            _io.save_scsv(temp.name, schema_long_delimiter, [[0.1]])
+            temp = tmp_path / "temp.scsv"
+            _io.save_scsv(temp, schema_long_delimiter, [[0.1]])
 
 
 def test_read_specfile():
@@ -98,7 +87,7 @@ def test_read_specfile():
 
 
 @pytest.mark.skipif(_utils.in_ci("win32"), reason="Items are not equal")
-def test_save_specfile(outdir, named_tempfile_kwargs):
+def test_save_specfile(tmp_path, outdir):
     """Test SCSV spec file reproduction."""
     schema = {
         "delimiter": ",",
@@ -157,16 +146,15 @@ def test_save_specfile(outdir, named_tempfile_kwargs):
         _io.save_scsv(f"{outdir}/spec_out.scsv", schema, data)
         _io.save_scsv(f"{outdir}/spec_out_alt.scsv", schema_alt, data_alt)
 
-    # https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
-    temp = tempfile.NamedTemporaryFile(**named_tempfile_kwargs)
-    temp_alt = tempfile.NamedTemporaryFile(**named_tempfile_kwargs)
-    _io.save_scsv(temp.name, schema, data)
-    _io.save_scsv(temp_alt.name, schema_alt, data_alt)
+    temp = tmp_path / "temp.scsv"
+    temp_alt = tmp_path / "temp_alt.scsv"
+    _io.save_scsv(temp, schema, data)
+    _io.save_scsv(temp_alt, schema_alt, data_alt)
     raw_read = []
     raw_read_alt = []
-    with open(temp.name) as stream:
+    with open(temp) as stream:
         raw_read = stream.readlines()[23:]  # Extra spec for first column 'fill' value.
-    with open(temp_alt.name) as stream:
+    with open(temp_alt) as stream:
         raw_read_alt = stream.readlines()[22:]
     _log.debug("\n  first file: %s\n  second file: %s", raw_read, raw_read_alt)
     nt.assert_equal(raw_read, raw_read_alt)
@@ -193,7 +181,7 @@ def test_read_Kaminski2002():
     # fmt: on
 
 
-def test_save_scsv_errors(named_tempfile_kwargs):
+def test_save_scsv_errors(tmp_path):
     """Check that we raise errors when attempting to write bad SCSV data."""
     schema = {
         "delimiter": ",",
@@ -206,20 +194,19 @@ def test_save_scsv_errors(named_tempfile_kwargs):
             }
         ],
     }
-    # https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
-    temp = tempfile.NamedTemporaryFile(**named_tempfile_kwargs)
+    temp = tmp_path / "temp.scsv"
     with pytest.raises(_err.SCSVError):
         foo = [1, 5, 0.2]
-        _io.save_scsv(temp.name, schema, [foo])
+        _io.save_scsv(temp, schema, [foo])
         foo = [1, "foo"]
-        _io.save_scsv(temp.name, schema, [foo])
+        _io.save_scsv(temp, schema, [foo])
         foo = ["foo"]
-        _io.save_scsv(temp.name, schema, [foo])
+        _io.save_scsv(temp, schema, [foo])
         foo = [True]
-        _io.save_scsv(temp.name, schema, [foo])
+        _io.save_scsv(temp, schema, [foo])
         foo = [1, 2, 3]
         bar = [1, 2, 3]
-        _io.save_scsv(temp.name, schema, [foo, bar])
+        _io.save_scsv(temp, schema, [foo, bar])
 
 
 def test_read_Kaminski2004():
