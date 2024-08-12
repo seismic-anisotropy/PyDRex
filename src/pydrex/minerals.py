@@ -95,7 +95,7 @@ class StiffnessTensors:
 
     def __post_init__(self):
         for k, v in self.__dataclass_fields__.items():
-            if v.type is not type(v.default):
+            if v.type is not type(v.default_factory()):
                 raise ValueError(f"Illegal type for {self.__class__.__qualname__}.{k}")
 
 
