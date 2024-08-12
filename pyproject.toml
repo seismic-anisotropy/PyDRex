@@ -100,7 +100,6 @@ testpaths = ["tests"]
 # --show-capture=no : Don't show captured output for failed tests, use -v instead.
 # -p no:logging : Disable built-in logging plugin, we have our own.
 addopts = "--tb=short --capture=fd --show-capture=no -p no:logging"
-# NOTE: We do not respect the log_cli=true option. Use pytest -v to get live logs instead.
 
 # Global linter and devtools settings.
 [tool.ruff]

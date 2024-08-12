@@ -103,7 +103,6 @@ def pytest_configure(config):
 
     # Hook up our logging plugin last,
     # it relies on terminalreporter and capturemanager.
-    # Because the log_cli=true init option is not introspectable, we use -v instead.
     # To subclass the logging plugin we also had to break --capture except for -s
     # (--capture=no), so bail if the user tries to set --capture=method.
     if config.option.log_cli_level is not None:
@@ -132,7 +131,7 @@ def pytest_configure(config):
                 + "use --capture=fd"
             ),
         ) from None
-    if config.option.verbose > 0:
+    if config.option.verbose > 0 or config.getini("log_cli"):
         config.pluginmanager.register(PyDRexLiveLogger(config), PyDRexLiveLogger.name)
 
 
@@ -157,6 +156,8 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture(scope="session")
 def verbose(request):
+    if request.config.option.verbose == 0 and request.config.getini("log_cli"):
+        return 1
     return request.config.option.verbose
 
 
@@ -195,7 +196,7 @@ def console_handler(request):
     Otherwise, returns the default pydrex CLI logging handler.
 
     """
-    if request.config.option.verbose > 0:
+    if request.config.option.verbose > 0 or request.config.getini("log_cli"):
         return request.config.pluginmanager.get_plugin(
             "pydrex-live-logger"
         ).log_cli_handler
