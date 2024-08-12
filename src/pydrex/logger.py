@@ -57,7 +57,7 @@ In this example, (open) temporary files and streams are used for demonstration.
 
 >>> import tempfile
 >>> import io
->>> kwargs = { "delete_on_close": False } if sys.platform == "win32" else {}
+>>> kwargs = { "delete": False } if sys.platform == "win32" else {}
 >>> tmp = tempfile.NamedTemporaryFile(**kwargs)
 >>> pydrex_logger.debug("debug message")
 >>> with pydrex.io.logfile_enable(io.TextIOWrapper(tmp.file)):  # doctest: +ELLIPSIS
