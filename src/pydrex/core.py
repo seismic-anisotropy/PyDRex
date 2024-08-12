@@ -202,7 +202,7 @@ class DefaultParams:
     but that is not yet implemented.
 
     """
-    disl_Peierls_stress: float = 2
+    disl_Peierls_stress: float = 2.0
     """Stress barrier in GPa for activation of dislocation motion at low temperatures.
 
     - 2GPa suggested by [Demouchy et al. 2023](http://dx.doi.org/10.2138/gselements.19.3.151)
