@@ -294,7 +294,7 @@ class DefaultParams:
 
     def __post_init__(self):
         for k, v in self.__dataclass_fields__.items():
-            if v.type is not type(v.default_value):
+            if v.type is not type(v.default):
                 raise ValueError(f"Illegal type for {self.__class__.__qualname__}.{k}")
 
     def as_dict(self):
