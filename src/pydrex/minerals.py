@@ -93,14 +93,10 @@ class StiffnessTensors:
         for _, v in sorted(indexed.items()):
             yield v
 
-    @classmethod
-    def __check_type__(cls, field, value):
-        if not isinstance(value, type(getattr(cls, field))):
-            raise ValueError(f"Illegal type for {cls.__qualname__}.{field}")
-
     def __post_init__(self):
-        for k, v in self.__dict__.items():
-            self.__check_type__(k, v)
+        for k, v in self.__dataclass_fields__.items():
+            if v.type is not type(v.default_value):
+                raise ValueError(f"Illegal type for {self.__class__.__qualname__}.{k}")
 
 
 def peridotite_solidus(pressure, fit="Hirschmann2000"):

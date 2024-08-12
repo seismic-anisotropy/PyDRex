@@ -292,17 +292,22 @@ class DefaultParams:
 
     """
 
-    @classmethod
-    def __check_type__(cls, field, value):
-        if not isinstance(value, type(getattr(cls, field))):
-            raise ValueError(f"Illegal type for {cls.__qualname__}.{field}")
-
     def __post_init__(self):
-        for k, v in self.__dict__.items():
-            self.__check_type__(k, v)
+        for k, v in self.__dataclass_fields__.items():
+            if v.type is not type(v.default_value):
+                raise ValueError(f"Illegal type for {self.__class__.__qualname__}.{k}")
 
     def as_dict(self):
-        """Return mutable copy of default arguments as a dictionary."""
+        """Return mutable copy of default arguments as a dictionary.
+
+        The reverse operation is achieved simply by passing the dictionary
+        back into the class constructor:
+
+        >>> params_mutable = DefaultParams().as_dict()
+        >>> params_mutable["number_of_grains"] = 9999
+        >>> params_immutable = DefaultParams(**params_mutable)
+
+        """
         return asdict(self)
 
 
