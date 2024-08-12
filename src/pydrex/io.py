@@ -783,12 +783,13 @@ def logfile_enable(path, level: str | int = logging.DEBUG, mode="w"):
     # Path can be an io.TextIOWrapper or io.StringIO, for testing purposes.
     logger_file: logging.StreamHandler | logging.FileHandler
     if isinstance(path, (io.StringIO, io.TextIOWrapper)):
+        _log.debug("enabling logging at %s level to IO stream")
         logger_file = logging.StreamHandler(path)
         logger_file.setFormatter(formatter)
         logger_file.setLevel(level)
         _log.LOGGER.addHandler(logger_file)
     else:
-        _log.critical("%s", type(path))
+        _log.debug("enabling logging at %s level to %s", level, path)
         logger_file = logging.FileHandler(resolve_path(path), mode=mode)
         logger_file.setFormatter(formatter)
         logger_file.setLevel(level)
