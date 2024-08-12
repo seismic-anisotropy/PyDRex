@@ -136,6 +136,7 @@ class DefaultParams:
     False
 
     """
+
     phase_assemblage: tuple = (MineralPhase.olivine,)
     """Mineral phases present in the aggregate."""
     phase_fractions: tuple = (1.0,)
@@ -290,6 +291,15 @@ class DefaultParams:
     used the ERF variant with: [4.4e8, -2.2e4, 3e-2, 1.3e-4, -42, 4.2e-2, -1.1e-5].
 
     """
+
+    @classmethod
+    def __check_type__(cls, field, value):
+        if not isinstance(value, type(getattr(cls, field))):
+            raise ValueError(f"Illegal type for {cls.__qualname__}.{field}")
+
+    def __post_init__(self):
+        for k, v in self.__dict__.items():
+            self.__check_type__(k, v)
 
     def as_dict(self):
         """Return mutable copy of default arguments as a dictionary."""
