@@ -51,7 +51,7 @@ mesh = ["gmsh"]  # Required for pydrex-mesh, doesn't play nice with CI.
 ray = ["ray >= 2.0.0"]  # Required for distributed-memory examples.
 # These optional dependencies are only relevant for source distributions:
 test = ["pytest"]  # Minimal test dependencies, for CI.
-doc = ["pdoc"]  # Minimal html docs dependencies, for CI.
+doc = ["pdoc", "setuptools-scm"]  # Minimal html docs dependencies, for CI.
 dev = [  # Full developer dependencies, including packaging and visualisation tools.
     "build",
     "mypy",
@@ -61,6 +61,7 @@ dev = [  # Full developer dependencies, including packaging and visualisation to
     "pytest",
     "pyvista",
     "ruff",
+    "setuptools-scm",
     "twine",
     "uniplot",
 ]
