@@ -6,7 +6,6 @@ from numpy import testing as nt
 from pydrex import exceptions as _err
 from pydrex import io as _io
 from pydrex import logger as _log
-from pydrex import utils as _utils
 
 
 def test_validate_schema(tmp_path, console_handler):
