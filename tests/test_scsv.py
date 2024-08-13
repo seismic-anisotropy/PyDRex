@@ -86,7 +86,6 @@ def test_read_specfile():
     nt.assert_equal(data.complex_column, [0.1 + 0 * 1j, np.nan + 0 * 1j, 1.0 + 1 * 1j])
 
 
-@pytest.mark.skipif(_utils.in_ci("win32"), reason="Items are not equal")
 def test_save_specfile(tmp_path, outdir):
     """Test SCSV spec file reproduction."""
     schema = {
@@ -153,9 +152,10 @@ def test_save_specfile(tmp_path, outdir):
     raw_read = []
     raw_read_alt = []
     with open(temp) as stream:
-        raw_read = stream.readlines()[23:]  # Extra spec for first column 'fill' value.
+        # Extra spec for first column 'fill' value.
+        raw_read = list(filter(None, stream.read().splitlines()))[23:]
     with open(temp_alt) as stream:
-        raw_read_alt = stream.readlines()[22:]
+        raw_read_alt = list(filter(None, stream.read().splitlines()))[22:]
     _log.debug("\n  first file: %s\n  second file: %s", raw_read, raw_read_alt)
     nt.assert_equal(raw_read, raw_read_alt)
 
