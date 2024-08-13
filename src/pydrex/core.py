@@ -129,10 +129,11 @@ class DefaultParams:
     Use `as_dict` to get a mutable copy.
 
     >>> defaults = DefaultParams()
-    >>> from collections.abc import Hashable
-    >>> isinstance(defaults, Hashable)  # supports hash()
+    >>> # Evaluating hash() will raise an error if the argument is mutable.
+    >>> isinstance(hash(defaults), int)
     True
-    >>> isinstance(defaults.as_dict(), Hashable)
+    >>> from collections.abc import Hashable
+    >>> isinstance(defaults.as_dict(), Hashable)  # No longer supports hash().
     False
 
     """
