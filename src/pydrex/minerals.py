@@ -51,6 +51,14 @@ returned by `pydrex.core.get_crss`.
 
 @dataclass
 class StiffnessTensors:
+    """Stiffness tensors (Voigt representation), with units of GPa.
+
+    The source of the values used here is unknown, but they are copied
+    from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz>
+    [88K download]
+
+    """
+
     olivine: np.ndarray = field(
         default_factory=lambda: np.array(
             [
@@ -63,13 +71,6 @@ class StiffnessTensors:
             ]
         )
     )
-    """Stiffness tensor for olivine (Voigt representation), with units of GPa.
-
-    The source of the values used here is unknown, but they are copied
-    from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz>
-    [88K download]
-
-    """
     enstatite: np.ndarray = field(
         default_factory=lambda: np.array(
             [
@@ -82,13 +83,6 @@ class StiffnessTensors:
             ]
         )
     )
-    """Stiffness tensor for enstatite (Voigt representation), with units of GPa.
-
-    The source of the values used here is unknown, but they are copied
-    from the original DRex code: <http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz>
-    [88K download]
-
-    """
 
     def __iter__(self):
         # So that [S for S in StiffnessTensors()] can be indexed with `MineralPhase`s.
@@ -98,6 +92,11 @@ class StiffnessTensors:
         }
         for _, v in sorted(indexed.items()):
             yield v
+
+    def __post_init__(self):
+        for k, v in self.__dataclass_fields__.items():
+            if v.type is not type(v.default_factory()):
+                raise ValueError(f"Illegal type for {self.__class__.__qualname__}.{k}")
 
 
 def peridotite_solidus(pressure, fit="Hirschmann2000"):

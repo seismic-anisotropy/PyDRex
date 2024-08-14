@@ -54,7 +54,7 @@ class TestFraters2021:
         Other keyword args are passed to `pydrex.Mineral.update_orientations`.
 
         Returns a tuple containing one olivine (A-type) and one enstatite mineral.
-        If `params["enstatite_fraction"]` is zero, then the second tuple element will be
+        If `params.enstatite_fraction` is zero, then the second tuple element will be
         `None` instead.
 
         """
@@ -66,15 +66,15 @@ class TestFraters2021:
             phase=_core.MineralPhase.olivine,
             fabric=_core.MineralFabric.olivine_A,
             regime=_core.DeformationRegime.matrix_dislocation,
-            n_grains=params["number_of_grains"],
+            n_grains=params.number_of_grains,
             seed=seed,
         )
-        if params["enstatite_fraction"] > 0:
+        if params.enstatite_fraction > 0:
             enstatite = _minerals.Mineral(
                 phase=_core.MineralPhase.enstatite,
                 fabric=_core.MineralFabric.enstatite_AB,
                 regime=_core.DeformationRegime.matrix_dislocation,
-                n_grains=params["number_of_grains"],
+                n_grains=params.number_of_grains,
                 seed=seed,
             )
         else:
@@ -90,7 +90,7 @@ class TestFraters2021:
             else:
                 get_velocity_gradient = get_velocity_gradient_initial
 
-            if params["enstatite_fraction"] > 0:
+            if params.enstatite_fraction > 0:
                 enstatite.update_orientations(
                     params,
                     deformation_gradient,
@@ -112,7 +112,7 @@ class TestFraters2021:
     @pytest.mark.slow
     @pytest.mark.parametrize("switch_time_Ma", [0, 1, 2.5, np.inf])
     def test_direction_change(
-        self, outdir, seeds, params_Fraters2021, switch_time_Ma, ncpus, ray_session
+        self, outdir, seeds, mock, switch_time_Ma, ncpus, ray_session
     ):
         """Test a-axis alignment in simple shear with instantaneous geometry change.
 
@@ -159,7 +159,7 @@ class TestFraters2021:
             clock_start = process_time()
             _run = ft.partial(
                 self.run,
-                params_Fraters2021,
+                mock.ParamsFraters2021(),
                 timestamps,
                 get_velocity_gradient_initial,
                 get_velocity_gradient_final,

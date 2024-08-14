@@ -1,59 +1,80 @@
 """> PyDRex: logger settings and boilerplate.
 
-Python's logging module is weird and its methods don't allow us to specify
-which logger to use, so just using `logging.debug` for example always uses
-the "root" logger, which spams a bunch of messages from other imports/modules.
-Instead, the methods in this module are thin wrappers that use custom
-logging objects (`pydrex.logger.LOGGER` and `pydrex.logger.CONSOLE_LOGGER`).
-The method `quiet_aliens` can be invoked to suppress most messages
-from third-party modules, except critical errors and warnings from Numba.
+.. note:: Always use the old printf style formatting for log messages, not fstrings,
+    otherwise compute time may be wasted on string conversions when logging is disabled:
 
-By default, PyDRex emits INFO level messages to the console.
-This can be changed globally by setting the new level with `CONSOLE_LOGGER.setLevel`:
+The methods in this module are thin `logging` wrappers that use custom logger objects
+(`pydrex.logger.LOGGER` and its `StreamHandler`, `pydrex.logger.CONSOLE_LOGGER`).
+For packages that depend on PyDRex, the `pydrex.logger.LOGGER` should be accessed by:
 
-```python
-from pydrex import logger as _log
-_log.info("this message will be printed to the console")
+>>> import logging
+>>> import pydrex
+>>> pydrex_logger = logging.getLogger("pydrex")
 
-_log.CONSOLE_LOGGER.setLevel("ERROR")
-_log.info("this message will NOT be printed to the console")
-_log.error("this message will be printed to the console")
-```
+Console logs are written at `INFO` level to `sys.stderr` by default:
 
-To change the console logging level for a particular local context,
-use the `handler_level` context manager:
+>>> # ELLIPSIS is <stderr> except in test session.
+>>> pydrex_logger.handlers  # doctest: +ELLIPSIS
+[<StreamHandler ... (INFO)>]
 
-```python
-_log.CONSOLE_LOGGER.setLevel("INFO")
-_log.info("this message will be printed to the console")
+The following examples use `sys.stdout` instead (`...` represents a timestamp).
 
-with handler_level("ERROR"):
-    _log.info("this message will NOT be printed to the console")
+>>> import sys
+>>> cli_handler = pydrex_logger.handlers[0]
+>>> _ = cli_handler.setStream(sys.stdout)  # Doctests don't check stderr.
+>>> cli_handler.formatter.color_enabled = False  # Disable colors in output.
+>>> pydrex_logger.info("info message")  # doctest: +ELLIPSIS
+INFO [...] pydrex: info message
+>>> cli_handler.setLevel(logging.ERROR)
+>>> pydrex_logger.info("info message")
+>>> pydrex_logger.error("error message")  # doctest: +ELLIPSIS
+ERROR [...] pydrex: error message
 
-_log.info("this message will be printed to the console")
-```
+This change persists across successive requests for logger object access:
 
-To save logs to a file, the `pydrex.io.logfile_enable` context manager is recommended.
-Always use the old printf style formatting for log messages, not fstrings,
-otherwise compute time will be wasted on string conversions when logging is disabled:
+>>> pydrex_logger = logging.getLogger("pydrex")
+>>> cli_handler.level == logging.INFO
+False
+>>> cli_handler.level == logging.ERROR
+True
 
-```python
-from pydrex import io as _io
-_log.quiet_aliens()  # Suppress third-party log messages except CRITICAL from Numba.
-with _io.logfile_enable("my_log_file.log"):  # Overwrite existing file unless mode="a".
-    value = 42
-    _log.critical("critical error with value: %s", value)
-    _log.error("runtime error with value: %s", value)
-    _log.warning("warning with value: %s", value)
-    _log.info("information message with value: %s", value)
-    _log.debug("verbose debugging message with value: %s", value)
-    ... # Construct Minerals, update orientations, etc.
+### Log files and logging contexts
 
-```
+The logging level can also be adjusted using context managers,
+both for console output and (optionally) saving logs to a file:
+
+>>> cli_handler.setLevel(logging.INFO)
+>>> cli_handler.level == logging.DEBUG
+False
+>>> with pydrex.io.log_cli_level(logging.DEBUG, cli_handler):
+...     cli_handler.level == logging.DEBUG
+True
+>>> cli_handler.level == logging.DEBUG
+False
+
+Usually, a filename should be given to the `pydrex.io.logfile_enable` context manager.
+In this example, (open) temporary files and streams are used for demonstration.
+
+>>> import tempfile
+>>> import io
+>>> kwargs = { "delete": False } if sys.platform == "win32" else {}
+>>> tmp = tempfile.NamedTemporaryFile(**kwargs)
+>>> pydrex_logger.debug("debug message")
+>>> with pydrex.io.logfile_enable(io.TextIOWrapper(tmp.file)):  # doctest: +ELLIPSIS
+...     pydrex_logger.debug("debug message in %s", tmp.file.name)
+...     with open(tmp.file.name) as f:
+...         print(f.readline())
+DEBUG [...] pydrex: debug message ...
+
+### Information for PyDRex developers
+
+All PyDRex modules that require logging should use `import pydrex.logger`,
+which automatically initialises and registers the PyDRex logger objects if necessary.
+
+The method `quiet_aliens` can be invoked to suppress logging messages from dependencies.
 
 """
 
-import contextlib as cl
 import functools as ft
 import logging
 import sys
@@ -75,6 +96,10 @@ class ConsoleFormatter(logging.Formatter):
     """Log formatter that uses terminal color codes."""
 
     def colorfmt(self, code):
+        # Color enabled by default, disabled by setting `.color_enabled` = False.
+        # Adding this as a constructor arg breaks things...
+        if hasattr(self, "color_enabled") and not self.color_enabled:
+            return "%(levelname)s [%(asctime)s] %(name)s: %(message)s"
         return (
             f"\033[{code}m%(levelname)s [%(asctime)s]\033[m"
             + " \033[1m%(name)s:\033[m %(message)s"
@@ -119,22 +144,6 @@ def handle_exception(exec_type, exec_value, exec_traceback):
 sys.excepthook = handle_exception
 
 
-@cl.contextmanager
-def handler_level(level: str, handler: logging.Handler = CONSOLE_LOGGER):
-    """Set logging handler level for current context.
-
-    - `level` — logging level name e.g. "DEBUG", "ERROR", etc. See Python's logging
-      module for details.
-    - `handler` (optional) — alternative handler to control instead of the default,
-      `CONSOLE_LOGGER`.
-
-    """
-    default_level = handler.level
-    handler.setLevel(level)
-    yield
-    handler.setLevel(default_level)
-
-
 def critical(msg, *args, **kwargs):
     """Log a CRITICAL message in PyDRex."""
     LOGGER.critical(msg, *args, **kwargs)
@@ -169,13 +178,16 @@ def exception(msg, *args, **kwargs):
     LOGGER.exception(msg, *args, **kwargs)
 
 
-def quiet_aliens():
-    """Restrict alien loggers 👽 because I'm trying to find MY bugs, thanks."""
-    # Only allow warnings or above from root logger.
-    logging.getLogger().setLevel(logging.WARNING)
-    # Only allow critical stuff from other things.
+def quiet_aliens(root_level=logging.WARNING, level=logging.CRITICAL):
+    """Restrict alien loggers 👽.
+
+    .. note:: Primarily intended for internal use (test suite/development).
+
+    - `root_level` sets the level for the "root" logger
+    - `level` sets the level for everything else (except "pydrex")
+
+    """
+    logging.getLogger().setLevel(root_level)
     for name in logging.Logger.manager.loggerDict.keys():
         if name != "pydrex":
-            logging.getLogger(name).setLevel(logging.CRITICAL)
-    # Numba is not in the list for some reason, I guess we can leave warnings.
-    logging.getLogger("numba").setLevel(logging.WARNING)
+            logging.getLogger(name).setLevel(level)

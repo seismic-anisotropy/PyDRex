@@ -146,7 +146,6 @@ from pydrex.geometry import (
     to_indices2d,
     to_spherical,
 )
-from pydrex.io import data, logfile_enable, read_scsv, save_scsv
 from pydrex.minerals import (
     OLIVINE_PRIMARY_AXIS,
     OLIVINE_SLIP_SYSTEMS,

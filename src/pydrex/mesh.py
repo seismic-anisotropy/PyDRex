@@ -51,6 +51,11 @@ class Model:
     _write_file: bool = True
     _was_entered: bool = False
 
+    def __post_init__(self):
+        for k, v in self.__dataclass_fields__.items():
+            if v.type is not type(v.default):
+                raise ValueError(f"Illegal type for {self.__class__.__qualname__}.{k}")
+
     # TODO: Possible attributes worth adding, no particular order:
     # - boundary/boundaries, see gm.model.getBoundary()
     # - bounding_box, see gm.model.getBoundingBox()

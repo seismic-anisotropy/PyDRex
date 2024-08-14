@@ -1,6 +1,6 @@
 """> Configuration and fixtures for PyDRex tests."""
 
-import sys
+import argparse
 
 import matplotlib
 import numpy as np
@@ -66,11 +66,10 @@ def pytest_addoption(parser):
     )
 
 
-# The default pytest logging plugin always creates its own handlers...
-class PytestConsoleLogger(LoggingPlugin):
-    """Pytest plugin that allows linking up a custom console logger."""
+class PyDRexLiveLogger(LoggingPlugin):
+    """Pytest plugin for custom handling of live logging."""
 
-    name = "pytest-console-logger"
+    name = "pydrex-live-logger"
 
     def __init__(self, config, *args, **kwargs):
         super().__init__(config, *args, **kwargs)
@@ -81,8 +80,7 @@ class PytestConsoleLogger(LoggingPlugin):
         handler.setLevel(_log.CONSOLE_LOGGER.level)
         self.log_cli_handler = handler
 
-    # Override original, which tries to delete some silly globals that we aren't
-    # using anymore, this might break the (already quite broken) -s/--capture.
+    # Override original, which tries to use some silly globals for log capture.
     @pytest.hookimpl(hookwrapper=True)
     def pytest_runtest_teardown(self, item):
         self.log_cli_handler.set_when("teardown")
@@ -105,16 +103,36 @@ def pytest_configure(config):
 
     # Hook up our logging plugin last,
     # it relies on terminalreporter and capturemanager.
-    if config.option.verbose > 0:
-        terminal_reporter = config.pluginmanager.get_plugin("terminalreporter")
-        capture_manager = config.pluginmanager.get_plugin("capturemanager")
-        handler = _LiveLoggingStreamHandler(terminal_reporter, capture_manager)
-        handler.setFormatter(_log.CONSOLE_LOGGER.formatter)
-        handler.setLevel(_log.CONSOLE_LOGGER.level)
-        _log.LOGGER_PYTEST = handler
-        config.pluginmanager.register(
-            PytestConsoleLogger(config), PytestConsoleLogger.name
-        )
+    # To subclass the logging plugin we also had to break --capture except for -s
+    # (--capture=no), so bail if the user tries to set --capture=method.
+    if config.option.log_cli_level is not None:
+        _log.CONSOLE_LOGGER.setLevel(config.option.log_cli_level)
+    if (
+        config.option.log_cli_format is not None
+        or config.option.log_cli_date_format is not None
+    ):
+        raise argparse.ArgumentError(
+            None,
+            message="pydrex test suite does not support changing the CLI logging format",
+        ) from None
+    if config.option.log_file is not None:
+        raise argparse.ArgumentError(
+            None,
+            message=(
+                "pydrex test suite does not support pytest --log-file option, "
+                + "use --outdir instead"
+            ),
+        ) from None
+    if config.option.capture != "fd":
+        raise argparse.ArgumentError(
+            None,
+            message=(
+                "pydrex test suite only supports pytest 'fd' capture method, "
+                + "use --capture=fd"
+            ),
+        ) from None
+    if config.option.verbose > 0 or config.getini("log_cli"):
+        config.pluginmanager.register(PyDRexLiveLogger(config), PyDRexLiveLogger.name)
 
 
 def pytest_collection_modifyitems(config, items):
@@ -138,6 +156,8 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture(scope="session")
 def verbose(request):
+    if request.config.option.verbose == 0 and request.config.getini("log_cli"):
+        return 1
     return request.config.option.verbose
 
 
@@ -155,14 +175,6 @@ def ncpus(request):
 
 
 @pytest.fixture(scope="session")
-def named_tempfile_kwargs(request):
-    if sys.platform == "win32":
-        return {"delete": False}
-    else:
-        return {}
-
-
-@pytest.fixture(scope="session")
 def ray_session():
     if HAS_RAY:
         # NOTE: Expects a running Ray cluster with a number of CPUS matching --ncpus.
@@ -175,53 +187,25 @@ def ray_session():
     yield
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def console_handler(request):
-    if request.config.option.verbose > 0:  # Show console logs if -v/--verbose given.
+    """Return the live logging handler for pydrex.
+
+    If `-v`/`--verbose` is passed to the pytest command,
+    this returns the handler of the 'pydrex-live-logger' pytest plugin.
+    Otherwise, returns the default pydrex CLI logging handler.
+
+    """
+    if request.config.option.verbose > 0 or request.config.getini("log_cli"):
         return request.config.pluginmanager.get_plugin(
-            "pytest-console-logger"
+            "pydrex-live-logger"
         ).log_cli_handler
     return _log.CONSOLE_LOGGER
 
 
 @pytest.fixture
-def params_Fraters2021():
-    return _mock.PARAMS_FRATERS2021
-
-
-@pytest.fixture
-def params_Kaminski2001_fig5_solid():
-    return _mock.PARAMS_KAMINSKI2001_FIG5_SOLID
-
-
-@pytest.fixture
-def params_Kaminski2001_fig5_shortdash():
-    return _mock.PARAMS_KAMINSKI2001_FIG5_SHORTDASH
-
-
-@pytest.fixture
-def params_Kaminski2001_fig5_longdash():
-    return _mock.PARAMS_KAMINSKI2001_FIG5_LONGDASH
-
-
-@pytest.fixture
-def params_Kaminski2004_fig4_triangles():
-    return _mock.PARAMS_KAMINSKI2004_FIG4_TRIANGLES
-
-
-@pytest.fixture
-def params_Kaminski2004_fig4_squares():
-    return _mock.PARAMS_KAMINSKI2004_FIG4_SQUARES
-
-
-@pytest.fixture
-def params_Kaminski2004_fig4_circles():
-    return _mock.PARAMS_KAMINSKI2004_FIG4_CIRCLES
-
-
-@pytest.fixture
-def params_Hedjazian2017():
-    return _mock.PARAMS_HEDJAZIAN2017
+def mock():
+    return _mock
 
 
 @pytest.fixture(scope="session")

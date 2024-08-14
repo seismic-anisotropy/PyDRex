@@ -51,7 +51,7 @@ mesh = ["gmsh"]  # Required for pydrex-mesh, doesn't play nice with CI.
 ray = ["ray >= 2.0.0"]  # Required for distributed-memory examples.
 # These optional dependencies are only relevant for source distributions:
 test = ["pytest"]  # Minimal test dependencies, for CI.
-doc = ["pdoc"]  # Minimal html docs dependencies, for CI.
+doc = ["pdoc", "setuptools-scm"]  # Minimal html docs dependencies, for CI.
 dev = [  # Full developer dependencies, including packaging and visualisation tools.
     "build",
     "mypy",
@@ -61,6 +61,7 @@ dev = [  # Full developer dependencies, including packaging and visualisation to
     "pytest",
     "pyvista",
     "ruff",
+    "setuptools-scm",
     "twine",
     "uniplot",
 ]
@@ -92,13 +93,14 @@ exclude = ["initial_implementation*"]
 
 # Some global pytest configuration settings, avoids having an extra pytest.ini file.
 [tool.pytest.ini_options]
-# NOTE: Do NOT use pytest log_cli option, see tests/conftest for logging setup.
 # Only look in '.tests/`, don't search git subprojects/worktrees or anything like that,
 # <https://github.com/pytest-dev/pytest/issues/10298>.
 testpaths = ["tests"]
 # --tb=short : Use short tracebacks, terminal scrollback is precious.
-# --show-capture=no : Don't show captured output (stdout/stderr/logs) for failed tests.
-addopts = "--tb=short --show-capture=no"
+# --capture=fd : Capture sys.std{out,err} and file descriptors 1 and 2 by default, show if -v is given.
+# --show-capture=no : Don't show captured output for failed tests, use -v instead.
+# -p no:logging : Disable built-in logging plugin, we have our own.
+addopts = "--tb=short --capture=fd --show-capture=no -p no:logging"
 
 # Global linter and devtools settings.
 [tool.ruff]

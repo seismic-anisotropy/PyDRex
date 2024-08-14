@@ -4,8 +4,9 @@ Running the base test suite requires [pytest](https://docs.pytest.org) and up to
 By default, `make test` will attempt to write persistent logs and output to `./out/`.
 
 Alternatively, run `pytest` from the root of the source tree.
-To print more verbose information (including INFO level logging),
-such as detailed test progress, use the flag `pytest -v`.
+To print more verbose test progress and information, use the flag `pytest -v`.
+Passing the verbose flag a second time (`pytest -vv`)
+additionally shows verbose output from doctests.
 The custom optional flag `--outdir="OUT"` is recommended
 to produce output figures, data dumps and logs and save them in the directory `"OUT"`.
 The value `"."` can be used to save these in the current directory.
@@ -26,6 +27,11 @@ In total, the following custom pytest command line flags are defined by PyDRex:
 - `--markersize` (Matplotlib `rcParams["lines.markersize"]`)
 - `--linewidth` (Matplotlib `rcParams["lines.linewidth"]`)
 
+The following pytest command line flags are disabled by PyDRex:
+- `--log-cli-format` and `--log-cli-date-format`
+- `--log-file` and associated options (use `--outdir` instead)
+- `--capture=<method>`, where `<method>` is anything except `fd`
+
 Tests which require a “significant” amount of memory (> ~16GB RAM) are disabled by default.
 To fully check the functionality of the code, it is recommended to run these locally
 by using the `--runbig` flag before moving to larger simulations.
@@ -38,6 +44,8 @@ The number of cores to use for shared memory multiprocessing can be specified wi
 
 For quick sanity checks and inline unit tests, use [python doctests](https://docs.python.org/3/library/doctest.html).
 These will also appear as inline examples in the generated documentation.
+Doctests may safely assume a live console logging level of `INFO`,
+regardless of any user-supplied pytest command line flags.
 More comprehensive unit tests and larger integration tests should be organised
 into submodules of the `test` module.
 

@@ -118,8 +118,26 @@ class DeformationRegime(IntEnum):
     """Arbitrary upper-bound viscosity regime."""
 
 
+# Because frozen=True doesn't guarantee recursive immutabillity,
+# check hashability in a doctest to ensure that this is actually immutable.
+# This also ensures that subclasses are immutable (see pydrex.mock).
+# Remember to use tuples instead of lists for members.
 @dataclass(frozen=True)
 class DefaultParams:
+    """Immutable record of default parameters for PyDRex.
+
+    Use `as_dict` to get a mutable copy.
+
+    >>> defaults = DefaultParams()
+    >>> # Evaluating hash() will raise an error if the argument is mutable.
+    >>> isinstance(hash(defaults), int)
+    True
+    >>> from collections.abc import Hashable
+    >>> isinstance(defaults.as_dict(), Hashable)  # No longer supports hash().
+    False
+
+    """
+
     phase_assemblage: tuple = (MineralPhase.olivine,)
     """Mineral phases present in the aggregate."""
     phase_fractions: tuple = (1.0,)
@@ -185,7 +203,7 @@ class DefaultParams:
     but that is not yet implemented.
 
     """
-    disl_Peierls_stress: float = 2
+    disl_Peierls_stress: float = 2.0
     """Stress barrier in GPa for activation of dislocation motion at low temperatures.
 
     - 2GPa suggested by [Demouchy et al. 2023](http://dx.doi.org/10.2138/gselements.19.3.151)
@@ -275,8 +293,22 @@ class DefaultParams:
 
     """
 
+    def __post_init__(self):
+        for k, v in self.__dataclass_fields__.items():
+            if v.type is not type(v.default):
+                raise ValueError(f"Illegal type for {self.__class__.__qualname__}.{k}")
+
     def as_dict(self):
-        """Return mutable copy of default arguments as a dictionary."""
+        """Return mutable copy of default arguments as a dictionary.
+
+        The reverse operation is achieved simply by passing the dictionary
+        back into the class constructor:
+
+        >>> params_mutable = DefaultParams().as_dict()
+        >>> params_mutable["number_of_grains"] = 9999
+        >>> params_immutable = DefaultParams(**params_mutable)
+
+        """
         return asdict(self)
 
 
