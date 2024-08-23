@@ -59,11 +59,13 @@ They have their own README file as well.
 
 The documentation can be built offline from a git clone or unpacked source distribution.
 Install documentation builder dependencies with `pip install '.[doc]'`.
+Developers are also recommended to download the [just](https://github.com/casey/just) command runner.
+Otherwise, build commands can be found in the provided `justfile`.
 
-Run `make html` from the terminal to generate PyDRex's documentation
+Run `just html` from the terminal to generate PyDRex's documentation
 (available in the `html` directory), including the API reference.
 The homepage will be `html/index.html`.
-Alternatively, run `make live_docs` to build and serve the documentation on a `localhost` port.
+Alternatively, run `just live_docs` to build and serve the documentation on a `localhost` port.
 Follow the displayed prompts to open the live documentation in a browser.
 It should automatically reload after changes to the source code.
 
