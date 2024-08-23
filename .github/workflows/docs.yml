@@ -29,10 +29,10 @@ jobs:
           python-version: '3.12'
 
       - name: Build
+        uses: extractions/setup-just@v1
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip
-          sudo apt-get install -y just
           python3 -m pip install --upgrade pip
           python3 -m venv .venv-gh-pages
           source .venv-gh-pages/bin/activate
