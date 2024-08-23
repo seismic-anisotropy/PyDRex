@@ -38,8 +38,17 @@
   }
 }
 
-.homediv { padding-top: 56px; max-width: 1080px; }
+/* Center search box and version number in nav bars. */
+/* Then fix up internal div display with some margins. */
+input { display: block; margin: auto; }
+nav h6 { text-align: center; }
+nav div { padding-right: 8%; }
 
+/* Add padding for nav bar footer in case of long version numbers (dev docs). */
+nav footer { padding-right: 5px; }
+
+/* Styles for greeting page and buttons. */
+.homediv { padding-top: 56px; max-width: 1080px; }
 .button {
     background-color: var(--muted);
     color: var(--pdoc-background);
@@ -55,10 +64,11 @@
     cursor: pointer;
     width: 48%;
 }
-
 .button:hover {
     background-color: var(--text);
     color: var(--active);
 }
 
+/* Render display equations in horizontally scrollable box. */
+/* Also tries to hide the scroll bar (sometimes it doesn't work). */
 .katex-display { overflow: auto hidden }

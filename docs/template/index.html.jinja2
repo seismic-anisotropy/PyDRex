@@ -4,9 +4,11 @@
 
 {% block nav %}
     <img src="https://raw.githubusercontent.com/seismic-anisotropy/PyDRex/main/docs/assets/logo160.png" class="logo" alt="project logo"/>
-    <h4>{{ footer_text }}</h4>
-    <br>
+    <div>
     <input type="search" placeholder="Search..." role="searchbox" aria-label="search" pattern=".+" required>
+    <br>
+    <h6>{{ footer_text }}</h6>
+    </div>
 {% endblock %}
 
 {% block content %}
@@ -15,13 +17,37 @@
     {% filter to_html %}
 # Welcome to PyDRex!
 
-> This is the documentation website for [PyDRex](https://github.com/seismic-anisotropy/PyDRex),
+> This is the documentation website for [PyDRex](https://pypi.org/project/pydrex/),
 a Python implementation of the D-Rex model for kinematic texture simulations.
-Use the links below to browse the API documentation or the tests and examples:
+Click the buttons below to browse the documentation or read about the tests and examples.
     {% endfilter %}
 
-    <blockquote><a href="pydrex.html"><button class="button">API Documentation</button></a>
-    <a href="tests.html"><button class="button">Tests & Examples</button></a></blockquote>
+    <br>
+
+    <blockquote>
+    <a href="pydrex.html"><button class="button">Documentation</button></a>
+    <a href="tests.html"><button class="button">Tests & Examples</button></a>
+    </blockquote>
+
+    <br>
+
+    {% filter to_html %}
+> The `pydrex` package is published on PyPI (the Python Package Index).
+The source code is hosted on GitHub, with an issue tracker and discussion page.
+    {% endfilter %}
+
+    <br>
+
+    <blockquote>
+    <a href="https://pypi.org/project/pydrex/"><button class="button">
+    Package&nbsp;
+    <img height="33px" src="https://pypi.org/static/images/logo-small.8998e9d1.svg" alt="PyPI logo"/>
+    </button></a>
+    <a href="https://github.com/seismic-anisotropy/PyDRex"><button class="button">
+    Source code&nbsp;
+    <img height="33px" src="https://github.githubassets.com/favicons/favicon.svg" alt="GitHub logo"/>
+    </button></a>
+    </blockquote>
 
     </main>
     {% include "search.html.jinja2" %}
