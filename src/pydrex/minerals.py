@@ -697,6 +697,10 @@ def voigt_averages(
     - `phase_assemblage` — collection of unique mineral phases in the aggregate
     - `phase_fractions` — collection of volume fractions for each phase in
       `phase_assemblage` (values should sum to 1).
+    - `elastic_tensors` — optional elastic tensors for mineral phases, in 6x6 Voigt
+      matrix format, ordered according to `phase_assemblage` (to implement custom
+      stiffness tensors, either modify the attributes of a `StiffnessTensors` instance
+      or use a subclass)
 
     Raises a ValueError if the minerals contain an unequal number of grains or stored
     texture results.
@@ -717,29 +721,20 @@ def voigt_averages(
 
     # TODO: Perform rotation directly on the 6x6 matrices, see Carcione 2007.
     # This trick is implemented in cpo_elastic_tensor.cc in Aspect.
+
+    # Generate 4th order tensors.
+    phase_tensors = [_tensors.voigt_to_elastic_tensor(S) for S in elastic_tensors]
+
     average_tensors = np.zeros((n_steps, 6, 6))
     for i in range(n_steps):
         for mineral in minerals:
             for n in range(n_grains):
-                match mineral.phase:
-                    case _core.MineralPhase.olivine:
-                        average_tensors[i] += _tensors.elastic_tensor_to_voigt(
-                            _tensors.rotate(
-                                elastic_tensors.olivine,
-                                mineral.orientations[i][n, ...].transpose(),
-                            )
-                            * mineral.fractions[i][n]
-                            * phase_fractions[phase_assemblage.index(mineral.phase)]
-                        )
-                    case _core.MineralPhase.enstatite:
-                        average_tensors[i] += _tensors.elastic_tensor_to_voigt(
-                            _tensors.rotate(
-                                elastic_tensors.enstatite,
-                                mineral.orientations[i][n, ...].transpose(),
-                            )
-                            * mineral.fractions[i][n]
-                            * phase_fractions[phase_assemblage.index(mineral.phase)]
-                        )
-                    case _:
-                        raise ValueError(f"unsupported mineral phase: {mineral.phase}")
+                average_tensors[i] += _tensors.elastic_tensor_to_voigt(
+                    _tensors.rotate(
+                        phase_tensors[phase_assemblage.index(mineral.phase)],
+                        mineral.orientations[i][n, ...].transpose(),
+                    )
+                    * mineral.fractions[i][n]
+                    * phase_fractions[phase_assemblage.index(mineral.phase)]
+                )
     return average_tensors
