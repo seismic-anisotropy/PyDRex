@@ -121,9 +121,18 @@ texture strength.
 These simple examples demonstrate the basics of using PyDRex
 and provide a starting point for integrating PyDRex into more complex simulations.
 
+### Steady, viscous 2D flow in a corner
+
+This example simulates CPO development during flow along four pathlines in a domain with
+two impermeable boundaries (top and left sides) and two permeable boundaries (bottom and
+right sides). The velocity is prescribed using a built-in analytical solution, which
+approximates the flow field for material involved in mid-ocean ridge upwellings.
+
 ```python
 .. include:: ../../examples/standalone/cornerflow_simple.py
 ```
+
+![Simple 2D corner flow](https://raw.githubusercontent.com/seismic-anisotropy/PyDRex/main/docs/assets/cornerflow2d_simple_example.png)
 
 ---
 
