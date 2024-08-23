@@ -121,7 +121,6 @@ def run_singlephase(params: dict, seed: int, assert_each=None, **kwargs) -> tupl
         strains,
         cmap="cmc.batlow_r",
         aspect="equal",
-        alpha=1,
     )
     fig_path.colorbar(s, ax=ax_path, aspect=25, label="Strain (ε)")
 
@@ -272,7 +271,6 @@ class TestCellOlivineA:
                 cmap="cmc.batlow_r",
                 tick_formatter=lambda x, pos: str(x),
                 aspect="equal",
-                alpha=1,
             )
             fig_path.colorbar(s, ax=ax_path, aspect=25, label="Strain (ε)")
             fig_path.savefig(_io.resolve_path(f"{out_basepath}_path.pdf"))
