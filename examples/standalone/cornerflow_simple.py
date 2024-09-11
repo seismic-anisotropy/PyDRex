@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 import matplotlib as mpl
 import numpy as np
+
 import pydrex
 from pydrex import pathlines
 from pydrex import visualisation as vis
@@ -65,9 +66,15 @@ def run(params, f_velocity, f_velocity_grad, min_coords, max_coords, final_locat
     # Get pydrex logger, prefer logging messages instead of using `print()`.
     logger = logging.getLogger("pydrex")
     # Create mineral phase. Each phase is tracked separately.
-    mineral = pydrex.Mineral(
+    olA = pydrex.Mineral(
         pydrex.MineralPhase.olivine,
         pydrex.MineralFabric.olivine_A,
+        pydrex.DeformationRegime.matrix_dislocation,
+        n_grains=params.number_of_grains,
+    )
+    ens = pydrex.Mineral(
+        pydrex.MineralPhase.enstatite,
+        pydrex.MineralFabric.enstatite_AB,
         pydrex.DeformationRegime.matrix_dislocation,
         n_grains=params.number_of_grains,
     )
@@ -101,13 +108,14 @@ def run(params, f_velocity, f_velocity_grad, min_coords, max_coords, final_locat
             params.n_timesteps,
             strains[i],
         )
-        deformation_gradient = mineral.update_orientations(
+        deformation_gradient = pydrex.update_all(
+            (olA, ens),
             params.as_dict(),
             deformation_gradient,
             f_velocity_grad,
             pathline=(time, timestamps[i], f_position),
         )
-    return timestamps, positions, strains, mineral, deformation_gradient
+    return timestamps, positions, strains, (olA, ens), deformation_gradient
 
 
 # Set up storage for results.
@@ -133,10 +141,10 @@ with pydrex.io.logfile_enable(params.out_logfile):
             # Different final_location depending on pathline.
         )
         for i, out in enumerate(pool.imap(_run, final_locations)):
-            times, positions, strains, mineral, deformation_gradient = out
+            times, positions, strains, (olA, ens), deformation_gradient = out
             # Only 1 phase here, 100% olivine.
             avg_stiffnesses = pydrex.minerals.voigt_averages(
-                [mineral], [mineral.phase], [1.0]
+                (olA, ens), (olA.phase, ens.phase), params.phase_fractions
             )
             result = pydrex.diagnostics.elasticity_components(avg_stiffnesses)
             all_strains.append(strains)
