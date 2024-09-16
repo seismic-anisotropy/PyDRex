@@ -520,7 +520,7 @@ class Mineral:
             time_start,
             y_start,
             time_end,
-            atol=kwargs.pop("atol", np.abs(y_start * 1e-6) + 1e-12),
+            atol=kwargs.pop("atol", np.abs(y_start * 1e-6) + 1e-4),
             rtol=kwargs.pop("rtol", 1e-6),
             first_step=kwargs.pop("first_step", np.abs(time_end - time_start) * 1e-1),
             # max_step=kwargs.pop("max_step", np.abs(time_end - time_start)),
