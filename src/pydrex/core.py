@@ -714,6 +714,12 @@ def _get_rotation_and_strain(
     """
     crss = get_crss(phase, fabric)
     slip_invariants = _get_slip_invariants(strain_rate, orientation)
+    # Handle the case where all slip invariants are zero,
+    # thus no slip is possible (occurs for a few specific orientations and strain rates,
+    # for example in the case of uniaxial compression and an identity orientation
+    # i.e. grain orientation aligned to the coordinate system).
+    if np.all(slip_invariants == 0):
+        return np.zeros((3, 3)), 0.0
     if phase == MineralPhase.olivine:
         slip_indices = np.argsort(np.abs(slip_invariants / crss))
         slip_rates = _get_slip_rates_olivine(

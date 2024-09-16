@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Handling of enstatite in Voigt averaging
 - Handling of optional keyword args in some visualisation functions
+- Zero-division error for some grain orientations under uniaxial compression
 
 ### Removed
 - Access to `io` symbols in global `pydrex` namespace (use `pydrex.io` instead)
