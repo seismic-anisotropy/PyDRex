@@ -6,7 +6,7 @@
 
 #### Simulate crystallographic preferred orientation evolution in polycrystals
 
-PyDRex is a Python 3 reimplementation of the D-Rex model
+PyDRex is a new Python 3 implementation of the D-Rex model
 for the evolution of crystallographic preferred orientation in polycrystals.
 The code is available for use under the [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
 Documentation is accessible via Python's REPL `help()` and also [online](https://seismic-anisotropy.github.io/PyDRex/).

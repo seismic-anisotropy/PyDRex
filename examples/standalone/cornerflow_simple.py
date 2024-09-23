@@ -40,7 +40,6 @@ class Parameters(pydrex.DefaultParams):  # Inherit default PyDRex parameters.
 
 doctest.testmod()  # Run doctests for serializability check.
 
-
 # Initialise parameter store. Optionally modify default PyDRex parameters.
 params = Parameters(
     phase_assemblage=(pydrex.MineralPhase.olivine, pydrex.MineralPhase.enstatite),

@@ -29,7 +29,7 @@ and enstatite mineral phases. **These are some of the main features of PyDRex:**
 - **Decomposition of elastic tensors** into components attributed to
   minerals with distinct lattice symmetries
 
-- **Texture diagnostics:** M-index, bingham average, Point-Girdle-Random
+- **Texture diagnostics:** M-index, Bingham average, Point-Girdle-Random
   symmetry, coaxial a.k.a "BA" index, etc.
 
 - **Seismic anisotropy diagnostics**: percent tensorial anisotropy,
