@@ -1,7 +1,8 @@
 # PyDRex tests
 
 Running the base test suite requires [pytest](https://docs.pytest.org) and up to ~16GB RAM.
-By default, `make test` will attempt to write persistent logs and output to `./out/`.
+If the [just](https://github.com/casey/just) command runner is installed,
+`just test` will run the test suite and attempt to write persistent logs and output to `./out/`.
 
 Alternatively, run `pytest` from the root of the source tree.
 To print more verbose test progress and information, use the flag `pytest -v`.

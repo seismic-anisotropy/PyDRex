@@ -7,44 +7,57 @@ r"""
     **This software is currently in early development (alpha)
     and therefore subject to breaking changes without notice.**
 
-## About
+## Introduction
 
-Viscoplastic deformation of minerals, e.g. in Earth's mantle, leads to distinct
-signatures in the mineral texture. Many minerals naturally occur in
-polycrystalline form, which means that they are composed of many grains with
-different volumes and lattice orientations. Preferential alignment of the
-average lattice orientation is called crystallographic preferred orientation
-(CPO). PyDRex simulates the development and evolution of CPO in deforming
-polycrystals, as well as tracking macroscopic finite strain measures.
-Currently, the code supports olivine and enstatite mineral phases. The
-following features are provided:
-- JIT-compiled CPO solver, based on the D-Rex model, which updates the
-  polycrystal orientation distribution depending on the macroscopic velocity
-  gradients
-- `Mineral` class which stores attributes of a distinct mineral phase in the
-  polycrystal and its texture snapshots
-- Voigt averaging to calculate the average elastic tensor of a textured,
-  multiphase polycrystal
-- Decomposition of average elastic tensors into components attributed to
+Viscoplastic deformation of minerals, e.g. in Earth's mantle, leads to
+distinct signatures in the mineral texture. Many minerals naturally
+occur in polycrystalline form, which means that they are composed of
+many grains with different volumes and lattice orientations. Preferential
+alignment of the average lattice orientation is called crystallographic
+preferred orientation (CPO). PyDRex simulates the development
+and evolution of CPO in deforming polycrystals, as well as tracking
+macroscopic finite strain measures. Currently, the code supports olivine
+and enstatite mineral phases. **These are some of the main features of PyDRex:**
+
+- **JIT-compiled CPO solver**, based on the D-Rex model[^1], which updates
+  the polycrystal orientation distribution depending on the macroscopic
+  velocity gradients
+
+- **Voigt averaging** to calculate the average elastic tensor of
+  a textured, multiphase polycrystal
+
+- **Decomposition of elastic tensors** into components attributed to
   minerals with distinct lattice symmetries
-- Crystallographic pole figure visualisation (contouring is a work in progress)
-- [work in progress] Texture diagnostics: M-index, bingham average,
-  Point-Girdle-Random symmetry, coaxial a.k.a "BA" index, etc.
-- [work in progress] Seismic anisotropy diagnostics: % tensorial anisotropy,
+
+- **Texture diagnostics:** M-index, Bingham average, Point-Girdle-Random
+  symmetry, coaxial a.k.a "BA" index, etc.
+
+- **Seismic anisotropy diagnostics**: percent tensorial anisotropy,
   hexagonal symmetry a.k.a transverse isotropy direction, etc.
 
-The core CPO solver is based on the original Fortran 90 implementation by Édouard Kaminski,
-which can be [downloaded from this link (~90KB)](http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz).
-The reference papers are [Kaminski & Ribe (2001)](https://doi.org/10.1016/s0012-821x(01)00356-9)
-and [Kaminski & Ribe (2004)](https://doi.org/10.1111%2Fj.1365-246x.2004.02308.x),
-and an open-access paper which discusses the model is [Fraters & Billen (2021)](https://doi.org/10.1029/2021gc009846).
+- Crystallographic **pole figures** for visualisation[⁰](#wip)
+
+- Finite element **mesh generator** for simple rectangular meshes using
+  [gmsh](https://pypi.org/project/gmsh/)
+
+- Steady-state **analytical velocity fields** for various idealised flows[⁰](#wip)
+
+[^1]: The core CPO solver is based on the original Fortran 90 implementation by Édouard Kaminski,
+    which can be [downloaded from this link (~90KB)](http://www.ipgp.fr/~kaminski/web_doudoud/DRex.tar.gz).
+    The reference papers are [Kaminski & Ribe (2001)](https://doi.org/10.1016/s0012-821x(01)00356-9)
+    and [Kaminski & Ribe (2004)](https://doi.org/10.1111%2Fj.1365-246x.2004.02308.x),
+    and an open-access paper which discusses the model is [Fraters & Billen (2021)](https://doi.org/10.1029/2021gc009846).
 
 ## Installation
 
-The minimum required Python version is set using `requires-python` in the
-[`pyproject.toml`](https://github.com/seismic-anisotropy/PyDRex/blob/main/pyproject.toml) file.
-For installation instructions,
-see [the README](https://github.com/seismic-anisotropy/PyDRex/blob/main/README.md) file.
+The minimum required Python version is displayed in the
+[PyPI package](https://pypi.org/project/pydrex/) metadata
+(search that page for `Requires: Python`).
+To install the latest version of PyDRex for a compatible Python version, execute:
+
+    pip install pydrex
+
+See the PyPI page for more installation options.
 
 ## Documentation
 
@@ -82,7 +95,7 @@ $$
 where $b$ is the length of the Burgers' vector, $σ$ is the stress
 and $μ$ is the shear modulus. The value of the exponent $p$ is given by the
 `stress_exponent` input parameter. For an overview of available parameters,
-see [the `pydrex.mock` source code, for now...]
+see `pydrex.core.DefaultParams`.
 
 The effects of dynamic recrystallization are twofold. Grains with a higher than
 average dislocation density may be affected by either grain nucleation, which is
@@ -103,15 +116,34 @@ This only affects CPO evolution by introducing a latency for the onset of grain
 boundary migration in nucleated grains. It also manifests as an upper bound on
 texture strength.
 
-## Parameter reference
+## Simple examples
 
-Model parameters will eventually be provided in a `.toml` file.
-For now just pass a dictionary to `config` in the `Mineral.update_orientations` method.
-A draft of the input file spec is shown below:
+These simple examples demonstrate the basics of using PyDRex
+and provide a starting point for integrating PyDRex into more complex simulations.
 
-```toml
-.. include:: data/specs/spec.toml
+### Steady, viscous 2D flow in a corner
+
+This example simulates CPO development during flow along four pathlines in a domain with
+two impermeable boundaries (top and left sides) and two permeable boundaries (bottom and
+right sides). The velocity is prescribed using a built-in analytical solution, which
+approximates the flow field for material involved in mid-ocean ridge upwellings.
+
+```python
+.. include:: ../../examples/standalone/cornerflow_simple.py
 ```
+
+![Simple 2D corner flow](https://raw.githubusercontent.com/seismic-anisotropy/PyDRex/main/docs/assets/cornerflow2d_simple_example.png)
+
+---
+
+<a name="wip">
+<ol start="0">
+<li>These features are only partially implemented so far. Check the
+    <a href="https://github.com/seismic-anisotropy/PyDRex/issues/">open issues</a>
+    to see details about known bugs and planned features.
+    <a href="#introduction">&#8617;</a></li>
+</ol>
+</a>
 
 """
 

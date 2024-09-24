@@ -29,6 +29,7 @@ jobs:
           python-version: '3.12'
 
       - name: Build
+        uses: extractions/setup-just@v1
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip
@@ -36,7 +37,7 @@ jobs:
           python3 -m venv .venv-gh-pages
           source .venv-gh-pages/bin/activate
           python3 -m pip install "$PWD"[doc,test]
-          make html
+          just html
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
