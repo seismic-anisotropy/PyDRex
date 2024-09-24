@@ -186,33 +186,41 @@ def steady_box2d(
 
     ¹with signature `f(t, x)` where `t` is not used and `x` is a 3D position vector
 
-    Additional keyword arguments are passed to the `matplotlib.axes.Axes.quiver` call
-    used to plot the velocity vectors.
+    Additional keyword arguments are passed to the `matplotlib.axes.Axes.streamplot`
+    call used to plot the velocity field, except `'norm'` and `'width'`, which are
+    passed to `matplotlib.axes.Axes.quiver` (used to plot the CPO bars).
 
     Returns the figure handle, the axes handle, the quiver collection (velocities) and
     the scatter collection (pathline).
 
     """
+    # Set up base figure and main axis labels.
     fig, ax = figure_unless(ax)
     ax.set_xlabel(f"{ref_axes[0]} {label_suffix}")
     ax.set_ylabel(f"{ref_axes[1]} {label_suffix}")
 
+    # Unpack callable + data input tuples.
     get_velocity, resolution = velocity
     positions, min_coords, max_coords = geometry
     x_min, y_min = min_coords
     x_max, y_max = max_coords
 
+    # Apply axis settings.
     ax.set_xlim((x_min, x_max))
     ax.set_ylim((y_min, y_max))
     ax.set_aspect(aspect)
     ax.xaxis.set_major_formatter(tick_formatter)
     ax.yaxis.set_major_formatter(tick_formatter)
 
-    _ref_axes = ref_axes.lower()
-    axes_map = {"x": 0, "y": 1, "z": 2}
-    horizontal = axes_map[_ref_axes[0]]
-    vertical = axes_map[_ref_axes[1]]
+    # Unpack arguments relevant to velocity streamplot (rest of kwargs also go there).
+    horizontal, vertical = _geo.to_indices2d(*ref_axes)
+    zorder = kwargs.pop("zorder", 10)
 
+    # Unpack arguments relevant to CPO bars.
+    norm = kwargs.pop("norm", None)
+    width = kwargs.pop("width", 3e-3)
+
+    # Plot velocity streamlines.
     velocities = None
     if resolution is not None:
         x_res, y_res = resolution
@@ -230,19 +238,21 @@ def steady_box2d(
             U[i] = v3d[horizontal]
             V[i] = v3d[vertical]
 
-        velocities = ax.quiver(
+        velocities = ax.streamplot(
             X_grid,
             Y_grid,
             U.reshape(X_grid.shape),
             V.reshape(Y_grid.shape),
-            pivot=kwargs.pop("pivot", "mid"),
-            alpha=kwargs.pop("alpha", 0.25),
+            color=kwargs.pop("color", "#ff002244"),
+            density=kwargs.pop("density", tuple([r * 0.1 for r in resolution])),
+            zorder=zorder,
             **kwargs,
         )
 
-    dummy_dim = ({0, 1, 2} - set(_geo.to_indices2d(*ref_axes))).pop()
+    # Plot CPO bars.
+    dummy_dim = ({0, 1, 2} - {horizontal, vertical}).pop()
     xi_2D = np.asarray([_utils.remove_dim(p, dummy_dim) for p in positions])
-    qcoll: plt.Quiver | plt.PathCollection
+    qcoll: plt.Quiver | plt.PathCollection  # This variable can be either type.
     if cpo is None:
         qcoll = ax.scatter(xi_2D[:, 0], xi_2D[:, 1], marker=marker, c=colors, cmap=cmap)
     else:
@@ -260,11 +270,12 @@ def steady_box2d(
             cpo_2D[:, 1],
             colors,
             cmap=cmap,
+            norm=norm,
             pivot="mid",
-            width=kwargs.pop("width", 3e-3),
+            width=width,
             headaxislength=0,
             headlength=0,
-            zorder=kwargs.pop("zorder", 10) + 1,  # Always above velocity vectors.
+            zorder=zorder + 1,  # Always above velocity vectors.
         )
     return fig, ax, velocities, qcoll
 
