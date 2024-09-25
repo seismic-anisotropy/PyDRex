@@ -1,2 +1,36 @@
 {% extends "default/module.html.jinja2" %}
 {% block title %}{{ module.modulename }}{% endblock %}
+{% set versions = env.get("VERSIONS", "").strip().split(" ") %}
+{% block nav_footer %}
+    <footer>
+        <label for="page-select">Version:</label>
+        <select id="page-select" onchange="redirectToPage()">
+            <option value="">Select an option</option>
+                {% for version in versions %}
+                    <option value="{{ version }}">{{ version }}</option>
+                {% endfor %}
+        </select>
+
+    <script>
+        function redirectToPage() {
+            var select = document.getElementById("page-select");
+            var selectedOption = select.options[select.selectedIndex].value;
+
+            if (selectedOption !== "") {
+                var redirectURL = "/html/" + selectedOption + "/index.html";
+                window.location.href = redirectURL;
+            }
+        }
+
+        // Set the default value of the dropdown to the selected option.
+        window.onload = function() {
+            var select = document.getElementById("page-select");
+            var currentURL = window.location.pathname;
+            var match = currentURL.match(/^\/html\/([^/]+)\/.+$/);
+
+            if (match && match[1]) {
+                select.value = match[1];
+            }
+        };
+    </script>
+{% endblock %}
