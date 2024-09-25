@@ -55,7 +55,7 @@ doc = ["pdoc", "setuptools-scm"]  # Minimal html docs dependencies, for CI.
 dev = [  # Full developer dependencies, including packaging and visualisation tools.
     "build",
     "mypy",
-    "pdoc",
+    "pdoc > 14.5.1",  # https://github.com/mitmproxy/pdoc/security/advisories/GHSA-5vgj-ggm4-fg62
     "pre-commit",
     "ptpython",
     "pytest",
