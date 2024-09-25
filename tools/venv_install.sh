@@ -46,9 +46,18 @@ if [ $# -eq 0 ]; then  # first install
         warn "To install them later, run `pre-commit install` in the local PyDRex clone."
     }
     2>/dev/null 1>&2 command -v pre-commit && pre-commit install
-    echo "/.venv-${PWD##*/}" >>.git/info/exclude
-    echo "/requirements.txt" >>.git/info/exclude
-    echo "/requirements.bak" >>.git/info/exclude
+    echo ".python-version" > .git/info/exclude
+    {
+        echo "*egg-info*";
+        echo "*__pycache__/";
+        echo ".mypy_cache/";
+        echo "/html/"
+        echo "/dist/"
+        echo "*.mod"
+        echo "/.venv-${PWD##*/}";
+        echo "/requirements.txt";
+        echo "/requirements.bak";
+    } >> .git/info/exclude
     echo "$SCRIPTNAME: PyDRex development version installed in .venv-${PWD##*/}"
     echo "$SCRIPTNAME: On Linux, execute 'source .venv-${PWD##*/}/bin/activate' to activate the environment."
     echo "$SCRIPTNAME: Use the command 'deactivate' to subsequently deactivate the environment."
