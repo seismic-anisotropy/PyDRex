@@ -32,7 +32,7 @@ if "pydrex.polefigure" not in mproj.get_projection_names():
 
 
 def default_tick_formatter(x, pos):
-    return f"{x/1e3:.1f}"
+    return f"{x / 1e3:.1f}"
 
 
 def polefigures(

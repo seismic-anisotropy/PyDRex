@@ -176,7 +176,7 @@ class TestOlivineA:
                     _log.debug("Total walltime: %s", perf_counter() - _begin)
 
                     if outdir is not None:
-                        labels.append(rf"$z_{{f}}$ = {z_exit/1e3:.1f} km")
+                        labels.append(rf"$z_{{f}}$ = {z_exit / 1e3:.1f} km")
                         angles.append(misorient_angles)
                         indices.append(misorient_indices)
                         paths.append(positions)
