@@ -333,9 +333,9 @@ class TestMIndex:
             M_vals[i] = _diagnostics.misorientation_index(
                 orientations, _geo.LatticeSystem.orthorhombic
             )
-        assert np.all(
-            np.diff(M_vals) >= 0
-        ), f"M-index values {M_vals} are not increasing"
+        assert np.all(np.diff(M_vals) >= 0), (
+            f"M-index values {M_vals} are not increasing"
+        )
 
     def test_texture_girdle_ortho(self, seed):
         """Test M-index for girdled texture."""

@@ -102,7 +102,7 @@ def extract_h5part(
                 strains[t] = f[f"{k}/CPO_{n_grains * 10 + 1}"][particle_id - 1]
                 vals = np.empty(n_grains * 10)
                 for n in range(len(vals)):
-                    vals[n] = f[f"{k}/CPO_{n+1}"][particle_id - 1]
+                    vals[n] = f[f"{k}/CPO_{n + 1}"][particle_id - 1]
 
                 orientations[t] = np.array(
                     [
@@ -456,7 +456,7 @@ def parse_config(path):
 
     # Use provided name or set randomized default.
     toml["name"] = toml.get(
-        "name", f"pydrex.{np.random.default_rng().integers(1,1e10)}"
+        "name", f"pydrex.{np.random.default_rng().integers(1, 1e10)}"
     )
 
     toml["parameters"] = _parse_config_params(toml)
