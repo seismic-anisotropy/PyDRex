@@ -55,6 +55,7 @@ class MeshGenerator(CliTool):
             center = [float(s) for s in args.center.split(",")]
             assert len(center) == 2
 
+        custom_points = None
         if args.custom_points is not None:
             _custom_points = [
                 [*map(float, point.split(":"))]
