@@ -63,7 +63,7 @@ def test_doctests(module, capsys, verbose):
                     _log.warning(
                         "skipping doctest of missing optional symbol in %s", module
                     )
-                elif err_type is np.core._exceptions._ArrayMemoryError:
+                elif err_type is np._core._exceptions._ArrayMemoryError:
                     # Faiures to allocate should not be fatal to the doctest test suite.
                     _log.warning(
                         "skipping doctests for module %s due to insufficient memory",

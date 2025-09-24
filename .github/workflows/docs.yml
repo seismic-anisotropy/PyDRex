@@ -4,6 +4,7 @@ on:  # Always attempt html build on push & PR, but only deploy when there is a n
   push:
     branches:
       - main
+      - Patol75/bump_ci
     tags:
       - v*
   pull_request:
@@ -21,15 +22,17 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: '3.13'
+
+      - name: Setup Just
+        uses: extractions/setup-just@v3
 
       - name: Build
-        uses: extractions/setup-just@v1
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip
