@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - Patol75/bump_ci
   pull_request:
     branches:
       - main
