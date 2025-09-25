@@ -59,7 +59,7 @@ jobs:
 
   install-windows:
     name: (Windows) Install package and run tests
-    runs-on: windows-latest
+    runs-on: windows-2025
     strategy:
       matrix:
         python-version: ['3.11', '3.12', '3.13']
