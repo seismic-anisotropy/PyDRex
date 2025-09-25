@@ -37,7 +37,7 @@ jobs:
 
   install-macos:
     name: (MacOS) Install package and run tests
-    runs-on: macos-latest
+    runs-on: macos-latest-large
     strategy:
       matrix:
         python-version: ['3.11', '3.12', '3.13']
