@@ -4,7 +4,6 @@ on:  # Always attempt html build on push & PR, but only deploy when there is a n
   push:
     branches:
       - main
-      - Patol75/bump_ci
     tags:
       - v*
   pull_request:
