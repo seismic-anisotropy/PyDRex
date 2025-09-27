@@ -1,8 +1,7 @@
 # Use modern (PEP621, PEP660) setuptools build system.
 # PEP 660 editable installs: <https://github.com/pypa/setuptools/blob/main/NEWS.rst#v6400>.
-# Python 3.11 support: <https://github.com/pypa/setuptools_scm/blob/main/CHANGELOG.md#v710>.
 [build-system]
-requires = ["setuptools>=64", "setuptools_scm[toml]>=8"]
+requires = ["setuptools>=80", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
 # Automatically use the version number from vcs (e.g. git) tags,
@@ -15,7 +14,7 @@ name = "pydrex"
 dynamic = ["version"]  # Managed by setuptools_scm.
 description = "Dynamic CPO calculations for olivine-enstatite polycrystal aggregates"
 readme = "README.md"
-requires-python = ">=3.10"  # We use tomllib on 3.11: <https://docs.python.org/3/library/tomllib.html>.
+requires-python = ">=3.11"
 license = {file = "LICENSE"}
 authors = [
     {name = "Thomas Duvernay", email = "td75013@hotmail.fr"},
@@ -32,7 +31,6 @@ classifiers = [  # List of possible classifiers: <https://pypi.org/classifiers/>
 ]
 
 dependencies = [
-    "tomli >= 1.1.0 ; python_version < '3.11'",  # https://github.com/hukkin/tomli?tab=readme-ov-file#building-a-tomlitomllib-compatibility-layer
     "numpy >= 1.8",  # <https://numpy.org/doc/stable/reference/generated/numpy.linalg.eigvalsh.html>
     "numba >= 0.57",  # <https://numba.readthedocs.io/en/stable/release-notes.html#version-0-57-0-1-may-2023>
     "scipy >= 1.2",  # <https://github.com/scipy/scipy/pull/9176>
@@ -48,7 +46,7 @@ dependencies = [
 [project.optional-dependencies]
 # These optional dependencies are relevant for built distributions (e.g. via pip):
 mesh = ["gmsh"]  # Required for pydrex-mesh, doesn't play nice with CI.
-ray = ["ray >= 2.0.0"]  # Required for distributed-memory examples.
+ray = ["ray[default] >= 2.0.0"]  # Required for distributed-memory examples.
 # These optional dependencies are only relevant for source distributions:
 test = ["pytest"]  # Minimal test dependencies, for CI.
 doc = ["pdoc", "setuptools-scm"]  # Minimal html docs dependencies, for CI.

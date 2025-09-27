@@ -53,7 +53,7 @@ class Model:
 
     def __post_init__(self):
         for k, v in self.__dataclass_fields__.items():
-            if v.type is not type(v.default):
+            if v.type is not self.__annotations__[k]:
                 raise ValueError(f"Illegal type for {self.__class__.__qualname__}.{k}")
 
     # TODO: Possible attributes worth adding, no particular order:
@@ -195,7 +195,7 @@ def rectangle(
     >>> rect.loop_tags
     [1]
     >>> [p[-1] for p in rect.point_constraints]
-    [0.01, 0.01, 0.01, 0.01]
+    [np.float64(0.01), np.float64(0.01), np.float64(0.01), np.float64(0.01)]
 
     >>> rect = rectangle(
     ...     "test_rect",
@@ -207,7 +207,7 @@ def rectangle(
     ...     _write_file=False
     ... )
     >>> [p[-1] for p in rect.point_constraints]
-    [0.001, 0.001, 0.01, 0.01]
+    [np.float64(0.001), np.float64(0.001), np.float64(0.01), np.float64(0.01)]
 
     >>> rect = rectangle(
     ...     "test_rect",
@@ -219,13 +219,13 @@ def rectangle(
     ...     _write_file=False
     ... )
     >>> rect.point_constraints[1][-1]
-    0.01
+    np.float64(0.01)
     >>> rect.point_constraints[3][-1]
-    0.001
+    np.float64(0.001)
     >>> rect.point_constraints[0][-1] == rect.point_constraints[2][-1]
-    True
+    np.True_
     >>> rect.point_constraints[0][-1]
-    0.0055
+    np.float64(0.0055)
 
     """
 
