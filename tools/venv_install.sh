@@ -37,8 +37,8 @@ if [ $# -eq 0 ]; then  # first install
     fi
     [ "$($PYTHON_BINARY --version|cut -d' ' -f2|cut -d'.' -f1)" -eq 3 ] || {
         warn "Python 3 is required"; exit 1; }
-    [ "$($PYTHON_BINARY --version|cut -d' ' -f2|cut -d'.' -f2)" -gt 9 ] || {
-        warn "Python 3.10+ is required"; exit 1; }
+    [ "$($PYTHON_BINARY --version|cut -d' ' -f2|cut -d'.' -f2)" -gt 10 ] || {
+        warn "Python 3.11+ is required"; exit 1; }
     $PYTHON_BINARY -m venv .venv-"${PWD##*/}"
     upgrade
     2>/dev/null 1>&2 command -v pre-commit || {
