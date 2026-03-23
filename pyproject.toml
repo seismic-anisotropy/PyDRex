@@ -1,12 +1,8 @@
 # Use modern (PEP621, PEP660) setuptools build system.
 # PEP 660 editable installs: <https://github.com/pypa/setuptools/blob/main/NEWS.rst#v6400>.
 [build-system]
-requires = ["setuptools>=80", "setuptools_scm>=8"]
+requires = ["setuptools>=80", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
-
-# Automatically use the version number from vcs (e.g. git) tags,
-# <https://github.com/pypa/setuptools_scm>.
-[tool.setuptools_scm]
 
 # Docs: <https://packaging.python.org/en/latest/specifications/pyproject-toml/>.
 [project]
@@ -14,7 +10,7 @@ name = "pydrex"
 dynamic = ["version"]  # Managed by setuptools_scm.
 description = "Dynamic CPO calculations for olivine-enstatite polycrystal aggregates"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = {file = "LICENSE"}
 authors = [
     {name = "Thomas Duvernay", email = "td75013@hotmail.fr"},

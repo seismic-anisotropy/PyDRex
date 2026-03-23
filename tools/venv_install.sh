@@ -26,7 +26,7 @@ warn() { >&2 printf '%s\n' "$SCRIPTNAME: $1"; }
 upgrade() {
     . .venv-"${PWD##*/}"/bin/activate
     [ -f requirements.txt ] && mv -i requirements.txt requirements.bak
-    pip install --upgrade pip pip-tools setuptools && pip-compile --resolver=backtracking && pip-sync
+    pip install --upgrade pip pip-tools && pip-compile --resolver=backtracking && pip-sync
     pip install -e "${PWD}[dev,lsp,doc,test]"
 }
 
@@ -38,7 +38,7 @@ if [ $# -eq 0 ]; then  # first install
     [ "$($PYTHON_BINARY --version|cut -d' ' -f2|cut -d'.' -f1)" -eq 3 ] || {
         warn "Python 3 is required"; exit 1; }
     [ "$($PYTHON_BINARY --version|cut -d' ' -f2|cut -d'.' -f2)" -gt 10 ] || {
-        warn "Python 3.11+ is required"; exit 1; }
+        warn "Python 3.12+ is required"; exit 1; }
     $PYTHON_BINARY -m venv .venv-"${PWD##*/}"
     upgrade
     2>/dev/null 1>&2 command -v pre-commit || {
