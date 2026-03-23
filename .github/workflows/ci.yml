@@ -53,7 +53,8 @@ jobs:
       - name: Install and test
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip install --no-build-isolation "setuptools<81"
+          python3 -m pip install --force-reinstall "setuptools<81"
+          python3 -m pip install --no-build-isolation llvmlite
           python3 -m pip install "$PWD[test]"
           python3 -m pytest -rN
 
