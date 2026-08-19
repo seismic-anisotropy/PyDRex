@@ -37,7 +37,7 @@ if [ $# -eq 0 ]; then  # first install
     fi
     [ "$($PYTHON_BINARY --version|cut -d' ' -f2|cut -d'.' -f1)" -eq 3 ] || {
         warn "Python 3 is required"; exit 1; }
-    [ "$($PYTHON_BINARY --version|cut -d' ' -f2|cut -d'.' -f2)" -gt 10 ] || {
+    [ "$($PYTHON_BINARY --version|cut -d' ' -f2|cut -d'.' -f2)" -gt 11 ] || {
         warn "Python 3.12+ is required"; exit 1; }
     $PYTHON_BINARY -m venv .venv-"${PWD##*/}"
     upgrade
